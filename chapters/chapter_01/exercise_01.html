@@ -442,8 +442,26 @@
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-the-required-packages">1. Importing the required packages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-and-data-loading">1. Importing and data loading</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-abide-ii-phenotypic-data">Loading the ABIDE-II phenotypic data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-inspection">2. Data inspection</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-random-sample">Inspecting a random sample</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-for-discussion">Questions for discussion</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-inspection">3. Statistical inspection</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-structure-with-info">Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-info">Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-summaries-with-describe">Numerical summaries with <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-describe">Interpreting <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -479,8 +497,8 @@
 <li><p>Which variables could confound a relationship between brain structure and diagnosis?</p></li>
 </ol>
 </section>
-<section id="importing-the-required-packages">
-<h2>1. Importing the required packages<a class="headerlink" href="#importing-the-required-packages" title="Link to this heading">#</a></h2>
+<section id="importing-and-data-loading">
+<h2>1. Importing and data loading<a class="headerlink" href="#importing-and-data-loading" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -516,7 +534,6 @@ cognitive, and behavioral variables.</p>
 <span class="c1"># Use a pre-selected subset of columns from the table:</span>
 <span class="n">COLUMNS_URL</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/config/eda_phenotype_columns.json"</span>
 
-
 <span class="n">phenotypes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PHENOTYPES_URL</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"latin-1"</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">phenotypes</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 <span class="n">phenotypes</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">COLUMNS_URL</span><span class="p">,</span> <span class="n">typ</span><span class="o">=</span><span class="s2">"series"</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -532,6 +549,871 @@ cognitive, and behavioral variables.</p>
 </div>
 </div>
 </div>
+</section>
+<section id="data-inspection">
+<h2>2. Data inspection<a class="headerlink" href="#data-inspection" title="Link to this heading">#</a></h2>
+<p>Before calculating statistics or creating visualizations, it is useful to inspect several individual observations. This can reveal how the dataset is organized, how variables are represented, and whether anything appears unexpected.</p>
+<p>Pandas provides several ways to inspect rows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">phenotypes.head()</span></code> displays the first rows.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">phenotypes.tail()</span></code> displays the last rows.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">phenotypes.sample()</span></code> displays randomly selected rows.</p></li>
+<li><p>Custom selection scripts can display particular rows, regularly spaced observations, or participants who meet specific conditions.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">head()</span></code> and <code class="docutils literal notranslate"><span class="pre">tail()</span></code> are convenient, but they may not represent the entire dataset. For example, datasets are sometimes sorted by acquisition site, diagnosis, age, or participant identifier. A random sample can provide a broader first impression.</p>
+<section id="inspecting-a-random-sample">
+<h3>Inspecting a random sample<a class="headerlink" href="#inspecting-a-random-sample" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">sample()</span></code> method selects rows randomly. Setting <code class="docutils literal notranslate"><span class="pre">random_state</span></code> makes the selection reproducible, meaning that everyone running the notebook will see the same participants.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phenotypes</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SITE_ID</th>
+      <th>SUB_ID</th>
+      <th>DX_GROUP</th>
+      <th>PDD_DSM_IV_TR</th>
+      <th>AGE_AT_SCAN</th>
+      <th>SEX</th>
+      <th>HANDEDNESS_CATEGORY</th>
+      <th>HANDEDNESS_SCORES</th>
+      <th>FIQ</th>
+      <th>VIQ</th>
+      <th>...</th>
+      <th>SRS_TOTAL_T</th>
+      <th>SCQ_TOTAL</th>
+      <th>RBSR_6SUBSCALE_TOTAL</th>
+      <th>MASC_TOTAL_T</th>
+      <th>BRIEF_BRI_T</th>
+      <th>BRIEF_MI_T</th>
+      <th>BRIEF_GEC_T</th>
+      <th>CBCL_6-18_INTERNAL_T</th>
+      <th>CBCL_6-18_EXTERNAL_T</th>
+      <th>CBCL_6-18_TOTAL_PROBLEM_T</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>879</th>
+      <td>ABIDEII-SDSU_1</td>
+      <td>28909</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>10.900000</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>80.0</td>
+      <td>104.0</td>
+      <td>105.0</td>
+      <td>...</td>
+      <td>87.0</td>
+      <td>18.0</td>
+      <td>26.0</td>
+      <td>NaN</td>
+      <td>65.0</td>
+      <td>71.0</td>
+      <td>70.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>101</th>
+      <td>ABIDEII-EMC_1</td>
+      <td>29907</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>6.685832</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1111</th>
+      <td>ABIDEII-USM_1</td>
+      <td>29525</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>23.290900</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>80.0</td>
+      <td>123.0</td>
+      <td>107.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>726</th>
+      <td>ABIDEII-OHSU_1</td>
+      <td>28988</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>11.000000</td>
+      <td>2</td>
+      <td>1.0</td>
+      <td>100.0</td>
+      <td>96.0</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>77.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>57.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>291</th>
+      <td>ABIDEII-IP_1</td>
+      <td>29600</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>46.430000</td>
+      <td>2</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>868</th>
+      <td>ABIDEII-SDSU_1</td>
+      <td>28890</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>15.200000</td>
+      <td>1</td>
+      <td>3.0</td>
+      <td>-40.0</td>
+      <td>80.0</td>
+      <td>75.0</td>
+      <td>...</td>
+      <td>94.0</td>
+      <td>26.0</td>
+      <td>49.0</td>
+      <td>NaN</td>
+      <td>84.0</td>
+      <td>71.0</td>
+      <td>78.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>951</th>
+      <td>ABIDEII-TCD_1</td>
+      <td>29100</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>18.750000</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>99.0</td>
+      <td>99.0</td>
+      <td>...</td>
+      <td>84.0</td>
+      <td>18.0</td>
+      <td>30.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>61.0</td>
+      <td>56.0</td>
+      <td>64.0</td>
+    </tr>
+    <tr>
+      <th>260</th>
+      <td>ABIDEII-IP_1</td>
+      <td>29595</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>27.360000</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>108.0</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>16.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>8 rows × 39 columns</p>
+</div></div></div>
+</div>
+</section>
+<section id="questions-for-discussion">
+<h3>Questions for discussion<a class="headerlink" href="#questions-for-discussion" title="Link to this heading">#</a></h3>
+<p>Examine the sampled rows and the column names before continuing.</p>
+<ol class="arabic simple">
+<li><p><strong>What does each row represent?</strong></p></li>
+<li><p><strong>Which variables are categorical?</strong><br />
+Remember that categorical variables are not necessarily stored as text. Some categories may be represented using numerical codes.</p></li>
+<li><p><strong>Are there variables or subjects that seem problematic already?</strong></p></li>
+</ol>
+<p>Answer before inspecting the complete data summary.</p>
+</section>
+</section>
+<section id="statistical-inspection">
+<h2>3. Statistical inspection<a class="headerlink" href="#statistical-inspection" title="Link to this heading">#</a></h2>
+<p>Looking at individual rows helps us understand the structure of a dataset, but it does not summarize the dataset as a whole. Pandas provides two useful starting points:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DataFrame.info()</span></code> summarizes the dataset’s structure and data types.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DataFrame.describe()</span></code> calculates descriptive statistics for each variable.</p></li>
+</ul>
+<p>These methods answer different questions and should usually be used together.</p>
+<section id="dataset-structure-with-info">
+<h3>Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code><a class="headerlink" href="#dataset-structure-with-info" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">info()</span></code> reports:</p>
+<ul class="simple">
+<li><p>the number of rows and columns;</p></li>
+<li><p>each column’s data type;</p></li>
+<li><p>the number of non-missing observations;</p></li>
+<li><p>an estimate of memory usage.</p></li>
+</ul>
+<p>It is particularly useful for detecting variables with missing data and variables stored using an unexpected data type.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phenotypes</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;class 'pandas.DataFrame'&gt;
+RangeIndex: 1114 entries, 0 to 1113
+Data columns (total 39 columns):
+ #   Column                     Non-Null Count  Dtype  
+---  ------                     --------------  -----  
+ 0   SITE_ID                    1114 non-null   str    
+ 1   SUB_ID                     1114 non-null   int64  
+ 2   DX_GROUP                   1114 non-null   int64  
+ 3   PDD_DSM_IV_TR              595 non-null    float64
+ 4   AGE_AT_SCAN                1114 non-null   float64
+ 5   SEX                        1114 non-null   int64  
+ 6   HANDEDNESS_CATEGORY        1091 non-null   float64
+ 7   HANDEDNESS_SCORES          641 non-null    float64
+ 8   FIQ                        1015 non-null   float64
+ 9   VIQ                        799 non-null    float64
+ 10  PIQ                        872 non-null    float64
+ 11  FIQ_TEST_TYPE              1015 non-null   str    
+ 12  CURRENT_MED_STATUS         991 non-null    float64
+ 13  EYE_STATUS_AT_SCAN         1113 non-null   float64
+ 14  ADI_R_SOCIAL_TOTAL_A       302 non-null    float64
+ 15  ADI_R_VERBAL_TOTAL_BV      301 non-null    float64
+ 16  ADI_R_RRB_TOTAL_C          302 non-null    float64
+ 17  ADOS_MODULE                535 non-null    float64
+ 18  ADOS_G_TOTAL               347 non-null    float64
+ 19  ADOS_2_TOTAL               269 non-null    float64
+ 20  ADOS_2_SEVERITY_TOTAL      264 non-null    float64
+ 21  SRS_VERSION                785 non-null    float64
+ 22  SRS_INFORMANT              785 non-null    float64
+ 23  SRS_TOTAL_RAW              785 non-null    float64
+ 24  SRS_AWARENESS_RAW          757 non-null    float64
+ 25  SRS_COGNITION_RAW          757 non-null    float64
+ 26  SRS_COMMUNICATION_RAW      785 non-null    float64
+ 27  SRS_MOTIVATION_RAW         785 non-null    float64
+ 28  SRS_MANNERISMS_RAW         785 non-null    float64
+ 29  SRS_TOTAL_T                756 non-null    float64
+ 30  SCQ_TOTAL                  293 non-null    float64
+ 31  RBSR_6SUBSCALE_TOTAL       451 non-null    float64
+ 32  MASC_TOTAL_T               216 non-null    float64
+ 33  BRIEF_BRI_T                486 non-null    float64
+ 34  BRIEF_MI_T                 485 non-null    float64
+ 35  BRIEF_GEC_T                484 non-null    float64
+ 36  CBCL_6-18_INTERNAL_T       401 non-null    float64
+ 37  CBCL_6-18_EXTERNAL_T       401 non-null    float64
+ 38  CBCL_6-18_TOTAL_PROBLEM_T  400 non-null    float64
+dtypes: float64(34), int64(3), str(2)
+memory usage: 339.6 KB
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="questions">
+<h3>Questions<a class="headerlink" href="#questions" title="Link to this heading">#</a></h3>
+<p>Examine the output of <code class="docutils literal notranslate"><span class="pre">phenotypes.info()</span></code>.</p>
+<ol class="arabic simple">
+<li><p>How many participants and variables are present?</p></li>
+<li><p>Which variables contain missing observations?</p></li>
+<li><p>Are any categorical variables stored as numbers/strings?</p></li>
+<li><p>Why might pandas assign the <code class="docutils literal notranslate"><span class="pre">object</span></code> data type to a column?</p></li>
+</ol>
+<section id="interpreting-info">
+<h4>Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code><a class="headerlink" href="#interpreting-info" title="Link to this heading">#</a></h4>
+<p><strong>Strengths</strong></p>
+<ul class="simple">
+<li><p>Provides a quick overview of the entire dataframe.</p></li>
+<li><p>Identifies columns containing missing values.</p></li>
+<li><p>Helps detect incorrect data types.</p></li>
+<li><p>Remains useful even when the dataframe has many rows.</p></li>
+</ul>
+<p><strong>Limitations</strong></p>
+<ul class="simple">
+<li><p>Does not show distributions, ranges, or unusual values.</p></li>
+<li><p>Does not explain what numerical category codes mean.</p></li>
+<li><p>A column’s storage type is not necessarily its statistical type. For example, diagnosis and sex may be stored as integers even though they are categorical variables.</p></li>
+<li><p>Reports the number of missing observations, but not whether missingness follows a meaningful pattern.</p></li>
+</ul>
+</section>
+</section>
+<section id="numerical-summaries-with-describe">
+<h3>Numerical summaries with <code class="docutils literal notranslate"><span class="pre">describe()</span></code><a class="headerlink" href="#numerical-summaries-with-describe" title="Link to this heading">#</a></h3>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">describe()</span></code> summarizes numerical columns. Its output includes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">count</span></code>: number of non-missing observations;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mean</span></code>: arithmetic mean;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std</span></code>: sample standard deviation;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">max</span></code>: smallest and largest observed values;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">25%</span></code>, <code class="docutils literal notranslate"><span class="pre">50%</span></code>, and <code class="docutils literal notranslate"><span class="pre">75%</span></code>: quartiles of the distribution.</p></li>
+</ul>
+<p>Transposing the output (using <code class="docutils literal notranslate"><span class="pre">.T</span></code>) places variables in rows, which is often easier to read when the dataset contains many columns.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phenotypes</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>min</th>
+      <th>25%</th>
+      <th>50%</th>
+      <th>75%</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>SUB_ID</th>
+      <td>1114.0</td>
+      <td>29329.824057</td>
+      <td>429.595310</td>
+      <td>28675.000</td>
+      <td>28982.250000</td>
+      <td>29292.500000</td>
+      <td>29593.75</td>
+      <td>30256.0</td>
+    </tr>
+    <tr>
+      <th>DX_GROUP</th>
+      <td>1114.0</td>
+      <td>1.532316</td>
+      <td>0.499179</td>
+      <td>1.000</td>
+      <td>1.000000</td>
+      <td>2.000000</td>
+      <td>2.00</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>PDD_DSM_IV_TR</th>
+      <td>595.0</td>
+      <td>0.843697</td>
+      <td>1.063999</td>
+      <td>0.000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2.00</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>AGE_AT_SCAN</th>
+      <td>1114.0</td>
+      <td>14.864374</td>
+      <td>9.161864</td>
+      <td>5.128</td>
+      <td>9.296575</td>
+      <td>11.503593</td>
+      <td>18.00</td>
+      <td>64.0</td>
+    </tr>
+    <tr>
+      <th>SEX</th>
+      <td>1114.0</td>
+      <td>1.231598</td>
+      <td>0.422043</td>
+      <td>1.000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.00</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>HANDEDNESS_CATEGORY</th>
+      <td>1091.0</td>
+      <td>1.183318</td>
+      <td>0.520529</td>
+      <td>1.000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.00</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>HANDEDNESS_SCORES</th>
+      <td>641.0</td>
+      <td>70.937499</td>
+      <td>43.101969</td>
+      <td>-100.000</td>
+      <td>64.290000</td>
+      <td>83.000000</td>
+      <td>100.00</td>
+      <td>100.0</td>
+    </tr>
+    <tr>
+      <th>FIQ</th>
+      <td>1015.0</td>
+      <td>111.023645</td>
+      <td>15.482364</td>
+      <td>49.000</td>
+      <td>101.000000</td>
+      <td>112.000000</td>
+      <td>122.00</td>
+      <td>151.0</td>
+    </tr>
+    <tr>
+      <th>VIQ</th>
+      <td>799.0</td>
+      <td>112.143930</td>
+      <td>16.415442</td>
+      <td>45.000</td>
+      <td>101.000000</td>
+      <td>112.000000</td>
+      <td>124.00</td>
+      <td>156.0</td>
+    </tr>
+    <tr>
+      <th>PIQ</th>
+      <td>872.0</td>
+      <td>108.342890</td>
+      <td>15.989322</td>
+      <td>53.000</td>
+      <td>98.000000</td>
+      <td>109.000000</td>
+      <td>119.00</td>
+      <td>149.0</td>
+    </tr>
+    <tr>
+      <th>CURRENT_MED_STATUS</th>
+      <td>991.0</td>
+      <td>0.168517</td>
+      <td>0.374513</td>
+      <td>0.000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.00</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>EYE_STATUS_AT_SCAN</th>
+      <td>1113.0</td>
+      <td>1.117700</td>
+      <td>0.479416</td>
+      <td>0.000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.00</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>ADI_R_SOCIAL_TOTAL_A</th>
+      <td>302.0</td>
+      <td>18.894040</td>
+      <td>5.925509</td>
+      <td>0.000</td>
+      <td>15.000000</td>
+      <td>19.000000</td>
+      <td>23.00</td>
+      <td>30.0</td>
+    </tr>
+    <tr>
+      <th>ADI_R_VERBAL_TOTAL_BV</th>
+      <td>301.0</td>
+      <td>15.089701</td>
+      <td>4.714014</td>
+      <td>0.000</td>
+      <td>12.000000</td>
+      <td>15.000000</td>
+      <td>19.00</td>
+      <td>25.0</td>
+    </tr>
+    <tr>
+      <th>ADI_R_RRB_TOTAL_C</th>
+      <td>302.0</td>
+      <td>5.705298</td>
+      <td>2.481005</td>
+      <td>0.000</td>
+      <td>4.000000</td>
+      <td>6.000000</td>
+      <td>7.00</td>
+      <td>12.0</td>
+    </tr>
+    <tr>
+      <th>ADOS_MODULE</th>
+      <td>535.0</td>
+      <td>3.371963</td>
+      <td>0.542189</td>
+      <td>1.000</td>
+      <td>3.000000</td>
+      <td>3.000000</td>
+      <td>4.00</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>ADOS_G_TOTAL</th>
+      <td>347.0</td>
+      <td>9.536023</td>
+      <td>4.723664</td>
+      <td>0.000</td>
+      <td>7.000000</td>
+      <td>10.000000</td>
+      <td>13.00</td>
+      <td>23.0</td>
+    </tr>
+    <tr>
+      <th>ADOS_2_TOTAL</th>
+      <td>269.0</td>
+      <td>12.345725</td>
+      <td>4.219203</td>
+      <td>1.000</td>
+      <td>9.000000</td>
+      <td>12.000000</td>
+      <td>15.00</td>
+      <td>25.0</td>
+    </tr>
+    <tr>
+      <th>ADOS_2_SEVERITY_TOTAL</th>
+      <td>264.0</td>
+      <td>6.992424</td>
+      <td>1.928360</td>
+      <td>1.000</td>
+      <td>6.000000</td>
+      <td>7.000000</td>
+      <td>8.00</td>
+      <td>10.0</td>
+    </tr>
+    <tr>
+      <th>SRS_VERSION</th>
+      <td>785.0</td>
+      <td>1.200000</td>
+      <td>0.400255</td>
+      <td>1.000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.00</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>SRS_INFORMANT</th>
+      <td>785.0</td>
+      <td>4.416561</td>
+      <td>3.173307</td>
+      <td>1.000</td>
+      <td>1.000000</td>
+      <td>5.000000</td>
+      <td>8.00</td>
+      <td>9.0</td>
+    </tr>
+    <tr>
+      <th>SRS_TOTAL_RAW</th>
+      <td>785.0</td>
+      <td>55.275159</td>
+      <td>42.868608</td>
+      <td>0.000</td>
+      <td>16.000000</td>
+      <td>43.000000</td>
+      <td>92.00</td>
+      <td>199.0</td>
+    </tr>
+    <tr>
+      <th>SRS_AWARENESS_RAW</th>
+      <td>757.0</td>
+      <td>8.006605</td>
+      <td>5.051189</td>
+      <td>0.000</td>
+      <td>4.000000</td>
+      <td>7.000000</td>
+      <td>12.00</td>
+      <td>21.0</td>
+    </tr>
+    <tr>
+      <th>SRS_COGNITION_RAW</th>
+      <td>757.0</td>
+      <td>9.527081</td>
+      <td>8.323859</td>
+      <td>0.000</td>
+      <td>2.000000</td>
+      <td>7.000000</td>
+      <td>16.00</td>
+      <td>32.0</td>
+    </tr>
+    <tr>
+      <th>SRS_COMMUNICATION_RAW</th>
+      <td>785.0</td>
+      <td>18.239490</td>
+      <td>15.090331</td>
+      <td>0.000</td>
+      <td>5.000000</td>
+      <td>14.000000</td>
+      <td>31.00</td>
+      <td>55.0</td>
+    </tr>
+    <tr>
+      <th>SRS_MOTIVATION_RAW</th>
+      <td>785.0</td>
+      <td>9.463694</td>
+      <td>7.448909</td>
+      <td>0.000</td>
+      <td>3.000000</td>
+      <td>8.000000</td>
+      <td>15.00</td>
+      <td>32.0</td>
+    </tr>
+    <tr>
+      <th>SRS_MANNERISMS_RAW</th>
+      <td>785.0</td>
+      <td>9.864968</td>
+      <td>9.331323</td>
+      <td>0.000</td>
+      <td>1.000000</td>
+      <td>6.000000</td>
+      <td>17.00</td>
+      <td>36.0</td>
+    </tr>
+    <tr>
+      <th>SRS_TOTAL_T</th>
+      <td>756.0</td>
+      <td>59.358466</td>
+      <td>18.818473</td>
+      <td>34.000</td>
+      <td>42.000000</td>
+      <td>53.000000</td>
+      <td>76.00</td>
+      <td>116.0</td>
+    </tr>
+    <tr>
+      <th>SCQ_TOTAL</th>
+      <td>293.0</td>
+      <td>10.839590</td>
+      <td>9.246151</td>
+      <td>0.000</td>
+      <td>3.000000</td>
+      <td>8.000000</td>
+      <td>19.00</td>
+      <td>34.0</td>
+    </tr>
+    <tr>
+      <th>RBSR_6SUBSCALE_TOTAL</th>
+      <td>451.0</td>
+      <td>14.095344</td>
+      <td>18.667554</td>
+      <td>0.000</td>
+      <td>0.000000</td>
+      <td>5.000000</td>
+      <td>21.00</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>MASC_TOTAL_T</th>
+      <td>216.0</td>
+      <td>53.731481</td>
+      <td>11.269722</td>
+      <td>31.000</td>
+      <td>45.750000</td>
+      <td>52.000000</td>
+      <td>61.00</td>
+      <td>88.0</td>
+    </tr>
+    <tr>
+      <th>BRIEF_BRI_T</th>
+      <td>486.0</td>
+      <td>53.563786</td>
+      <td>14.769677</td>
+      <td>34.000</td>
+      <td>41.000000</td>
+      <td>50.000000</td>
+      <td>65.00</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>BRIEF_MI_T</th>
+      <td>485.0</td>
+      <td>54.558763</td>
+      <td>14.402965</td>
+      <td>30.000</td>
+      <td>42.000000</td>
+      <td>52.000000</td>
+      <td>67.00</td>
+      <td>92.0</td>
+    </tr>
+    <tr>
+      <th>BRIEF_GEC_T</th>
+      <td>484.0</td>
+      <td>54.429752</td>
+      <td>14.850017</td>
+      <td>30.000</td>
+      <td>41.000000</td>
+      <td>51.000000</td>
+      <td>68.00</td>
+      <td>96.0</td>
+    </tr>
+    <tr>
+      <th>CBCL_6-18_INTERNAL_T</th>
+      <td>401.0</td>
+      <td>53.748130</td>
+      <td>12.235150</td>
+      <td>33.000</td>
+      <td>45.000000</td>
+      <td>52.000000</td>
+      <td>65.00</td>
+      <td>87.0</td>
+    </tr>
+    <tr>
+      <th>CBCL_6-18_EXTERNAL_T</th>
+      <td>401.0</td>
+      <td>49.022444</td>
+      <td>10.845828</td>
+      <td>32.000</td>
+      <td>41.000000</td>
+      <td>48.000000</td>
+      <td>57.00</td>
+      <td>77.0</td>
+    </tr>
+    <tr>
+      <th>CBCL_6-18_TOTAL_PROBLEM_T</th>
+      <td>400.0</td>
+      <td>52.047500</td>
+      <td>13.477736</td>
+      <td>24.000</td>
+      <td>42.000000</td>
+      <td>51.000000</td>
+      <td>63.00</td>
+      <td>83.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<section id="interpreting-describe">
+<h4>Interpreting <code class="docutils literal notranslate"><span class="pre">describe()</span></code><a class="headerlink" href="#interpreting-describe" title="Link to this heading">#</a></h4>
+<p><strong>Strengths</strong></p>
+<ul class="simple">
+<li><p>Quickly summarizes the center, spread, and range of numerical variables.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">count</span></code> column helps identify variables with missing observations.</p></li>
+<li><p>Minimum and maximum values can reveal impossible or unexpected observations.</p></li>
+<li><p>Differences between the mean and median can suggest a skewed distribution.</p></li>
+</ul>
+<p><strong>Limitations</strong></p>
+<ul class="simple">
+<li><p>Categorical variables (with <code class="docutils literal notranslate"><span class="pre">Dtpye</span> <span class="pre">=</span> <span class="pre">Category</span></code>) are excluded by default.</p></li>
+<li><p>Numerical category codes may be summarized as if they were quantitative measurements.</p></li>
+<li><p>Summary statistics can hide multimodal distributions, outliers, and differences between groups or acquisition sites.</p></li>
+<li><p>A small <code class="docutils literal notranslate"><span class="pre">count</span></code> may indicate structured missingness rather than random data loss.</p></li>
+<li><p>Plausible minimum and maximum values do not guarantee that all observations are valid.</p></li>
+</ul>
+</section>
+</section>
+<section id="id1">
+<h3>Questions<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p>Use the output above to answer the following questions.</p>
+<ol class="arabic simple">
+<li><p>Which variables have the most missing data?</p></li>
+<li><p>Find one variable for which the mean and median differ noticeably. What might cause this difference?</p></li>
+<li><p>Do any minimum or maximum values appear biologically or clinically surprising?</p></li>
+<li><p>Why is calculating a mean for <code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> or <code class="docutils literal notranslate"><span class="pre">SEX</span></code> usually not meaningful?</p></li>
+<li><p>Could two variables have identical means and standard deviations but very different distributions?</p></li>
+</ol>
+</section>
 </section>
 </section>
 
@@ -594,8 +1476,26 @@ cognitive, and behavioral variables.</p>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-the-required-packages">1. Importing the required packages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-and-data-loading">1. Importing and data loading</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-abide-ii-phenotypic-data">Loading the ABIDE-II phenotypic data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-inspection">2. Data inspection</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-random-sample">Inspecting a random sample</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-for-discussion">Questions for discussion</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-inspection">3. Statistical inspection</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-structure-with-info">Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-info">Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-summaries-with-describe">Numerical summaries with <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-describe">Interpreting <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
