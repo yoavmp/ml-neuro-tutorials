@@ -440,26 +440,35 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-and-data-loading">1. Importing and data loading</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-abide-ii-phenotypic-data">Loading the ABIDE-II phenotypic data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-and-data-loading">1. Importing and data loading</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-abide-ii-phenotypic-data">Loading the ABIDE-II phenotypic data</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-inspection">2. Data inspection</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-random-sample">Inspecting a random sample</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-for-discussion">Questions for discussion</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-inspection">3. Statistical inspection</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-structure-with-info">Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-structure-with-info">Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-info">Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#identifying-hidden-categorical-variables">Identifying hidden categorical variables</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#identify-the-variables">Identify the variables</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#why-does-this-matter">Why does this matter?</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-summaries-with-describe">Numerical summaries with <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-describe">Interpreting <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions</a></li>
 </ul>
 </li>
 </ul>
@@ -486,9 +495,8 @@
 <li><p>Detect potential confounding variables</p></li>
 <li><p>Formulate questions for subsequent predictive analysis</p></li>
 </ul>
-</section>
 <section id="before-we-begin">
-<h2>Before we begin<a class="headerlink" href="#before-we-begin" title="Link to this heading">#</a></h2>
+<h3>Before we begin<a class="headerlink" href="#before-we-begin" title="Link to this heading">#</a></h3>
 <p>This exercise uses data from the Autism Brain Imaging Data Exchange II (ABIDE II).</p>
 <p>Before loading the data, answer:</p>
 <ol class="arabic simple">
@@ -496,6 +504,7 @@
 <li><p>Which variables do you expect to be categorical?</p></li>
 <li><p>Which variables could confound a relationship between brain structure and diagnosis?</p></li>
 </ol>
+</section>
 </section>
 <section id="importing-and-data-loading">
 <h2>1. Importing and data loading<a class="headerlink" href="#importing-and-data-loading" title="Link to this heading">#</a></h2>
@@ -511,9 +520,8 @@
 </div>
 </div>
 </div>
-</section>
 <section id="loading-the-abide-ii-phenotypic-data">
-<h2>Loading the ABIDE-II phenotypic data<a class="headerlink" href="#loading-the-abide-ii-phenotypic-data" title="Link to this heading">#</a></h2>
+<h3>Loading the ABIDE-II phenotypic data<a class="headerlink" href="#loading-the-abide-ii-phenotypic-data" title="Link to this heading">#</a></h3>
 <p>The <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/abide_II.html">Autism Brain Imaging Data Exchange II (ABIDE-II)</a> combines neuroimaging and phenotypic data collected across 19 international research sites. The complete phenotypic table contains several hundred variables, including demographic information, diagnostic assessments, cognitive scores, behavioral questionnaires, and acquisition-related variables.</p>
 <p>The meaning and coding of each variable are documented in the official <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf">ABIDE-II Phenotypic Data Legend</a>.</p>
 <p>The complete ABIDE-II phenotypic dataset contains 348 variables. For this
@@ -549,6 +557,7 @@ cognitive, and behavioral variables.</p>
 </div>
 </div>
 </div>
+</section>
 </section>
 <section id="data-inspection">
 <h2>2. Data inspection<a class="headerlink" href="#data-inspection" title="Link to this heading">#</a></h2>
@@ -898,9 +907,8 @@ memory usage: 339.6 KB
 </div>
 </div>
 </div>
-</section>
 <section id="questions">
-<h3>Questions<a class="headerlink" href="#questions" title="Link to this heading">#</a></h3>
+<h4>Questions<a class="headerlink" href="#questions" title="Link to this heading">#</a></h4>
 <p>Examine the output of <code class="docutils literal notranslate"><span class="pre">phenotypes.info()</span></code>.</p>
 <ol class="arabic simple">
 <li><p>How many participants and variables are present?</p></li>
@@ -908,6 +916,7 @@ memory usage: 339.6 KB
 <li><p>Are any categorical variables stored as numbers/strings?</p></li>
 <li><p>Why might pandas assign the <code class="docutils literal notranslate"><span class="pre">object</span></code> data type to a column?</p></li>
 </ol>
+</section>
 <section id="interpreting-info">
 <h4>Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code><a class="headerlink" href="#interpreting-info" title="Link to this heading">#</a></h4>
 <p><strong>Strengths</strong></p>
@@ -926,6 +935,91 @@ memory usage: 339.6 KB
 </ul>
 </section>
 </section>
+<section id="identifying-hidden-categorical-variables">
+<h3>Identifying hidden categorical variables<a class="headerlink" href="#identifying-hidden-categorical-variables" title="Link to this heading">#</a></h3>
+<p>A dataframe’s <strong>storage type</strong> is not necessarily the variable’s <strong>statistical type</strong>.</p>
+<p>For example, pandas initially reads:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SITE_ID</span></code> and <code class="docutils literal notranslate"><span class="pre">FIQ_TEST_TYPE</span></code> as text (<code class="docutils literal notranslate"><span class="pre">object</span></code>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> and <code class="docutils literal notranslate"><span class="pre">SEX</span></code> as integers;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> and <code class="docutils literal notranslate"><span class="pre">CURRENT_MED_STATUS</span></code> as floating-point numbers because they contain missing values.</p></li>
+</ul>
+<p>Nevertheless, all of these variables represent categories rather than numerical measurements. Their numerical codes are labels: arithmetic operations such as calculating their mean are generally not meaningful.</p>
+<p>Before calculating descriptive statistics, we should explicitly tell pandas which variables are categorical.</p>
+<section id="identify-the-variables">
+<h4>Identify the variables<a class="headerlink" href="#identify-the-variables" title="Link to this heading">#</a></h4>
+<p>Using the column names and the <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf">ABIDE-II Phenotypic Data Legend</a>, consider:</p>
+<ol class="arabic simple">
+<li><p>Which numerical columns represent category codes?</p></li>
+<li><p>Which text columns represent a limited set of categories?</p></li>
+<li><p>Should <code class="docutils literal notranslate"><span class="pre">SUB_ID</span></code> be considered a measurement, a category, or an identifier?</p></li>
+<li><p>Is <code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> an ordered severity scale, or does each number identify a different assessment module?</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">categorical_columns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"SITE_ID"</span><span class="p">,</span>
+    <span class="s2">"DX_GROUP"</span><span class="p">,</span>
+    <span class="s2">"PDD_DSM_IV_TR"</span><span class="p">,</span>
+    <span class="s2">"SEX"</span><span class="p">,</span>
+    <span class="s2">"HANDEDNESS_CATEGORY"</span><span class="p">,</span>
+    <span class="s2">"FIQ_TEST_TYPE"</span><span class="p">,</span>
+    <span class="s2">"CURRENT_MED_STATUS"</span><span class="p">,</span>
+    <span class="s2">"EYE_STATUS_AT_SCAN"</span><span class="p">,</span>
+    <span class="s2">"ADOS_MODULE"</span><span class="p">,</span>
+    <span class="s2">"SRS_VERSION"</span><span class="p">,</span>
+    <span class="s2">"SRS_INFORMANT"</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1"># Defining the dtype (data type) to be categorical:</span>
+<span class="n">phenotypes</span><span class="p">[</span><span class="n">categorical_columns</span><span class="p">]</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="n">categorical_columns</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"category"</span><span class="p">)</span>
+
+<span class="c1"># Participant IDs are labels, not numerical measurements.</span>
+<span class="n">phenotypes</span><span class="p">[</span><span class="s2">"SUB_ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="s2">"SUB_ID"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"string"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">category</span></code> dtype tells pandas that these columns contain a finite set of possible groups or labels. Missing values remain missing after the conversion.</p>
+<p>The conversion does not change the meaning of the original codes. For example, the values <code class="docutils literal notranslate"><span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code> in <code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> remain <code class="docutils literal notranslate"><span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code>; pandas now simply knows that they represent categories rather than quantities with a relative distance.</p>
+<p>None of these variables are declared as ordered categories. In particular, the numerical values of <code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> identify different assessment modules and should not be interpreted as increasing levels of autism severity (If you are not sure what the variable stands for - ask the researchers who collected the data! Or in this case - just google it!).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phenotypes</span><span class="p">[</span><span class="n">categorical_columns</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"SUB_ID"</span><span class="p">]]</span><span class="o">.</span><span class="n">dtypes</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>SITE_ID                category
+DX_GROUP               category
+PDD_DSM_IV_TR          category
+SEX                    category
+HANDEDNESS_CATEGORY    category
+FIQ_TEST_TYPE          category
+CURRENT_MED_STATUS     category
+EYE_STATUS_AT_SCAN     category
+ADOS_MODULE            category
+SRS_VERSION            category
+SRS_INFORMANT          category
+SUB_ID                   string
+dtype: object
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="why-does-this-matter">
+<h4>Why does this matter?<a class="headerlink" href="#why-does-this-matter" title="Link to this heading">#</a></h4>
+<p>Correctly assigning categorical data types:</p>
+<ul class="simple">
+<li><p>prevents coded categories from appearing in numerical summaries;</p></li>
+<li><p>makes categorical summaries more informative;</p></li>
+<li><p>helps plotting libraries treat categories as distinct groups;</p></li>
+<li><p>makes the intended meaning of each variable explicit.</p></li>
+</ul>
+<p>However, pandas’ categorical dtype does not automatically prepare a variable for machine-learning models. Later, categorical predictors may require an encoding method such as one-hot encoding (later in the course).</p>
+</section>
+</section>
 <section id="numerical-summaries-with-describe">
 <h3>Numerical summaries with <code class="docutils literal notranslate"><span class="pre">describe()</span></code><a class="headerlink" href="#numerical-summaries-with-describe" title="Link to this heading">#</a></h3>
 <p>By default, <code class="docutils literal notranslate"><span class="pre">describe()</span></code> summarizes numerical columns. Its output includes:</p>
@@ -940,6 +1034,8 @@ memory usage: 339.6 KB
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phenotypes</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+<span class="c1"># And for the categorical variables you can use: </span>
+<span class="c1"># phenotypes.describe(include=["category"]).T</span>
 </pre></div>
 </div>
 </div>
@@ -974,39 +1070,6 @@ memory usage: 339.6 KB
   </thead>
   <tbody>
     <tr>
-      <th>SUB_ID</th>
-      <td>1114.0</td>
-      <td>29329.824057</td>
-      <td>429.595310</td>
-      <td>28675.000</td>
-      <td>28982.250000</td>
-      <td>29292.500000</td>
-      <td>29593.75</td>
-      <td>30256.0</td>
-    </tr>
-    <tr>
-      <th>DX_GROUP</th>
-      <td>1114.0</td>
-      <td>1.532316</td>
-      <td>0.499179</td>
-      <td>1.000</td>
-      <td>1.000000</td>
-      <td>2.000000</td>
-      <td>2.00</td>
-      <td>2.0</td>
-    </tr>
-    <tr>
-      <th>PDD_DSM_IV_TR</th>
-      <td>595.0</td>
-      <td>0.843697</td>
-      <td>1.063999</td>
-      <td>0.000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>2.00</td>
-      <td>3.0</td>
-    </tr>
-    <tr>
       <th>AGE_AT_SCAN</th>
       <td>1114.0</td>
       <td>14.864374</td>
@@ -1014,30 +1077,8 @@ memory usage: 339.6 KB
       <td>5.128</td>
       <td>9.296575</td>
       <td>11.503593</td>
-      <td>18.00</td>
+      <td>18.0</td>
       <td>64.0</td>
-    </tr>
-    <tr>
-      <th>SEX</th>
-      <td>1114.0</td>
-      <td>1.231598</td>
-      <td>0.422043</td>
-      <td>1.000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.00</td>
-      <td>2.0</td>
-    </tr>
-    <tr>
-      <th>HANDEDNESS_CATEGORY</th>
-      <td>1091.0</td>
-      <td>1.183318</td>
-      <td>0.520529</td>
-      <td>1.000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.00</td>
-      <td>3.0</td>
     </tr>
     <tr>
       <th>HANDEDNESS_SCORES</th>
@@ -1047,7 +1088,7 @@ memory usage: 339.6 KB
       <td>-100.000</td>
       <td>64.290000</td>
       <td>83.000000</td>
-      <td>100.00</td>
+      <td>100.0</td>
       <td>100.0</td>
     </tr>
     <tr>
@@ -1058,7 +1099,7 @@ memory usage: 339.6 KB
       <td>49.000</td>
       <td>101.000000</td>
       <td>112.000000</td>
-      <td>122.00</td>
+      <td>122.0</td>
       <td>151.0</td>
     </tr>
     <tr>
@@ -1069,7 +1110,7 @@ memory usage: 339.6 KB
       <td>45.000</td>
       <td>101.000000</td>
       <td>112.000000</td>
-      <td>124.00</td>
+      <td>124.0</td>
       <td>156.0</td>
     </tr>
     <tr>
@@ -1080,30 +1121,8 @@ memory usage: 339.6 KB
       <td>53.000</td>
       <td>98.000000</td>
       <td>109.000000</td>
-      <td>119.00</td>
+      <td>119.0</td>
       <td>149.0</td>
-    </tr>
-    <tr>
-      <th>CURRENT_MED_STATUS</th>
-      <td>991.0</td>
-      <td>0.168517</td>
-      <td>0.374513</td>
-      <td>0.000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.00</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>EYE_STATUS_AT_SCAN</th>
-      <td>1113.0</td>
-      <td>1.117700</td>
-      <td>0.479416</td>
-      <td>0.000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.00</td>
-      <td>2.0</td>
     </tr>
     <tr>
       <th>ADI_R_SOCIAL_TOTAL_A</th>
@@ -1113,7 +1132,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>15.000000</td>
       <td>19.000000</td>
-      <td>23.00</td>
+      <td>23.0</td>
       <td>30.0</td>
     </tr>
     <tr>
@@ -1124,7 +1143,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>12.000000</td>
       <td>15.000000</td>
-      <td>19.00</td>
+      <td>19.0</td>
       <td>25.0</td>
     </tr>
     <tr>
@@ -1135,19 +1154,8 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>4.000000</td>
       <td>6.000000</td>
-      <td>7.00</td>
+      <td>7.0</td>
       <td>12.0</td>
-    </tr>
-    <tr>
-      <th>ADOS_MODULE</th>
-      <td>535.0</td>
-      <td>3.371963</td>
-      <td>0.542189</td>
-      <td>1.000</td>
-      <td>3.000000</td>
-      <td>3.000000</td>
-      <td>4.00</td>
-      <td>4.0</td>
     </tr>
     <tr>
       <th>ADOS_G_TOTAL</th>
@@ -1157,7 +1165,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>7.000000</td>
       <td>10.000000</td>
-      <td>13.00</td>
+      <td>13.0</td>
       <td>23.0</td>
     </tr>
     <tr>
@@ -1168,7 +1176,7 @@ memory usage: 339.6 KB
       <td>1.000</td>
       <td>9.000000</td>
       <td>12.000000</td>
-      <td>15.00</td>
+      <td>15.0</td>
       <td>25.0</td>
     </tr>
     <tr>
@@ -1179,30 +1187,8 @@ memory usage: 339.6 KB
       <td>1.000</td>
       <td>6.000000</td>
       <td>7.000000</td>
-      <td>8.00</td>
+      <td>8.0</td>
       <td>10.0</td>
-    </tr>
-    <tr>
-      <th>SRS_VERSION</th>
-      <td>785.0</td>
-      <td>1.200000</td>
-      <td>0.400255</td>
-      <td>1.000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.00</td>
-      <td>2.0</td>
-    </tr>
-    <tr>
-      <th>SRS_INFORMANT</th>
-      <td>785.0</td>
-      <td>4.416561</td>
-      <td>3.173307</td>
-      <td>1.000</td>
-      <td>1.000000</td>
-      <td>5.000000</td>
-      <td>8.00</td>
-      <td>9.0</td>
     </tr>
     <tr>
       <th>SRS_TOTAL_RAW</th>
@@ -1212,7 +1198,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>16.000000</td>
       <td>43.000000</td>
-      <td>92.00</td>
+      <td>92.0</td>
       <td>199.0</td>
     </tr>
     <tr>
@@ -1223,7 +1209,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>4.000000</td>
       <td>7.000000</td>
-      <td>12.00</td>
+      <td>12.0</td>
       <td>21.0</td>
     </tr>
     <tr>
@@ -1234,7 +1220,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>2.000000</td>
       <td>7.000000</td>
-      <td>16.00</td>
+      <td>16.0</td>
       <td>32.0</td>
     </tr>
     <tr>
@@ -1245,7 +1231,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>5.000000</td>
       <td>14.000000</td>
-      <td>31.00</td>
+      <td>31.0</td>
       <td>55.0</td>
     </tr>
     <tr>
@@ -1256,7 +1242,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>3.000000</td>
       <td>8.000000</td>
-      <td>15.00</td>
+      <td>15.0</td>
       <td>32.0</td>
     </tr>
     <tr>
@@ -1267,7 +1253,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>1.000000</td>
       <td>6.000000</td>
-      <td>17.00</td>
+      <td>17.0</td>
       <td>36.0</td>
     </tr>
     <tr>
@@ -1278,7 +1264,7 @@ memory usage: 339.6 KB
       <td>34.000</td>
       <td>42.000000</td>
       <td>53.000000</td>
-      <td>76.00</td>
+      <td>76.0</td>
       <td>116.0</td>
     </tr>
     <tr>
@@ -1289,7 +1275,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>3.000000</td>
       <td>8.000000</td>
-      <td>19.00</td>
+      <td>19.0</td>
       <td>34.0</td>
     </tr>
     <tr>
@@ -1300,7 +1286,7 @@ memory usage: 339.6 KB
       <td>0.000</td>
       <td>0.000000</td>
       <td>5.000000</td>
-      <td>21.00</td>
+      <td>21.0</td>
       <td>97.0</td>
     </tr>
     <tr>
@@ -1311,7 +1297,7 @@ memory usage: 339.6 KB
       <td>31.000</td>
       <td>45.750000</td>
       <td>52.000000</td>
-      <td>61.00</td>
+      <td>61.0</td>
       <td>88.0</td>
     </tr>
     <tr>
@@ -1322,7 +1308,7 @@ memory usage: 339.6 KB
       <td>34.000</td>
       <td>41.000000</td>
       <td>50.000000</td>
-      <td>65.00</td>
+      <td>65.0</td>
       <td>99.0</td>
     </tr>
     <tr>
@@ -1333,7 +1319,7 @@ memory usage: 339.6 KB
       <td>30.000</td>
       <td>42.000000</td>
       <td>52.000000</td>
-      <td>67.00</td>
+      <td>67.0</td>
       <td>92.0</td>
     </tr>
     <tr>
@@ -1344,7 +1330,7 @@ memory usage: 339.6 KB
       <td>30.000</td>
       <td>41.000000</td>
       <td>51.000000</td>
-      <td>68.00</td>
+      <td>68.0</td>
       <td>96.0</td>
     </tr>
     <tr>
@@ -1355,7 +1341,7 @@ memory usage: 339.6 KB
       <td>33.000</td>
       <td>45.000000</td>
       <td>52.000000</td>
-      <td>65.00</td>
+      <td>65.0</td>
       <td>87.0</td>
     </tr>
     <tr>
@@ -1366,7 +1352,7 @@ memory usage: 339.6 KB
       <td>32.000</td>
       <td>41.000000</td>
       <td>48.000000</td>
-      <td>57.00</td>
+      <td>57.0</td>
       <td>77.0</td>
     </tr>
     <tr>
@@ -1377,7 +1363,7 @@ memory usage: 339.6 KB
       <td>24.000</td>
       <td>42.000000</td>
       <td>51.000000</td>
-      <td>63.00</td>
+      <td>63.0</td>
       <td>83.0</td>
     </tr>
   </tbody>
@@ -1402,9 +1388,8 @@ memory usage: 339.6 KB
 <li><p>Plausible minimum and maximum values do not guarantee that all observations are valid.</p></li>
 </ul>
 </section>
-</section>
 <section id="id1">
-<h3>Questions<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h4>Questions<a class="headerlink" href="#id1" title="Link to this heading">#</a></h4>
 <p>Use the output above to answer the following questions.</p>
 <ol class="arabic simple">
 <li><p>Which variables have the most missing data?</p></li>
@@ -1413,6 +1398,7 @@ memory usage: 339.6 KB
 <li><p>Why is calculating a mean for <code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> or <code class="docutils literal notranslate"><span class="pre">SEX</span></code> usually not meaningful?</p></li>
 <li><p>Could two variables have identical means and standard deviations but very different distributions?</p></li>
 </ol>
+</section>
 </section>
 </section>
 </section>
@@ -1474,26 +1460,35 @@ memory usage: 339.6 KB
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-and-data-loading">1. Importing and data loading</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-abide-ii-phenotypic-data">Loading the ABIDE-II phenotypic data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-and-data-loading">1. Importing and data loading</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-abide-ii-phenotypic-data">Loading the ABIDE-II phenotypic data</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-inspection">2. Data inspection</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-random-sample">Inspecting a random sample</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-for-discussion">Questions for discussion</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-inspection">3. Statistical inspection</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-structure-with-info">Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-structure-with-info">Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-info">Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#identifying-hidden-categorical-variables">Identifying hidden categorical variables</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#identify-the-variables">Identify the variables</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#why-does-this-matter">Why does this matter?</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-summaries-with-describe">Numerical summaries with <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-describe">Interpreting <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions</a></li>
 </ul>
 </li>
 </ul>
