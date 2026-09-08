@@ -443,6 +443,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-the-required-packages">1. Importing the required packages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-abide-ii-phenotypic-data">Loading the ABIDE-II phenotypic data</a></li>
 </ul>
             </nav>
         </div>
@@ -491,8 +492,42 @@
 </pre></div>
 </div>
 </div>
+</div>
+</section>
+<section id="loading-the-abide-ii-phenotypic-data">
+<h2>Loading the ABIDE-II phenotypic data<a class="headerlink" href="#loading-the-abide-ii-phenotypic-data" title="Link to this heading">#</a></h2>
+<p>The <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/abide_II.html">Autism Brain Imaging Data Exchange II (ABIDE-II)</a> combines neuroimaging and phenotypic data collected across 19 international research sites. The complete phenotypic table contains several hundred variables, including demographic information, diagnostic assessments, cognitive scores, behavioral questionnaires, and acquisition-related variables.</p>
+<p>The meaning and coding of each variable are documented in the official <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf">ABIDE-II Phenotypic Data Legend</a>.</p>
+<p>The complete ABIDE-II phenotypic dataset contains 348 variables. For this
+exercise, we will use a curated subset of 39 demographic, diagnostic,
+cognitive, and behavioral variables.</p>
+<p>Some variables are recorded for nearly every participant, whereas others were collected only at particular sites or for particular participant groups.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">PHENOTYPES_URL</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"https://raw.githubusercontent.com/"</span>
+    <span class="s2">"neurohackademy/nh2020-curriculum/"</span>
+    <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b/"</span>
+    <span class="s2">"tu-machine-learning-yarkoni/data/abide2_phenotypic.csv"</span>
+<span class="p">)</span>
+
+<span class="c1"># Use a pre-selected subset of columns from the table:</span>
+<span class="n">COLUMNS_URL</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/config/eda_phenotype_columns.json"</span>
+
+
+<span class="n">phenotypes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PHENOTYPES_URL</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"latin-1"</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">phenotypes</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+<span class="n">phenotypes</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">COLUMNS_URL</span><span class="p">,</span> <span class="n">typ</span><span class="o">=</span><span class="s2">"series"</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="o">.</span><span class="n">shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Data table shape: </span><span class="si">{</span><span class="n">rows</span><span class="p">,</span><span class="n">cols</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> 
+</pre></div>
+</div>
+</div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Matplotlib is building the font cache; this may take a moment.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data table shape: (1114, 39)
 </pre></div>
 </div>
 </div>
@@ -560,6 +595,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-the-required-packages">1. Importing the required packages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-abide-ii-phenotypic-data">Loading the ABIDE-II phenotypic data</a></li>
 </ul>
   </nav></div>
 
