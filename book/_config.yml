@@ -1,0 +1,21 @@
+title: Machine Learning for Neuroscientists
+author: Yoav Melamed
+copyright: "2026"
+logo: logo.png
+
+execute:
+  execute_notebooks: cache
+  timeout: 300
+
+repository:
+  url: https://github.com/yoavmp/ml-neuro-tutorials
+  path_to_book: book
+  branch: main
+
+html:
+  use_repository_button: true
+  use_issues_button: true
+  home_page_in_navbar: true
+
+launch_buttons:
+  colab_url: "https://colab.research.google.com"

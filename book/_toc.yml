@@ -1,0 +1,9 @@
+format: jb-book
+root: intro
+
+chapters:
+  - file: syllabus
+
+  - file: contents
+    sections:
+      - file: chapters/chapter_01/exercise_01
