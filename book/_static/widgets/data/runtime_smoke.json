@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "series": [
+    {
+      "label": "Series A (ascending)",
+      "categories": ["one", "two", "three", "four", "five"],
+      "values": [3, 8, 14, 21, 30]
+    },
+    {
+      "label": "Series B (descending)",
+      "categories": ["one", "two", "three", "four", "five"],
+      "values": [30, 22, 15, 9, 4]
+    },
+    {
+      "label": "Series C (flat-ish)",
+      "categories": ["one", "two", "three", "four", "five"],
+      "values": [12, 13, 11, 14, 12]
+    }
+  ]
+}

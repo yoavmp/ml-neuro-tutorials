@@ -1,0 +1,68 @@
+// Minimal static server for the *built Jupyter Book* (book/_build/html), used by
+// playwright.book.config.ts. No dependencies.
+//
+// Serves the site two ways so the end-to-end test proves the embedded activity
+// works beneath the real GitHub Pages project subpath:
+//
+//   http://localhost:PORT/…                     (site root)
+//   http://localhost:PORT/ml-neuro-tutorials/…  (project subpath)
+//
+// A leading /ml-neuro-tutorials segment is stripped before resolving.
+
+import { createServer } from "node:http";
+import { readFile, stat } from "node:fs/promises";
+import { extname, join, normalize, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const here = fileURLToPath(new URL(".", import.meta.url));
+const ROOT = resolve(here, "..", "..", "book", "_build", "html");
+const PORT = Number(process.env.PORT ?? "4174");
+const SUBPATH = "/ml-neuro-tutorials";
+
+const TYPES = new Map([
+  [".html", "text/html; charset=utf-8"],
+  [".js", "text/javascript; charset=utf-8"],
+  [".mjs", "text/javascript; charset=utf-8"],
+  [".css", "text/css; charset=utf-8"],
+  [".json", "application/json; charset=utf-8"],
+  [".map", "application/json; charset=utf-8"],
+  [".svg", "image/svg+xml"],
+  [".png", "image/png"],
+  [".jpg", "image/jpeg"],
+  [".woff2", "font/woff2"],
+  [".woff", "font/woff"],
+  [".ico", "image/x-icon"],
+]);
+
+const server = createServer(async (req, res) => {
+  try {
+    const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
+    let pathname = decodeURIComponent(url.pathname);
+    if (pathname === SUBPATH || pathname.startsWith(SUBPATH + "/")) {
+      pathname = pathname.slice(SUBPATH.length) || "/";
+    }
+    if (pathname === "/") pathname = "/index.html";
+
+    const target = normalize(join(ROOT, pathname));
+    if (target !== ROOT && !target.startsWith(ROOT + sep)) {
+      res.writeHead(403).end("Forbidden");
+      return;
+    }
+
+    let filePath = target;
+    const info = await stat(filePath).catch(() => null);
+    if (info?.isDirectory()) filePath = join(filePath, "index.html");
+
+    const body = await readFile(filePath);
+    const type = TYPES.get(extname(filePath)) ?? "application/octet-stream";
+    res.writeHead(200, { "content-type": type, "cache-control": "no-store" });
+    res.end(body);
+  } catch {
+    res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+    res.end("Not found");
+  }
+});
+
+server.listen(PORT, () => {
+  process.stdout.write(`serve-book: http://localhost:${PORT}/ (root ${ROOT})\n`);
+});

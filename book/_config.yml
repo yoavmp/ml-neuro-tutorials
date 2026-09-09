@@ -17,10 +17,28 @@ html:
   use_issues_button: true
   home_page_in_navbar: true
 
-launch_buttons:
-  colab_url: "https://colab.research.google.com"
+# WP07: the sphinx-book-theme "Launch on Colab" button is intentionally NOT
+# enabled. Its URL is built from `repository.branch` (main) and the canonical
+# path `book/chapters/chapter_01/exercise_01.ipynb`, so it opens the embedded
+# Jupyter Book notebook (iframes + MyST directives), not the portable notebook.
+# The Chapter 1 opening links to the deterministic portable notebook instead:
+#   book/downloads/chapter_01/exercise_01_portable.ipynb
+
+# The portable notebook is a downloadable artifact (served from raw GitHub on
+# `main`, linked from the Chapter 1 opening), not a book page. Keep Sphinx from
+# treating book/downloads/ as source so it produces no "not in any toctree"
+# warning and is not published under _build/html.
+exclude_patterns:
+  - downloads/*
 
 parse:
   myst_enable_extensions:
     - dollarmath
     - amsmath
+
+sphinx:
+  config:
+    html_css_files:
+      - custom.css
+    html_js_files:
+      - sidebar-toggle-fix.js

@@ -1,0 +1,33 @@
+{
+  "name": "ml-neuro-interactive",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reusable kernel-free browser runtime for ml-neuro-tutorials interactive activities (WP02 smoke runtime).",
+  "engines": {
+    "node": ">=20.19.0 <25"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "serve:static": "node e2e/serve-static.mjs",
+    "serve:book": "node e2e-book/serve-book.mjs",
+    "pretest:e2e": "npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:book": "playwright test --config playwright.book.config.ts",
+    "test": "npm run typecheck && npm run test:unit"
+  },
+  "dependencies": {
+    "plotly.js-cartesian-dist-min": "2.35.2",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.1",
+    "@types/node": "22.10.2",
+    "typescript": "5.6.3",
+    "vite": "5.4.21",
+    "vitest": "2.1.9"
+  }
+}
