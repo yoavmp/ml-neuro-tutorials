@@ -19,3 +19,8 @@ html:
 
 launch_buttons:
   colab_url: "https://colab.research.google.com"
+
+parse:
+  myst_enable_extensions:
+    - dollarmath
+    - amsmath
