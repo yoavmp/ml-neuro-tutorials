@@ -24,3 +24,8 @@ parse:
   myst_enable_extensions:
     - dollarmath
     - amsmath
+
+sphinx:
+  config:
+    html_css_files:
+      - custom.css
