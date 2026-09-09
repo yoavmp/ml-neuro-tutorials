@@ -1,25 +1,18 @@
 # Notebook work-package protocol
 
-WP05 has been reviewed by ChatGPT. Only this work package is now authorized:
+WP06 has been reviewed by ChatGPT and visually tested by Yoav. Only this work package is now authorized:
 
-1. `WP06_NOTEBOOK_EDITORIAL_AND_DESIGN.md`
+1. `WP07_FINAL_CORRECTIONS_AND_PORTABLE_NOTEBOOK.md`
 
-Do not create or begin WP07. After WP06, generate both required reports, commit them, and stop. Yoav will return the main report to ChatGPT for review.
+Do not create or begin WP08. After WP07, generate `reports/WP07_REPORT.md` and `reports/WP07_EXACT_CHANGELOG.md`, commit them, and stop. Yoav will return the main report to ChatGPT.
 
-WP06 uses these commits:
+WP07 uses these commits:
 
 ```text
-checkpoint: before WP06
-WP06: polish EDA notebook content and design
-WP06 report: document editorial and design changes
+checkpoint: before WP07
+WP07: fix notebook UX and add portable Colab version
+WP07 report: document final corrections
 ```
 
 Continue following `CLAUDE_INTERACTIVE_WIDGETS.md`, including the mandatory checkpoint/tag, safety rules, separate implementation/report commits, and prohibition on pushing.
-
-Required reports:
-
-- `WPs/reports/WP06_REPORT.md` — outcome, design decisions, tests, deviations, risks, commits, and concise summary.
-- `WPs/reports/WP06_EXACT_CHANGELOG.md` — an exact, location-specific record of every substantive correction and every cell visibility/type change.
-
-Do not use vague report phrases such as “cleaned wording throughout.” The changelog must let Yoav identify precisely what changed without diffing notebook JSON.
 
