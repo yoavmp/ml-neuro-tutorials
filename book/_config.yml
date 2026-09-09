@@ -24,3 +24,11 @@ parse:
   myst_enable_extensions:
     - dollarmath
     - amsmath
+
+sphinx:
+  extra_extensions:
+    - jupyterlite_sphinx
+  config:
+    jupyterlite_contents:
+      - "chapters/chapter_01/eda_widgets.ipynb"
+    jupyterlite_bind_ipynb_suffix: false

@@ -6,3 +6,8 @@ pandas
 matplotlib
 seaborn
 scikit-learn
+ipywidgets==8.1.9
+jupyterlite-sphinx==0.23.0
+jupyterlite-pyodide-kernel==0.8.5
+voici==0.2.0
+plotly
