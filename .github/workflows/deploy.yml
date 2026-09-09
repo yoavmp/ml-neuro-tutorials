@@ -21,11 +21,65 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: interactive/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: interactive
+        run: npm ci
+
+      - name: Type-check and unit-test the frontend
+        working-directory: interactive
+        run: |
+          npm run typecheck
+          npm run test:unit
+
+      - name: Audit production frontend dependencies
+        working-directory: interactive
+        run: npm audit --omit=dev
+
+      - name: Build the interactive widget app
+        working-directory: interactive
+        run: npm run build
+
+      - name: Validate the committed ABIDE data artifact (offline)
+        run: python scripts/export_widget_data.py --check
+
+      - name: Install Playwright Chromium
+        working-directory: interactive
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end test the standalone widget app
+        working-directory: interactive
+        run: npx playwright test
 
       - name: Build Jupyter Book
         run: jupyter-book build book
+
+      - name: Fail on notebook execution errors
+        run: |
+          shopt -s globstar nullglob
+          reports=(book/_build/**/*.err.log)
+          if (( ${#reports[@]} )); then
+            echo "::error::Notebook execution-error reports were produced:"
+            for f in "${reports[@]}"; do
+              echo "---- $f ----"
+              cat "$f"
+            done
+            exit 1
+          fi
+          echo "No notebook execution-error reports found."
+
+      - name: End-to-end test the built Chapter 1 page
+        working-directory: interactive
+        run: npm run test:e2e:book
 
       - name: Publish website
         uses: peaceiris/actions-gh-pages@v4

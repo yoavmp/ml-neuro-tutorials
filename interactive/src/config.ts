@@ -28,16 +28,52 @@ const runtimeSmokeConfig = z
   })
   .strict();
 
+const histogramVariableRef = z
+  .object({
+    name: z.string().min(1, "variable.name must be a non-empty string"),
+    label: z.string().min(1, "variable.label must be a non-empty string"),
+  })
+  .strict();
+
+const histogramBinSpec = z
+  .object({
+    min: z.number().int().positive(),
+    max: z.number().int().positive(),
+    step: z.number().int().positive(),
+    default: z.number().int().positive(),
+  })
+  .strict();
+
+const edaHistogramConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("eda-histogram"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    variables: z
+      .array(histogramVariableRef)
+      .min(1, "config.variables must list at least one variable"),
+    defaultVariable: z.string().min(1, "config.defaultVariable must be a non-empty string"),
+    bins: histogramBinSpec,
+    xAxisLabel: z.string().min(1).optional(),
+    yAxisLabel: z.string().min(1).optional(),
+    reflectionPrompts: z
+      .array(z.string().min(1))
+      .min(1, "config.reflectionPrompts must list at least one prompt"),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
  */
 export const activityConfigSchema = z.discriminatedUnion("type", [
   runtimeSmokeConfig,
+  edaHistogramConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
 export type RuntimeSmokeConfig = z.infer<typeof runtimeSmokeConfig>;
+export type EdaHistogramConfig = z.infer<typeof edaHistogramConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
@@ -50,6 +86,37 @@ function formatIssues(err: z.ZodError): string {
       return path ? `${path}: ${i.message}` : i.message;
     })
     .join("; ");
+}
+
+/**
+ * Cross-field checks the Zod discriminated union cannot express (its members
+ * must stay plain objects). Returns an error string or null.
+ */
+function checkSemantics(config: ActivityConfig): string | null {
+  if (config.type === "eda-histogram") {
+    const names = config.variables.map((v) => v.name);
+    const duplicates = [...new Set(names.filter((n, i) => names.indexOf(n) !== i))];
+    if (duplicates.length > 0) {
+      return `config.variables has duplicate name(s): ${duplicates.join(", ")}`;
+    }
+    if (!names.includes(config.defaultVariable)) {
+      return (
+        `config.defaultVariable "${config.defaultVariable}" is not one of ` +
+        `config.variables (${names.join(", ")})`
+      );
+    }
+    const { min, max, step, default: dflt } = config.bins;
+    if (min > max) {
+      return `config.bins.min (${min}) must not exceed config.bins.max (${max})`;
+    }
+    if (dflt < min || dflt > max) {
+      return `config.bins.default (${dflt}) must be within [${min}, ${max}]`;
+    }
+    if ((dflt - min) % step !== 0) {
+      return `config.bins.default (${dflt}) must be reachable from min ${min} in steps of ${step}`;
+    }
+  }
+  return null;
 }
 
 /** Validate an already-JSON-parsed value as an activity config. */
@@ -69,6 +136,10 @@ export function parseActivityConfig(raw: unknown): ConfigResult {
   const parsed = activityConfigSchema.safeParse(raw);
   if (!parsed.success) {
     return { ok: false, error: `Invalid config: ${formatIssues(parsed.error)}` };
+  }
+  const semantic = checkSemantics(parsed.data);
+  if (semantic) {
+    return { ok: false, error: `Invalid config: ${semantic}` };
   }
   return { ok: true, config: parsed.data };
 }

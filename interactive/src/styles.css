@@ -51,8 +51,15 @@ body {
 .widget-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.widget-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -67,6 +74,52 @@ body {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
+}
+
+.widget-controls input[type="range"] {
+  vertical-align: middle;
+  accent-color: #2a6f9e;
+  min-width: 160px;
+  max-width: 60vw;
+}
+
+.widget-bin-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 2.5ch;
+  text-align: right;
+}
+
+.widget-instructions {
+  margin: 0 0 12px;
+}
+
+.widget-stats {
+  margin: 0 0 8px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.widget-empty {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.widget-subhead {
+  font-size: 1rem;
+  margin: 16px 0 4px;
+}
+
+.widget-prompts {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.widget-prompts li {
+  margin: 4px 0;
 }
 
 .widget-plot {

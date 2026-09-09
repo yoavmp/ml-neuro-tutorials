@@ -3,6 +3,10 @@
 book/_build/
 .DS_Store
 
+# Python caches
+__pycache__/
+*.pyc
+
 # Jupyter autosave/checkpoint caches
 .ipynb_checkpoints/
 
