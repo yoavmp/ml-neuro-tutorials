@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "type": "eda-histogram",
+  "title": "ABIDE-II variable distributions",
+  "description": "Course activity for Chapter 1 EDA: inspect how bin count changes the shape of a distribution, and compare variables with different sample sizes.",
+  "instructions": "Pick a variable and drag the slider to change the number of histogram bins. Predict what the change will do before you move it: fewer bins hide structure, more bins turn random noise into apparent peaks.",
+  "data": "../data/abide_histogram.json",
+  "variables": [
+    { "name": "AGE_AT_SCAN", "label": "Age at scan (years)" },
+    { "name": "FIQ", "label": "Full-scale IQ" },
+    { "name": "VIQ", "label": "Verbal IQ" },
+    { "name": "PIQ", "label": "Performance IQ" },
+    { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
+    { "name": "ADOS_2_TOTAL", "label": "ADOS-2 total" },
+    { "name": "SRS_TOTAL_RAW", "label": "SRS total (raw)" },
+    { "name": "SCQ_TOTAL", "label": "SCQ total" }
+  ],
+  "defaultVariable": "AGE_AT_SCAN",
+  "bins": { "min": 5, "max": 60, "step": 1, "default": 25 },
+  "xAxisLabel": "Value",
+  "yAxisLabel": "Number of participants",
+  "reflectionPrompts": [
+    "Before moving the slider, predict what information disappears with very few bins and what artefacts appear with very many.",
+    "Compare age, an IQ score, and a questionnaire score. Which variable needs the most bins before its shape is readable?",
+    "Read the available N and missing N for each variable. Why do ADOS and SCQ totals have so many fewer observations than age?"
+  ]
+}

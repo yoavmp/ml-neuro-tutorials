@@ -1,0 +1,358 @@
+/* ==========================================================================
+   ml-neuro-tutorials — course visual layer (WP06)
+
+   A small, documented layer over sphinx-book-theme / pydata-sphinx-theme.
+   It re-tints the theme toward the palette of the sibling course site
+   (asafmm.github.io/ml_for_neuro) — restrained rust accent, near-black
+   violet ink, cool-grey page vs. white surface, serif headings, monospace
+   for eyebrows / tables / toggles — WITHOUT copying any of its prose,
+   markup, scripts, fonts, or assets. System / local fonts only; no CDN.
+
+   Scope: rules are kept inside `.bd-article` (the notebook body) or target
+   pydata design tokens, so navigation, search, and Plotly internals are
+   left alone. `!important` is used only where noted (theme token defaults /
+   reduced-motion / print) and is listed in WP06_REPORT.md.
+   ========================================================================== */
+
+:root {
+  /* ---- course palette (light) ---------------------------------------- */
+  --ml-ink: #1b1826;          /* headings / strong text                   */
+  --ml-body: #423c53;         /* body copy — darkened from the sibling    */
+                              /* site's #5c5674 to clear WCAG AA on #fff  */
+  --ml-muted: #5c5674;        /* captions, secondary text                 */
+  --ml-faint: #8b85a3;        /* de-emphasised metadata                   */
+  --ml-border: #d9d9e3;
+  --ml-border-strong: #c4c4d4;
+  --ml-accent: #dd5f1b;       /* decorative rust (borders, markers)       */
+  --ml-accent-ink: #ad4a12;   /* rust for text / links — AA on #fff       */
+  --ml-accent-soft: #fbeee4;
+  --ml-page: #eceef4;
+  --ml-surface: #ffffff;
+  --ml-surface-alt: #f4f4f9;
+  --ml-success: #0e7c7b;
+  --ml-warning: #b8365a;
+  --ml-code-bg: #f7f7fb;
+
+  --ml-font-serif: Georgia, "Iowan Old Style", "Palatino Linotype",
+    "Times New Roman", "Nimbus Roman", serif;
+  --ml-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", "DejaVu Sans Mono", monospace;
+
+  --ml-measure: 46rem;        /* comfortable text column                  */
+  --ml-radius: 10px;
+}
+
+/* Re-map the theme's own tokens (light). These selectors match the
+   specificity pydata uses to set them, so no `!important` is needed. */
+html[data-theme="light"] {
+  --pst-color-primary: #ad4a12;
+  --pst-color-primary-highlight: #dd5f1b;
+  --pst-color-link: #ad4a12;
+  --pst-color-link-hover: #dd5f1b;
+  --pst-color-accent: #dd5f1b;
+  --pst-color-text-base: #1b1826;
+  --pst-color-text-muted: #5c5674;
+  --pst-color-heading: #1b1826;
+  --pst-color-border: #d9d9e3;
+  --pst-color-surface: #f4f4f9;
+  --pst-color-target: #fbeee4;
+  --pst-color-inline-code: #ad4a12;
+}
+
+/* Dark mode: keep the theme's dark surfaces, lift the accent so it stays
+   legible on a dark background. */
+html[data-theme="dark"] {
+  --ml-ink: #ece9f5;
+  --ml-body: #cdc8db;
+  --ml-muted: #a9a3bd;
+  --ml-faint: #8a839c;
+  --ml-border: #3a3450;
+  --ml-border-strong: #4a4363;
+  --ml-accent: #f0915c;
+  --ml-accent-ink: #f0915c;
+  --ml-accent-soft: #33261d;
+  --ml-surface: #1c1a26;
+  --ml-surface-alt: #24222f;
+  --ml-code-bg: #201e2b;
+
+  --pst-color-primary: #f0915c;
+  --pst-color-primary-highlight: #f7ad82;
+  --pst-color-link: #f0915c;
+  --pst-color-link-hover: #f7ad82;
+  --pst-color-accent: #f0915c;
+  --pst-color-inline-code: #f0915c;
+}
+
+/* --------------------------------------------------------------------------
+   Typography & rhythm
+   -------------------------------------------------------------------------- */
+.bd-article {
+  color: var(--ml-body);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.bd-article h1,
+.bd-article h2,
+.bd-article h3,
+.bd-article h4 {
+  font-family: var(--ml-font-serif);
+  color: var(--ml-ink);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+.bd-article h1 { font-size: 2.35rem; line-height: 1.12; margin-bottom: 0.6em; }
+.bd-article h2 { font-size: 1.6rem; margin-top: 2.4rem; }
+.bd-article h3 { font-size: 1.22rem; margin-top: 1.9rem; }
+.bd-article h4 { font-size: 1.03rem; margin-top: 1.4rem; }
+
+/* Keep anchored headings clear of the sticky article header. */
+.bd-article :is(h1, h2, h3, h4, h5, h6),
+.bd-article :target {
+  scroll-margin-top: 4.5rem;
+}
+
+/* Readable measure for prose without squeezing figures, tables, activities. */
+.bd-article > section > p,
+.bd-article > section > ul,
+.bd-article > section > ol,
+.bd-article > section > blockquote {
+  max-width: var(--ml-measure);
+}
+
+/* --------------------------------------------------------------------------
+   Tables — dataframe output and MyST/Markdown tables
+   -------------------------------------------------------------------------- */
+.bd-article .cell_output .output,
+.bd-article .cell_output .output.text_html {
+  overflow-x: auto;          /* wide tables scroll here, not the page */
+  max-width: 100%;
+}
+
+.bd-article table.dataframe {
+  border-collapse: collapse;
+  border: 1px solid var(--ml-border);
+  font-family: var(--ml-font-mono);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+.bd-article table.dataframe thead th {
+  background: var(--ml-surface-alt);
+  color: var(--ml-ink);
+  font-weight: 600;
+  text-align: right;
+  border-bottom: 2px solid var(--ml-border-strong);
+  padding: 6px 10px;
+}
+.bd-article table.dataframe tbody th {
+  background: var(--ml-surface-alt);
+  text-align: left;
+  font-weight: 600;
+  padding: 5px 10px;
+}
+.bd-article table.dataframe td {
+  text-align: right;
+  padding: 5px 10px;
+  border-top: 1px solid var(--ml-border);
+}
+.bd-article table.dataframe tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--ml-surface-alt) 55%, transparent);
+}
+.bd-article table.dataframe tbody tr:hover td {
+  background: var(--ml-accent-soft);
+}
+
+/* Markdown / MyST tables (the missing-data, Pearson-vs-Spearman, and
+   association-view tables in the prose). */
+.bd-article table.table:not(.dataframe),
+.bd-article .table:not(.dataframe) {
+  border: 1px solid var(--ml-border);
+}
+.bd-article table.table:not(.dataframe) thead th {
+  background: var(--ml-surface-alt);
+  border-bottom: 2px solid var(--ml-border-strong);
+}
+
+/* --------------------------------------------------------------------------
+   Admonitions: "Think first" question cards, the how-to note, the challenge
+   -------------------------------------------------------------------------- */
+.bd-article .admonition.think-first,
+.bd-article .admonition.challenge,
+.bd-article .admonition.how-to-use {
+  border: 1px solid var(--ml-border-strong);
+  border-left: 4px solid var(--ml-accent);
+  border-radius: var(--ml-radius);
+  box-shadow: none;
+  background: var(--ml-surface);
+}
+.bd-article .admonition.think-first > .admonition-title,
+.bd-article .admonition.challenge > .admonition-title,
+.bd-article .admonition.how-to-use > .admonition-title {
+  background: var(--ml-accent-soft);
+  color: var(--ml-accent-ink);
+  font-family: var(--ml-font-mono);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+/* Replace the theme's default admonition icon with a small typographic mark. */
+.bd-article .admonition.think-first > .admonition-title::after,
+.bd-article .admonition.challenge > .admonition-title::after,
+.bd-article .admonition.how-to-use > .admonition-title::after {
+  content: none;
+}
+.bd-article .admonition.think-first > .admonition-title::before {
+  content: "?";
+}
+.bd-article .admonition.challenge > .admonition-title::before {
+  content: "\2691"; /* flag */
+}
+.bd-article .admonition.how-to-use > .admonition-title::before {
+  content: "\2139"; /* info */
+}
+.bd-article .admonition.think-first > .admonition-title::before,
+.bd-article .admonition.challenge > .admonition-title::before,
+.bd-article .admonition.how-to-use > .admonition-title::before {
+  font-family: var(--ml-font-mono);
+  color: var(--ml-accent-ink);
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  width: auto;
+  height: auto;
+  margin-right: 0.55rem;
+  font-size: 0.9rem;
+}
+
+/* --------------------------------------------------------------------------
+   Revealable answers (sphinx-design dropdowns)
+   -------------------------------------------------------------------------- */
+.bd-article details.sd-dropdown {
+  border: 1px solid var(--ml-border-strong) !important;
+  border-radius: var(--ml-radius) !important;
+  box-shadow: none !important;
+}
+.bd-article details.sd-dropdown > .sd-summary-title {
+  background: var(--ml-surface-alt) !important;
+  color: var(--ml-accent-ink) !important;
+  font-family: var(--ml-font-mono);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+.bd-article details.sd-dropdown[open] > .sd-summary-title {
+  border-bottom: 1px solid var(--ml-border);
+}
+.bd-article details.sd-dropdown > .sd-summary-title .sd-summary-icon svg {
+  color: var(--ml-accent-ink);
+}
+
+/* --------------------------------------------------------------------------
+   Code input / output and the "show code cell source" toggle
+   -------------------------------------------------------------------------- */
+.bd-article .cell_input {
+  border: 1px solid var(--ml-border);
+  border-left: 3px solid var(--ml-border-strong);
+  border-radius: 8px;
+  background: var(--ml-code-bg);
+  overflow: hidden;
+}
+.bd-article .cell_input div.highlight,
+.bd-article div.highlight {
+  background: transparent;
+}
+
+/* togglebutton — the collapsed/expanded bar shown for hide-input / hide-cell */
+.bd-article .toggle-button,
+.bd-article button.toggle-button {
+  color: var(--ml-accent-ink);
+}
+.bd-article .cell .above-input.admonition,
+.bd-article .cell details.above-input > summary {
+  font-family: var(--ml-font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--ml-accent-ink);
+  background: var(--ml-surface-alt);
+  border: 1px dashed var(--ml-border-strong);
+  border-radius: 6px;
+}
+.bd-article .cell .above-input.admonition .admonition-title {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Interactive activity iframes — one consistent card for all three
+   -------------------------------------------------------------------------- */
+.bd-article iframe.ml-activity,
+.bd-article iframe[src*="/widgets/app/"] {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--ml-border-strong);
+  border-radius: var(--ml-radius);
+  background: var(--ml-surface);
+  box-shadow: 0 1px 3px rgba(27, 24, 38, 0.07);
+  margin: 1.4rem 0;
+}
+
+/* --------------------------------------------------------------------------
+   Links & focus visibility
+   -------------------------------------------------------------------------- */
+.bd-article a {
+  text-underline-offset: 0.15em;
+}
+.bd-article a:hover {
+  text-decoration-thickness: 2px;
+}
+.bd-article a:focus-visible,
+.bd-article button:focus-visible,
+.bd-article summary:focus-visible,
+.bd-article details.sd-dropdown > .sd-summary-title:focus-visible,
+.bd-article .admonition.think-first :focus-visible {
+  outline: 2px solid var(--ml-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   Motion & print
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .bd-article .admonition.think-first,
+  .bd-article .admonition.challenge,
+  .bd-article .admonition.how-to-use {
+    border: 1px solid #888 !important;
+    border-left: 3px solid #888 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+  .bd-article details.sd-dropdown {
+    border: 1px solid #888 !important;
+  }
+  .bd-article details.sd-dropdown > .sd-summary-title {
+    background: #f0f0f0 !important;
+    color: #000 !important;
+  }
+  /* Reveal any open answer content and keep summaries readable in print. */
+  .bd-article details.sd-dropdown[open] > .sd-summary-content {
+    display: block !important;
+  }
+  .bd-article table.dataframe {
+    font-size: 8.5pt;
+  }
+  .bd-article iframe.ml-activity {
+    border: 1px solid #888 !important;
+  }
+}

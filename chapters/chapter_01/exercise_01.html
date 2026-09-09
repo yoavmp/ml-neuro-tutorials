@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Exercise I: Exploratory Data Analysis (EDA) &#8212; Machine Learning for Neuroscientists</title>
+    <title>Exercise 1 — Exploratory data analysis (EDA) &#8212; Machine Learning for Neuroscientists</title>
   
   
   
@@ -37,6 +37,8 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=9616796a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-BXTsUyV7.css?v=28f74268" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -64,6 +66,8 @@
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_01/exercise_01';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
+    <script src="../../_static/widgets/app/assets/index-BcGyPnzB.js?v=7b9d9ebf"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="prev" title="Contents" href="../../contents.html" />
@@ -216,7 +220,7 @@
         </ul>
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../contents.html">Contents</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise I: Exploratory Data Analysis (EDA)</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 1 — Exploratory data analysis (EDA)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -265,37 +269,6 @@
         <div class="header-article-item">
 
 <div class="article-header-buttons">
-
-
-
-
-
-<div class="dropdown dropdown-launch-buttons">
-  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
-    <i class="fas fa-rocket"></i>
-  </button>
-  <ul class="dropdown-menu">
-      
-      
-      
-      <li><a href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/chapters/chapter_01/exercise_01.ipynb" target="_blank"
-   class="btn btn-sm dropdown-item"
-   title="Launch on Colab"
-   data-bs-placement="left" data-bs-toggle="tooltip"
->
-  
-
-<span class="btn__icon-container">
-  
-    <img alt="Colab logo" src="../../_static/images/logo_colab.png">
-  </span>
-<span class="btn__text-container">Colab</span>
-</a>
-</li>
-      
-  </ul>
-</div>
-
 
 
 
@@ -432,7 +405,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Exercise I: Exploratory Data Analysis (EDA)</h1>
+    <h1>Exercise 1 — Exploratory data analysis (EDA)</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -442,59 +415,54 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#about-this-exercise">About this exercise</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-and-data-loading">1. Importing and data loading</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-inspection">2. Data inspection</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-random-sample">Inspecting a random sample</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-for-discussion">Questions for discussion</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-inspection">3. Statistical inspection</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-structure-with-info">Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-info">Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#identifying-hidden-categorical-variables">Identifying hidden categorical variables</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#identify-the-variables">Identify the variables</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#why-does-this-matter">Why does this matter?</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-summaries-with-describe">Numerical summaries with <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-describe">Interpreting <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#missing-values">4. Missing values</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantifying-missing-values">Quantifying missing values</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Questions</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#is-missingness-distributed-randomly">Is missingness distributed randomly?</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpret-the-heatmap">Interpret the heatmap</a></li>
-</ul>
-</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantifying-missing-values">Quantifying missing values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#is-missingness-distributed-randomly">Is missingness distributed randomly?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#design-a-complete-case-dataset">Design a complete-case dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#complete-case-retention-explorer">Complete-case retention explorer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#your-decision">Your decision</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approaches-to-missing-data">Common approaches to missing data</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-incomplete-observations">Removing incomplete observations</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Questions</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imputing-a-numerical-variable">Imputing a numerical variable</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#question">Question</a></li>
-</ul>
-</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approach">Common approach:</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributions-and-feature-correlations">5. Distributions and feature correlations</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-distributions">Numerical distributions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-yourself">Try it yourself</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-numerical-distributions">Explore numerical distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reading-a-distribution">Reading a distribution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-a-variable-across-groups">Comparing a variable across groups</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#range-checks-and-flagged-values">Range checks and flagged values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pearson-spearman-and-the-sample-behind-each-number">Pearson, Spearman, and the sample behind each number</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-correlations-yourself">Explore correlations yourself</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-a-correlation-matrix-is-the-wrong-tool">When a correlation matrix is the wrong tool</a></li>
 </ul>
 </li>
 </ul>
@@ -508,25 +476,93 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="exercise-i-exploratory-data-analysis-eda">
-<h1>Exercise I: Exploratory Data Analysis (EDA)<a class="headerlink" href="#exercise-i-exploratory-data-analysis-eda" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-1-exploratory-data-analysis-eda">
+<h1>Exercise 1 — Exploratory data analysis (EDA)<a class="headerlink" href="#exercise-1-exploratory-data-analysis-eda" title="Link to this heading">#</a></h1>
+<p>This exercise applies <strong>exploratory data analysis (EDA)</strong> to the phenotypic
+table of the Autism Brain Imaging Data Exchange II (ABIDE-II). We inspect the
+table’s structure, convert coded variables to categories, quantify and reason
+about missing data, describe and compare distributions, and read correlations
+together with the sample size behind each number. The aim is not a predictive
+model but a defensible understanding of the data before any modelling begins.</p>
+<div class="how-to-use admonition">
+<p class="admonition-title">Run or download this notebook</p>
+<p>This page is fully readable as it is, and the interactive activities work
+here in the browser. To <strong>run or change the Python code</strong>, use the portable
+version of the notebook:</p>
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_01/exercise_01_portable.ipynb">Open the portable notebook in Colab</a></strong></p></li>
+<li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_01/exercise_01_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
+for VS Code or Jupyter</p></li>
+</ul>
+<p>The portable notebook keeps every Python analysis cell and swaps the three
+embedded activities for links back to this page.</p>
+</div>
+<section id="about-this-exercise">
+<h2>About this exercise<a class="headerlink" href="#about-this-exercise" title="Link to this heading">#</a></h2>
+<p>This notebook is the hands-on part of Chapter 1 and follows the short tutor
+presentation on EDA. It is designed to work two ways:</p>
+<ul class="simple">
+<li><p><strong>Guided tutorial</strong> — worked through together in a session.</p></li>
+<li><p><strong>Self-study</strong> — read from top to bottom on your own. The three interactive
+activities need no Python kernel.</p></li>
+</ul>
+<p>Questions are placed throughout the notebook. They are there to move past
+simply running code toward explaining the analytical choices behind it, and
+the kind of reasoning they ask for is close to what course assessment and
+exam questions expect. Some questions have a <strong>Check your reasoning</strong>
+dropdown that walks through the argument; open discussion questions are
+deliberately left without one fixed answer.</p>
+<p><strong>Prerequisites:</strong> basic Python and a first acquaintance with <code class="docutils literal notranslate"><span class="pre">pandas</span></code>,
+<code class="docutils literal notranslate"><span class="pre">NumPy</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>, and <code class="docutils literal notranslate"><span class="pre">seaborn</span></code>. Run the cells in order from the top.
+The data is read from a pinned public URL, so the notebook needs internet
+access the first time it runs.</p>
+<div class="how-to-use admonition">
+<p class="admonition-title">How to use this notebook</p>
+<ul class="simple">
+<li><p>Work through the sections in order, and pause at each <strong>Think first</strong> card
+to commit to an answer before you read on.</p></li>
+<li><p>Some activities are interactive and run directly in your browser, with
+nothing to install.</p></li>
+<li><p>To execute the code cells or change the code yourself, open the notebook in
+Colab or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> version using the links at the top
+of this notebook.</p></li>
+<li><p>Some answers and checklists are revealable in a <strong>Check your reasoning</strong>
+dropdown; open questions may not have one fixed answer.</p></li>
+</ul>
+</div>
+</section>
 <section id="learning-objectives">
 <h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading">#</a></h2>
-<p>By the end of this exercise, you should be able to:</p>
+<p>By the end of this exercise you should be able to:</p>
 <ul class="simple">
-<li><p>Inspect the dimensions and variables of a dataset</p></li>
-<li><p>Distinguish categorical and numerical variables</p></li>
-<li><p>Identify missing values and unusual observations</p></li>
-<li><p>Visualize univariate and multivariate distributions</p></li>
-<li><p>Detect potential confounding variables</p></li>
-<li><p>Formulate questions for subsequent predictive analysis</p></li>
+<li><p>inspect a dataset’s rows, schema, data types, and summary statistics;</p></li>
+<li><p>convert encoded variables into meaningful categorical representations;</p></li>
+<li><p>quantify missing data and reason about whether it is related to acquisition
+site or diagnosis;</p></li>
+<li><p>compare strategies for missing data (keep, drop, impute) and explain why
+imputation parameters must be learned from training data only;</p></li>
+<li><p>describe and compare distributions, including centre, spread, skew, and
+differences between groups;</p></li>
+<li><p>flag unusual values for inspection without automatically deleting them;</p></li>
+<li><p>choose an association view that matches the types of the variables involved;</p></li>
+<li><p>interpret Pearson and Spearman correlations alongside the pairwise-complete
+sample size and possible grouping or confounding.</p></li>
 </ul>
-<section id="before-we-begin">
-<h3>Before we begin<a class="headerlink" href="#before-we-begin" title="Link to this heading">#</a></h3>
-<p>We will be using data from the Autism Brain Imaging Data Exchange II (ABIDE II).
-When we load data or perform actions that are less relevant for the current session,
-we will sometimes hide code cells to make the notebook simpler.
-However, you can check them out and expand your knowledge!</p>
+<section id="what-this-notebook-covers">
+<h3>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Importing and data loading</strong> — the curated ABIDE-II phenotypic subset.</p></li>
+<li><p><strong>Data inspection</strong> — <code class="docutils literal notranslate"><span class="pre">head</span></code>/<code class="docutils literal notranslate"><span class="pre">sample</span></code>, and spotting categories stored as
+numbers.</p></li>
+<li><p><strong>Statistical inspection</strong> — <code class="docutils literal notranslate"><span class="pre">info()</span></code> and <code class="docutils literal notranslate"><span class="pre">describe()</span></code>, and their blind
+spots.</p></li>
+<li><p><strong>Missing values</strong> — quantifying missingness, its pattern across sites and
+diagnosis, and strategies for handling it (with the complete-case
+retention explorer).</p></li>
+<li><p><strong>Distributions and feature correlations</strong> — reading one distribution,
+comparing across groups, range checks, Pearson/Spearman with the
+pairwise-complete N, and the correlation explorer.</p></li>
+</ol>
 </section>
 </section>
 <section id="importing-and-data-loading">
@@ -552,12 +588,9 @@ However, you can check them out and expand your knowledge!</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Loading the ABIDE-II phenotypic data</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
-<p class="sd-card-text">The <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/abide_II.html">Autism Brain Imaging Data Exchange II (ABIDE-II)</a> combines neuroimaging and phenotypic data collected across 19 international research sites. The complete phenotypic table contains several hundred variables, including demographic information, diagnostic assessments, cognitive scores, behavioral questionnaires, and acquisition-related variables.</p>
-<p class="sd-card-text">The meaning and coding of each variable are documented in the official <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf">ABIDE-II Phenotypic Data Legend</a>.</p>
-<p class="sd-card-text">The complete ABIDE-II phenotypic dataset contains 348 variables. For this
-exercise, we will use a curated subset of 39 demographic, diagnostic,
-cognitive, and behavioral variables.</p>
-<p class="sd-card-text">Some variables are recorded for nearly every participant, whereas others were collected only at particular sites or for particular participant groups.</p>
+<p class="sd-card-text">The <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/abide_II.html">Autism Brain Imaging Data Exchange II (ABIDE-II)</a> combines neuroimaging and phenotypic data collected across 19 international research sites. The full phenotypic table has 348 variables — demographics, diagnostic assessments, cognitive scores, behavioral questionnaires, and acquisition-related fields.</p>
+<p class="sd-card-text">For this exercise we use a curated subset of 39 demographic, diagnostic, cognitive, and behavioral variables. The meaning and coding of every variable are documented in the official <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf">ABIDE-II Phenotypic Data Legend</a>.</p>
+<p class="sd-card-text">Some variables are recorded for nearly every participant; others were collected only at particular sites or for particular participant groups.</p>
 </div>
 </details><div class="cell tag_hide-cell docutils container">
 <details class="admonition hide above-input">
@@ -856,9 +889,8 @@ cognitive, and behavioral variables.</p>
 <p>8 rows × 39 columns</p>
 </div></div></div>
 </div>
-</section>
-<section id="questions-for-discussion">
-<h3>Questions for discussion<a class="headerlink" href="#questions-for-discussion" title="Link to this heading">#</a></h3>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
 <p>Examine the sampled rows and the column names before continuing.</p>
 <ol class="arabic simple">
 <li><p><strong>What does each row represent?</strong></p></li>
@@ -867,6 +899,7 @@ Remember that categorical variables are not necessarily stored as text. Some cat
 <li><p><strong>Are there variables or subjects that seem problematic already?</strong></p></li>
 </ol>
 <p>Answer before inspecting the complete data summary.</p>
+</div>
 </section>
 </section>
 <section id="statistical-inspection">
@@ -944,16 +977,15 @@ memory usage: 339.6 KB
 </div>
 </div>
 </div>
-<section id="questions">
-<h4>Questions<a class="headerlink" href="#questions" title="Link to this heading">#</a></h4>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
 <p>Examine the output of <code class="docutils literal notranslate"><span class="pre">phenotypes.info()</span></code>.</p>
 <ol class="arabic simple">
 <li><p>How many participants and variables are present?</p></li>
 <li><p>Which variables contain missing observations?</p></li>
 <li><p>Are any categorical variables stored as numbers/strings?</p></li>
-<li><p>Why might pandas assign the <code class="docutils literal notranslate"><span class="pre">object</span></code> data type to a column?</p></li>
 </ol>
-</section>
+</div>
 <section id="interpreting-info">
 <h4>Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code><a class="headerlink" href="#interpreting-info" title="Link to this heading">#</a></h4>
 <p><strong>Strengths</strong></p>
@@ -983,8 +1015,9 @@ memory usage: 339.6 KB
 </ul>
 <p>Nevertheless, all of these variables represent categories rather than numerical measurements. Their numerical codes are labels: arithmetic operations such as calculating their mean are generally not meaningful.</p>
 <p>Before calculating descriptive statistics, we should explicitly tell pandas which variables are categorical.</p>
-<section id="identify-the-variables">
-<h4>Identify the variables<a class="headerlink" href="#identify-the-variables" title="Link to this heading">#</a></h4>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p><strong>Identify the variables.</strong></p>
 <p>Using the column names and the <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf">ABIDE-II Phenotypic Data Legend</a>, consider:</p>
 <ol class="arabic simple">
 <li><p>Which numerical columns represent category codes?</p></li>
@@ -992,6 +1025,7 @@ memory usage: 339.6 KB
 <li><p>Should <code class="docutils literal notranslate"><span class="pre">SUB_ID</span></code> be considered a measurement, a category, or an identifier?</p></li>
 <li><p>Is <code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> an ordered severity scale, or does each number identify a different assessment module?</p></li>
 </ol>
+</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">categorical_columns</span> <span class="o">=</span> <span class="p">[</span>
@@ -1018,8 +1052,8 @@ memory usage: 339.6 KB
 </div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">category</span></code> dtype tells pandas that these columns contain a finite set of possible groups or labels. Missing values remain missing after the conversion.</p>
-<p>The conversion does not change the meaning of the original codes. For example, the values <code class="docutils literal notranslate"><span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code> in <code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> remain <code class="docutils literal notranslate"><span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code>; pandas now simply knows that they represent categories rather than quantities with a relative distance.</p>
-<p>None of these variables are declared as ordered categories. In particular, the numerical values of <code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> identify different assessment modules and should not be interpreted as increasing levels of autism severity (If you are not sure what the variable stands for - ask the researchers who collected the data! Or in this case - just google it!).</p>
+<p>The conversion does not change the meaning of the original codes. For example, the values <code class="docutils literal notranslate"><span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code> in <code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> remain <code class="docutils literal notranslate"><span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code>; pandas now simply knows that they represent categories rather than quantities with a meaningful distance between them.</p>
+<p>None of these variables are declared as <em>ordered</em> categories. In particular, the numbers in <code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> identify different assessment modules and must not be read as increasing levels of autism severity. When the meaning of a coded variable is unclear, consult the study’s data legend or the people who collected it rather than guessing.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phenotypes</span><span class="p">[</span><span class="n">categorical_columns</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"SUB_ID"</span><span class="p">]]</span><span class="o">.</span><span class="n">dtypes</span>
@@ -1044,7 +1078,6 @@ dtype: object
 </div>
 </div>
 </div>
-</section>
 <section id="why-does-this-matter">
 <h4>Why does this matter?<a class="headerlink" href="#why-does-this-matter" title="Link to this heading">#</a></h4>
 <p>Correctly assigning categorical data types:</p>
@@ -1418,15 +1451,14 @@ dtype: object
 </ul>
 <p><strong>Limitations</strong></p>
 <ul class="simple">
-<li><p>Categorical variables (with <code class="docutils literal notranslate"><span class="pre">Dtpye</span> <span class="pre">=</span> <span class="pre">Category</span></code>) are excluded by default.</p></li>
+<li><p>Categorical variables are excluded by default (their dtype is <code class="docutils literal notranslate"><span class="pre">category</span></code>, not a numeric type).</p></li>
 <li><p>Numerical category codes may be summarized as if they were quantitative measurements.</p></li>
 <li><p>Summary statistics can hide multimodal distributions, outliers, and differences between groups or acquisition sites.</p></li>
 <li><p>A small <code class="docutils literal notranslate"><span class="pre">count</span></code> may indicate structured missingness rather than random data loss.</p></li>
 <li><p>Plausible minimum and maximum values do not guarantee that all observations are valid.</p></li>
 </ul>
-</section>
-<section id="id1">
-<h4>Questions<a class="headerlink" href="#id1" title="Link to this heading">#</a></h4>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
 <p>Use the output above to answer the following questions.</p>
 <ol class="arabic simple">
 <li><p>Which variables have the most missing data?</p></li>
@@ -1435,6 +1467,7 @@ dtype: object
 <li><p>Why is calculating a mean for <code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> or <code class="docutils literal notranslate"><span class="pre">SEX</span></code> usually not meaningful?</p></li>
 <li><p>Could two variables have identical means and standard deviations but very different distributions?</p></li>
 </ol>
+</div>
 </section>
 </section>
 </section>
@@ -1672,15 +1705,15 @@ In pandas, missing values are usually represented as <code class="docutils liter
 \times 100
 \]</div>
 <p>A large percentage does not automatically mean that a variable should be removed. A sparsely measured variable could still be scientifically important.</p>
-<section id="id2">
-<h4>Questions<a class="headerlink" href="#id2" title="Link to this heading">#</a></h4>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
 <ol class="arabic simple">
 <li><p>Which variables contain no missing values?</p></li>
 <li><p>Which variables have more than 50% missing observations?</p></li>
 <li><p>Would you automatically remove a variable because it has more than 50% missing data? Why or why not?</p></li>
 <li><p>Does this table tell us why the values are missing?</p></li>
 </ol>
-</section>
+</div>
 </section>
 <section id="is-missingness-distributed-randomly">
 <h3>Is missingness distributed randomly?<a class="headerlink" href="#is-missingness-distributed-randomly" title="Link to this heading">#</a></h3>
@@ -1733,24 +1766,60 @@ In pandas, missing values are usually represented as <code class="docutils liter
 <img alt="../../_images/1c3077e7b7125e8585ce7725f56503c14010bf6b139ca5ee97cd101d7ceb1040.png" src="../../_images/1c3077e7b7125e8585ce7725f56503c14010bf6b139ca5ee97cd101d7ceb1040.png" />
 </div>
 </div>
-<section id="interpret-the-heatmap">
-<h4>Interpret the heatmap<a class="headerlink" href="#interpret-the-heatmap" title="Link to this heading">#</a></h4>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p><strong>Interpret the heatmap.</strong></p>
 <ol class="arabic simple">
 <li><p>Is missingness approximately equal across acquisition sites?</p></li>
 <li><p>Can you identify assessments that appear to have been collected only at particular sites?</p></li>
 <li><p>What would happen to the representation of sites if we retained only complete participants?</p></li>
 <li><p>Could acquisition site be related to both missingness and diagnosis?</p></li>
 </ol>
+</div>
+</section>
+<section id="design-a-complete-case-dataset">
+<h3>Design a complete-case dataset<a class="headerlink" href="#design-a-complete-case-dataset" title="Link to this heading">#</a></h3>
+<p>Suppose we want to construct an analysis table containing only participants with complete data for a selected set of core variables.</p>
+<p>Use the missingness heatmap to choose the variables that you consider essential. The tool reports how many participants remain and whether participant retention differs across acquisition sites.</p>
+<p>There is no universally correct set of core variables: the choice must follow the research question.</p>
+</section>
+<section id="complete-case-retention-explorer">
+<h3>Complete-case retention explorer<a class="headerlink" href="#complete-case-retention-explorer" title="Link to this heading">#</a></h3>
+<p>The tool below runs entirely in your browser — it needs no Python kernel, so it also works on the published course website. Tick the variables you would treat as essential for an analysis. A participant is kept only if <strong>every</strong> ticked variable is recorded for them; the summary and the chart update immediately, overall and for each acquisition site.</p>
+<iframe
+  title="Interactive ABIDE-II complete-case retention explorer"
+  src="../../_static/widgets/app/index.html?config=../configs/eda_retention.json"
+  loading="lazy"
+  width="100%"
+  height="900"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe></section>
+<section id="your-decision">
+<h3>Your decision<a class="headerlink" href="#your-decision" title="Link to this heading">#</a></h3>
+<p>Construct two possible analysis datasets:</p>
+<ol class="arabic simple">
+<li><p>A <strong>minimal</strong> dataset retaining as many participants as possible.</p></li>
+<li><p>A <strong>richer</strong> dataset containing additional behavioral information.</p></li>
+</ol>
+<p>For each selection, record:</p>
+<ul class="simple">
+<li><p>the selected variables;</p></li>
+<li><p>the number of retained participants;</p></li>
+<li><p>whether retention differs between sites;</p></li>
+<li><p>which scientific information was sacrificed.</p></li>
+</ul>
+<p>Which dataset would you use to investigate relationships between demographic variables and diagnosis? Would the same selection be appropriate for studying symptom severity?</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
-<span class="sd-summary-text">Answer for Q4</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<span class="sd-summary-text">Check your reasoning — heatmap Q4</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Missingness can also depend on diagnosis. For example, some autism-specific assessments may have been administered primarily to participants in the autism group.</p>
 </div>
-</details><div class="cell tag_hide-cell docutils container">
+</details><div class="cell tag_hide-input docutils container">
 <details class="admonition hide above-input">
 <summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell content</p>
-<p class="expanded admonition-title">Hide code cell content</p>
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
 </summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Can you find scores that were collected only for diagnosed participants?</span>
@@ -1766,6 +1835,7 @@ In pandas, missing values are usually represented as <code class="docutils liter
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <div class="output text_html"><div>
 <style scoped>
@@ -1868,9 +1938,7 @@ In pandas, missing values are usually represented as <code class="docutils liter
   </tbody>
 </table>
 </div></div></div>
-</details>
 </div>
-</section>
 </section>
 <section id="common-approaches-to-missing-data">
 <h3>Common approaches to missing data<a class="headerlink" href="#common-approaches-to-missing-data" title="Link to this heading">#</a></h3>
@@ -2023,27 +2091,22 @@ In pandas, missing values are usually represented as <code class="docutils liter
 </table>
 </div></div></div>
 </div>
-</section>
-<section id="id3">
-<h4>Questions<a class="headerlink" href="#id3" title="Link to this heading">#</a></h4>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
 <ol class="arabic simple">
 <li><p>Why can requiring complete data for all variables remove almost every participant?</p></li>
 <li><p>Why is deletion based on a specific analysis subset more reasonable?</p></li>
 <li><p>Could the retained participants differ systematically from the excluded participants?</p></li>
 <li><p>What should be checked before concluding that complete-case deletion is safe?</p></li>
 </ol>
+</div>
 </section>
 </section>
 <section id="imputing-a-numerical-variable">
 <h3>Imputing a numerical variable<a class="headerlink" href="#imputing-a-numerical-variable" title="Link to this heading">#</a></h3>
-<p>Imputation replaces missing observations with estimated values. As a simple example, we will replace missing <code class="docutils literal notranslate"><span class="pre">FIQ</span></code> values with the median observed FIQ.</p>
-<p>We will work on a copy so that the original dataframe remains unchanged.</p>
-<div class="cell tag_hide-input docutils container">
-<details class="admonition hide above-input">
-<summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell source</p>
-<p class="expanded admonition-title">Hide code cell source</p>
-</summary>
+<p>Imputation replaces missing observations with estimated values. As a simple example, we replace missing <code class="docutils literal notranslate"><span class="pre">FIQ</span></code> values with the median observed <code class="docutils literal notranslate"><span class="pre">FIQ</span></code>, working on a copy so that the original dataframe is unchanged.</p>
+<p>Here the median is computed from every observed value, which is fine for a one-off illustration. In a real modelling pipeline the median would be learned from the <strong>training split only</strong> and then applied to the validation and test data; computing it from the whole dataset first lets information from the held-out participants leak into preprocessing. The end of this section returns to this point.</p>
+<div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">imputation_demo</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span>
     <span class="p">[</span><span class="s2">"SUB_ID"</span><span class="p">,</span> <span class="s2">"SITE_ID"</span><span class="p">,</span> <span class="s2">"DX_GROUP"</span><span class="p">,</span> <span class="s2">"AGE_AT_SCAN"</span><span class="p">,</span> <span class="s2">"SEX"</span><span class="p">,</span> <span class="s2">"FIQ"</span><span class="p">]</span>
@@ -2059,7 +2122,6 @@ In pandas, missing values are usually represented as <code class="docutils liter
 </pre></div>
 </div>
 </div>
-</details>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Median FIQ used for imputation: 112.0
 Number of imputed observations: 99
@@ -2152,8 +2214,7 @@ Number of imputed observations: 99
 <p class="sd-card-text">Median imputation solves the computational problem of missing values, but it does not reconstruct the unobserved measurements.</p>
 <p class="sd-card-text">It introduces a concentration of observations at the median, usually reduces the estimated variance, and can weaken relationships between FIQ and other variables.</p>
 </div>
-</details><p>We filled the values without changing the distribution a lot.
-What would happen if we implemented this for all variables? Try it yourself!</p>
+</details><p>Imputing 99 of 1,114 <code class="docutils literal notranslate"><span class="pre">FIQ</span></code> values at the median leaves the mean almost unchanged and lowers the standard deviation only slightly, because the share of imputed rows is small. The effect grows with the fraction of missing data and with how far the imputed constant sits from the rest of the distribution — and, as the dropdown above notes, it always removes genuine variability and weakens relationships with other variables.</p>
 </section>
 <section id="handling-missing-categories">
 <h3>Handling missing categories<a class="headerlink" href="#handling-missing-categories" title="Link to this heading">#</a></h3>
@@ -2197,17 +2258,17 @@ Name: count, dtype: int64
 </div>
 </div>
 </div>
-<section id="question">
-<h4>Question<a class="headerlink" href="#question" title="Link to this heading">#</a></h4>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
 <p>Suppose medication status is missing mainly at one acquisition site. What might a classification model learn from the <code class="docutils literal notranslate"><span class="pre">&quot;Not</span> <span class="pre">recorded&quot;</span></code> category?</p>
+</div>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
-<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">The model may use <code class="docutils literal notranslate"><span class="pre">&quot;Not</span> <span class="pre">recorded&quot;</span></code> as an indirect indicator of acquisition site.</p>
 <p class="sd-card-text">If site composition also differs between diagnostic groups, the model could appear to predict diagnosis while partly learning where the participant was scanned.</p>
 </div>
 </details></section>
-</section>
 <section id="common-approach">
 <h3>Common approach:<a class="headerlink" href="#common-approach" title="Link to this heading">#</a></h3>
 <p>For the exploratory analysis (as done here), we will not immediately impute or delete all missing values. Instead, we will:</p>
@@ -2232,43 +2293,733 @@ Name: count, dtype: int64
 <li><p>differences between participant groups.</p></li>
 </ul>
 <p>We will first examine individual variables and then investigate relationships between features.</p>
-<section id="numerical-distributions">
-<h3>Numerical distributions<a class="headerlink" href="#numerical-distributions" title="Link to this heading">#</a></h3>
+<section id="explore-numerical-distributions">
+<h3>Explore numerical distributions<a class="headerlink" href="#explore-numerical-distributions" title="Link to this heading">#</a></h3>
 <p>A histogram divides the observed range into intervals called <strong>bins</strong> and counts the observations within each interval.</p>
 <p>The choice of bin width matters. Too few bins can hide important structure, while too many bins can make random variation appear meaningful.</p>
-<div class="cell docutils container">
+<p>Use the controls below to select a variable and change the number of histogram bins.</p>
+<p>Before changing the controls, predict:</p>
+<ol class="arabic simple">
+<li><p>What information will disappear when very few bins are used?</p></li>
+<li><p>What happens when the number of bins becomes very large?</p></li>
+<li><p>Will the same number of bins be suitable for age, IQ, and questionnaire scores?</p></li>
+</ol>
+<p>The histogram below runs entirely in your browser. It needs no Python kernel, so it also works on the published course website.</p>
+<iframe
+  title="Interactive histogram of ABIDE-II variable distributions"
+  src="../../_static/widgets/app/index.html?config=../configs/eda_histogram.json"
+  loading="lazy"
+  width="100%"
+  height="680"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<p>The same basic plot can be produced in Python with the notebook’s existing
+dataframe and plotting stack.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span> <span class="o">=</span> <span class="s2">"AGE_AT_SCAN"</span>
-
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span>
     <span class="n">data</span><span class="o">=</span><span class="n">phenotypes</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">"AGE_AT_SCAN"</span><span class="p">,</span>
     <span class="n">bins</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
     <span class="n">color</span><span class="o">=</span><span class="s2">"steelblue"</span><span class="p">,</span>
+    <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"white"</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
 <span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Age at scan"</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Number of participants"</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Distribution of participant age"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">"Distribution of age at scan"</span><span class="p">,</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s2">"Age at scan (years)"</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="s2">"Number of participants"</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<img alt="../../_images/aca852c7ba54d8be1211f9a0a7b94cea9ed4381edcacdd8419df089674be6f11.png" src="../../_images/aca852c7ba54d8be1211f9a0a7b94cea9ed4381edcacdd8419df089674be6f11.png" />
+<img alt="../../_images/f852472df77dfb6d065e307c29ca02bc9dc5dcd6052123557cec826b8ac64368.png" src="../../_images/f852472df77dfb6d065e307c29ca02bc9dc5dcd6052123557cec826b8ac64368.png" />
 </div>
 </div>
-</section>
-<section id="try-it-yourself">
-<h3>Try it yourself<a class="headerlink" href="#try-it-yourself" title="Link to this heading">#</a></h3>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>Choose at least three variables.</p>
 <ol class="arabic simple">
-<li><p>Is the age distribution symmetric?</p></li>
-<li><p>Does it appear to contain one population or several age groups?</p></li>
-<li><p>Change <code class="docutils literal notranslate"><span class="pre">bins=25</span></code> to <code class="docutils literal notranslate"><span class="pre">bins=5</span></code>. What information disappears?</p></li>
-<li><p>Change it to <code class="docutils literal notranslate"><span class="pre">bins=100</span></code>. Does the additional detail appear meaningful?</p></li>
-<li><p>Replace <code class="docutils literal notranslate"><span class="pre">AGE_AT_SCAN</span></code> with <code class="docutils literal notranslate"><span class="pre">FIQ</span></code>. How does the distribution change?</p></li>
+<li><p>Which distribution is most symmetric?</p></li>
+<li><p>Which distribution appears most skewed?</p></li>
+<li><p>Which variables are discrete scores rather than continuous measurements?</p></li>
+<li><p>Did changing the number of bins alter your interpretation?</p></li>
+<li><p>For which variable was the KDE curve potentially misleading?</p></li>
 </ol>
+</div>
 </section>
+<section id="reading-a-distribution">
+<h3>Reading a distribution<a class="headerlink" href="#reading-a-distribution" title="Link to this heading">#</a></h3>
+<p>A histogram or density plot answers questions that a mean and a standard deviation cannot:</p>
+<ul class="simple">
+<li><p><strong>Center and spread</strong> — where do typical values sit, and how far do they range?</p></li>
+<li><p><strong>Skew</strong> — is one tail much longer than the other? A long right tail pulls the mean above the median.</p></li>
+<li><p><strong>Multiple peaks</strong> — could the sample be a mixture of groups measured on different scales or instruments?</p></li>
+<li><p><strong>Floor and ceiling effects</strong> — do many observations pile up at the lowest or highest possible score?</p></li>
+<li><p><strong>Implausible values</strong> — are there observations outside the range the measurement can take?</p></li>
+</ul>
+<p>The interactive histogram already showed that <strong>the number of bins changes how a distribution looks, not what was actually observed</strong>. The same 1,114 rows are being drawn each time; only the summary changes.</p>
+<p>The table below reports <code class="docutils literal notranslate"><span class="pre">describe()</span></code> together with the available and missing sample size for a small set of variables that behave differently from one another.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># A deliberately short set: one age variable, one cognitive score, two</span>
+<span class="c1"># questionnaire totals with very different completeness.</span>
+<span class="n">summary_variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AGE_AT_SCAN"</span><span class="p">,</span> <span class="s2">"FIQ"</span><span class="p">,</span> <span class="s2">"SRS_TOTAL_RAW"</span><span class="p">,</span> <span class="s2">"SCQ_TOTAL"</span><span class="p">,</span> <span class="s2">"ADOS_G_TOTAL"</span><span class="p">]</span>
+
+<span class="n">distribution_summary</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="n">summary_variables</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">[</span>
+    <span class="p">[</span><span class="s2">"mean"</span><span class="p">,</span> <span class="s2">"std"</span><span class="p">,</span> <span class="s2">"min"</span><span class="p">,</span> <span class="s2">"25%"</span><span class="p">,</span> <span class="s2">"50%"</span><span class="p">,</span> <span class="s2">"75%"</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">]</span>
+<span class="p">]</span>
+<span class="n">distribution_summary</span><span class="p">[</span><span class="s2">"available_n"</span><span class="p">]</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="n">summary_variables</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">distribution_summary</span><span class="p">[</span><span class="s2">"missing_n"</span><span class="p">]</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="n">summary_variables</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="n">distribution_summary</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean</th>
+      <th>std</th>
+      <th>min</th>
+      <th>25%</th>
+      <th>50%</th>
+      <th>75%</th>
+      <th>max</th>
+      <th>available_n</th>
+      <th>missing_n</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>AGE_AT_SCAN</th>
+      <td>14.9</td>
+      <td>9.2</td>
+      <td>5.1</td>
+      <td>9.3</td>
+      <td>11.5</td>
+      <td>18.0</td>
+      <td>64.0</td>
+      <td>1114</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>FIQ</th>
+      <td>111.0</td>
+      <td>15.5</td>
+      <td>49.0</td>
+      <td>101.0</td>
+      <td>112.0</td>
+      <td>122.0</td>
+      <td>151.0</td>
+      <td>1015</td>
+      <td>99</td>
+    </tr>
+    <tr>
+      <th>SRS_TOTAL_RAW</th>
+      <td>55.3</td>
+      <td>42.9</td>
+      <td>0.0</td>
+      <td>16.0</td>
+      <td>43.0</td>
+      <td>92.0</td>
+      <td>199.0</td>
+      <td>785</td>
+      <td>329</td>
+    </tr>
+    <tr>
+      <th>SCQ_TOTAL</th>
+      <td>10.8</td>
+      <td>9.2</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>8.0</td>
+      <td>19.0</td>
+      <td>34.0</td>
+      <td>293</td>
+      <td>821</td>
+    </tr>
+    <tr>
+      <th>ADOS_G_TOTAL</th>
+      <td>9.5</td>
+      <td>4.7</td>
+      <td>0.0</td>
+      <td>7.0</td>
+      <td>10.0</td>
+      <td>13.0</td>
+      <td>23.0</td>
+      <td>347</td>
+      <td>767</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p><strong>Read the summary.</strong></p>
+<p>Use the table above.</p>
+<ol class="arabic simple">
+<li><p>For <code class="docutils literal notranslate"><span class="pre">SRS_TOTAL_RAW</span></code> the mean (about 55) is well above the median (43). Sketch the distribution shape this implies, then check it with the interactive histogram.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SCQ_TOTAL</span></code> and <code class="docutils literal notranslate"><span class="pre">ADOS_G_TOTAL</span></code> each have fewer than 350 available observations. Does the small sample make their mean <em>wrong</em>, or does it make it <em>uncertain and possibly unrepresentative</em>? These are different problems.</p></li>
+<li><p>Which of these five variables would you expect to be discrete (a small set of integer scores) rather than continuous?</p></li>
+</ol>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<ol class="arabic simple">
+<li><p class="sd-card-text">Mean above median means a <strong>right skew</strong>: most participants score low, a minority score much higher, and the long upper tail drags the mean up. The interactive histogram shows a tall block near zero with a spread-out tail.</p></li>
+<li><p class="sd-card-text">It makes the mean <strong>uncertain and potentially biased</strong>. The value is computed correctly, but it describes only the sub-sample that was measured. If the SCQ was collected mainly at particular sites or for particular participants, that sub-sample need not resemble the whole cohort.</p></li>
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">SCQ_TOTAL</span></code> and <code class="docutils literal notranslate"><span class="pre">ADOS_G_TOTAL</span></code> are sums of a fixed number of small item scores, so they take a limited set of integer values. <code class="docutils literal notranslate"><span class="pre">AGE_AT_SCAN</span></code> and the IQ scores are effectively continuous.</p></li>
+</ol>
+</div>
+</details></section>
+<section id="comparing-a-variable-across-groups">
+<h3>Comparing a variable across groups<a class="headerlink" href="#comparing-a-variable-across-groups" title="Link to this heading">#</a></h3>
+<p>A common exploratory question is whether a variable <em>differs between groups</em> — here, between the two diagnostic groups. A bar chart of group means would hide both the spread and the sample size. A violin (or box) plot with the individual points drawn on top shows the whole distribution <strong>and</strong> how many participants sit behind it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> is coded <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">=</span> <span class="pre">Autism</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">=</span> <span class="pre">Control</span></code> in the <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf">ABIDE-II Data Legend</a>. We map the codes to readable labels on a <strong>copy</strong> of the columns, without altering <code class="docutils literal notranslate"><span class="pre">phenotypes</span></code>.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Readable diagnosis labels on a copy — phenotypes itself is left untouched.</span>
+<span class="n">diagnosis_labels</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="s2">"DX_GROUP"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"int64"</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="s2">"Autism"</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"Control"</span><span class="p">})</span>
+<span class="n">group_order</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Autism"</span><span class="p">,</span> <span class="s2">"Control"</span><span class="p">]</span>
+
+<span class="n">fiq_by_diagnosis</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span><span class="s2">"Diagnostic group"</span><span class="p">:</span> <span class="n">diagnosis_labels</span><span class="p">,</span> <span class="s2">"FIQ"</span><span class="p">:</span> <span class="n">phenotypes</span><span class="p">[</span><span class="s2">"FIQ"</span><span class="p">]}</span>
+<span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">"FIQ"</span><span class="p">])</span>
+
+<span class="n">group_counts</span> <span class="o">=</span> <span class="n">fiq_by_diagnosis</span><span class="p">[</span><span class="s2">"Diagnostic group"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="n">fiq_by_diagnosis</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"Diagnostic group"</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="s2">"FIQ"</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">available_n</span><span class="o">=</span><span class="s2">"count"</span><span class="p">,</span> <span class="n">median</span><span class="o">=</span><span class="s2">"median"</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">fiq_by_diagnosis</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">"Diagnostic group"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">"FIQ"</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">group_order</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">"Diagnostic group"</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s2">"Set2"</span><span class="p">,</span> <span class="n">inner</span><span class="o">=</span><span class="s2">"quartile"</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># Seed only the stripplot jitter (seaborn draws it from np.random); restore</span>
+<span class="c1"># the global RNG state afterwards so no later cell is affected.</span>
+<span class="n">_rng_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">stripplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">fiq_by_diagnosis</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">"Diagnostic group"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">"FIQ"</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">group_order</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">jitter</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">_rng_state</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group_order</span><span class="p">)))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">g</span><span class="si">}</span><span class="se">\n</span><span class="s2">(n = </span><span class="si">{</span><span class="n">group_counts</span><span class="p">[</span><span class="n">g</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">group_order</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Full-scale IQ by diagnostic group (FIQ recorded for 1,015 of 1,114)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                  available_n  median   mean
+Diagnostic group                            
+Autism                    479   108.0  106.6
+Control                   536   115.0  114.9
+</pre></div>
+</div>
+<img alt="../../_images/234826379c48a3c903c551a6e4c39318fe2744f8d22ee9a3815010036cb5544b.png" src="../../_images/234826379c48a3c903c551a6e4c39318fe2744f8d22ee9a3815010036cb5544b.png" />
+</div>
+</div>
+<p>The two distributions overlap heavily. The colours here are only labels — they carry no “good/bad” meaning.</p>
+<p>A group comparison like this can be distorted by variables that differ <em>both</em> between the diagnostic groups <em>and</em> with the outcome of interest. Acquisition <strong>site</strong> is a prime suspect, because sites recruited different mixes of participants.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Share of each site's participants in each diagnostic group.</span>
+<span class="n">site_by_diagnosis</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">phenotypes</span><span class="p">[</span><span class="s2">"SITE_ID"</span><span class="p">],</span> <span class="n">diagnosis_labels</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="s2">"index"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">phenotypes</span><span class="p">[</span><span class="s2">"SITE_ID"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>  <span class="c1"># largest sites first</span>
+<span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
+    <span class="n">site_by_diagnosis</span><span class="p">[[</span><span class="s2">"Autism"</span><span class="p">,</span> <span class="s2">"Control"</span><span class="p">]],</span>
+    <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">".0f"</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"Blues"</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"</span><span class="si">% o</span><span class="s2">f the site's participants"</span><span class="p">},</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Diagnostic-group composition within each site"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Diagnostic group"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Acquisition site"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/d52758292d47e3064b55db7fc386501ffd0b972a1eab591e899fc19b58bbf06d.png" src="../../_images/d52758292d47e3064b55db7fc386501ffd0b972a1eab591e899fc19b58bbf06d.png" />
+</div>
+</div>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p><strong>Confounding and composition.</strong></p>
+<ol class="arabic simple">
+<li><p>The full sample is fairly balanced overall (521 Autism, 593 Control). Find two sites in the heatmap where the split is far from 50/50. What are they?</p></li>
+<li><p>Two sites contributed <strong>only</strong> Autism participants. If age, IQ, or a scanner property differs at those sites, how could that affect a naive Autism-vs-Control comparison?</p></li>
+<li><p>Name one participant-level variable, other than site, that could confound a diagnosis comparison of <code class="docutils literal notranslate"><span class="pre">FIQ</span></code>.</p></li>
+</ol>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<ol class="arabic simple">
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">ABIDEII-KKI_1</span></code> is about 27% Autism / 73% Control, while <code class="docutils literal notranslate"><span class="pre">ABIDEII-KUL_3</span></code> and <code class="docutils literal notranslate"><span class="pre">ABIDEII-NYU_2</span></code> are 100% Autism. Several smaller sites are close to 50/50.</p></li>
+<li><p class="sd-card-text">Anything that varies by site — age range, IQ test used, scanner, recruitment route — becomes partly aligned with diagnosis. A difference that is really <em>between sites</em> can then show up as a difference <em>between diagnostic groups</em>. A balanced overall count does not guarantee balance within any site.</p></li>
+<li><p class="sd-card-text"><strong>Sex</strong> is a defensible answer: in this sample females are more often in the Control group (about 70%) than males, and sex is also associated with cognitive and behavioural scores, so it can confound a group comparison. Age is another.</p></li>
+</ol>
+</div>
+</details></section>
+<section id="range-checks-and-flagged-values">
+<h3>Range checks and flagged values<a class="headerlink" href="#range-checks-and-flagged-values" title="Link to this heading">#</a></h3>
+<p>A range check marks observations that fall outside an expected interval so a
+human can look at them. Crossing the interval <strong>flags a value for
+inspection; it does not prove the value is an error.</strong></p>
+<p>The usual interval is built from the quartiles. <code class="docutils literal notranslate"><span class="pre">Q1</span></code> and <code class="docutils literal notranslate"><span class="pre">Q3</span></code> are the 25th
+and 75th percentiles of the variable (a quarter of the values fall below
+<code class="docutils literal notranslate"><span class="pre">Q1</span></code>, a quarter above <code class="docutils literal notranslate"><span class="pre">Q3</span></code>), and the interquartile range is the distance
+between them:</p>
+<div class="math notranslate nohighlight">
+\[
+\mathrm{IQR} = Q_3 - Q_1 .
+\]</div>
+<p>A value is flagged when it falls below the lower fence or above the upper
+fence:</p>
+<div class="math notranslate nohighlight">
+\[
+Q_1 - 1.5\,\mathrm{IQR}
+\qquad\text{and}\qquad
+Q_3 + 1.5\,\mathrm{IQR}.
+\]</div>
+<p>We apply it to <code class="docutils literal notranslate"><span class="pre">AGE_AT_SCAN</span></code> and show the flagged rows using only
+non-identifying fields (site, diagnosis label, age) — never <code class="docutils literal notranslate"><span class="pre">SUB_ID</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">age</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="s2">"AGE_AT_SCAN"</span><span class="p">]</span>
+<span class="n">q1</span><span class="p">,</span> <span class="n">q3</span> <span class="o">=</span> <span class="n">age</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">),</span> <span class="n">age</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+<span class="n">iqr</span> <span class="o">=</span> <span class="n">q3</span> <span class="o">-</span> <span class="n">q1</span>
+<span class="n">lower_fence</span><span class="p">,</span> <span class="n">upper_fence</span> <span class="o">=</span> <span class="n">q1</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">iqr</span><span class="p">,</span> <span class="n">q3</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">iqr</span>
+
+<span class="n">flagged_age</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+    <span class="n">age</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">((</span><span class="n">age</span> <span class="o">&lt;</span> <span class="n">lower_fence</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">age</span> <span class="o">&gt;</span> <span class="n">upper_fence</span><span class="p">)),</span>
+    <span class="p">[</span><span class="s2">"SITE_ID"</span><span class="p">,</span> <span class="s2">"AGE_AT_SCAN"</span><span class="p">],</span>
+<span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">flagged_age</span><span class="p">[</span><span class="s2">"Diagnostic group"</span><span class="p">]</span> <span class="o">=</span> <span class="n">diagnosis_labels</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">flagged_age</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"IQR rule flags ages outside [</span><span class="si">{</span><span class="n">lower_fence</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">upper_fence</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">] years"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">flagged_age</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">age</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> participants flagged for inspection"</span><span class="p">)</span>
+<span class="n">flagged_age</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"AGE_AT_SCAN"</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>IQR rule flags ages outside [-3.8, 31.1] years
+56 of 1114 participants flagged for inspection
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SITE_ID</th>
+      <th>AGE_AT_SCAN</th>
+      <th>Diagnostic group</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ABIDEII-BNI_1</td>
+      <td>64.0</td>
+      <td>Control</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>ABIDEII-BNI_1</td>
+      <td>62.0</td>
+      <td>Autism</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>ABIDEII-BNI_1</td>
+      <td>62.0</td>
+      <td>Control</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>ABIDEII-BNI_1</td>
+      <td>60.0</td>
+      <td>Control</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>ABIDEII-BNI_1</td>
+      <td>59.0</td>
+      <td>Autism</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>ABIDEII-BNI_1</td>
+      <td>57.0</td>
+      <td>Autism</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>ABIDEII-BNI_1</td>
+      <td>57.0</td>
+      <td>Autism</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>ABIDEII-BNI_1</td>
+      <td>56.0</td>
+      <td>Control</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p><strong>Evidence before editing a value.</strong></p>
+<p>The flagged ages are roughly 31–64 years, and many come from a small number of sites.</p>
+<ol class="arabic simple">
+<li><p>Are these values <em>impossible</em>, or just <em>unusual for this sample</em>?</p></li>
+<li><p>What would you need to check before treating any of them as an error?</p></li>
+<li><p>If you removed every flagged participant, what would happen to the sites they came from?</p></li>
+</ol>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<ol class="arabic simple">
+<li><p class="sd-card-text">They are biologically possible ages. ABIDE-II includes adult samples; the flag reflects that most participants are children, not that these rows are wrong.</p></li>
+<li><p class="sd-card-text">Cross-check the study’s documented age range, confirm the coding and units (years, not months), look for a data-entry pattern, and — if in doubt — ask the people who collected the data. Any decision to drop values should be followed by a <strong>sensitivity analysis</strong>: repeat the key result with and without them.</p></li>
+<li><p class="sd-card-text">Those sites would lose a large share of their participants, changing the sample’s site and age composition. Deletion is not free.</p></li>
+</ol>
+</div>
+</details></section>
+<section id="pearson-spearman-and-the-sample-behind-each-number">
+<h3>Pearson, Spearman, and the sample behind each number<a class="headerlink" href="#pearson-spearman-and-the-sample-behind-each-number" title="Link to this heading">#</a></h3>
+<p>Two correlation coefficients answer slightly different questions:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p>Measures</p></th>
+<th class="head"><p>Sensitive to</p></th>
+<th class="head"><p>Robust to</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Pearson</strong> <code class="docutils literal notranslate"><span class="pre">r</span></code></p></td>
+<td><p>strength of a <strong>linear</strong> relationship</p></td>
+<td><p>extreme values, non-linearity</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Spearman</strong> <code class="docutils literal notranslate"><span class="pre">ρ</span></code></p></td>
+<td><p>strength of a <strong>monotonic</strong> relationship (via ranks)</p></td>
+<td><p>—</p></td>
+<td><p>outliers, non-linear but monotone shape, scale changes</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Neither establishes causation. And a correlation matrix hides one crucial fact: <strong>each cell can be computed from a different subset of participants</strong>, because different variables are missing for different people. We therefore compute the correlation matrix and the <em>pairwise-complete sample-size</em> matrix on the same variables.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># A focused numeric subset: age, three IQ scores, an SRS total with one of its</span>
+<span class="c1"># own subscales (a deliberate part-whole pair), and two other autism-related</span>
+<span class="c1"># questionnaire totals.</span>
+<span class="n">correlation_variables</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"AGE_AT_SCAN"</span><span class="p">,</span> <span class="s2">"FIQ"</span><span class="p">,</span> <span class="s2">"VIQ"</span><span class="p">,</span> <span class="s2">"PIQ"</span><span class="p">,</span>
+    <span class="s2">"SRS_TOTAL_RAW"</span><span class="p">,</span> <span class="s2">"SRS_COMMUNICATION_RAW"</span><span class="p">,</span> <span class="s2">"SCQ_TOTAL"</span><span class="p">,</span> <span class="s2">"ADOS_G_TOTAL"</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">numeric_block</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="n">correlation_variables</span><span class="p">]</span>
+
+<span class="n">pearson_matrix</span> <span class="o">=</span> <span class="n">numeric_block</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"pearson"</span><span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">pearson_matrix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># show lower triangle</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">7.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
+    <span class="n">pearson_matrix</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">".2f"</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"vlag"</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">square</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Pearson r"</span><span class="p">},</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Pearson correlations (lower triangle)"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/e34163cdee8928b5ca29da76f2f9781009909a98c5fe6d88839b8f04fd8637b5.png" src="../../_images/e34163cdee8928b5ca29da76f2f9781009909a98c5fe6d88839b8f04fd8637b5.png" />
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The number of participants with BOTH variables recorded, for the same pairs.</span>
+<span class="n">pairwise_n</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="n">a</span><span class="p">:</span> <span class="p">{</span><span class="n">b</span><span class="p">:</span> <span class="n">numeric_block</span><span class="p">[[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">correlation_variables</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">correlation_variables</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">7.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
+    <span class="n">pairwise_n</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"d"</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"Greens"</span><span class="p">,</span>
+    <span class="n">square</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"pairwise-complete N"</span><span class="p">},</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Participants behind each correlation (pairwise-complete N)"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/3357044e7e8a5477643e8ac376c55a0d71e71ffa3ee76f8a1a691117fe323860.png" src="../../_images/3357044e7e8a5477643e8ac376c55a0d71e71ffa3ee76f8a1a691117fe323860.png" />
+</div>
+</div>
+<p>Read the two matrices together.</p>
+<ul class="simple">
+<li><p><strong>A genuine, stable association.</strong> <code class="docutils literal notranslate"><span class="pre">SRS_TOTAL_RAW</span></code> and <code class="docutils literal notranslate"><span class="pre">SCQ_TOTAL</span></code> — two different social-communication questionnaires — correlate at <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">≈</span> <span class="pre">0.84</span></code> on <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">289</span></code> participants. This is a real relationship, but the explorer below will show that most of it comes from the gap <em>between</em> the diagnostic groups: within each group it is far weaker.</p></li>
+<li><p><strong>A part–whole correlation, not a discovery.</strong> <code class="docutils literal notranslate"><span class="pre">SRS_TOTAL_RAW</span></code> and <code class="docutils literal notranslate"><span class="pre">SRS_COMMUNICATION_RAW</span></code> correlate at <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">≈</span> <span class="pre">0.98</span></code>. The communication subscale is one of the terms that are <em>added up</em> to make the SRS total, so it must track the total. Reporting this as a finding about behaviour would be circular. The same caution applies to <code class="docutils literal notranslate"><span class="pre">FIQ</span></code> versus <code class="docutils literal notranslate"><span class="pre">VIQ</span></code>/<code class="docutils literal notranslate"><span class="pre">PIQ</span></code> (<code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">≈</span> <span class="pre">0.83</span></code>): full-scale IQ is derived from the verbal and performance scores.</p></li>
+<li><p><strong>A number built on very few people.</strong> <code class="docutils literal notranslate"><span class="pre">SCQ_TOTAL</span></code> and <code class="docutils literal notranslate"><span class="pre">ADOS_G_TOTAL</span></code> correlate at only <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">≈</span> <span class="pre">0.06</span></code>, but the <code class="docutils literal notranslate"><span class="pre">N</span></code> matrix shows that cell rests on <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">71</span></code> — the participants who happen to have <em>both</em> an SCQ and an ADOS-G score. Contrast that with <code class="docutils literal notranslate"><span class="pre">AGE_AT_SCAN</span></code> versus <code class="docutils literal notranslate"><span class="pre">FIQ</span></code> (<code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">1015</span></code>).</p></li>
+<li><p><strong>Pearson versus Spearman.</strong> For <code class="docutils literal notranslate"><span class="pre">AGE_AT_SCAN</span></code> versus <code class="docutils literal notranslate"><span class="pre">ADOS_G_TOTAL</span></code>, Pearson <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">≈</span> <span class="pre">−0.23</span></code> but Spearman <code class="docutils literal notranslate"><span class="pre">ρ</span> <span class="pre">≈</span> <span class="pre">−0.33</span></code> (<code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">347</span></code>). Age is strongly right-skewed, so a few older participants pull the linear fit around; the rank-based coefficient is less affected. When the two disagree, look at the scatterplot before trusting either.</p></li>
+</ul>
+<p>We deliberately do <strong>not</strong> attach p-values or significance stars to these coefficients: with dozens of pairs, uncorrected “significant” correlations are almost guaranteed and would invite over-interpretation.</p>
+</section>
+<section id="explore-correlations-yourself">
+<h3>Explore correlations yourself<a class="headerlink" href="#explore-correlations-yourself" title="Link to this heading">#</a></h3>
+<p>The tool below runs entirely in your browser — no Python kernel — so it also works on the published course site. Pick an X and a Y variable, switch between Pearson and Spearman, and colour the points by diagnostic group or sex. The panel reports the coefficient, the pairwise-complete <code class="docutils literal notranslate"><span class="pre">n</span></code>, and how many participants were dropped because one variable was missing. It does <strong>not</strong> draw a trend line: a single straight line would misrepresent a rank correlation and a grouped view.</p>
+<iframe
+  title="Interactive ABIDE-II feature correlation explorer"
+  src="../../_static/widgets/app/index.html?config=../configs/eda_correlation.json"
+  loading="lazy"
+  width="100%"
+  height="820"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe><div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p><strong>Use the explorer.</strong></p>
+<ol class="arabic simple">
+<li><p>Set X = <code class="docutils literal notranslate"><span class="pre">FIQ</span></code>, Y = <code class="docutils literal notranslate"><span class="pre">Verbal</span> <span class="pre">IQ</span></code>. The correlation is very strong. Is that a fact about the brain, or about how full-scale IQ is calculated?</p></li>
+<li><p>Set X = <code class="docutils literal notranslate"><span class="pre">ADOS-G</span> <span class="pre">total</span></code>, Y = <code class="docutils literal notranslate"><span class="pre">ADOS-2</span> <span class="pre">total</span></code>. The coefficient is high — what is the pairwise-complete <code class="docutils literal notranslate"><span class="pre">n</span></code>, and why is it so small?</p></li>
+<li><p>Set X = <code class="docutils literal notranslate"><span class="pre">FIQ</span></code>, Y = <code class="docutils literal notranslate"><span class="pre">SRS</span> <span class="pre">total</span> <span class="pre">(raw)</span></code>, method Pearson, and colour by <code class="docutils literal notranslate"><span class="pre">Diagnostic</span> <span class="pre">group</span></code>. Compare the overall coefficient with the two within-group coefficients. What does that tell you about the overall number?</p></li>
+</ol>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<ol class="arabic simple">
+<li><p class="sd-card-text">It is mostly definitional. Full-scale IQ is a composite of verbal and performance IQ, so it must correlate strongly with each. It is not independent evidence about cognition.</p></li>
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">n</span></code> is about 81. The ADOS-G and ADOS-2 are different versions of the same observation schedule; very few participants were given both, so the coefficient describes a small, self-selected subset.</p></li>
+<li><p class="sd-card-text">The overall Pearson <code class="docutils literal notranslate"><span class="pre">r</span></code> is about <code class="docutils literal notranslate"><span class="pre">−0.24</span></code>, but within the Autism group and within the Control group it is close to zero. The overall value is produced almost entirely by the two groups sitting at different places on both variables — it is a between-group difference, not a within-person association.</p></li>
+</ol>
+</div>
+</details></section>
+<section id="when-a-correlation-matrix-is-the-wrong-tool">
+<h3>When a correlation matrix is the wrong tool<a class="headerlink" href="#when-a-correlation-matrix-is-the-wrong-tool" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">DataFrame.corr()</span></code> silently drops non-numeric columns, so it is easy to forget that “how are these two variables related?” needs a different first view depending on their types.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Variable types</p></th>
+<th class="head"><p>Suitable first EDA view</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Numeric – numeric</p></td>
+<td><p>Scatterplot; Pearson / Spearman</p></td>
+</tr>
+<tr class="row-odd"><td><p>Numeric – categorical</p></td>
+<td><p>Grouped distributions (violin/box + points) and per-group summaries</p></td>
+</tr>
+<tr class="row-even"><td><p>Categorical – categorical</p></td>
+<td><p>Contingency table; row/column proportions; optionally Cramér’s V</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ordered categorical</p></td>
+<td><p>Ordered counts; a rank-based method only when the ordering and coding are defensible</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Here is the categorical–categorical case for <code class="docutils literal notranslate"><span class="pre">SEX</span></code> and <code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> (<code class="docutils literal notranslate"><span class="pre">SEX</span></code> is coded <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">=</span> <span class="pre">male</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">=</span> <span class="pre">female</span></code> in the legend).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sex_labels</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="s2">"SEX"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"int64"</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="s2">"Male"</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"Female"</span><span class="p">})</span>
+
+<span class="n">sex_by_diagnosis_counts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">sex_labels</span><span class="p">,</span> <span class="n">diagnosis_labels</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sex_by_diagnosis_row_pct</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">sex_labels</span><span class="p">,</span> <span class="n">diagnosis_labels</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="s2">"index"</span><span class="p">)</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Counts:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sex_by_diagnosis_counts</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Within each sex, </span><span class="si">% i</span><span class="s2">n each diagnostic group:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sex_by_diagnosis_row_pct</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Counts:
+DX_GROUP  Autism  Control   All
+SEX                            
+Female        77      181   258
+Male         444      412   856
+All          521      593  1114
+
+Within each sex, % in each diagnostic group:
+DX_GROUP  Autism  Control
+SEX                      
+Female      29.8     70.2
+Male        51.9     48.1
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional sidebar: Cramer's V summarises the strength of association between two</span>
+<span class="c1"># categorical variables as a single number in [0, 1]. It is not a correlation</span>
+<span class="c1"># coefficient and has no sign.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">chi2_contingency</span>
+
+<span class="n">contingency</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">sex_labels</span><span class="p">,</span> <span class="n">diagnosis_labels</span><span class="p">)</span>
+<span class="n">chi2</span> <span class="o">=</span> <span class="n">chi2_contingency</span><span class="p">(</span><span class="n">contingency</span><span class="p">)</span><span class="o">.</span><span class="n">statistic</span>
+<span class="n">n_total</span> <span class="o">=</span> <span class="n">contingency</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">min_dim</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">contingency</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="n">cramers_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">chi2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_total</span> <span class="o">*</span> <span class="n">min_dim</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cramer's V (SEX, DX_GROUP) = </span><span class="si">{</span><span class="n">cramers_v</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Cramer's V (SEX, DX_GROUP) = 0.184
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p><strong>Choosing an association measure.</strong></p>
+<ol class="arabic simple">
+<li><p>Why would running <code class="docutils literal notranslate"><span class="pre">phenotypes.corr()</span></code> and reading the <code class="docutils literal notranslate"><span class="pre">SEX</span></code> row be a mistake?</p></li>
+<li><p>From the proportions above, are <code class="docutils literal notranslate"><span class="pre">SEX</span></code> and <code class="docutils literal notranslate"><span class="pre">DX_GROUP</span></code> independent in this sample? What does that imply for a later analysis that compares the diagnostic groups?</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> is stored as a number. Would Spearman’s <code class="docutils literal notranslate"><span class="pre">ρ</span></code> between <code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> and <code class="docutils literal notranslate"><span class="pre">ADOS_G_TOTAL</span></code> be meaningful?</p></li>
+</ol>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<ol class="arabic simple">
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">SEX</span></code> is a category coded with the numbers 1 and 2. A Pearson correlation on those codes treats “female − male = 1” as a quantity, which is meaningless; the result depends entirely on the arbitrary coding.</p></li>
+<li><p class="sd-card-text">They are not independent: about 70% of females are in the Control group versus roughly half of males, and Cramér’s V ≈ 0.18 confirms a modest association. Any Autism-vs-Control comparison should therefore check whether a result is partly a sex difference.</p></li>
+<li><p class="sd-card-text">Only if the module numbers form a defensible order. <code class="docutils literal notranslate"><span class="pre">ADOS_MODULE</span></code> identifies which version of the assessment was administered (chosen by language level), not an increasing severity, so treating it as ordered would be hard to justify. A contingency table against diagnosis or age is the safer first view.</p></li>
+</ol>
+</div>
+</details><div class="challenge admonition">
+<p class="admonition-title">Synthesis challenge</p>
+<p>Pick one pair of numeric variables from the curated table that you have <strong>not</strong> already examined, and work through the full checklist before drawing any conclusion.</p>
+<ol class="arabic simple">
+<li><p>Predict the <strong>direction</strong> (positive / negative / none) and the <strong>shape</strong> (line / cloud / curve) you expect, and write it down first.</p></li>
+<li><p>Check the <strong>missing / pairwise-complete <code class="docutils literal notranslate"><span class="pre">n</span></code></strong> for the pair. Is it most of the sample or a small subset?</p></li>
+<li><p>Compute <strong>Pearson and Spearman</strong>. Do they agree? If not, look at the scatterplot and explain why.</p></li>
+<li><p>Split by <strong>diagnostic group</strong> (or another justified grouping) and see whether the relationship survives within groups.</p></li>
+<li><p>Ask whether the pair could be a <strong>part–whole</strong> or otherwise redundant relationship.</p></li>
+<li><p>Write <strong>two sentences</strong>: one stating what the plot supports, and one stating what it <em>cannot</em> establish.</p></li>
+</ol>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">A model reasoning process (not a single “right” answer)</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Suppose you chose <code class="docutils literal notranslate"><span class="pre">VIQ</span></code> and <code class="docutils literal notranslate"><span class="pre">PIQ</span></code>.</p>
+<ul class="simple">
+<li><p class="sd-card-text"><em>Prediction:</em> positive and roughly linear — both are IQ subscores.</p></li>
+<li><p class="sd-card-text"><em><code class="docutils literal notranslate"><span class="pre">n</span></code>:</em> about 786 participants have both; a large, fairly representative subset.</p></li>
+<li><p class="sd-card-text"><em>Pearson ≈ 0.52, Spearman ≈ 0.49:</em> close, so the relationship is roughly linear with no single dominant outlier.</p></li>
+<li><p class="sd-card-text"><em>Within groups:</em> the association is similar inside the Autism and Control groups, so it is not just a between-group effect.</p></li>
+<li><p class="sd-card-text"><em>Part–whole:</em> <code class="docutils literal notranslate"><span class="pre">VIQ</span></code> and <code class="docutils literal notranslate"><span class="pre">PIQ</span></code> are separate subscores, so this pair is <strong>not</strong> a part–whole artefact — unlike either of them against <code class="docutils literal notranslate"><span class="pre">FIQ</span></code>.</p></li>
+<li><p class="sd-card-text"><em>Two sentences:</em> “Verbal and performance IQ are moderately, positively associated across the sample and within each diagnostic group. This is a descriptive association only: it does not tell us that one ability causes the other, and it says nothing about participants who were not tested.”</p></li>
+</ul>
+</div>
+</details></section>
 </section>
 </section>
 
@@ -2329,59 +3080,54 @@ Name: count, dtype: int64
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#about-this-exercise">About this exercise</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#importing-and-data-loading">1. Importing and data loading</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-inspection">2. Data inspection</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-a-random-sample">Inspecting a random sample</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-for-discussion">Questions for discussion</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-inspection">3. Statistical inspection</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-structure-with-info">Dataset structure with <code class="docutils literal notranslate"><span class="pre">info()</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-info">Interpreting <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#identifying-hidden-categorical-variables">Identifying hidden categorical variables</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#identify-the-variables">Identify the variables</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#why-does-this-matter">Why does this matter?</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-summaries-with-describe">Numerical summaries with <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-describe">Interpreting <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#missing-values">4. Missing values</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantifying-missing-values">Quantifying missing values</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Questions</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#is-missingness-distributed-randomly">Is missingness distributed randomly?</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpret-the-heatmap">Interpret the heatmap</a></li>
-</ul>
-</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantifying-missing-values">Quantifying missing values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#is-missingness-distributed-randomly">Is missingness distributed randomly?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#design-a-complete-case-dataset">Design a complete-case dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#complete-case-retention-explorer">Complete-case retention explorer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#your-decision">Your decision</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approaches-to-missing-data">Common approaches to missing data</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-incomplete-observations">Removing incomplete observations</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Questions</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imputing-a-numerical-variable">Imputing a numerical variable</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#question">Question</a></li>
-</ul>
-</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approach">Common approach:</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributions-and-feature-correlations">5. Distributions and feature correlations</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-distributions">Numerical distributions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-yourself">Try it yourself</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-numerical-distributions">Explore numerical distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reading-a-distribution">Reading a distribution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-a-variable-across-groups">Comparing a variable across groups</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#range-checks-and-flagged-values">Range checks and flagged values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pearson-spearman-and-the-sample-behind-each-number">Pearson, Spearman, and the sample behind each number</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-correlations-yourself">Explore correlations yourself</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-a-correlation-matrix-is-the-wrong-tool">When a correlation matrix is the wrong tool</a></li>
 </ul>
 </li>
 </ul>
