@@ -1,27 +1,27 @@
 # Interactive-widget work-package protocol
 
-WP02 has been reviewed by ChatGPT. Only this work package is now authorized:
+WP03 has been reviewed by ChatGPT. Only this work package is now authorized:
 
-1. `WP03_ABIDE_HISTOGRAM.md`
+1. `WP04_MISSING_DATA_RETENTION.md`
 
-Do not create or begin WP04. After WP03, generate `reports/WP03_REPORT.md`, commit it, and stop. Yoav will return the report to ChatGPT; ChatGPT will review it and issue WP04.
+Do not create or begin WP05. After WP04, generate `reports/WP04_REPORT.md`, commit it, and stop. Yoav will return the report to ChatGPT; ChatGPT will review it and issue WP05 if needed.
 
-WP03 uses these commits:
+WP04 uses these commits:
 
 ```text
-checkpoint: before WP03
-WP03: add production ABIDE histogram activity
-WP03 report: document results
+checkpoint: before WP04
+WP04: add ABIDE missing-data retention activity
+WP04 report: document results
 ```
 
 Continue following `CLAUDE_INTERACTIVE_WIDGETS.md`, including the mandatory checkpoint/tag, safety rules, separate implementation/report commits, and prohibition on pushing.
 
 ## Required report format
 
-Create `WPs/reports/WP03_REPORT.md` with these sections:
+Create `WPs/reports/WP04_REPORT.md` with these sections:
 
 ```markdown
-# WP03 implementation report
+# WP04 implementation report
 
 ## Outcome
 Status: SUCCESS | PARTIAL SUCCESS | FAILURE
@@ -37,20 +37,22 @@ Status: SUCCESS | PARTIAL SUCCESS | FAILURE
 
 ## Files changed
 
-## ABIDE data artifact
-- Source URL and pinned source hash:
-- Source rows/columns:
-- Exported rows/variables:
-- Exported fields:
+## Retention data artifact
+- Source URL/hash:
+- Rows and fields:
+- Site grouping treatment:
 - Missing-value representation:
-- Identifier/privacy check:
-- Artifact size and deterministic hash:
+- Participant-identifier check:
+- Artifact size/hash/determinism:
 
-## Histogram behavior
-- Variables/default:
-- Bin range/default:
-- Empty and constant-variable behavior:
-- Student-facing text:
+## Retention behavior
+- Candidate/default variables:
+- Complete-case rule:
+- No-selection behavior:
+- Overall and site outputs:
+- Student-facing prompts:
+
+## Legacy cleanup
 
 ## Build and deployment integration
 
@@ -68,12 +70,12 @@ Status: SUCCESS | PARTIAL SUCCESS | FAILURE
 
 ## Git commits created
 
-## Recommended scope for WP04
-- Recommendations only. Do not create or begin WP04.
+## Recommended scope for WP05
+- Recommendations only. Do not create or begin WP05.
 
 ## Instructions for reviewer
-Paste this entire report into the ChatGPT conversation that produced WP03.
+Paste this entire report into the ChatGPT conversation that produced WP04.
 ```
 
-Every claim of interactive success must be supported by a browser test against the final built Chapter 1 HTML, not only the standalone widget page.
+Every interactive claim must be supported by a browser test against the final built Chapter 1 HTML.
 
