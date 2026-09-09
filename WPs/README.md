@@ -1,25 +1,27 @@
 # Interactive-widget work-package protocol
 
-Only this work package is currently authorized:
+WP01 has been reviewed by ChatGPT. Only this work package is now authorized:
 
-1. `WP01_AUDIT_AND_BASELINE.md`
+1. `WP02_WIDGET_RUNTIME.md`
 
-Do not create or begin WP02. After WP01, generate `reports/WP01_REPORT.md`, commit it, and stop. Yoav will return the report to ChatGPT. ChatGPT will review the evidence and only then issue WP02.
+Do not create or begin WP03. After WP02, generate `reports/WP02_REPORT.md`, commit it, and stop. Yoav will return the report to ChatGPT; ChatGPT will review it and issue WP03.
 
-WP01 uses these commits:
+WP02 uses these commits:
 
 ```text
-checkpoint: before WP01
-WP01: audit interactive notebook baseline
-WP01 report: document results
+checkpoint: before WP02
+WP02: add and verify reusable widget runtime
+WP02 report: document results
 ```
+
+Continue following `CLAUDE_INTERACTIVE_WIDGETS.md`, including the mandatory checkpoint/tag, safety rules, and separate report commit.
 
 ## Required report format
 
-Create `WPs/reports/WPXX_REPORT.md` at the end of every WP:
+Create `WPs/reports/WP02_REPORT.md`:
 
 ```markdown
-# WPXX implementation report
+# WP02 implementation report
 
 ## Outcome
 Status: SUCCESS | PARTIAL SUCCESS | FAILURE
@@ -39,6 +41,13 @@ One-paragraph outcome summary.
 ## Files changed
 - Every changed path and its purpose.
 
+## Runtime design
+- Component registry:
+- Config/data validation:
+- URL and same-origin handling:
+- Plotly bundling:
+- Static output path:
+
 ## Tests and verification
 | Command/test | Result | Evidence or relevant output |
 |---|---|---|
@@ -52,7 +61,7 @@ One-paragraph outcome summary.
 - Write `None` only if there were no deviations.
 
 ## Problems and unresolved risks
-- Failures, warnings, browser limitations, data concerns, or uncertainty.
+- Failures, warnings, browser limitations, dependency concerns, or uncertainty.
 - Write `None` only if genuinely none remain.
 
 ## Git commits created
@@ -60,12 +69,12 @@ One-paragraph outcome summary.
 - Implementation commit.
 - The report commit is printed in the terminal summary because the report cannot contain its own future hash.
 
-## Recommended scope for the next WP
-- Recommendations only. Do not create or begin the next WP.
+## Recommended scope for WP03
+- Recommendations only. Do not create or begin WP03.
 
 ## Instructions for reviewer
-Paste this entire report into the ChatGPT conversation that produced WPXX.
+Paste this entire report into the ChatGPT conversation that produced WP02.
 ```
 
-Record blockers precisely, including the failing command and a concise error excerpt. Never describe an untested behavior as working.
+Never describe an untested behavior as working. Record a failing command with a concise relevant error excerpt.
 
