@@ -52,6 +52,12 @@ jobs:
       - name: Validate both committed ABIDE data artifacts (offline)
         run: python scripts/export_widget_data.py --check --artifact all
 
+      - name: Unit-test the Python scripts (offline)
+        run: python -m unittest discover -s tests -v
+
+      - name: Check the portable notebook is not stale (offline)
+        run: python scripts/build_portable_notebook.py --check
+
       - name: Install Playwright Chromium
         working-directory: interactive
         run: npx playwright install --with-deps chromium
@@ -80,6 +86,9 @@ jobs:
       - name: End-to-end test the built Chapter 1 page
         working-directory: interactive
         run: npm run test:e2e:book
+
+      - name: Execute the portable notebook outside the repository
+        run: python scripts/smoke_portable_notebook.py
 
       - name: Publish website
         uses: peaceiris/actions-gh-pages@v4
