@@ -31,6 +31,10 @@ ALLOWED = [
     "SCQ_TOTAL",
     "SUB_ID",
     "SITE_ID",
+    "DX_GROUP",
+    "SEX",
+    "CURRENT_MED_STATUS",
+    "HANDEDNESS_CATEGORY",
 ]
 
 # 4 data rows; leading/trailing spaces on headers on purpose.
@@ -42,9 +46,27 @@ FIXTURE_CSV = (
     "4,DEF,8.25,110,0\n"
 ).encode("latin-1")
 
+# 6 rows across 3 sites for the retention artifact. Includes a valid 0
+# (CURRENT_MED_STATUS), documented integer category codes, floats, and nulls.
+RETENTION_FIXTURE_CSV = (
+    "SUB_ID,SITE_ID,DX_GROUP,AGE_AT_SCAN,SEX,FIQ,CURRENT_MED_STATUS\n"
+    "1,SiteB,1,10.5,1,100,0\n"
+    "2,SiteB,2,,1,95,1\n"
+    "3,SiteA,1,21.0,2,,0\n"
+    "4,SiteA,2,8.25,2,110,\n"
+    "5,SiteA,1,12.0,1,105,1\n"
+    "6,SiteC,2,15.0,1,,0\n"
+).encode("latin-1")
+
+RETENTION_VARS = ["DX_GROUP", "AGE_AT_SCAN", "SEX", "FIQ", "CURRENT_MED_STATUS"]
+
 
 def build_fixture_frame():
     return ew.parse_csv(FIXTURE_CSV)
+
+
+def build_retention_frame():
+    return ew.parse_csv(RETENTION_FIXTURE_CSV)
 
 
 class HelperTests(unittest.TestCase):
@@ -170,6 +192,209 @@ class SerializeTests(unittest.TestCase):
     def test_rejects_nan_on_serialize(self):
         with self.assertRaises(ValueError):
             ew.serialize({"x": math.nan})
+
+
+class BuildRetentionArtifactTests(unittest.TestCase):
+    def good(self):
+        frame = build_retention_frame()
+        return ew.build_retention_artifact(frame, RETENTION_VARS, ALLOWED)
+
+    def test_happy_path_shape_and_metadata(self):
+        art = self.good()
+        self.assertEqual(art["activity"], "eda-retention")
+        self.assertEqual(art["schemaVersion"], ew.SCHEMA_VERSION)
+        self.assertEqual(art["rowCount"], 6)
+        # SITE_ID is the first column key and every candidate follows.
+        self.assertIn("SITE_ID", art["columns"])
+        self.assertEqual(set(art["columns"]) - {"SITE_ID"}, set(RETENTION_VARS))
+        # aligned lengths
+        for name, values in art["columns"].items():
+            self.assertEqual(len(values), 6, name)
+        # per-variable available/missing counts
+        meta = {m["name"]: m for m in art["variables"]}
+        self.assertEqual(meta["FIQ"]["availableN"], 4)
+        self.assertEqual(meta["FIQ"]["missingN"], 2)
+        self.assertEqual(meta["AGE_AT_SCAN"]["availableN"], 5)
+        self.assertEqual(meta["DX_GROUP"]["availableN"], 6)
+        self.assertEqual(meta["CURRENT_MED_STATUS"]["availableN"], 5)  # a real 0 is present, 1 null
+
+    def test_valid_zero_is_not_missing(self):
+        art = self.good()
+        self.assertEqual(art["columns"]["CURRENT_MED_STATUS"], [0, 1, 0, None, 1, 0])
+        meta = {m["name"]: m for m in art["variables"]}
+        self.assertEqual(meta["CURRENT_MED_STATUS"]["availableN"], 5)
+        self.assertEqual(meta["CURRENT_MED_STATUS"]["missingN"], 1)
+
+    def test_categories_preserved_as_documented_codes(self):
+        art = self.good()
+        self.assertEqual(art["columns"]["DX_GROUP"], [1, 2, 1, 2, 1, 2])
+        self.assertEqual(art["columns"]["SEX"], [1, 1, 2, 2, 1, 1])
+
+    def test_null_and_alignment_preserved_in_row_order(self):
+        art = self.good()
+        self.assertEqual(art["columns"]["FIQ"], [100, 95, None, 110, 105, None])
+        self.assertEqual(art["columns"]["AGE_AT_SCAN"], [10.5, None, 21, 8.25, 12, 15])
+        self.assertEqual(art["columns"]["SITE_ID"], ["SiteB", "SiteB", "SiteA", "SiteA", "SiteA", "SiteC"])
+
+    def test_site_metadata_is_first_appearance_order(self):
+        art = self.good()
+        self.assertEqual(art["site"]["field"], "SITE_ID")
+        self.assertEqual(art["site"]["siteCount"], 3)
+        self.assertEqual(
+            art["site"]["sites"],
+            [
+                {"label": "SiteB", "total": 2},
+                {"label": "SiteA", "total": 3},
+                {"label": "SiteC", "total": 1},
+            ],
+        )
+        self.assertEqual(sum(s["total"] for s in art["site"]["sites"]), art["rowCount"])
+
+    def test_site_id_is_the_only_allowed_identifier_shaped_field(self):
+        # SITE_ID itself trips the identifier regex, but the retention builder
+        # lets exactly that one name through.
+        self.assertTrue(ew.looks_like_identifier("SITE_ID"))
+        art = self.good()
+        self.assertIn("SITE_ID", art["columns"])
+
+    def test_rejects_sub_id_as_a_selected_variable(self):
+        frame = build_retention_frame()
+        with self.assertRaises(ValueError):
+            ew.build_retention_artifact(frame, ["SUB_ID", "FIQ"], ALLOWED)
+
+    def test_rejects_arbitrary_id_field(self):
+        frame = build_retention_frame()
+        with self.assertRaises(ValueError):
+            ew.build_retention_artifact(frame, ["SCANNER_ID"], ALLOWED + ["SCANNER_ID"])
+
+    def test_rejects_site_field_as_a_selected_variable(self):
+        frame = build_retention_frame()
+        with self.assertRaises(ValueError):
+            ew.build_retention_artifact(frame, ["SITE_ID", "FIQ"], ALLOWED)
+
+    def test_rejects_non_site_id_site_field(self):
+        frame = build_retention_frame()
+        with self.assertRaises(ValueError):
+            ew.build_retention_artifact(frame, RETENTION_VARS, ALLOWED, site_field="SITE_NAME")
+
+    def test_rejects_variable_missing_from_source(self):
+        frame = build_retention_frame()
+        with self.assertRaises(ValueError):
+            ew.build_retention_artifact(frame, ["VIQ"], ALLOWED)
+
+    def test_rejects_variable_not_in_curated_authority(self):
+        frame = build_retention_frame()
+        with self.assertRaises(ValueError):
+            ew.build_retention_artifact(frame, ["FIQ"], ["SITE_ID"])
+
+    def test_rejects_missing_site_label(self):
+        csv = (
+            "SUB_ID,SITE_ID,FIQ\n"
+            "1,SiteA,100\n"
+            "2,,95\n"
+        ).encode("latin-1")
+        frame = ew.parse_csv(csv)
+        with self.assertRaises(ValueError):
+            ew.build_retention_artifact(frame, ["FIQ"], ALLOWED)
+
+
+class ValidateRetentionArtifactTests(unittest.TestCase):
+    def good(self):
+        frame = build_retention_frame()
+        return ew.build_retention_artifact(frame, RETENTION_VARS, ALLOWED)
+
+    def test_good_artifact_passes(self):
+        self.assertEqual(ew.validate_retention_artifact(self.good(), ALLOWED), [])
+
+    def test_catches_missing_site_column(self):
+        art = self.good()
+        del art["columns"]["SITE_ID"]
+        problems = ew.validate_retention_artifact(art, ALLOWED)
+        self.assertTrue(any("SITE_ID" in p for p in problems), problems)
+
+    def test_catches_null_in_site_column(self):
+        art = self.good()
+        art["columns"]["SITE_ID"][0] = None
+        self.assertTrue(
+            any("site column" in p for p in ew.validate_retention_artifact(art, ALLOWED))
+        )
+
+    def test_catches_identifier_column_other_than_site(self):
+        art = self.good()
+        art["columns"]["SUB_ID"] = [None] * art["rowCount"]
+        self.assertTrue(
+            any("identifier-like" in p for p in ew.validate_retention_artifact(art, ALLOWED))
+        )
+
+    def test_catches_wrong_activity(self):
+        art = self.good()
+        art["activity"] = "eda-histogram"
+        self.assertTrue(
+            any("activity" in p for p in ew.validate_retention_artifact(art, ALLOWED))
+        )
+
+    def test_catches_unaligned_column(self):
+        art = self.good()
+        art["columns"]["FIQ"].append(1)
+        self.assertTrue(
+            any("FIQ" in p and "values" in p for p in ew.validate_retention_artifact(art, ALLOWED))
+        )
+
+    def test_catches_site_total_mismatch(self):
+        art = self.good()
+        art["site"]["sites"][0]["total"] = 999
+        self.assertTrue(
+            any("total" in p for p in ew.validate_retention_artifact(art, ALLOWED))
+        )
+
+    def test_catches_site_order_not_first_appearance(self):
+        art = self.good()
+        art["site"]["sites"] = list(reversed(art["site"]["sites"]))
+        self.assertTrue(
+            any("first-appearance" in p for p in ew.validate_retention_artifact(art, ALLOWED))
+        )
+
+    def test_catches_bad_available_n(self):
+        art = self.good()
+        art["variables"][0]["availableN"] += 1
+        self.assertTrue(
+            any("availableN" in p for p in ew.validate_retention_artifact(art, ALLOWED))
+        )
+
+
+class RetentionSerializationTests(unittest.TestCase):
+    def test_deterministic_round_trip(self):
+        frame = build_retention_frame()
+        art = ew.build_retention_artifact(frame, RETENTION_VARS, ALLOWED)
+        text = ew.serialize(art)
+        self.assertTrue(text.endswith("\n"))
+        self.assertEqual(text, ew.serialize(json.loads(text)))
+        reloaded = json.loads(text)
+        self.assertEqual(ew.validate_retention_artifact(reloaded, ALLOWED), [])
+
+
+class ArtifactRegistryTests(unittest.TestCase):
+    def test_both_modes_are_registered_and_distinct(self):
+        self.assertEqual(set(ew.ARTIFACTS), {"histogram", "retention"})
+        self.assertNotEqual(
+            ew.ARTIFACTS["histogram"].path, ew.ARTIFACTS["retention"].path
+        )
+        self.assertEqual(ew.ARTIFACTS["histogram"].path.name, "abide_histogram.json")
+        self.assertEqual(ew.ARTIFACTS["retention"].path.name, "abide_retention.json")
+
+    def test_selector_scopes_to_one_artifact(self):
+        self.assertEqual([s.key for s in ew._selected_specs("histogram")], ["histogram"])
+        self.assertEqual([s.key for s in ew._selected_specs("retention")], ["retention"])
+        self.assertEqual(
+            sorted(s.key for s in ew._selected_specs("all")), ["histogram", "retention"]
+        )
+
+    def test_committed_artifacts_pass_their_own_validators(self):
+        # Offline: the real committed files validate under the real authority.
+        allowed = ew.read_allowed_columns(ew.ALLOWED_COLUMNS_PATH)
+        for spec in ew.ARTIFACTS.values():
+            data = json.loads(spec.path.read_text(encoding="utf-8"))
+            self.assertEqual(spec.validate(data, allowed), [], spec.key)
 
 
 if __name__ == "__main__":

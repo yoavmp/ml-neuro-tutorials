@@ -62,6 +62,54 @@ const edaHistogramConfig = z
   })
   .strict();
 
+const retentionVariableRef = z
+  .object({
+    name: z.string().min(1, "variable.name must be a non-empty string"),
+    label: z.string().min(1, "variable.label must be a non-empty string"),
+  })
+  .strict();
+
+const retentionGroup = z
+  .object({
+    key: z.string().min(1, "group.key must be a non-empty string"),
+    label: z.string().min(1, "group.label must be a non-empty string"),
+    variables: z
+      .array(retentionVariableRef)
+      .min(1, "each group must list at least one variable"),
+  })
+  .strict();
+
+const edaRetentionConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("eda-retention"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    siteField: z.string().min(1, "config.siteField must be a non-empty string"),
+    siteLabel: z.string().min(1, "config.siteLabel must be a non-empty string"),
+    groups: z
+      .array(retentionGroup)
+      .min(1, "config.groups must list at least one group"),
+    defaultVariables: z
+      .array(z.string().min(1))
+      .min(1, "config.defaultVariables must list at least one variable"),
+    chart: z
+      .object({
+        // Only one metric today; declared explicitly so a future metric is an
+        // additive change, not a silent default flip.
+        metric: z.literal("retained-percentage"),
+      })
+      .strict(),
+    lowRetentionWarningPct: z
+      .number()
+      .positive()
+      .max(100)
+      .optional(),
+    reflectionPrompts: z
+      .array(z.string().min(1))
+      .min(1, "config.reflectionPrompts must list at least one prompt"),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -69,11 +117,13 @@ const edaHistogramConfig = z
 export const activityConfigSchema = z.discriminatedUnion("type", [
   runtimeSmokeConfig,
   edaHistogramConfig,
+  edaRetentionConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
 export type RuntimeSmokeConfig = z.infer<typeof runtimeSmokeConfig>;
 export type EdaHistogramConfig = z.infer<typeof edaHistogramConfig>;
+export type EdaRetentionConfig = z.infer<typeof edaRetentionConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
@@ -114,6 +164,34 @@ function checkSemantics(config: ActivityConfig): string | null {
     }
     if ((dflt - min) % step !== 0) {
       return `config.bins.default (${dflt}) must be reachable from min ${min} in steps of ${step}`;
+    }
+  }
+  if (config.type === "eda-retention") {
+    const groupKeys = config.groups.map((g) => g.key);
+    const dupKeys = [...new Set(groupKeys.filter((k, i) => groupKeys.indexOf(k) !== i))];
+    if (dupKeys.length > 0) {
+      return `config.groups has duplicate key(s): ${dupKeys.join(", ")}`;
+    }
+    const names = config.groups.flatMap((g) => g.variables.map((v) => v.name));
+    const dupNames = [...new Set(names.filter((n, i) => names.indexOf(n) !== i))];
+    if (dupNames.length > 0) {
+      return `config.groups has duplicate variable name(s) across groups: ${dupNames.join(", ")}`;
+    }
+    if (names.includes(config.siteField)) {
+      return `config.siteField "${config.siteField}" must not also be a selectable variable`;
+    }
+    const nameSet = new Set(names);
+    const unknownDefaults = config.defaultVariables.filter((n) => !nameSet.has(n));
+    if (unknownDefaults.length > 0) {
+      return (
+        `config.defaultVariables contains name(s) not in any group: ` +
+        `${unknownDefaults.join(", ")}`
+      );
+    }
+    const dv = config.defaultVariables;
+    const dupDefaults = [...new Set(dv.filter((n, i) => dv.indexOf(n) !== i))];
+    if (dupDefaults.length > 0) {
+      return `config.defaultVariables has duplicate name(s): ${dupDefaults.join(", ")}`;
     }
   }
   return null;

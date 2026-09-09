@@ -49,8 +49,8 @@ jobs:
         working-directory: interactive
         run: npm run build
 
-      - name: Validate the committed ABIDE data artifact (offline)
-        run: python scripts/export_widget_data.py --check
+      - name: Validate both committed ABIDE data artifacts (offline)
+        run: python scripts/export_widget_data.py --check --artifact all
 
       - name: Install Playwright Chromium
         working-directory: interactive

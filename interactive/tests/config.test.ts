@@ -192,6 +192,135 @@ describe("parseActivityConfig — eda-histogram", () => {
   });
 });
 
+const validRetention = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "eda-retention",
+  title: "ABIDE-II complete-case retention",
+  instructions: "Tick the variables you would require.",
+  data: "../data/abide_retention.json",
+  siteField: "SITE_ID",
+  siteLabel: "Acquisition site",
+  groups: [
+    {
+      key: "demographics",
+      label: "Demographics and diagnosis",
+      variables: [
+        { name: "DX_GROUP", label: "Diagnostic group" },
+        { name: "AGE_AT_SCAN", label: "Age at scan" },
+        { name: "SEX", label: "Sex" },
+      ],
+    },
+    {
+      key: "cognitive",
+      label: "Cognitive scores",
+      variables: [{ name: "FIQ", label: "Full-scale IQ" }],
+    },
+  ],
+  defaultVariables: ["DX_GROUP", "AGE_AT_SCAN", "SEX", "FIQ"],
+  chart: { metric: "retained-percentage" },
+  lowRetentionWarningPct: 50,
+  reflectionPrompts: ["Compare the core set with a broader set."],
+};
+
+describe("parseActivityConfig — eda-retention", () => {
+  it("accepts a well-formed retention config", () => {
+    const r = parseActivityConfig(validRetention);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok && r.config.type === "eda-retention") {
+      expect(r.config.defaultVariables).toEqual(["DX_GROUP", "AGE_AT_SCAN", "SEX", "FIQ"]);
+      expect(r.config.groups).toHaveLength(2);
+    }
+  });
+
+  it("accepts a config without the optional lowRetentionWarningPct", () => {
+    const { lowRetentionWarningPct: _omit, ...rest } = validRetention;
+    void _omit;
+    expect(parseActivityConfig(rest).ok).toBe(true);
+  });
+
+  it("rejects a duplicate variable name across groups", () => {
+    const r = parseActivityConfig({
+      ...validRetention,
+      groups: [
+        validRetention.groups[0],
+        { key: "cognitive", label: "Cognitive", variables: [{ name: "SEX", label: "dup" }] },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate variable name/);
+  });
+
+  it("rejects duplicate group keys", () => {
+    const r = parseActivityConfig({
+      ...validRetention,
+      groups: [validRetention.groups[0], { ...validRetention.groups[1], key: "demographics" }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate key/);
+  });
+
+  it("rejects a defaultVariable that is in no group", () => {
+    const r = parseActivityConfig({
+      ...validRetention,
+      defaultVariables: ["DX_GROUP", "NOT_A_VAR"],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/not in any group/);
+  });
+
+  it("rejects the site field also appearing as a selectable variable", () => {
+    const r = parseActivityConfig({
+      ...validRetention,
+      groups: [
+        {
+          key: "demographics",
+          label: "Demographics",
+          variables: [{ name: "SITE_ID", label: "Site" }],
+        },
+        validRetention.groups[1],
+      ],
+      defaultVariables: ["FIQ"],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/siteField/);
+  });
+
+  it("rejects an empty variable label", () => {
+    const r = parseActivityConfig({
+      ...validRetention,
+      groups: [
+        { key: "g", label: "G", variables: [{ name: "FIQ", label: "" }] },
+      ],
+      defaultVariables: ["FIQ"],
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects an unknown chart metric", () => {
+    const r = parseActivityConfig({
+      ...validRetention,
+      chart: { metric: "something-else" },
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    const r = parseActivityConfig({ ...validRetention, extra: 1 });
+    expect(r.ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/eda_retention.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/eda_retention.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
 describe("parseActivityConfigJson", () => {
   it("parses and validates a JSON string", () => {
     const r = parseActivityConfigJson(JSON.stringify(valid));

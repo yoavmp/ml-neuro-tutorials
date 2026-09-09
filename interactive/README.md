@@ -4,9 +4,13 @@ A kernel-free, CDN-free browser runtime for the interactive activities embedded
 in the Jupyter Book. It loads a validated JSON **config** + **data** file and
 renders an activity with a locally bundled copy of Plotly.js.
 
-> **Status (WP03):** the first production activity, `eda-histogram`, is live and
-> embedded in Chapter 1. The developer smoke activity (`runtime-smoke`) remains a
-> fixture. The missing-data retention activity is still later work.
+> **Status (WP04):** two production activities are live and embedded in
+> Chapter 1 — `eda-histogram` (variable distributions) and `eda-retention`
+> (complete-case retention by acquisition site). The developer smoke activity
+> (`runtime-smoke`) remains a fixture. The obsolete `ipywidgets` / JupyterLite /
+> Voici experiment (notebook cells, `exercise_01_widgets.ipynb`, and the
+> `jupyterlite_sphinx` config) was removed in WP04 once the browser-native
+> replacements passed; the **Open in Colab** launch button is unchanged.
 
 ## Prerequisites
 
@@ -25,7 +29,7 @@ renders an activity with a locally bundled copy of Plotly.js.
 |---|---|
 | `npm ci` | Install exact locked dependencies. |
 | `npm run typecheck` | `tsc --noEmit`, strict. |
-| `npm run test:unit` | Vitest unit tests (`tests/*.test.ts`): histogram maths, config + data + URL validation. |
+| `npm run test:unit` | Vitest unit tests (`tests/*.test.ts`): histogram maths, complete-case retention maths, config + data + URL validation. |
 | `npm test` | typecheck + unit tests. |
 | `npm run build` | typecheck, then `vite build` → `../book/_static/widgets/app/`. |
 | `npm run serve:static` | Serve `book/_static/widgets/` over HTTP on `:4173` for manual checks. |
@@ -42,6 +46,8 @@ npm run serve:static
 #   http://localhost:4173/app/index.html?config=../configs/runtime_smoke.json
 # production histogram:
 #   http://localhost:4173/app/index.html?config=../configs/eda_histogram.json
+# production retention explorer:
+#   http://localhost:4173/app/index.html?config=../configs/eda_retention.json
 # subpath check: prefix the path with /ml-neuro-tutorials
 ```
 
@@ -80,21 +86,77 @@ tested behaviour (one unit-wide bin / an explicit "no data" message).
 3. `npm run typecheck && npm run test:unit && npm run build`, then
    `npm run test:e2e` and (after a book build) `npm run test:e2e:book`.
 
+## The `eda-retention` activity
+
+| Piece | Path | Tracked? |
+|---|---|---|
+| Config (title, grouped candidate variables + labels, defaults, prompts) | `book/_static/widgets/configs/eda_retention.json` | yes |
+| Data artifact (`SITE_ID` + 13 candidate columns, `null` for missing) | `book/_static/widgets/data/abide_retention.json` | yes |
+| Pure complete-case maths (no DOM/Plotly) | `interactive/src/retention.ts` | yes |
+| Data Zod schema (no DOM/Plotly) | `interactive/src/retention-data.ts` | yes |
+| Component (grouped checkboxes, presets, Plotly bar of retained % by site) | `interactive/src/components/retention.ts` | yes |
+
+Students tick candidate "core" variables; a participant is retained only when
+**every** ticked variable is non-`null` for them. The component shows overall
+retained N / total / percentage and excluded N, a per-site bar chart (hover =
+retained N / site total), an explicit "no completeness criterion is currently
+applied" state when nothing is selected, and a warning cue when a selection
+keeps under 50 % overall (a prompt to look closely, **not** a universal
+scientific cutoff). `Use suggested core set`, `Select all`, and `Clear` presets
+drive the same recompute-and-`Plotly.react()` path as the checkboxes.
+
+### Why `SITE_ID` is in this artifact but participant identifiers never are
+
+Grouped retention summaries are impossible without a site-grouping label, so the
+retention exporter has **one** deliberately narrow exception: the exact column
+name `SITE_ID` is allowed through, and only into `abide_retention.json`. It is a
+coarse, non-personal acquisition-site code (19 values). `SUB_ID`, subject /
+participant IDs, names, emails, dates of birth and arbitrary `*_ID` fields stay
+rejected by the same token regex in both the Python builder/validator and the
+client-side Zod schema. No participant row is ever exposed — the chart hover
+carries site-level aggregates only.
+
+### Default retention — regression reference
+
+With the shipped `abide_retention.json` (1,114 rows) and the suggested core set
+**`DX_GROUP`, `AGE_AT_SCAN`, `SEX`, `FIQ`**, independently cross-checked with
+pandas:
+
+| Metric | Value |
+|---|---|
+| Retained overall | **1,015 / 1,114 = 91.1131 %** |
+| Excluded overall | 99 |
+| `ABIDEII-BNI_1` | 58 / 58 (100 %) |
+| `ABIDEII-EMC_1` | 0 / 54 (0 % — FIQ absent site-wide) |
+| `ABIDEII-IP_1` | 25 / 56 (44.64 %) |
+| `ABIDEII-USM_1` | 27 / 33 (81.82 %) |
+
+Selecting the two behavioral totals `SCQ_TOTAL` + `ADOS_2_TOTAL` instead retains
+**119 / 1,114 = 10.6822 %**; `Select all` (13 variables) retains 26 / 1,114
+(2.33 %) and trips the low-retention warning. Site order is the SITE_ID column's
+first appearance order.
+
 ### Refreshing the pinned ABIDE data — intentional only
 
-`scripts/export_widget_data.py` pins the source CSV by URL **and** SHA-256.
+`scripts/export_widget_data.py` pins the source CSV by URL **and** SHA-256, and
+produces **two** artifacts from it. `--refresh` / `--check` take an optional
+`--artifact {histogram,retention,all}` (default `all`); the bare WP03 forms keep
+working and now cover both files. `--artifact histogram` only ever touches
+`abide_histogram.json` and `--artifact retention` only ever touches
+`abide_retention.json`, so refreshing one cannot rewrite or delete the other.
 
 ```bash
-.venv/bin/python scripts/export_widget_data.py --check              # offline: validate the committed artifact
-.venv/bin/python scripts/export_widget_data.py --print-upstream-hash # network: show the current upstream SHA-256
-.venv/bin/python scripts/export_widget_data.py --refresh             # network: verify hash, rewrite the artifact
+.venv/bin/python scripts/export_widget_data.py --check                       # offline: validate BOTH committed artifacts
+.venv/bin/python scripts/export_widget_data.py --check --artifact retention   # offline: just the retention artifact
+.venv/bin/python scripts/export_widget_data.py --print-upstream-hash          # network: show the current upstream SHA-256
+.venv/bin/python scripts/export_widget_data.py --refresh --artifact all       # network: verify hash, rewrite both artifacts
 ```
 
 `--refresh` **fails loudly** if the upstream bytes no longer match
 `SOURCE_SHA256`; it never silently rewrites teaching data. To adopt a genuine
 upstream change: run `--print-upstream-hash`, review the upstream diff, update
 the `SOURCE_SHA256` constant in the script in the same commit, then run
-`--refresh` and commit the regenerated `abide_histogram.json`. The artifact is
+`--refresh` and commit the regenerated artifact(s). Each artifact is
 byte-for-byte deterministic (sorted keys, compact separators, trailing newline),
 so a no-op `--refresh` produces no diff.
 
@@ -159,6 +221,31 @@ looks the component up by `config.type`. Adding the histogram activity later is:
 3. `registry.register(histogramComponent)` in `registry.ts`;
 4. keep the pure binning/statistics math in its own module so it can be unit
    tested without a DOM or Plotly.
+
+## Page-level CDN / theme dependencies (still present, out of scope here)
+
+Each **activity iframe** is same-origin and CDN/kernel-free — asserted by the
+standalone and built-book Playwright specs, which scope their "no off-origin /
+CDN / kernel / WebSocket" checks to requests originating inside the app frame.
+
+The surrounding Chapter 1 *page* still pulls **MathJax** from
+`cdn.jsdelivr.net/npm/mathjax@3` (`sphinx-book-theme` / MyST default) and still
+ships `sphinx-book-theme`'s launch-button `sphinx-thebe.js` (same-origin) whose
+inline config names `https://unpkg.com/thebe@0.8.2/...` — thebe itself is only
+fetched if a reader clicks a "live code" button, which this course does not
+surface. Both are pre-existing `sphinx-book-theme` behaviour, unrelated to the
+activities.
+
+The WP04 legacy cleanup **did** remove, from this page: `require.js` (cdnjs),
+`@jupyter-widgets/html-manager` (jsdelivr) and the notebook widget-manager
+bootstrap (they came with the now-deleted `ipywidgets` cells), and the entire
+`lite/` JupyterLite app (`jupyterlite_sphinx` config dropped from
+`book/_config.yml`). No Google Fonts request is made by this page.
+
+Self-hosting the remaining MathJax / trimming the thebe config so the whole
+published page — not just the iframes — is CDN-free is deliberately **out of
+scope** for this WP (see `WP04_MISSING_DATA_RETENTION.md`
+§"Fixed teaching decisions").
 
 ## `runtime-smoke` is a test fixture
 

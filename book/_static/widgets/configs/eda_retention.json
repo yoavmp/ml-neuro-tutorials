@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "type": "eda-retention",
+  "title": "ABIDE-II complete-case retention",
+  "description": "Course activity for Chapter 1 EDA: choose a set of core variables and see how complete-case filtering changes the retained sample overall and within each acquisition site.",
+  "instructions": "Tick the variables you would require for an analysis. A participant is kept only if every ticked variable is recorded for them. The summary and the chart update immediately, overall and for each acquisition site.",
+  "data": "../data/abide_retention.json",
+  "siteField": "SITE_ID",
+  "siteLabel": "Acquisition site",
+  "groups": [
+    {
+      "key": "demographics",
+      "label": "Demographics and diagnosis",
+      "variables": [
+        { "name": "DX_GROUP", "label": "Diagnostic group" },
+        { "name": "AGE_AT_SCAN", "label": "Age at scan" },
+        { "name": "SEX", "label": "Sex" },
+        { "name": "HANDEDNESS_CATEGORY", "label": "Handedness category" }
+      ]
+    },
+    {
+      "key": "cognitive",
+      "label": "Cognitive scores",
+      "variables": [
+        { "name": "FIQ", "label": "Full-scale IQ" },
+        { "name": "VIQ", "label": "Verbal IQ" },
+        { "name": "PIQ", "label": "Performance IQ" }
+      ]
+    },
+    {
+      "key": "behavioral",
+      "label": "Diagnostic and behavioral measures",
+      "variables": [
+        { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
+        { "name": "ADOS_2_TOTAL", "label": "ADOS-2 total" },
+        { "name": "SRS_TOTAL_RAW", "label": "SRS total (raw)" },
+        { "name": "SCQ_TOTAL", "label": "SCQ total" }
+      ]
+    },
+    {
+      "key": "scan",
+      "label": "Medication and scan conditions",
+      "variables": [
+        { "name": "CURRENT_MED_STATUS", "label": "Current medication status" },
+        { "name": "EYE_STATUS_AT_SCAN", "label": "Eye status at scan" }
+      ]
+    }
+  ],
+  "defaultVariables": ["DX_GROUP", "AGE_AT_SCAN", "SEX", "FIQ"],
+  "chart": { "metric": "retained-percentage" },
+  "lowRetentionWarningPct": 50,
+  "reflectionPrompts": [
+    "Compare the suggested core set with a selection that adds one or more behavioral questionnaires. How much does the retained sample shrink, and which sites disappear first?",
+    "Which acquisition sites are disproportionately affected by requiring the behavioral measures? Use the missingness heatmap above to explain why.",
+    "Complete-case filtering can change the composition of the sample, not just its size. Which groups of participants might be over- or under-represented after filtering, and why does that matter for a later analysis?"
+  ]
+}

@@ -1,12 +1,14 @@
 import { expect, test, type Frame } from "@playwright/test";
 
-// Proof that the embedded eda-histogram activity works on the *final built
-// Chapter 1 HTML page*, served beneath the simulated GitHub Pages project
-// subpath — not just the standalone widget page.
+// Proof that the embedded eda-histogram AND eda-retention activities work on the
+// *final built Chapter 1 HTML page*, served beneath the simulated GitHub Pages
+// project subpath — not just the standalone widget page.
 
 const CHAPTER_URL =
   "/ml-neuro-tutorials/chapters/chapter_01/exercise_01.html";
 const IFRAME_SELECTOR = 'iframe[title="Interactive histogram of ABIDE-II variable distributions"]';
+const RETENTION_IFRAME_SELECTOR =
+  'iframe[title="Interactive ABIDE-II complete-case retention explorer"]';
 
 async function widgetFrame(page: import("@playwright/test").Page): Promise<Frame> {
   const handle = await page.locator(IFRAME_SELECTOR).elementHandle();
@@ -152,5 +154,134 @@ test.describe("Chapter 1 built page — embedded histogram", () => {
     await expect(plot.locator("svg.main-svg").first()).toBeVisible();
     await frame.locator('[data-testid="histogram-variable"]').selectOption("FIQ");
     await expect(plot).toHaveAttribute("data-active-variable", "FIQ");
+  });
+});
+
+async function retentionFrame(page: import("@playwright/test").Page): Promise<Frame> {
+  const handle = await page.locator(RETENTION_IFRAME_SELECTOR).elementHandle();
+  expect(handle, "retention iframe element present").not.toBeNull();
+  const frame = await handle!.contentFrame();
+  expect(frame, "retention iframe content frame present").not.toBeNull();
+  return frame!;
+}
+
+async function retentionBars(frame: Frame): Promise<string> {
+  return frame.evaluate(() => {
+    const paths = document.querySelectorAll<SVGPathElement>(
+      '[data-testid="retention-plot"] g.trace.bars g.point path',
+    );
+    return Array.from(paths, (p) => p.getAttribute("d") ?? "").join("|");
+  });
+}
+
+test.describe("Chapter 1 built page — embedded retention explorer", () => {
+  test("iframe loads, config+data are 200, selection changes text and Plotly geometry", async ({
+    page,
+  }) => {
+    const APP_MARKER = "/_static/widgets/app/";
+    const responses: { url: string; status: number }[] = [];
+    const activityRequests: string[] = [];
+    const failed: string[] = [];
+    const allSockets: string[] = [];
+    page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
+    page.on("request", (r) => {
+      const frameUrl = r.frame()?.url() ?? "";
+      if (frameUrl.includes(APP_MARKER)) activityRequests.push(r.url());
+    });
+    page.on("requestfailed", (r) => failed.push(r.url()));
+    page.on("websocket", (ws) => allSockets.push(ws.url()));
+
+    await page.goto(CHAPTER_URL);
+
+    const iframe = page.locator(RETENTION_IFRAME_SELECTOR);
+    await expect(iframe).toHaveCount(1);
+    await iframe.scrollIntoViewIfNeeded();
+
+    const frame = await retentionFrame(page);
+    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    const plot = frame.locator('[data-testid="retention-plot"]');
+    await expect(plot.locator("svg.main-svg").first()).toBeVisible();
+
+    // config + data returned HTTP 200
+    const configResp = responses.find((r) => r.url.endsWith("/configs/eda_retention.json"));
+    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_retention.json"));
+    expect(configResp?.status, "config HTTP status").toBe(200);
+    expect(dataResp?.status, "data HTTP status").toBe(200);
+
+    // defaults: the suggested four-variable core set, exact expected retention
+    await expect(plot).toHaveAttribute("data-selected-count", "4");
+    await expect(plot).toHaveAttribute("data-total", "1114");
+    await expect(plot).toHaveAttribute("data-retained-n", "1015");
+    await expect(plot).toHaveAttribute("data-retained-pct", "91.11");
+    await expect(plot).toHaveAttribute("data-site-count", "19");
+    await expect(frame.locator('[data-testid="retention-stats"]')).toContainText(
+      "Retained 1,015 of 1,114 participants (91.1%)",
+    );
+
+    // selection-driven change: add behavioral vars -> fewer retained, bars move,
+    // low-retention warning shows
+    const geomBefore = await retentionBars(frame);
+    await frame.locator('[data-testid="retention-select-all"]').click();
+    await expect(plot).toHaveAttribute("data-selected-count", "13");
+    await expect(plot).toHaveAttribute("data-low-retention", "true");
+    await expect(frame.locator('[data-testid="retention-warning"]')).toBeVisible();
+    await expect
+      .poll(async () => Number(await plot.getAttribute("data-retained-n")))
+      .toBeLessThan(1015);
+    await expect.poll(async () => (await retentionBars(frame)) !== geomBefore).toBe(true);
+
+    // clear -> explicit no-criterion state
+    await frame.locator('[data-testid="retention-clear"]').click();
+    await expect(plot).toHaveAttribute("data-no-selection", "true");
+    await expect(plot).toHaveAttribute("data-retained-n", "1114");
+    await expect(frame.locator('[data-testid="retention-message"]')).toContainText(
+      "no completeness criterion is currently applied",
+    );
+
+    // the ACTIVITY makes no CDN / kernel / JupyterLite / Voici / off-origin request
+    const origin = new URL(page.url()).origin;
+    expect(activityRequests.length, "activity issued requests").toBeGreaterThan(0);
+    const offOrigin = activityRequests.filter(
+      (u) => !u.startsWith(origin) && !u.startsWith("data:"),
+    );
+    expect(offOrigin, `activity off-origin: ${offOrigin.join(", ")}`).toEqual([]);
+    const banned =
+      /cdn\.plot\.ly|plotly-latest|jsdelivr|unpkg|cdnjs|googleapis|gstatic|\/api\/kernels|\/api\/sessions|pyodide|\/lite\/|voici|thebe|binder|widget-manager|html-manager/i;
+    const bannedHits = activityRequests.filter((u) => banned.test(u));
+    expect(bannedHits, `activity banned requests: ${bannedHits.join(", ")}`).toEqual([]);
+    expect(allSockets, `websockets: ${allSockets.join(", ")}`).toEqual([]);
+    const activityFailed = failed.filter((u) => /_static\/widgets\//.test(u));
+    expect(activityFailed, `failed activity requests: ${activityFailed.join(", ")}`).toEqual([]);
+  });
+
+  test("browser refresh restores the suggested core set", async ({ page }) => {
+    await page.goto(CHAPTER_URL);
+    await page.locator(RETENTION_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    let frame = await retentionFrame(page);
+    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    await frame.locator('[data-testid="retention-var-SCQ_TOTAL"]').check();
+    await expect(frame.locator('[data-testid="retention-plot"]')).toHaveAttribute(
+      "data-selected-count",
+      "5",
+    );
+
+    await page.reload();
+    await page.locator(RETENTION_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    frame = await retentionFrame(page);
+    const plot = frame.locator('[data-testid="retention-plot"]');
+    await expect(plot).toHaveAttribute("data-selected-count", "4");
+    await expect(plot).toHaveAttribute("data-retained-n", "1015");
+  });
+
+  test("embedded retention explorer is usable at a narrow viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 780 });
+    await page.goto(CHAPTER_URL);
+    await page.locator(RETENTION_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    const frame = await retentionFrame(page);
+    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    const plot = frame.locator('[data-testid="retention-plot"]');
+    await expect(plot.locator("svg.main-svg").first()).toBeVisible();
+    await frame.locator('[data-testid="retention-var-VIQ"]').check();
+    await expect(plot).toHaveAttribute("data-selected-count", "5");
   });
 });
