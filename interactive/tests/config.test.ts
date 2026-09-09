@@ -321,6 +321,148 @@ describe("parseActivityConfig — eda-retention", () => {
   });
 });
 
+const validCorrelation = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "eda-correlation",
+  title: "ABIDE-II feature correlation explorer",
+  instructions: "Pick two numeric variables and a method.",
+  data: "../data/abide_retention.json",
+  variables: [
+    { name: "FIQ", label: "Full-scale IQ" },
+    { name: "VIQ", label: "Verbal IQ" },
+    { name: "SRS_TOTAL_RAW", label: "SRS total (raw)" },
+  ],
+  defaultX: "FIQ",
+  defaultY: "SRS_TOTAL_RAW",
+  defaultMethod: "pearson",
+  groupings: [
+    {
+      key: "diagnosis",
+      label: "Diagnostic group",
+      field: "DX_GROUP",
+      values: [
+        { code: 1, label: "Autism" },
+        { code: 2, label: "Control" },
+      ],
+    },
+  ],
+  reflectionPrompts: ["Predict the sign first."],
+};
+
+describe("parseActivityConfig — eda-correlation", () => {
+  it("accepts a well-formed correlation config", () => {
+    const r = parseActivityConfig(validCorrelation);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok && r.config.type === "eda-correlation") {
+      expect(r.config.defaultX).toBe("FIQ");
+      expect(r.config.defaultY).toBe("SRS_TOTAL_RAW");
+      expect(r.config.groupings).toHaveLength(1);
+    }
+  });
+
+  it("accepts an empty groupings array (ungrouped-only exploration)", () => {
+    expect(parseActivityConfig({ ...validCorrelation, groupings: [] }).ok).toBe(true);
+  });
+
+  it("rejects fewer than two variables", () => {
+    const r = parseActivityConfig({
+      ...validCorrelation,
+      variables: [{ name: "FIQ", label: "Full-scale IQ" }],
+      defaultY: "FIQ",
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects duplicate variable names", () => {
+    const r = parseActivityConfig({
+      ...validCorrelation,
+      variables: [
+        { name: "FIQ", label: "a" },
+        { name: "FIQ", label: "b" },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate/);
+  });
+
+  it("rejects a defaultX not in variables", () => {
+    const r = parseActivityConfig({ ...validCorrelation, defaultX: "NOPE" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/defaultX/);
+  });
+
+  it("rejects identical defaultX and defaultY", () => {
+    const r = parseActivityConfig({ ...validCorrelation, defaultY: "FIQ" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/must be different/);
+  });
+
+  it("rejects an unknown defaultMethod", () => {
+    const r = parseActivityConfig({ ...validCorrelation, defaultMethod: "kendall" });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects a grouping field that is also a selectable variable", () => {
+    const r = parseActivityConfig({
+      ...validCorrelation,
+      groupings: [
+        {
+          key: "byfiq",
+          label: "By FIQ",
+          field: "FIQ",
+          values: [{ code: 1, label: "x" }],
+        },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/must not also be a selectable variable/);
+  });
+
+  it('rejects a grouping keyed "none"', () => {
+    const r = parseActivityConfig({
+      ...validCorrelation,
+      groupings: [
+        { key: "none", label: "None", field: "DX_GROUP", values: [{ code: 1, label: "x" }] },
+      ],
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects duplicate grouping value codes", () => {
+    const r = parseActivityConfig({
+      ...validCorrelation,
+      groupings: [
+        {
+          key: "diagnosis",
+          label: "Diagnostic group",
+          field: "DX_GROUP",
+          values: [
+            { code: 1, label: "Autism" },
+            { code: 1, label: "again" },
+          ],
+        },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate code/);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validCorrelation, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/eda_correlation.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/eda_correlation.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
 describe("parseActivityConfigJson", () => {
   it("parses and validates a JSON string", () => {
     const r = parseActivityConfigJson(JSON.stringify(valid));

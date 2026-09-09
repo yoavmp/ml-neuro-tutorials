@@ -6,8 +6,10 @@ import { ComponentRegistry } from "./types";
 import { runtimeSmokeComponent } from "./runtime-smoke";
 import { histogramComponent } from "./histogram";
 import { retentionComponent } from "./retention";
+import { correlationComponent } from "./correlation";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
 registry.register(histogramComponent);
 registry.register(retentionComponent);
+registry.register(correlationComponent);

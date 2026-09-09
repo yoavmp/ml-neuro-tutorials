@@ -110,6 +110,52 @@ const edaRetentionConfig = z
   })
   .strict();
 
+const correlationVariableRef = z
+  .object({
+    name: z.string().min(1, "variable.name must be a non-empty string"),
+    label: z.string().min(1, "variable.label must be a non-empty string"),
+  })
+  .strict();
+
+const correlationGroupValue = z
+  .object({
+    code: z.number().int(),
+    label: z.string().min(1, "grouping value.label must be a non-empty string"),
+  })
+  .strict();
+
+const correlationGrouping = z
+  .object({
+    key: z.string().min(1, "grouping.key must be a non-empty string"),
+    label: z.string().min(1, "grouping.label must be a non-empty string"),
+    field: z.string().min(1, "grouping.field must be a non-empty string"),
+    values: z
+      .array(correlationGroupValue)
+      .min(1, "each grouping must list at least one value mapping"),
+  })
+  .strict();
+
+const edaCorrelationConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("eda-correlation"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    variables: z
+      .array(correlationVariableRef)
+      .min(2, "config.variables must list at least two numeric variables"),
+    defaultX: z.string().min(1, "config.defaultX must be a non-empty string"),
+    defaultY: z.string().min(1, "config.defaultY must be a non-empty string"),
+    defaultMethod: z.enum(["pearson", "spearman"]),
+    // Real groupings only (diagnosis, sex, …); the component always offers a
+    // "None" option itself, so this list must not be empty of meaning but may
+    // be an empty array if only ungrouped exploration is wanted.
+    groupings: z.array(correlationGrouping),
+    reflectionPrompts: z
+      .array(z.string().min(1))
+      .min(1, "config.reflectionPrompts must list at least one prompt"),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -118,12 +164,14 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   runtimeSmokeConfig,
   edaHistogramConfig,
   edaRetentionConfig,
+  edaCorrelationConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
 export type RuntimeSmokeConfig = z.infer<typeof runtimeSmokeConfig>;
 export type EdaHistogramConfig = z.infer<typeof edaHistogramConfig>;
 export type EdaRetentionConfig = z.infer<typeof edaRetentionConfig>;
+export type EdaCorrelationConfig = z.infer<typeof edaCorrelationConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
@@ -192,6 +240,41 @@ function checkSemantics(config: ActivityConfig): string | null {
     const dupDefaults = [...new Set(dv.filter((n, i) => dv.indexOf(n) !== i))];
     if (dupDefaults.length > 0) {
       return `config.defaultVariables has duplicate name(s): ${dupDefaults.join(", ")}`;
+    }
+  }
+  if (config.type === "eda-correlation") {
+    const names = config.variables.map((v) => v.name);
+    const dupNames = [...new Set(names.filter((n, i) => names.indexOf(n) !== i))];
+    if (dupNames.length > 0) {
+      return `config.variables has duplicate name(s): ${dupNames.join(", ")}`;
+    }
+    const nameSet = new Set(names);
+    if (!nameSet.has(config.defaultX)) {
+      return `config.defaultX "${config.defaultX}" is not one of config.variables (${names.join(", ")})`;
+    }
+    if (!nameSet.has(config.defaultY)) {
+      return `config.defaultY "${config.defaultY}" is not one of config.variables (${names.join(", ")})`;
+    }
+    if (config.defaultX === config.defaultY) {
+      return `config.defaultX and config.defaultY must be different variables (both "${config.defaultX}")`;
+    }
+    const groupKeys = config.groupings.map((g) => g.key);
+    const dupKeys = [...new Set(groupKeys.filter((k, i) => groupKeys.indexOf(k) !== i))];
+    if (dupKeys.length > 0) {
+      return `config.groupings has duplicate key(s): ${dupKeys.join(", ")}`;
+    }
+    if (groupKeys.includes("none")) {
+      return `config.groupings must not define a "none" key; the "None" option is added automatically`;
+    }
+    for (const g of config.groupings) {
+      if (nameSet.has(g.field)) {
+        return `config.groupings["${g.key}"].field "${g.field}" must not also be a selectable variable`;
+      }
+      const codes = g.values.map((v) => v.code);
+      const dupCodes = [...new Set(codes.filter((c, i) => codes.indexOf(c) !== i))];
+      if (dupCodes.length > 0) {
+        return `config.groupings["${g.key}"] has duplicate code(s): ${dupCodes.join(", ")}`;
+      }
     }
   }
   return null;

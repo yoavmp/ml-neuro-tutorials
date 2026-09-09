@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "type": "eda-correlation",
+  "title": "ABIDE-II feature correlation explorer",
+  "description": "Course activity for Chapter 1 EDA: pick two numeric variables, choose Pearson or Spearman, and see the scatterplot, the pairwise-complete sample size, and how the relationship changes when you colour by diagnosis or sex.",
+  "instructions": "Choose an X and a Y variable. Predict the direction and rough strength before you read the coefficient. Watch the pairwise-complete n: two coefficients in the same matrix can describe very different subsets of participants. Switch Pearson ↔ Spearman, and colour by a group to check whether an overall association survives within groups.",
+  "data": "../data/abide_retention.json",
+  "variables": [
+    { "name": "AGE_AT_SCAN", "label": "Age at scan (years)" },
+    { "name": "FIQ", "label": "Full-scale IQ" },
+    { "name": "VIQ", "label": "Verbal IQ" },
+    { "name": "PIQ", "label": "Performance IQ" },
+    { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
+    { "name": "ADOS_2_TOTAL", "label": "ADOS-2 total" },
+    { "name": "SRS_TOTAL_RAW", "label": "SRS total (raw)" },
+    { "name": "SCQ_TOTAL", "label": "SCQ total" }
+  ],
+  "defaultX": "FIQ",
+  "defaultY": "SRS_TOTAL_RAW",
+  "defaultMethod": "pearson",
+  "groupings": [
+    {
+      "key": "diagnosis",
+      "label": "Diagnostic group",
+      "field": "DX_GROUP",
+      "values": [
+        { "code": 1, "label": "Autism" },
+        { "code": 2, "label": "Control" }
+      ]
+    },
+    {
+      "key": "sex",
+      "label": "Sex",
+      "field": "SEX",
+      "values": [
+        { "code": 1, "label": "Male" },
+        { "code": 2, "label": "Female" }
+      ]
+    }
+  ],
+  "reflectionPrompts": [
+    "Before reading the coefficient, predict the sign and rough strength, and sketch the shape you expect (a line? a cloud? a curve?).",
+    "Compare FIQ vs Verbal IQ with ADOS-G total vs ADOS-2 total. Both look strong — but check the pairwise-complete n. Which coefficient describes almost the whole sample, and which describes a small selected subset?",
+    "Full-scale IQ is built from Verbal and Performance IQ. Is a strong FIQ–VIQ correlation a finding about the brain, or a consequence of how the score is defined?",
+    "Colour FIQ vs SRS total by diagnostic group. The overall correlation is moderate and negative; what happens to it inside the Autism group and inside the Control group, and what does that tell you about the overall number?",
+    "A correlation — Pearson or Spearman — measures association, not causation. For a pair that correlates, name one third variable that could drive both."
+  ]
+}
