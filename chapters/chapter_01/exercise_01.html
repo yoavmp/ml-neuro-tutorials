@@ -60,6 +60,8 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_01/exercise_01';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -215,7 +217,6 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../contents.html">Contents</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise I: Exploratory Data Analysis (EDA)</a></li>
-
 </ul>
 </details></li>
 </ul>
@@ -441,7 +442,6 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Exercise I: Exploratory Data Analysis (EDA)</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
 </ul>
@@ -471,33 +471,33 @@
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#missing-values">4. Missing values</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantifying-missing-values">Quantifying missing values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantifying-missing-values">Quantifying missing values</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Questions</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#is-missingness-distributed-randomly">Is missingness distributed randomly?</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpret-the-heatmap">Interpret the heatmap</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approaches-to-missing-data">Common approaches to missing data</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-incomplete-observations">Removing incomplete observations</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Questions</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imputing-a-numerical-variable">Imputing a numerical variable</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#question">Question</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approach">Common approach:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributions-and-feature-correlations">5. Distributions and feature correlations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-distributions">Numerical distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-yourself">Try it yourself</a></li>
 </ul>
 </li>
 </ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#text-percentage-missing">[
-\text{Percentage missing}</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Questions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#is-missingness-distributed-randomly">Is missingness distributed randomly?</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interpret-the-heatmap">Interpret the heatmap</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approaches-to-missing-data">Common approaches to missing data</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-incomplete-observations">Removing incomplete observations</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Questions</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#imputing-a-numerical-variable">Imputing a numerical variable</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#question">Question</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approach">Common approach:</a></li>
-</ul>
-</li>
-</ul>
-
             </nav>
         </div>
     </div>
@@ -531,10 +531,14 @@ However, you can check them out and expand your knowledge!</p>
 </section>
 <section id="importing-and-data-loading">
 <h2>1. Importing and data loading<a class="headerlink" href="#importing-and-data-loading" title="Link to this heading">#</a></h2>
-<div class="cell docutils container">
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hide</span><span class="o">-</span><span class="n">cell</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
@@ -543,19 +547,7 @@ However, you can check them out and expand your knowledge!</p>
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">hide</span><span class="o">-</span><span class="n">cell</span>
-<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
-<span class="ne">NameError</span>: name 'hide' is not defined
-</pre></div>
-</div>
-</div>
+</details>
 </div>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -567,10 +559,14 @@ exercise, we will use a curated subset of 39 demographic, diagnostic,
 cognitive, and behavioral variables.</p>
 <p class="sd-card-text">Some variables are recorded for nearly every participant, whereas others were collected only at particular sites or for particular participant groups.</p>
 </div>
-</details><div class="cell docutils container">
+</details><div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hide</span><span class="o">-</span><span class="n">cell</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="n">PHENOTYPES_URL</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">"https://raw.githubusercontent.com/"</span>
@@ -596,6 +592,7 @@ cognitive, and behavioral variables.</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
 </section>
 <section id="data-inspection">
@@ -1667,19 +1664,16 @@ In pandas, missing values are usually represented as <code class="docutils liter
 </div></div></div>
 </div>
 <p>The percentage of missing observations is calculated separately for each variable:</p>
-</section>
-</section>
-</section>
-<section class="tex2jax_ignore mathjax_ignore" id="text-percentage-missing">
-<h1>[
-\text{Percentage missing}<a class="headerlink" href="#text-percentage-missing" title="Link to this heading">#</a></h1>
-<p>\frac{\text{Number of missing observations}}
+<div class="math notranslate nohighlight">
+\[
+\text{Percentage missing}
+= \frac{\text{Number of missing observations}}
 {\text{Total number of observations}}
 \times 100
-]</p>
+\]</div>
 <p>A large percentage does not automatically mean that a variable should be removed. A sparsely measured variable could still be scientifically important.</p>
 <section id="id2">
-<h2>Questions<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<h4>Questions<a class="headerlink" href="#id2" title="Link to this heading">#</a></h4>
 <ol class="arabic simple">
 <li><p>Which variables contain no missing values?</p></li>
 <li><p>Which variables have more than 50% missing observations?</p></li>
@@ -1687,40 +1681,60 @@ In pandas, missing values are usually represented as <code class="docutils liter
 <li><p>Does this table tell us why the values are missing?</p></li>
 </ol>
 </section>
+</section>
 <section id="is-missingness-distributed-randomly">
-<h2>Is missingness distributed randomly?<a class="headerlink" href="#is-missingness-distributed-randomly" title="Link to this heading">#</a></h2>
+<h3>Is missingness distributed randomly?<a class="headerlink" href="#is-missingness-distributed-randomly" title="Link to this heading">#</a></h3>
 <p>ABIDE-II combines data from multiple research sites. Different sites may have administered different questionnaires or used different assessment procedures.</p>
 <p>Consequently, missingness may be related to the acquisition site. If so, removing incomplete observations could change the representation of sites in the dataset.</p>
-<p>hide-input
-top_missing_variables = (
-missing_summary
-.query(“n_missing &gt; 0”)
-.head(15)
-.index
-)</p>
-<p>missing_by_site = (
-phenotypes[top_missing_variables]
-.isna()
-.groupby(phenotypes[“SITE_ID”], observed=True)
-.mean()
-.mul(100)
-)</p>
-<p>plt.figure(figsize=(14, 7))</p>
-<p>sns.heatmap(
-missing_by_site.T,
-cmap=”coolwarm”,
-vmin=0,
-vmax=100,
-linewidths=0.5,
-linecolor=”black”,
-cbar_kws={“label”: “Missing observations (%)”},</p>
-<p>)</p>
-<p>plt.xlabel(“Acquisition site”)
-plt.ylabel(“Variable”)
-plt.title(“Missingness by acquisition site”)
-plt.tight_layout()</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">top_missing_variables</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">missing_summary</span>
+    <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"n_missing &gt; 0"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">index</span>
+<span class="p">)</span>
+
+<span class="n">missing_by_site</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">phenotypes</span><span class="p">[</span><span class="n">top_missing_variables</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">phenotypes</span><span class="p">[</span><span class="s2">"SITE_ID"</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
+    <span class="n">missing_by_site</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s2">"coolwarm"</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">linecolor</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span>
+    <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Missing observations (%)"</span><span class="p">},</span>
+    
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Acquisition site"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Variable"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Missingness by acquisition site"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/1c3077e7b7125e8585ce7725f56503c14010bf6b139ca5ee97cd101d7ceb1040.png" src="../../_images/1c3077e7b7125e8585ce7725f56503c14010bf6b139ca5ee97cd101d7ceb1040.png" />
+</div>
+</div>
 <section id="interpret-the-heatmap">
-<h3>Interpret the heatmap<a class="headerlink" href="#interpret-the-heatmap" title="Link to this heading">#</a></h3>
+<h4>Interpret the heatmap<a class="headerlink" href="#interpret-the-heatmap" title="Link to this heading">#</a></h4>
 <ol class="arabic simple">
 <li><p>Is missingness approximately equal across acquisition sites?</p></li>
 <li><p>Can you identify assessments that appear to have been collected only at particular sites?</p></li>
@@ -1729,13 +1743,17 @@ plt.tight_layout()</p>
 </ol>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
-<span class="sd-summary-text"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-kebab-horizontal no-title" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a2 2 0 1 1-.001-3.999A2 2 0 0 1 20 14ZM6 12a2 2 0 1 1-3.999.001A2 2 0 0 1 6 12Zm8 0a2 2 0 1 1-3.999.001A2 2 0 0 1 14 12Z"></path></svg></span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<span class="sd-summary-text">Answer for Q4</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Missingness can also depend on diagnosis. For example, some autism-specific assessments may have been administered primarily to participants in the autism group.</p>
 </div>
-</details><div class="cell docutils container">
+</details><div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hide</span><span class="o">-</span><span class="n">cell</span>
-<span class="c1"># Can you find scores that were collected only for diagnosed participants?</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Can you find scores that were collected only for diagnosed participants?</span>
 <span class="n">missing_by_diagnosis</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">phenotypes</span><span class="p">[</span><span class="n">top_missing_variables</span><span class="p">]</span>
     <span class="o">.</span><span class="n">isna</span><span class="p">()</span>
@@ -1850,11 +1868,12 @@ plt.tight_layout()</p>
   </tbody>
 </table>
 </div></div></div>
+</details>
 </div>
 </section>
 </section>
 <section id="common-approaches-to-missing-data">
-<h2>Common approaches to missing data<a class="headerlink" href="#common-approaches-to-missing-data" title="Link to this heading">#</a></h2>
+<h3>Common approaches to missing data<a class="headerlink" href="#common-approaches-to-missing-data" title="Link to this heading">#</a></h3>
 <p>There is no single correct method for handling every missing value. The appropriate choice depends on why values are missing, how much is missing, and how the variable will be used.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
@@ -1912,14 +1931,18 @@ plt.tight_layout()</p>
 </table>
 </div>
 <section id="removing-incomplete-observations">
-<h3>Removing incomplete observations<a class="headerlink" href="#removing-incomplete-observations" title="Link to this heading">#</a></h3>
+<h4>Removing incomplete observations<a class="headerlink" href="#removing-incomplete-observations" title="Link to this heading">#</a></h4>
 <p>The simplest approach is complete-case deletion: retain only rows that have values for every required variable.</p>
 <p>The dataframe contains 39 variables, including several questionnaires that were collected only at some sites.</p>
 <p>Predict before running: How many participants do you expect would remain if we required complete data for all 39 variables?</p>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hide</span><span class="o">-</span><span class="n">output</span>
-<span class="n">core_variables</span> <span class="o">=</span> <span class="p">[</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">core_variables</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"SITE_ID"</span><span class="p">,</span>
     <span class="s2">"DX_GROUP"</span><span class="p">,</span>
     <span class="s2">"AGE_AT_SCAN"</span><span class="p">,</span>
@@ -1952,6 +1975,7 @@ plt.tight_layout()</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <div class="output text_html"><div>
 <style scoped>
@@ -2001,14 +2025,25 @@ plt.tight_layout()</p>
 </div>
 </section>
 <section id="id3">
-<h3>Questions<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<h4>Questions<a class="headerlink" href="#id3" title="Link to this heading">#</a></h4>
 <ol class="arabic simple">
 <li><p>Why can requiring complete data for all variables remove almost every participant?</p></li>
 <li><p>Why is deletion based on a specific analysis subset more reasonable?</p></li>
 <li><p>Could the retained participants differ systematically from the excluded participants?</p></li>
 <li><p>What should be checked before concluding that complete-case deletion is safe?</p></li>
 </ol>
-<div class="cell docutils container">
+</section>
+</section>
+<section id="imputing-a-numerical-variable">
+<h3>Imputing a numerical variable<a class="headerlink" href="#imputing-a-numerical-variable" title="Link to this heading">#</a></h3>
+<p>Imputation replaces missing observations with estimated values. As a simple example, we will replace missing <code class="docutils literal notranslate"><span class="pre">FIQ</span></code> values with the median observed FIQ.</p>
+<p>We will work on a copy so that the original dataframe remains unchanged.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">imputation_demo</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span>
     <span class="p">[</span><span class="s2">"SUB_ID"</span><span class="p">,</span> <span class="s2">"SITE_ID"</span><span class="p">,</span> <span class="s2">"DX_GROUP"</span><span class="p">,</span> <span class="s2">"AGE_AT_SCAN"</span><span class="p">,</span> <span class="s2">"SEX"</span><span class="p">,</span> <span class="s2">"FIQ"</span><span class="p">]</span>
@@ -2024,6 +2059,7 @@ plt.tight_layout()</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Median FIQ used for imputation: 112.0
 Number of imputed observations: 99
@@ -2110,118 +2146,17 @@ Number of imputed observations: 99
 </table>
 </div></div></div>
 </div>
-</section>
-</section>
-<section id="imputing-a-numerical-variable">
-<h2>Imputing a numerical variable<a class="headerlink" href="#imputing-a-numerical-variable" title="Link to this heading">#</a></h2>
-<p>Imputation replaces missing observations with estimated values. As a simple example, we will replace missing <code class="docutils literal notranslate"><span class="pre">FIQ</span></code> values with the median observed FIQ.</p>
-<p>We will work on a copy so that the original dataframe remains unchanged.</p>
-<p>hide-input
-imputation_demo = phenotypes[
-[“SUB_ID”, “SITE_ID”, “DX_GROUP”, “AGE_AT_SCAN”, “SEX”, “FIQ”]
-].copy()</p>
-<p>imputation_demo[“FIQ_was_missing”] = imputation_demo[“FIQ”].isna()</p>
-<p>fiq_median = imputation_demo[“FIQ”].median()
-imputation_demo[“FIQ_imputed”] = imputation_demo[“FIQ”].fillna(fiq_median)</p>
-<p>print(f”Median FIQ used for imputation: {fiq_median:.1f}”)
-print(f”Number of imputed observations: {imputation_demo[‘FIQ_was_missing’].sum()}”)</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-    <span class="p">{</span>
-        <span class="s2">"Original FIQ"</span><span class="p">:</span> <span class="n">imputation_demo</span><span class="p">[</span><span class="s2">"FIQ"</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">(),</span>
-        <span class="s2">"Median-imputed FIQ"</span><span class="p">:</span> <span class="n">imputation_demo</span><span class="p">[</span><span class="s2">"FIQ_imputed"</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">(),</span>
-    <span class="p">}</span>
-<span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-</pre></div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Important limitation</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Median imputation solves the computational problem of missing values, but it does not reconstruct the unobserved measurements.</p>
+<p class="sd-card-text">It introduces a concentration of observations at the median, usually reduces the estimated variance, and can weaken relationships between FIQ and other variables.</p>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Original FIQ</th>
-      <th>Median-imputed FIQ</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>count</th>
-      <td>1015.00</td>
-      <td>1114.00</td>
-    </tr>
-    <tr>
-      <th>mean</th>
-      <td>111.02</td>
-      <td>111.11</td>
-    </tr>
-    <tr>
-      <th>std</th>
-      <td>15.48</td>
-      <td>14.78</td>
-    </tr>
-    <tr>
-      <th>min</th>
-      <td>49.00</td>
-      <td>49.00</td>
-    </tr>
-    <tr>
-      <th>25%</th>
-      <td>101.00</td>
-      <td>103.00</td>
-    </tr>
-    <tr>
-      <th>50%</th>
-      <td>112.00</td>
-      <td>112.00</td>
-    </tr>
-    <tr>
-      <th>75%</th>
-      <td>122.00</td>
-      <td>120.00</td>
-    </tr>
-    <tr>
-      <th>max</th>
-      <td>151.00</td>
-      <td>151.00</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="err">```</span><span class="p">{</span><span class="n">admonition</span><span class="p">}</span> <span class="n">Important</span> <span class="n">limitation</span>
-<span class="p">:</span><span class="n">class</span><span class="p">:</span> <span class="n">dropdown</span>
-
-<span class="n">Median</span> <span class="n">imputation</span> <span class="n">solves</span> <span class="n">the</span> <span class="n">computational</span> <span class="n">problem</span> <span class="n">of</span> <span class="n">missing</span> <span class="n">values</span><span class="p">,</span> <span class="n">but</span> <span class="n">it</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">reconstruct</span> <span class="n">the</span> <span class="n">unobserved</span> <span class="n">measurements</span><span class="o">.</span>
-
-<span class="n">It</span> <span class="n">introduces</span> <span class="n">a</span> <span class="n">concentration</span> <span class="n">of</span> <span class="n">observations</span> <span class="n">at</span> <span class="n">the</span> <span class="n">median</span><span class="p">,</span> <span class="n">usually</span> <span class="n">reduces</span> <span class="n">the</span> <span class="n">estimated</span> <span class="n">variance</span><span class="p">,</span> <span class="ow">and</span> <span class="n">can</span> <span class="n">weaken</span> <span class="n">relationships</span> <span class="n">between</span> <span class="n">FIQ</span> <span class="ow">and</span> <span class="n">other</span> <span class="n">variables</span><span class="o">.</span>
-<span class="err">```</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We filled the values without changing the distribution a lot.
+</details><p>We filled the values without changing the distribution a lot.
 What would happen if we implemented this for all variables? Try it yourself!</p>
 </section>
 <section id="handling-missing-categories">
-<h2>Handling missing categories<a class="headerlink" href="#handling-missing-categories" title="Link to this heading">#</a></h2>
+<h3>Handling missing categories<a class="headerlink" href="#handling-missing-categories" title="Link to this heading">#</a></h3>
 <p>For a categorical variable, possible approaches include:</p>
 <ul class="simple">
 <li><p>replacing missing values with the most frequent category;</p></li>
@@ -2263,17 +2198,18 @@ Name: count, dtype: int64
 </div>
 </div>
 <section id="question">
-<h3>Question<a class="headerlink" href="#question" title="Link to this heading">#</a></h3>
+<h4>Question<a class="headerlink" href="#question" title="Link to this heading">#</a></h4>
 <p>Suppose medication status is missing mainly at one acquisition site. What might a classification model learn from the <code class="docutils literal notranslate"><span class="pre">&quot;Not</span> <span class="pre">recorded&quot;</span></code> category?</p>
-<div class="dropdown admonition">
-<p class="admonition-title">Suggested answer</p>
-<p>The model may use <code class="docutils literal notranslate"><span class="pre">&quot;Not</span> <span class="pre">recorded&quot;</span></code> as an indirect indicator of acquisition site.</p>
-<p>If site composition also differs between diagnostic groups, the model could appear to predict diagnosis while partly learning where the participant was scanned.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">The model may use <code class="docutils literal notranslate"><span class="pre">&quot;Not</span> <span class="pre">recorded&quot;</span></code> as an indirect indicator of acquisition site.</p>
+<p class="sd-card-text">If site composition also differs between diagnostic groups, the model could appear to predict diagnosis while partly learning where the participant was scanned.</p>
 </div>
-</section>
+</details></section>
 </section>
 <section id="common-approach">
-<h2>Common approach:<a class="headerlink" href="#common-approach" title="Link to this heading">#</a></h2>
+<h3>Common approach:<a class="headerlink" href="#common-approach" title="Link to this heading">#</a></h3>
 <p>For the exploratory analysis (as done here), we will not immediately impute or delete all missing values. Instead, we will:</p>
 <ol class="arabic simple">
 <li><p>preserve the original phenotype table;</p></li>
@@ -2282,7 +2218,57 @@ Name: count, dtype: int64
 <li><p>select variables according to the specific analysis;</p></li>
 <li><p>perform deletion or imputation only when required.</p></li>
 </ol>
-<p><em>For later machine-learning analyses</em>, imputation parameters must be estimated using the training data only. Calculating an imputation value from the complete dataset before cross-validation would allow information from the test participants to influence preprocessing and would constitute data leakage.</p>
+<p><strong>For later machine-learning analyses</strong>, imputation parameters must be estimated using the training data only. Calculating an imputation value from the complete dataset before cross-validation would allow information from the test participants to influence preprocessing and would constitute data leakage.</p>
+</section>
+</section>
+<section id="distributions-and-feature-correlations">
+<h2>5. Distributions and feature correlations<a class="headerlink" href="#distributions-and-feature-correlations" title="Link to this heading">#</a></h2>
+<p>Summary statistics describe variables using only a few numbers. Visualizing their distributions can reveal information that the mean and standard deviation may hide, including:</p>
+<ul class="simple">
+<li><p>skewness;</p></li>
+<li><p>multiple peaks;</p></li>
+<li><p>restricted ranges;</p></li>
+<li><p>unusual observations;</p></li>
+<li><p>differences between participant groups.</p></li>
+</ul>
+<p>We will first examine individual variables and then investigate relationships between features.</p>
+<section id="numerical-distributions">
+<h3>Numerical distributions<a class="headerlink" href="#numerical-distributions" title="Link to this heading">#</a></h3>
+<p>A histogram divides the observed range into intervals called <strong>bins</strong> and counts the observations within each interval.</p>
+<p>The choice of bin width matters. Too few bins can hide important structure, while too many bins can make random variation appear meaningful.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span> <span class="o">=</span> <span class="s2">"AGE_AT_SCAN"</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">phenotypes</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+    <span class="n">bins</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">"steelblue"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Age at scan"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Number of participants"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Distribution of participant age"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/aca852c7ba54d8be1211f9a0a7b94cea9ed4381edcacdd8419df089674be6f11.png" src="../../_images/aca852c7ba54d8be1211f9a0a7b94cea9ed4381edcacdd8419df089674be6f11.png" />
+</div>
+</div>
+</section>
+<section id="try-it-yourself">
+<h3>Try it yourself<a class="headerlink" href="#try-it-yourself" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Is the age distribution symmetric?</p></li>
+<li><p>Does it appear to contain one population or several age groups?</p></li>
+<li><p>Change <code class="docutils literal notranslate"><span class="pre">bins=25</span></code> to <code class="docutils literal notranslate"><span class="pre">bins=5</span></code>. What information disappears?</p></li>
+<li><p>Change it to <code class="docutils literal notranslate"><span class="pre">bins=100</span></code>. Does the additional detail appear meaningful?</p></li>
+<li><p>Replace <code class="docutils literal notranslate"><span class="pre">AGE_AT_SCAN</span></code> with <code class="docutils literal notranslate"><span class="pre">FIQ</span></code>. How does the distribution change?</p></li>
+</ol>
+</section>
 </section>
 </section>
 
@@ -2343,7 +2329,6 @@ Name: count, dtype: int64
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Exercise I: Exploratory Data Analysis (EDA)</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#before-we-begin">Before we begin</a></li>
 </ul>
@@ -2373,33 +2358,33 @@ Name: count, dtype: int64
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#missing-values">4. Missing values</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantifying-missing-values">Quantifying missing values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantifying-missing-values">Quantifying missing values</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Questions</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#is-missingness-distributed-randomly">Is missingness distributed randomly?</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#interpret-the-heatmap">Interpret the heatmap</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approaches-to-missing-data">Common approaches to missing data</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-incomplete-observations">Removing incomplete observations</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Questions</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imputing-a-numerical-variable">Imputing a numerical variable</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#question">Question</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approach">Common approach:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributions-and-feature-correlations">5. Distributions and feature correlations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-distributions">Numerical distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-yourself">Try it yourself</a></li>
 </ul>
 </li>
 </ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#text-percentage-missing">[
-\text{Percentage missing}</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Questions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#is-missingness-distributed-randomly">Is missingness distributed randomly?</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interpret-the-heatmap">Interpret the heatmap</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approaches-to-missing-data">Common approaches to missing data</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-incomplete-observations">Removing incomplete observations</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Questions</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#imputing-a-numerical-variable">Imputing a numerical variable</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#question">Question</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approach">Common approach:</a></li>
-</ul>
-</li>
-</ul>
-
   </nav></div>
 
 </div></div>
