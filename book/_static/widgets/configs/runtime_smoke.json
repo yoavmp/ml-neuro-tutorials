@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "type": "runtime-smoke",
+  "title": "Runtime smoke test (developer fixture)",
+  "description": "Not course content. Proves the widget runtime can load a validated config + data file and redraw a locally bundled Plotly chart from a control.",
+  "data": "../data/runtime_smoke.json"
+}

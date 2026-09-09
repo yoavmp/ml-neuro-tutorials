@@ -1,0 +1,9 @@
+# Local mirror of the relevant repo-root ignores, so `interactive/` stays clean
+# even when used as its own working directory.
+node_modules/
+dist/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+*.tsbuildinfo

@@ -19,4 +19,8 @@ book/_static/widgets/app/
 # Playwright test artifacts
 playwright-report/
 test-results/
+blob-report/
 interactive/test-results/
+interactive/playwright-report/
+interactive/.playwright/
+*.tsbuildinfo
