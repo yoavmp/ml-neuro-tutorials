@@ -2,3 +2,21 @@
 *Venv/
 book/_build/
 .DS_Store
+
+# Jupyter autosave/checkpoint caches
+.ipynb_checkpoints/
+
+# JupyterLite/doit build cache
+.jupyterlite.doit.db
+.jupyter_cache/
+
+# Node / future Vite widget app (see CLAUDE_INTERACTIVE_WIDGETS.md)
+node_modules/
+interactive/dist/
+interactive/node_modules/
+book/_static/widgets/app/
+
+# Playwright test artifacts
+playwright-report/
+test-results/
+interactive/test-results/
