@@ -121,7 +121,7 @@ for (const { name, prefix } of BASES) {
     test("refreshing the page restores the configured defaults", async ({ page }) => {
       await page.goto(appUrl(prefix, QUERY));
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-      await page.locator('[data-testid="histogram-variable"]').selectOption("SCQ_TOTAL");
+      await page.locator('[data-testid="histogram-variable"]').selectOption("ADI_R_SOCIAL_TOTAL_A");
       await page.locator('[data-testid="histogram-bins"]').fill("40");
       await expect(page.locator('[data-testid="histogram-plot"]')).toHaveAttribute(
         "data-active-bins",

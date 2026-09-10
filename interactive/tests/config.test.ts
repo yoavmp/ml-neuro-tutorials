@@ -463,6 +463,118 @@ describe("parseActivityConfig — eda-correlation", () => {
   });
 });
 
+const validTableInspection = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "table-inspection",
+  title: "Inspecting rows: head, tail, and sample",
+  instructions: "Choose head(), tail(), or sample().",
+  data: "../data/abide_retention.json",
+  siteField: "SITE_ID",
+  siteLabel: "Acquisition site",
+  methods: ["head", "tail", "sample"],
+  defaultMethod: "head",
+  rowCount: { min: 5, max: 15, default: 8 },
+  sampleSeed: 7,
+  columns: [
+    { name: "SITE_ID", label: "Site" },
+    { name: "AGE_AT_SCAN", label: "Age at scan" },
+    { name: "FIQ", label: "Full-scale IQ" },
+  ],
+};
+
+describe("parseActivityConfig — table-inspection", () => {
+  it("accepts a well-formed table-inspection config", () => {
+    const r = parseActivityConfig(validTableInspection);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok && r.config.type === "table-inspection") {
+      expect(r.config.defaultMethod).toBe("head");
+      expect(r.config.methods).toEqual(["head", "tail", "sample"]);
+      expect(r.config.rowCount.default).toBe(8);
+      expect(r.config.sampleSeed).toBe(7);
+    }
+  });
+
+  it("accepts a config without the optional reflectionPrompts", () => {
+    expect(parseActivityConfig(validTableInspection).ok).toBe(true);
+  });
+
+  it("rejects a defaultMethod not in methods", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      methods: ["head", "tail"],
+      defaultMethod: "sample",
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/defaultMethod/);
+  });
+
+  it("rejects an unknown inspection method", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      methods: ["head", "middle"],
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects sample without a sampleSeed", () => {
+    const { sampleSeed: _omit, ...rest } = validTableInspection;
+    void _omit;
+    const r = parseActivityConfig(rest);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/sampleSeed is required/);
+  });
+
+  it("rejects a siteField that is not one of the displayed columns", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      siteField: "NOT_A_COLUMN",
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/siteField/);
+  });
+
+  it("rejects duplicate column names", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      columns: [
+        { name: "SITE_ID", label: "Site" },
+        { name: "FIQ", label: "a" },
+        { name: "FIQ", label: "b" },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate name/);
+  });
+
+  it("rejects a rowCount default outside [min, max]", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      rowCount: { min: 5, max: 15, default: 99 },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/rowCount\.default/);
+  });
+
+  it("rejects an empty methods list", () => {
+    expect(parseActivityConfig({ ...validTableInspection, methods: [] }).ok).toBe(false);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validTableInspection, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/table_inspection.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/table_inspection.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
 describe("parseActivityConfigJson", () => {
   it("parses and validates a JSON string", () => {
     const r = parseActivityConfigJson(JSON.stringify(valid));

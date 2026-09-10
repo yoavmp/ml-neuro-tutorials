@@ -2,7 +2,7 @@
 """Generate the portable Colab / VS Code notebook from the canonical EDA notebook.
 
 The canonical notebook ``book/chapters/chapter_01/exercise_01.ipynb`` is written
-for Jupyter Book: it embeds the three browser activities as ``<iframe>`` elements
+for Jupyter Book: it embeds the four browser activities as ``<iframe>`` elements
 and uses MyST directives (``{admonition}``, ``{dropdown}``) that only render
 inside Sphinx. That file stays the single source of truth.
 
@@ -20,11 +20,13 @@ notebook:
   published course page;
 * rewrites MyST directives as plain Markdown headings / ``<details>`` blocks;
 * drops Jupyter Book presentation tags/metadata (``hide-input`` etc.);
-* embeds the curated ABIDE-II column list so no repository file is needed;
+* embeds the curated ABIDE-II column list so no repository file is needed
+  (the canonical notebook reads it from ``book/config/``);
 * loads the ABIDE-II CSV from the same pinned HTTPS URL the canonical notebook
   uses;
 * carries a banner identifying it as the portable derivative and linking back to
-  the richer course page.
+  the richer course page, plus an optional, commented-out ``%pip install`` cell
+  for the four packages the lesson imports.
 
 Modes (exactly one required):
 
@@ -69,6 +71,17 @@ DROP_ADMONITION_TITLES = {
 # `title` attribute. Each keeps: what the activity explores, an HTTPS link to the
 # published page, and a note that the embedded version lives on the course site.
 IFRAME_REPLACEMENTS = {
+    "Interactive head, tail, and sample comparison for the ABIDE-II table": (
+        "The interactive comparison lets you switch between `head()`, `tail()`\n"
+        "and `sample()`, change the row count, and see how many acquisition sites\n"
+        "and missing cells each view contains. The next cell runs the same three\n"
+        "views in Python.\n"
+        "\n"
+        "> **Interactive version on the course website.** It is embedded in the\n"
+        "> published Chapter 1 page:\n"
+        "> <" + PUBLISHED_PAGE + ">\n"
+        "> This portable notebook links to it instead of embedding it."
+    ),
     "Interactive ABIDE-II complete-case retention explorer": (
         "### Complete-case retention explorer\n"
         "\n"
@@ -109,6 +122,12 @@ IFRAME_REPLACEMENTS = {
 
 BANNER_ID = "portable-banner"
 SETUP_ID = "portable-setup"
+SETUP_INSTALL_ID = "portable-setup-install"
+
+# Packages the lesson actually imports that are not part of the Python standard
+# library (json / pathlib / IPython are always available). Kept in sync by hand
+# with the notebook's `import` lines; build/test tooling is deliberately excluded.
+LESSON_PACKAGES = "numpy pandas matplotlib seaborn"
 
 HIDE_TAGS = {"hide-input", "hide-cell", "hide-output"}
 
@@ -203,24 +222,30 @@ def _iframe_title(source: str) -> str | None:
 
 
 def _rewrite_data_loading(source: str, columns: list[str]) -> str:
-    """Embed the curated column list; drop the repo-relative JSON fetch."""
+    """Embed the curated column list; drop the repo-relative config read.
+
+    The canonical notebook reads ``book/config/eda_phenotype_columns.json`` with
+    ``json.loads(Path("../../config/...").read_text())``. The portable notebook
+    must not depend on a repository checkout, so that read is replaced by a
+    literal list and the now-unused ``json`` / ``pathlib`` imports are dropped.
+    """
     col_block = "CURATED_COLUMNS = [\n" + "".join(
         f"    {json.dumps(c)},\n" for c in columns
     ) + "]"
 
+    source = source.replace("import json\n", "", 1)
+    source = source.replace("from pathlib import Path\n", "", 1)
+    source = source.lstrip("\n")
     source = re.sub(
-        r"# Use a pre-selected subset of columns from the table:\n"
-        r'COLUMNS_URL = "[^"]*"\n',
+        r"# Curated column subset for this exercise\..*?"
+        r"CURATED_COLUMNS = json\.loads\(\s*"
+        r'Path\("\.\./\.\./config/eda_phenotype_columns\.json"\)\.read_text\(\)\s*\)',
         "# Curated column subset, embedded so this notebook needs no repository\n"
         "# files (the canonical Jupyter Book notebook reads it from book/config/).\n"
-        + col_block
-        + "\n",
+        + col_block,
         source,
         count=1,
-    )
-    source = source.replace(
-        'phenotypes = phenotypes[pd.read_json(COLUMNS_URL, typ="series").tolist()].copy()',
-        "phenotypes = phenotypes[CURATED_COLUMNS].copy()",
+        flags=re.DOTALL,
     )
     return source
 
@@ -229,16 +254,17 @@ def _banner_cell(nbf) -> "nbformat.NotebookNode":
     cell = nbf.new_markdown_cell(
         "# Exercise 1 - Exploratory data analysis (EDA) - portable notebook\n"
         "\n"
-        "This is the **portable version** of Chapter 1's EDA exercise, generated\n"
-        "from the canonical course notebook by `scripts/build_portable_notebook.py`.\n"
-        "It is meant for running or editing the code in Google Colab or in a local\n"
-        "VS Code / Jupyter setup.\n"
+        "This is the **portable version** of the Chapter 1 EDA practice from\n"
+        "**Machine Learning for Neuroscience**, generated from the canonical\n"
+        "course notebook by `scripts/build_portable_notebook.py`. It is meant for\n"
+        "running or editing the code in Google Colab or in a local VS Code /\n"
+        "Jupyter setup.\n"
         "\n"
-        "The richer version -- with the three activities embedded and running in\n"
+        "The richer version -- with the four activities embedded and running in\n"
         "the browser -- is the published course page:\n"
         "<" + PUBLISHED_PAGE + ">\n"
         "\n"
-        "In this notebook the three interactive activities are replaced by links\n"
+        "In this notebook the four interactive activities are replaced by links\n"
         "to that page; every Python analysis cell is kept and runnable. Questions\n"
         "marked *Think first* are followed, where one exists, by a collapsible\n"
         "*Check your reasoning* block; open questions are left without one fixed\n"
@@ -253,21 +279,31 @@ def _setup_cell(nbf) -> "nbformat.NotebookNode":
     cell = nbf.new_markdown_cell(
         "## Setup\n"
         "\n"
-        "This notebook needs only `numpy`, `pandas`, `matplotlib` and `seaborn`.\n"
-        "All four are preinstalled on Google Colab, so there is normally nothing\n"
-        "to install there.\n"
+        "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+        "`seaborn`. All four are already installed on Google Colab, and in a\n"
+        "typical scientific-Python environment, so there is normally nothing to\n"
+        "do here.\n"
         "\n"
-        "Running locally in VS Code / Jupyter: use the project's pinned versions,\n"
-        "`pip install -r requirements.txt` from the repository, or install the\n"
-        "four packages into your environment. If a package is missing on Colab,\n"
-        "uncomment the line below and run it once.\n"
-        "\n"
-        "```python\n"
-        "# %pip install numpy pandas matplotlib seaborn\n"
-        "```"
+        "If one of the imports further down fails, run the next cell once (edit\n"
+        "the version pins if your project needs specific ones), then restart the\n"
+        "kernel and run the notebook from the top. The notebook also downloads a\n"
+        "public data file the first time it runs, so it needs internet access."
     )
     cell["id"] = SETUP_ID
     cell["metadata"] = {}
+    return cell
+
+
+def _setup_install_cell(nbf) -> "nbformat.NotebookNode":
+    cell = nbf.new_code_cell(
+        "# If an import below fails, uncomment and run this line once, then\n"
+        "# restart the kernel. Safe on Colab, VS Code and Jupyter.\n"
+        f"# %pip install {LESSON_PACKAGES}"
+    )
+    cell["id"] = SETUP_INSTALL_ID
+    cell["metadata"] = {}
+    cell["outputs"] = []
+    cell["execution_count"] = None
     return cell
 
 
@@ -288,7 +324,7 @@ def build_portable(canonical_nb: "nbformat.NotebookNode", columns: list[str]):
     out["nbformat"] = 4
     out["nbformat_minor"] = 5
 
-    cells = [_banner_cell(nbf), _setup_cell(nbf)]
+    cells = [_banner_cell(nbf), _setup_cell(nbf), _setup_install_cell(nbf)]
 
     for src_cell in canonical_nb.cells:
         cell_type = src_cell["cell_type"]
@@ -313,7 +349,7 @@ def build_portable(canonical_nb: "nbformat.NotebookNode", columns: list[str]):
             cells.append(new)
 
         elif cell_type == "code":
-            if "COLUMNS_URL" in source:
+            if "eda_phenotype_columns.json" in source:
                 source = _rewrite_data_loading(source, columns)
             new = nbf.new_code_cell(source)
             new["id"] = src_cell["id"]
@@ -346,6 +382,8 @@ def _assert_portable(nb: "nbformat.NotebookNode") -> None:
     banned = {
         "<iframe": "an iframe",
         "_static/": "a book/_static path",
+        "../../config/": "a repo-relative config path",
+        "requirements.txt": "a repository requirements.txt instruction",
         "```{": "a MyST directive fence",
         "colab.research.google.com/github": "a self-referential Colab link",
         "ipywidgets": "an ipywidgets import",
@@ -373,8 +411,24 @@ def _assert_portable(nb: "nbformat.NotebookNode") -> None:
     )
     if "CURATED_COLUMNS" not in joined:
         raise SystemExit("portable notebook lost the embedded CURATED_COLUMNS list")
+    if "CURATED_COLUMNS = json.loads" in joined:
+        raise SystemExit("portable notebook still reads the column list from a file")
     if "neurohackademy/nh2020-curriculum/" not in joined:
         raise SystemExit("portable notebook lost the pinned ABIDE-II CSV URL")
+
+    ids = [c["id"] for c in nb.cells]
+    if SETUP_INSTALL_ID not in ids:
+        raise SystemExit("portable notebook is missing the optional install cell")
+    install = next(c for c in nb.cells if c["id"] == SETUP_INSTALL_ID)
+    install_src = "".join(install["source"]) if isinstance(install["source"], list) else install["source"]
+    if f"# %pip install {LESSON_PACKAGES}" not in install_src:
+        raise SystemExit("portable install cell lost its commented %pip install line")
+    for cell in nb.cells:
+        src = "".join(cell["source"]) if isinstance(cell["source"], list) else cell["source"]
+        for line in src.splitlines():
+            stripped = line.strip()
+            if stripped.startswith(("%pip install", "!pip install", "%pip3 install", "!pip3 install")):
+                raise SystemExit(f"portable notebook has an active install command: {stripped!r}")
 
 
 def serialize(nb: "nbformat.NotebookNode") -> str:

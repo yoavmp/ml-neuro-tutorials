@@ -72,9 +72,8 @@ describe("parseAbideCorrelationData", () => {
         "VIQ",
         "PIQ",
         "ADOS_G_TOTAL",
-        "ADOS_2_TOTAL",
+        "ADI_R_SOCIAL_TOTAL_A",
         "SRS_TOTAL_RAW",
-        "SCQ_TOTAL",
         "DX_GROUP",
         "SEX",
       ]) {

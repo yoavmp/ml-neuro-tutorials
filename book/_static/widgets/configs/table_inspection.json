@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "type": "table-inspection",
+  "title": "Inspecting rows: head, tail, and sample",
+  "description": "Course activity for Chapter 1 EDA: compare the rows that DataFrame.head(), DataFrame.tail(), and DataFrame.sample() return from the curated ABIDE-II table, and see how many acquisition sites and missing cells each view contains.",
+  "instructions": "Choose head(), tail(), or sample(), and set how many rows to show. Empty cells are missing values, not errors. Watch the summary line: how many acquisition sites appear, and how many cells are missing, in each view?",
+  "data": "../data/abide_retention.json",
+  "siteField": "SITE_ID",
+  "siteLabel": "Acquisition site",
+  "methods": ["head", "tail", "sample"],
+  "defaultMethod": "head",
+  "rowCount": { "min": 5, "max": 15, "default": 8 },
+  "sampleSeed": 7,
+  "columns": [
+    { "name": "SITE_ID", "label": "Site" },
+    { "name": "DX_GROUP", "label": "Diagnosis (1 = Autism, 2 = Control)" },
+    { "name": "AGE_AT_SCAN", "label": "Age at scan (years)" },
+    { "name": "SEX", "label": "Sex (1 = male, 2 = female)" },
+    { "name": "HANDEDNESS_CATEGORY", "label": "Handedness (1 / 2 / 3)" },
+    { "name": "FIQ", "label": "Full-scale IQ" },
+    { "name": "SRS_TOTAL_RAW", "label": "SRS total (raw)" },
+    { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" }
+  ],
+  "reflectionPrompts": [
+    "Switch between head() and tail() without changing the row count. Does the set of acquisition sites change?",
+    "Switch to sample(). How many sites appear now, and how does the number of missing cells compare with head() and tail()?"
+  ]
+}

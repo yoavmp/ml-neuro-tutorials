@@ -214,11 +214,15 @@ describe("computeCorrelation — against the committed abide_retention.json", ()
     expect(r.overall.r).toBeCloseTo(0.832969, 5);
   });
 
-  it("ADOS-G ~ ADOS-2 total: high Pearson 0.8815 but only n = 81 of 1114", async () => {
+  it("ADOS-G ~ ADI-R social total: modest Pearson 0.1749 on only n = 152 of 1114", async () => {
     const { num } = await loadColumns();
-    const r = computeCorrelation(num("ADOS_G_TOTAL"), num("ADOS_2_TOTAL"), "pearson");
-    expect(r.overall.n).toBe(81);
-    expect(r.overall.r).toBeCloseTo(0.881504, 5);
+    const r = computeCorrelation(
+      num("ADOS_G_TOTAL"),
+      num("ADI_R_SOCIAL_TOTAL_A"),
+      "pearson",
+    );
+    expect(r.overall.n).toBe(152);
+    expect(r.overall.r).toBeCloseTo(0.17494, 5);
   });
 
   it("AGE_AT_SCAN ~ FIQ: essentially no association (Pearson 0.0084) on n = 1015", async () => {
@@ -243,9 +247,9 @@ describe("computeCorrelation — against the committed abide_retention.json", ()
     expect(r.groups?.[1]?.r).toBeCloseTo(-0.055744, 4);
   });
 
-  it("SRS_TOTAL_RAW ~ SCQ_TOTAL grouped by diagnosis: overall 0.84, within-group ~0.5 / ~0.4", async () => {
+  it("SRS_TOTAL_RAW ~ ADOS_G_TOTAL grouped by diagnosis: overall 0.30, within Autism ~0.16", async () => {
     const { num } = await loadColumns();
-    const r = computeCorrelation(num("SRS_TOTAL_RAW"), num("SCQ_TOTAL"), "pearson", {
+    const r = computeCorrelation(num("SRS_TOTAL_RAW"), num("ADOS_G_TOTAL"), "pearson", {
       field: "DX_GROUP",
       codes: num("DX_GROUP"),
       values: [
@@ -253,9 +257,9 @@ describe("computeCorrelation — against the committed abide_retention.json", ()
         { code: 2, label: "Control" },
       ],
     });
-    expect(r.overall.r).toBeCloseTo(0.842054, 5);
-    expect(r.groups?.[0]).toMatchObject({ n: 151 });
-    expect(r.groups?.[0]?.r).toBeCloseTo(0.542738, 4);
-    expect(r.groups?.[1]?.r).toBeCloseTo(0.412674, 4);
+    expect(r.overall.r).toBeCloseTo(0.303834, 5);
+    expect(r.groups?.map((g) => g.n)).toEqual([211, 8]);
+    expect(r.groups?.[0]?.r).toBeCloseTo(0.158969, 4);
+    expect(r.groups?.[1]?.r).toBeCloseTo(0.8404, 4);
   });
 });

@@ -9,14 +9,16 @@ same-origin static files.
 
 Two artifacts are produced from the *same* pinned source:
 
-* ``abide_histogram.json`` (activity ``eda-histogram``, WP03): eight numeric
-  variables, no identifier of any kind.
+* ``abide_histogram.json`` (activity ``eda-histogram``, WP03): the seven numeric
+  variables of the curated teaching table, no identifier of any kind.
 * ``abide_retention.json`` (activity ``eda-retention``, WP04): the approved
   complete-case candidate variables **plus** ``SITE_ID``. ``SITE_ID`` is the
   only identifier-shaped field allowed anywhere in these artifacts, and only in
   the retention artifact, because grouped retention summaries are impossible
   without a site-grouping label. It is a coarse, non-personal acquisition-site
-  code; ``SUB_ID`` and every other participant identifier stay rejected.
+  code; ``SUB_ID`` and every other participant identifier stay rejected. The
+  same retention artifact backs the ``eda-correlation`` and ``table-inspection``
+  activities, which need site-grouped views of the same curated columns.
 
 Modes:
 
@@ -77,25 +79,28 @@ SOURCE_SHA256 = "537e541114884f63a2e736ba4d223a816dd013f701e56fb223ebe42e219e06f
 
 SCHEMA_VERSION = 1
 
-# Histogram variables (WP03 §2.6). All must be present in the local curated
-# column authority and in the source; none may look like an identifier.
+# Histogram variables (WP03 §2.6, retrimmed in WP09 §7). All must be present in
+# the local curated column authority and in the source; none may look like an
+# identifier. These are exactly the numeric columns of the 13-column curated
+# teaching table.
 HISTOGRAM_VARIABLES = [
     "AGE_AT_SCAN",
     "FIQ",
     "VIQ",
     "PIQ",
-    "ADOS_G_TOTAL",
-    "ADOS_2_TOTAL",
     "SRS_TOTAL_RAW",
-    "SCQ_TOTAL",
+    "ADOS_G_TOTAL",
+    "ADI_R_SOCIAL_TOTAL_A",
 ]
 
-# Complete-case retention candidate variables (WP04 §"Candidate variables").
+# Complete-case retention candidate variables (WP04 §"Candidate variables",
+# retrimmed in WP09 §7 to the 13-column curated teaching table minus the two
+# identifiers SITE_ID/SUB_ID; SITE_ID is re-added below as the grouping label).
 # Grouped in the config; the export just needs the flat, ordered list. Each is
 # in the curated authority and in the pinned source. Categorical variables are
 # coded as integers in this source (DX_GROUP 1/2, SEX 1/2,
-# HANDEDNESS_CATEGORY 1/2/3, CURRENT_MED_STATUS 0/1, EYE_STATUS_AT_SCAN 0/1/2)
-# and are exported as those documented codes, never imputed.
+# HANDEDNESS_CATEGORY 1/2/3, CURRENT_MED_STATUS 0/1) and are exported as those
+# documented codes, never imputed.
 RETENTION_VARIABLES = [
     "DX_GROUP",
     "AGE_AT_SCAN",
@@ -104,12 +109,10 @@ RETENTION_VARIABLES = [
     "FIQ",
     "VIQ",
     "PIQ",
-    "ADOS_G_TOTAL",
-    "ADOS_2_TOTAL",
-    "SRS_TOTAL_RAW",
-    "SCQ_TOTAL",
     "CURRENT_MED_STATUS",
-    "EYE_STATUS_AT_SCAN",
+    "SRS_TOTAL_RAW",
+    "ADOS_G_TOTAL",
+    "ADI_R_SOCIAL_TOTAL_A",
 ]
 
 # The single, deliberately narrow exception to identifier rejection. Only this

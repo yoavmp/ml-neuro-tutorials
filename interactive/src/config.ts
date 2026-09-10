@@ -156,6 +156,45 @@ const edaCorrelationConfig = z
   })
   .strict();
 
+const tableInspectionColumnRef = z
+  .object({
+    name: z.string().min(1, "column.name must be a non-empty string"),
+    label: z.string().min(1, "column.label must be a non-empty string"),
+  })
+  .strict();
+
+const tableInspectionRowCount = z
+  .object({
+    min: z.number().int().positive(),
+    max: z.number().int().positive(),
+    default: z.number().int().positive(),
+  })
+  .strict();
+
+const tableInspectionMethod = z.enum(["head", "tail", "sample"]);
+
+const tableInspectionConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("table-inspection"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    siteField: z.string().min(1, "config.siteField must be a non-empty string"),
+    siteLabel: z.string().min(1, "config.siteLabel must be a non-empty string"),
+    methods: z
+      .array(tableInspectionMethod)
+      .min(1, "config.methods must list at least one inspection method"),
+    defaultMethod: tableInspectionMethod,
+    rowCount: tableInspectionRowCount,
+    // Fixed PRNG seed for the initial deterministic sample() view. Required
+    // whenever "sample" is offered; ignored otherwise.
+    sampleSeed: z.number().int().nonnegative().optional(),
+    columns: z
+      .array(tableInspectionColumnRef)
+      .min(1, "config.columns must list at least one column"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -165,6 +204,7 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   edaHistogramConfig,
   edaRetentionConfig,
   edaCorrelationConfig,
+  tableInspectionConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -172,6 +212,7 @@ export type RuntimeSmokeConfig = z.infer<typeof runtimeSmokeConfig>;
 export type EdaHistogramConfig = z.infer<typeof edaHistogramConfig>;
 export type EdaRetentionConfig = z.infer<typeof edaRetentionConfig>;
 export type EdaCorrelationConfig = z.infer<typeof edaCorrelationConfig>;
+export type TableInspectionConfig = z.infer<typeof tableInspectionConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
@@ -275,6 +316,40 @@ function checkSemantics(config: ActivityConfig): string | null {
       if (dupCodes.length > 0) {
         return `config.groupings["${g.key}"] has duplicate code(s): ${dupCodes.join(", ")}`;
       }
+    }
+  }
+  if (config.type === "table-inspection") {
+    const names = config.columns.map((c) => c.name);
+    const dupNames = [...new Set(names.filter((n, i) => names.indexOf(n) !== i))];
+    if (dupNames.length > 0) {
+      return `config.columns has duplicate name(s): ${dupNames.join(", ")}`;
+    }
+    if (!names.includes(config.siteField)) {
+      return (
+        `config.siteField "${config.siteField}" must also appear in config.columns ` +
+        `so the site column is displayed (${names.join(", ")})`
+      );
+    }
+    const methods = config.methods;
+    const dupMethods = [...new Set(methods.filter((m, i) => methods.indexOf(m) !== i))];
+    if (dupMethods.length > 0) {
+      return `config.methods has duplicate method(s): ${dupMethods.join(", ")}`;
+    }
+    if (!methods.includes(config.defaultMethod)) {
+      return (
+        `config.defaultMethod "${config.defaultMethod}" is not one of ` +
+        `config.methods (${methods.join(", ")})`
+      );
+    }
+    const { min, max, default: dflt } = config.rowCount;
+    if (min > max) {
+      return `config.rowCount.min (${min}) must not exceed config.rowCount.max (${max})`;
+    }
+    if (dflt < min || dflt > max) {
+      return `config.rowCount.default (${dflt}) must be within [${min}, ${max}]`;
+    }
+    if (methods.includes("sample") && config.sampleSeed === undefined) {
+      return `config.sampleSeed is required when config.methods includes "sample"`;
     }
   }
   return null;

@@ -6,7 +6,7 @@ temporary directory (so no repository-relative path can accidentally work),
 runs every cell with a clean kernel via ``nbclient``, and asserts:
 
 * no cell raised;
-* the ABIDE-II table still loads as 1114 x 39;
+* the ABIDE-II table still loads as 1114 x 13 (the WP09 curated slice);
 * the IQR range-check still flags 56 of 1114 ages.
 
 Needs network access (the notebook downloads the pinned ABIDE-II CSV). Used by
@@ -29,7 +29,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb"
 
 EXPECTED_SUBSTRINGS = (
-    "Data table shape: (1114, 39)",
+    "Data table shape: (1114, 13)",
     "56 of 1114 participants flagged",
 )
 
