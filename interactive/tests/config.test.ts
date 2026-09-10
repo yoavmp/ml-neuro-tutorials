@@ -575,6 +575,99 @@ describe("parseActivityConfig — table-inspection", () => {
   });
 });
 
+const validRegressionCompare = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "regression-compare",
+  title: "Compare two feature sets",
+  data: "../data/abide_regression_models.json",
+  instructions: "Configure model A and model B.",
+  targetLabel: "Full-scale IQ (FIQ)",
+  measurementSubsets: [
+    { measures: ["CT"], label: "Cortical thickness" },
+    { measures: ["CT", "Area"], label: "Thickness + area" },
+  ],
+  bundles: [
+    { key: "frontoparietal", label: "Frontoparietal (P-FIT)" },
+    { key: "occipital", label: "Occipital (comparison)" },
+  ],
+  defaultA: { measures: ["CT"], bundle: "frontoparietal" },
+  defaultB: { measures: ["CT"], bundle: "occipital" },
+  literatureNote: "P-FIT motivates the frontoparietal bundle.",
+  selectionBiasNote: "Exploratory comparison is not a final estimate.",
+};
+
+describe("parseActivityConfig — regression-compare", () => {
+  it("accepts a well-formed regression-compare config", () => {
+    const r = parseActivityConfig(validRegressionCompare);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("rejects a defaultA.bundle not in bundles", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      defaultA: { measures: ["CT"], bundle: "temporal" },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/defaultA\.bundle/);
+  });
+
+  it("rejects a defaultB.measures combination not offered", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      defaultB: { measures: ["Vol"], bundle: "occipital" },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/defaultB\.measures/);
+  });
+
+  it("rejects duplicate bundle keys", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      bundles: [
+        { key: "frontoparietal", label: "a" },
+        { key: "frontoparietal", label: "b" },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate key/);
+  });
+
+  it("rejects duplicate measurement combinations", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      measurementSubsets: [
+        { measures: ["CT"], label: "a" },
+        { measures: ["CT"], label: "b" },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate measure combination/);
+  });
+
+  it("requires at least two bundles", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      bundles: [{ key: "frontoparietal", label: "only one" }],
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validRegressionCompare, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/regression_compare.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/regression_compare.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
 describe("parseActivityConfigJson", () => {
   it("parses and validates a JSON string", () => {
     const r = parseActivityConfigJson(JSON.stringify(valid));

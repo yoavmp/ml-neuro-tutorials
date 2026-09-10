@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "description": "Reviewed manifest for the Exercise II regression modelling table: the ABIDE-II FreeSurfer brain-feature table (Yarkoni NeuroHackademy tutorial) merged with the ABIDE-II phenotypic CSV. Single source of truth for scripts/abide_modeling_data.py, scripts/export_regression_catalog.py, the Exercise II notebook, and their tests. Change here, regenerate, re-test.",
+  "source": {
+    "pinned_commit": "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b",
+    "repo": "neurohackademy/nh2020-curriculum",
+    "license": "CC-BY-4.0 (repository LICENSE.md; the tu-machine-learning-yarkoni folder adds no separate licence)",
+    "brain_table": {
+      "name": "abide2.tsv",
+      "url": "https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b/tu-machine-learning-yarkoni/data/abide2.tsv",
+      "sha256": "ad0db42f85c77cbb8b4e023df288d34b29f1a63870a0cf1955c5b3b0d357579e",
+      "sep": "\t",
+      "rows": 1004,
+      "columns": 1446,
+      "note": "1004 participants, 1004 unique `subject` ids, no duplicates. Trailing empty header field is ignored. 6 non-brain columns + 1440 brain features. Zero missingness in the brain features."
+    },
+    "phenotype_table": {
+      "name": "abide2_phenotypic.csv",
+      "url": "https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b/tu-machine-learning-yarkoni/data/abide2_phenotypic.csv",
+      "sha256": "537e541114884f63a2e736ba4d223a816dd013f701e56fb223ebe42e219e06f6",
+      "encoding": "latin-1",
+      "rows": 1114,
+      "columns": 348,
+      "note": "The same ABIDE-II phenotypic file Exercise I uses. Provides the cognitive / behavioural target columns that abide2.tsv lacks."
+    },
+    "merge": {
+      "left_on": "subject",
+      "right_on": "SUB_ID",
+      "how": "left",
+      "note": "Every one of the 1004 brain-table participants is present in the phenotypic file (0 unmatched). The merged modelling table is 1004 rows.",
+      "phenotype_columns_kept": ["FIQ", "VIQ", "PIQ", "SRS_TOTAL_RAW", "ADOS_G_TOTAL", "ADI_R_SOCIAL_TOTAL_A"]
+    }
+  },
+  "atlas": {
+    "name": "HCP-MMP1.0 (Glasser et al. 2016)",
+    "reference": "Glasser MF, Coalson TS, Robinson EC, et al. A multi-modal parcellation of human cerebral cortex. Nature. 2016;536:171-178. doi:10.1038/nature18933",
+    "n_rois": 360,
+    "n_rois_per_hemisphere": 180,
+    "roi_suffix": "_ROI",
+    "column_pattern": "^fs(?P<measure>CT|Area|Vol|LGI)_(?P<hemi>L|R)_(?P<label>.+)_ROI$",
+    "hemisphere_encoding": "single letter L or R immediately after the measurement prefix",
+    "preprocessing_note": "FreeSurfer-derived surface metrics summarised per HCP-MMP1 parcel. No further normalisation is applied in abide2.tsv; the notebook standardises features inside the training fold only.",
+    "asymmetric_labels": ["5L", "5R"],
+    "roi_label_inventory": ["1", "10d", "10pp", "10r", "10v", "11l", "13l", "2", "23c", "23d", "24dd", "24dv", "25", "31a", "31pd", "31pv", "33pr", "3a", "3b", "4", "43", "44", "45", "46", "47l", "47m", "47s", "52", "55b", "5L", "5R", "5m", "5mv", "6a", "6d", "6ma", "6mp", "6r", "6v", "7AL", "7Am", "7PC", "7PL", "7Pm", "7m", "8Ad", "8Av", "8BL", "8BM", "8C", "9-46d", "9a", "9m", "9p", "A1", "A4", "A5", "AAIC", "AIP", "AVI", "DVT", "EC", "FEF", "FFC", "FOP1", "FOP2", "FOP3", "FOP4", "FOP5", "FST", "H", "IFJa", "IFJp", "IFSa", "IFSp", "IP0", "IP1", "IP2", "IPS1", "Ig", "LBelt", "LIPd", "LIPv", "LO1", "LO2", "LO3", "MBelt", "MI", "MIP", "MST", "MT", "OFC", "OP1", "OP2-3", "OP4", "PBelt", "PCV", "PEF", "PF", "PFcm", "PFm", "PFop", "PFt", "PGi", "PGp", "PGs", "PH", "PHA1", "PHA2", "PHA3", "PHT", "PI", "PIT", "POS1", "POS2", "PSL", "PeEc", "Pir", "PoI1", "PoI2", "PreS", "ProS", "RI", "RSC", "SCEF", "SFL", "STGa", "STSda", "STSdp", "STSva", "STSvp", "STV", "TA2", "TE1a", "TE1m", "TE1p", "TE2a", "TE2p", "TF", "TGd", "TGv", "TPOJ1", "TPOJ2", "TPOJ3", "V1", "V2", "V3", "V3A", "V3B", "V3CD", "V4", "V4t", "V6", "V6A", "V7", "V8", "VIP", "VMV1", "VMV2", "VMV3", "VVC", "a10p", "a24", "a24pr", "a32pr", "a47r", "a9-46v", "d23ab", "d32", "i6-8", "p10p", "p24", "p24pr", "p32", "p32pr", "p47r", "p9-46v", "pOFC", "s32", "s6-8", "v23ab"],
+    "bilateral_label_count": 179
+  },
+  "measures": {
+    "CT": {"prefix": "fsCT", "name": "cortical thickness", "unit": "mm"},
+    "Area": {"prefix": "fsArea", "name": "cortical surface area", "unit": "mm^2"},
+    "Vol": {"prefix": "fsVol", "name": "grey-matter volume", "unit": "mm^3"},
+    "LGI": {"prefix": "fsLGI", "name": "local gyrification index", "unit": "unitless"}
+  },
+  "non_brain_columns": ["site", "subject", "age", "age_resid", "sex", "group"],
+  "identifier_columns": ["subject", "SUB_ID", "site"],
+  "cohort": {
+    "row_count": 1004,
+    "sites": ["ABIDEII-KKI_1", "ABIDEII-GU_1", "ABIDEII-OHSU_1", "ABIDEII-NYU_1", "ABIDEII-BNI_1", "ABIDEII-SDSU_1", "ABIDEII-EMC_1", "ABIDEII-IP_1", "ABIDEII-ONRC_2", "ABIDEII-TCD_1", "ABIDEII-IU_1", "ABIDEII-ETH_1", "ABIDEII-USM_1", "ABIDEII-UCD_1", "ABIDEII-UCLA_1", "ABIDEII-KUL_3", "ABIDEII-NYU_2"],
+    "n_sites": 17,
+    "group_codes": {"1": "autism", "2": "control"},
+    "group_counts": {"1": 463, "2": 541},
+    "sex_codes": {"1": "male", "2": "female"},
+    "sex_counts": {"1": 765, "2": 239},
+    "age_years": {"min": 5.128, "max": 64.0, "mean": 15.1}
+  },
+  "targets": {
+    "FIQ": {
+      "role": "main",
+      "source": "phenotype",
+      "meaning": "Full-scale IQ (composite standard score; the exact test instrument varies by site and is not recorded per row in the merged 1004 - FIQ_TEST_TYPE is entirely empty here).",
+      "available_n": 908,
+      "missing_n": 96,
+      "range": [49.0, 149.0],
+      "mean": 111.1,
+      "sd": 15.3,
+      "structural_note": "Present at 16 of 17 sites; missing entirely only at ABIDEII-EMC_1 (n=53). Balanced across diagnosis (autism 423, control 485).",
+      "rationale": "Highest availability of any cognitive/behavioural score after requiring usable brain data, and the target the Exercise II literature framing (Jung & Haier P-FIT; Narr et al. cortical thickness and IQ) is about."
+    },
+    "SRS_TOTAL_RAW": {
+      "role": "lower_availability",
+      "source": "phenotype",
+      "meaning": "Social Responsiveness Scale total raw score (higher = more reported social difficulty).",
+      "available_n": 764,
+      "missing_n": 240,
+      "range": [0.0, 199.0],
+      "mean": 54.8,
+      "sd": 42.7,
+      "structural_note": "Present at 13 of 17 sites, both diagnostic groups (autism 364, control 400). Missing entirely at EMC_1, IP_1, ONRC_2, UCLA_1.",
+      "rationale": "The only continuous behavioural score that is (a) documented, (b) not essentially confined to one site, and (c) present for both diagnostic groups. The FIQ (908) vs SRS_TOTAL_RAW (764) contrast is modest and is described as such; the rigorous sample-size demonstrations (matched-N subsampling, learning curve) both run on FIQ alone."
+    }
+  },
+  "rejected_targets": {
+    "VIQ": "IQ subscale; FIQ is a composite of VIQ and PIQ, so pairing VIQ against FIQ is leakage-adjacent and pedagogically confusing.",
+    "PIQ": "IQ subscale; same reason as VIQ.",
+    "ADOS_G_TOTAL": "n=306 but ~87% autism group and near-absent at several sites (SDSU_1 0, OHSU_1 3, UCD_1 1, NYU_2 1); essentially confined to one diagnostic group and a handful of sites.",
+    "ADI_R_SOCIAL_TOTAL_A": "n=285, 0 controls; structurally an autism-only instrument, so a performance difference would be uninterpretable.",
+    "age": "Strongly predictable (held-out R2 about 0.45) and the Yarkoni tutorial's own target, but whole-brain rather than a literature-specified regional bundle, so it does not support the P-FIT / cortical-morphometry framing the exercise is built around."
+  },
+  "leakage_guard": {
+    "principle": "Every column of the model input matrix X must match atlas.column_pattern and name an ROI in roi_label_inventory. Nothing else may enter X.",
+    "forbidden_exact": ["FIQ", "VIQ", "PIQ", "FIQ_TEST_TYPE", "VIQ_TEST_TYPE", "PIQ_TEST_TYPE", "SRS_TOTAL_RAW", "ADOS_G_TOTAL", "ADI_R_SOCIAL_TOTAL_A", "DX_GROUP", "group", "age", "age_resid", "AGE_AT_SCAN", "sex", "SEX", "site", "SITE_ID", "subject", "SUB_ID", "HANDEDNESS_CATEGORY", "CURRENT_MED_STATUS"],
+    "forbidden_pattern": "(?i)(^|_)(id|sub|subject|participant|site|age|sex|dx|iq|fiq|viq|piq|group|handed|scan|med_status)($|_)"
+  },
+  "protocol": {
+    "holdout_split": {"test_size": 0.25, "random_state": 42, "stratify": "group"},
+    "cross_validation": {"kind": "KFold", "n_splits": 5, "shuffle": true, "random_state": 0},
+    "preprocessing": "sklearn Pipeline(StandardScaler(), LinearRegression()); the scaler is fitted on training rows / training folds only. No imputation is needed - the brain features have no missing values and rows missing the target are dropped before splitting.",
+    "generalisation_target": "Held-out participants drawn from the same 17 ABIDE-II sites. A random participant split does NOT estimate generalisation to unseen scanners or sites.",
+    "canonical_recipe": {"bundle": "frontoparietal", "measures": ["CT"], "note": "Bilateral cortical thickness over the 39-label frontoparietal (P-FIT) bundle: p=78. Chosen a priori from the intelligence literature - NOT because it maximises this dataset's score (it does not; see the catalog)."}
+  },
+  "catalog": {
+    "target": "FIQ",
+    "measurement_subsets": [["CT"], ["Area"], ["Vol"], ["LGI"], ["CT", "Area"]],
+    "bundles": ["frontoparietal", "frontal", "parietal", "temporal", "occipital", "sensorimotor", "all-eligible"],
+    "identifiability_rule": "An entry is offered only if its feature count p is below 0.7 * (fold training n). all-eligible x [CT,Area] (p=720) and any entry with p >= that bound is disabled with a visible reason rather than fitted with a pseudo-inverse.",
+    "note": "No ridge / regularisation is introduced in this work package. Trying many entries is exploratory model comparison; the cross-validation score of the best-looking entry is not an unbiased estimate of its performance."
+  },
+  "bundles": {
+    "frontoparietal": {
+      "label": "Frontoparietal (P-FIT)",
+      "literature": "Jung & Haier (2007) Parieto-Frontal Integration Theory: dorsolateral prefrontal cortex (BA 9/45/46/47), inferior/superior parietal lobule and intraparietal sulcus (BA 7/39/40), and dorsal anterior cingulate (BA 32).",
+      "rois": ["46", "9-46d", "a9-46v", "p9-46v", "9a", "9p", "8C", "8Av", "8Ad", "IFJa", "IFJp", "IFSa", "IFSp", "p47r", "a47r", "8BL", "PGs", "PGi", "PFm", "PF", "PFt", "IP0", "IP1", "IP2", "IPS1", "LIPv", "LIPd", "MIP", "AIP", "7PC", "7PL", "7Pm", "7AL", "7Am", "a32pr", "p32pr", "d32", "8BM", "SCEF"]
+    },
+    "frontal": {
+      "label": "Prefrontal only",
+      "literature": "The prefrontal component of P-FIT and of Narr et al. (2007): dorsolateral / inferior frontal cortex plus dorsal anterior cingulate, with no parietal ROIs.",
+      "rois": ["46", "9-46d", "a9-46v", "p9-46v", "9a", "9p", "8C", "8Av", "8Ad", "IFJa", "IFJp", "IFSa", "IFSp", "p47r", "a47r", "8BL", "a32pr", "p32pr", "d32", "8BM", "SCEF"]
+    },
+    "parietal": {
+      "label": "Parietal only",
+      "literature": "The parietal component of P-FIT: inferior parietal lobule (PG*, PF*), intraparietal sulcus (IP*, IPS1, LIP*, MIP, VIP, AIP) and superior parietal lobule (area 7 subdivisions).",
+      "rois": ["PGs", "PGi", "PGp", "PFm", "PF", "PFt", "PFop", "IP0", "IP1", "IP2", "IPS1", "LIPv", "LIPd", "MIP", "VIP", "AIP", "7PC", "7PL", "7Pm", "7AL", "7Am"]
+    },
+    "temporal": {
+      "label": "Lateral temporal (comparison)",
+      "literature": "Lateral / superior temporal cortex. Narr et al. (2007) reported some temporal thickness-IQ associations, so this is a scoped anatomical comparison, not a null region.",
+      "rois": ["STGa", "STSda", "STSdp", "STSva", "STSvp", "TE1a", "TE1m", "TE1p", "TE2a", "TE2p", "TGd", "TGv", "TF", "PHT", "TA2", "A5", "STV", "PSL"]
+    },
+    "occipital": {
+      "label": "Occipital / early visual (comparison)",
+      "literature": "Primary and extrastriate visual cortex. Not part of P-FIT's core; included as a similarly sized anatomical comparison bundle.",
+      "rois": ["V1", "V2", "V3", "V4", "V3A", "V3B", "V6", "V6A", "V7", "V8", "VVC", "VMV1", "VMV2", "VMV3", "LO1", "LO2", "LO3", "PIT", "FST", "V4t", "V3CD", "DVT", "ProS"]
+    },
+    "sensorimotor": {
+      "label": "Sensorimotor (comparison)",
+      "literature": "Primary and premotor / somatosensory cortex. A similarly sized non-association-cortex comparison bundle.",
+      "rois": ["4", "3a", "3b", "1", "2", "6d", "6a", "6v", "6r", "6ma", "6mp", "5m", "5mv", "24dd", "24dv", "OP1", "OP2-3", "OP4", "43", "PoI1"]
+    }
+  },
+  "literature": {
+    "pfit": {
+      "citation": "Jung RE, Haier RJ. The Parieto-Frontal Integration Theory (P-FIT) of intelligence: converging neuroimaging evidence. Behav Brain Sci. 2007;30(2):135-154.",
+      "doi": "10.1017/S0140525X07001185"
+    },
+    "narr": {
+      "citation": "Narr KL, Woods RP, Thompson PM, et al. Relationships between IQ and regional cortical gray matter thickness in healthy adults. Cereb Cortex. 2007;17(9):2163-2171.",
+      "doi": "10.1093/cercor/bhl125"
+    }
+  }
+}

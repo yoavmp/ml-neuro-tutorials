@@ -45,6 +45,17 @@ class Toc(unittest.TestCase):
             chapters[1]["sections"][0]["file"], "chapters/chapter_01/exercise_01"
         )
 
+    def test_exercise_two_follows_exercise_one(self):
+        sections = self.toc["chapters"][1]["sections"]
+        files = [s["file"] for s in sections]
+        self.assertEqual(
+            files,
+            ["chapters/chapter_01/exercise_01", "chapters/chapter_02/exercise_02"],
+        )
+        self.assertTrue(
+            (BOOK / "chapters" / "chapter_02" / "exercise_02.ipynb").exists()
+        )
+
 
 class Pages(unittest.TestCase):
     def test_syllabus_is_title_only(self):

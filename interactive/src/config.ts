@@ -195,6 +195,47 @@ const tableInspectionConfig = z
   })
   .strict();
 
+const regressionMeasurementSubset = z
+  .object({
+    measures: z.array(z.string().min(1)).min(1, "each subset must list at least one measure"),
+    label: z.string().min(1, "subset.label must be a non-empty string"),
+  })
+  .strict();
+
+const regressionBundleRef = z
+  .object({
+    key: z.string().min(1, "bundle.key must be a non-empty string"),
+    label: z.string().min(1, "bundle.label must be a non-empty string"),
+  })
+  .strict();
+
+const regressionModelChoice = z
+  .object({
+    measures: z.array(z.string().min(1)).min(1),
+    bundle: z.string().min(1),
+  })
+  .strict();
+
+const regressionCompareConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("regression-compare"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    targetLabel: z.string().min(1, "config.targetLabel must be a non-empty string"),
+    measurementSubsets: z
+      .array(regressionMeasurementSubset)
+      .min(1, "config.measurementSubsets must list at least one subset"),
+    bundles: z
+      .array(regressionBundleRef)
+      .min(2, "config.bundles must list at least two ROI bundles"),
+    defaultA: regressionModelChoice,
+    defaultB: regressionModelChoice,
+    literatureNote: z.string().min(1, "config.literatureNote must be a non-empty string"),
+    selectionBiasNote: z.string().min(1, "config.selectionBiasNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -205,6 +246,7 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   edaRetentionConfig,
   edaCorrelationConfig,
   tableInspectionConfig,
+  regressionCompareConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -213,6 +255,7 @@ export type EdaHistogramConfig = z.infer<typeof edaHistogramConfig>;
 export type EdaRetentionConfig = z.infer<typeof edaRetentionConfig>;
 export type EdaCorrelationConfig = z.infer<typeof edaCorrelationConfig>;
 export type TableInspectionConfig = z.infer<typeof tableInspectionConfig>;
+export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
@@ -350,6 +393,34 @@ function checkSemantics(config: ActivityConfig): string | null {
     }
     if (methods.includes("sample") && config.sampleSeed === undefined) {
       return `config.sampleSeed is required when config.methods includes "sample"`;
+    }
+  }
+  if (config.type === "regression-compare") {
+    const bundleKeys = config.bundles.map((b) => b.key);
+    const dupBundles = [...new Set(bundleKeys.filter((k, i) => bundleKeys.indexOf(k) !== i))];
+    if (dupBundles.length > 0) {
+      return `config.bundles has duplicate key(s): ${dupBundles.join(", ")}`;
+    }
+    const subsetKeys = config.measurementSubsets.map((s) => s.measures.join("+"));
+    const dupSubsets = [...new Set(subsetKeys.filter((k, i) => subsetKeys.indexOf(k) !== i))];
+    if (dupSubsets.length > 0) {
+      return `config.measurementSubsets has duplicate measure combination(s): ${dupSubsets.join(", ")}`;
+    }
+    const bundleSet = new Set(bundleKeys);
+    const subsetSet = new Set(subsetKeys);
+    for (const [name, choice] of [
+      ["defaultA", config.defaultA],
+      ["defaultB", config.defaultB],
+    ] as const) {
+      if (!bundleSet.has(choice.bundle)) {
+        return `config.${name}.bundle "${choice.bundle}" is not one of config.bundles (${bundleKeys.join(", ")})`;
+      }
+      if (!subsetSet.has(choice.measures.join("+"))) {
+        return (
+          `config.${name}.measures "${choice.measures.join("+")}" is not one of ` +
+          `config.measurementSubsets (${subsetKeys.join(", ")})`
+        );
+      }
     }
   }
   return null;

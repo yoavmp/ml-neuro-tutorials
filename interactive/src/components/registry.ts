@@ -8,6 +8,7 @@ import { histogramComponent } from "./histogram";
 import { retentionComponent } from "./retention";
 import { correlationComponent } from "./correlation";
 import { tableInspectionComponent } from "./table-inspection";
+import { regressionCompareComponent } from "./regression-compare";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -15,3 +16,4 @@ registry.register(histogramComponent);
 registry.register(retentionComponent);
 registry.register(correlationComponent);
 registry.register(tableInspectionComponent);
+registry.register(regressionCompareComponent);
