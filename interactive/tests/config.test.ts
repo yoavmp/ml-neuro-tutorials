@@ -468,7 +468,7 @@ const validTableInspection = {
   type: "table-inspection",
   title: "Inspecting rows: head, tail, and sample",
   instructions: "Choose head(), tail(), or sample().",
-  data: "../data/abide_retention.json",
+  data: "../data/abide_table_inspection.json",
   siteField: "SITE_ID",
   siteLabel: "Acquisition site",
   methods: ["head", "tail", "sample"],

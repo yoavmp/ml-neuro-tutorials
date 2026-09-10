@@ -6,8 +6,8 @@ temporary directory (so no repository-relative path can accidentally work),
 runs every cell with a clean kernel via ``nbclient``, and asserts:
 
 * no cell raised;
-* the ABIDE-II table still loads as 1114 x 13 (the WP09 curated slice);
-* the IQR range-check still flags 56 of 1114 ages.
+* the ABIDE-II table still loads as 1114 x 13 (the curated slice);
+* the complete-case retention example still reports all 13 variables.
 
 Needs network access (the notebook downloads the pinned ABIDE-II CSV). Used by
 CI and runnable locally:
@@ -30,7 +30,7 @@ PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portab
 
 EXPECTED_SUBSTRINGS = (
     "Data table shape: (1114, 13)",
-    "56 of 1114 participants flagged",
+    "Complete for all 13 variables",
 )
 
 

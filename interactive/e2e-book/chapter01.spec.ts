@@ -463,15 +463,18 @@ test.describe("Chapter 1 built page — embedded head/tail/sample activity", () 
     await expect(table).toBeVisible();
 
     const configResp = responses.find((r) => r.url.endsWith("/configs/table_inspection.json"));
-    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_retention.json"));
+    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_table_inspection.json"));
     expect(configResp?.status, "config HTTP status").toBe(200);
     expect(dataResp?.status, "data HTTP status").toBe(200);
 
-    // default view: head(8) -> one site, no missing display cells
+    // default view: head(8) -> one site; the summary counts missing cells over
+    // all 13 curated columns (24)
     await expect(table).toHaveAttribute("data-method", "head");
     await expect(table).toHaveAttribute("data-site-count", "1");
     await expect(table).toHaveAttribute("data-sites", "ABIDEII-BNI_1");
-    await expect(table).toHaveAttribute("data-missing-cells", "0");
+    await expect(table).toHaveAttribute("data-missing-cells", "24");
+    await expect(table).toHaveAttribute("data-total-cells", "104"); // 8 rows * 13 cols
+    await expect(table.locator("thead th")).toHaveCount(13);
 
     // a real control change: switch to sample() -> eight sites, fewer missing
     // cells than tail(); the visible rows change
@@ -479,10 +482,13 @@ test.describe("Chapter 1 built page — embedded head/tail/sample activity", () 
     await expect(table).toHaveAttribute("data-method", "sample");
     await expect(table).toHaveAttribute("data-seed", "7");
     await expect(table).toHaveAttribute("data-site-count", "8");
-    await expect(table).toHaveAttribute("data-missing-cells", "7");
-    await expect(frame.locator('[data-testid="table-inspection-summary"]')).toContainText(
-      "8 acquisition sites",
-    );
+    await expect(table).toHaveAttribute("data-missing-cells", "17");
+    const summaryText = await frame
+      .locator('[data-testid="table-inspection-summary"]')
+      .innerText();
+    expect(summaryText).toContain("8 acquisition sites");
+    // the site names are not listed in the evidence summary (WP10 §1)
+    expect(summaryText).not.toContain("ABIDEII-");
 
     // the ACTIVITY makes no CDN / kernel / off-origin request and no WebSocket
     const origin = new URL(page.url()).origin;

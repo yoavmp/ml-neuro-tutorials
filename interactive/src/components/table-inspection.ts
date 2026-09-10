@@ -3,10 +3,13 @@
 //
 // A radio group picks the inspection method, a range input sets the row count,
 // and (for sample) a "Reshuffle" button advances the seed. An accessible
-// <table> and a compact evidence summary (sites represented, missing cells) are
+// <table> and a compact evidence summary (site count, missing cells) are
 // recomputed from the pure, unit-tested helpers in src/table-inspection.ts on
-// every change. No Python kernel, no CDN, no Plotly, no participant identifier —
-// the artifact it reads (abide_retention.json) has no SUB_ID column.
+// every change. No Python kernel, no CDN, no Plotly. The artifact it reads
+// (abide_table_inspection.json) carries every column of the 13-column curated
+// table, including the two identifier columns SITE_ID and SUB_ID, because
+// seeing the real rows — identifier column included — is the point of comparing
+// head(), tail() and sample().
 
 import type { MountArgs, MountHandle, WidgetComponent } from "./types";
 import type { TableInspectionConfig } from "../config";
@@ -18,9 +21,9 @@ import {
   type InspectionMethod,
 } from "../table-inspection";
 import {
-  parseAbideRetentionData,
-  type AbideRetentionData,
-} from "../retention-data";
+  parseAbideTableInspectionData,
+  type AbideTableInspectionData,
+} from "../table-inspection-data";
 
 const METHOD_LABEL: Record<InspectionMethod, string> = {
   head: "head()",
@@ -29,7 +32,7 @@ const METHOD_LABEL: Record<InspectionMethod, string> = {
 };
 
 function mount(
-  args: MountArgs<TableInspectionConfig, AbideRetentionData>,
+  args: MountArgs<TableInspectionConfig, AbideTableInspectionData>,
 ): MountHandle {
   const { container, config, data } = args;
   container.replaceChildren();
@@ -212,10 +215,14 @@ function mount(
       tbody.appendChild(tr);
     }
 
+    // The number of acquisition sites is part of the evidence; the list of site
+    // names is deliberately NOT spelled out here (WP10 §1) — the SITE_ID column
+    // is visible in the table for anyone who wants the names. `view.sites` is
+    // still kept on the table's data-sites attribute for tests/state only.
     const siteWord = view.siteCount === 1 ? "site" : "sites";
     summary.textContent =
       `${METHOD_LABEL[method]} shows ${view.rowCount} rows from ` +
-      `${view.siteCount} acquisition ${siteWord} (${view.sites.join(", ")}); ` +
+      `${view.siteCount} acquisition ${siteWord}; ` +
       `${view.missingCells} of ${view.totalCells} cells are missing.`;
 
     table.dataset.method = method;
@@ -265,9 +272,9 @@ function mount(
 
 export const tableInspectionComponent: WidgetComponent<
   TableInspectionConfig,
-  AbideRetentionData
+  AbideTableInspectionData
 > = {
   type: "table-inspection",
-  parseData: parseAbideRetentionData,
+  parseData: parseAbideTableInspectionData,
   mount,
 };

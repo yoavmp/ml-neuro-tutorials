@@ -19,7 +19,15 @@ notebook:
 * replaces each ``<iframe>`` activity with a short Markdown pointer to the
   published course page;
 * rewrites MyST directives as plain Markdown headings / ``<details>`` blocks;
-* drops Jupyter Book presentation tags/metadata (``hide-input`` etc.);
+* drops Jupyter Book presentation tags/metadata (``hide-input`` etc.) and clears
+  every code cell's stored output -- with **one** deliberate, stable exception:
+  the sampling-methods cell ``7a1e5c93d204`` keeps its three saved pandas table
+  outputs, because the portable notebook does not embed the interactive
+  head/tail/sample activity and a reader who only reads it should still see what
+  the three methods return (WP10 §3). Its outputs are sanitised of
+  environment-specific execution metadata but are otherwise the deterministic
+  pandas HTML/plain-text tables from the canonical notebook, and re-running the
+  cell in Colab / VS Code / Jupyter simply refreshes them;
 * embeds the curated ABIDE-II column list so no repository file is needed
   (the canonical notebook reads it from ``book/config/``);
 * loads the ABIDE-II CSV from the same pinned HTTPS URL the canonical notebook
@@ -123,6 +131,12 @@ IFRAME_REPLACEMENTS = {
 BANNER_ID = "portable-banner"
 SETUP_ID = "portable-setup"
 SETUP_INSTALL_ID = "portable-setup-install"
+
+# The single code cell whose saved outputs the portable notebook keeps. The
+# portable notebook has no embedded head/tail/sample activity, so this cell's
+# three pandas tables are the only place a pure reader sees what the methods
+# return. Every other code cell is emitted output-free. (WP10 §3.)
+PRESERVE_OUTPUT_IDS = frozenset({"7a1e5c93d204"})
 
 # Packages the lesson actually imports that are not part of the Python standard
 # library (json / pathlib / IPython are always available). Kept in sync by hand
@@ -250,6 +264,40 @@ def _rewrite_data_loading(source: str, columns: list[str]) -> str:
     return source
 
 
+def _sanitise_output(out: dict) -> dict:
+    """Copy one saved output, dropping environment-specific execution metadata.
+
+    Keeps the deterministic payload (``text/html`` / ``text/plain`` pandas
+    tables, stream text) and ``output_type``; drops per-output
+    ``execution_count`` and any ``metadata`` (timestamps, transient ids) so the
+    result depends only on the committed canonical notebook.
+    """
+    clean: dict = {"output_type": out["output_type"]}
+    if "name" in out:
+        clean["name"] = out["name"]
+    if "text" in out:
+        clean["text"] = out["text"]
+    if "data" in out:
+        clean["data"] = json.loads(json.dumps(out["data"]))  # deep copy, JSON-safe
+    # execute_result keeps a stable execution_count for nbformat validity;
+    # display_data / stream have none.
+    if out["output_type"] == "execute_result":
+        clean["execution_count"] = None
+    clean.setdefault("metadata", {})
+    return nbformat.from_dict(clean)
+
+
+def _preserved_outputs(src_cell) -> list:
+    """The sanitised saved outputs for a PRESERVE_OUTPUT_IDS cell."""
+    outputs = src_cell.get("outputs", []) or []
+    if not outputs:
+        raise SystemExit(
+            f"cell {src_cell['id']} is marked output-preserving but the canonical "
+            "notebook has no saved output for it; re-execute the canonical notebook"
+        )
+    return [_sanitise_output(o) for o in outputs]
+
+
 def _banner_cell(nbf) -> "nbformat.NotebookNode":
     cell = nbf.new_markdown_cell(
         "# Exercise 1 - Exploratory data analysis (EDA) - portable notebook\n"
@@ -354,7 +402,10 @@ def build_portable(canonical_nb: "nbformat.NotebookNode", columns: list[str]):
             new = nbf.new_code_cell(source)
             new["id"] = src_cell["id"]
             new["metadata"] = {}
-            new["outputs"] = []
+            if src_cell["id"] in PRESERVE_OUTPUT_IDS:
+                new["outputs"] = _preserved_outputs(src_cell)
+            else:
+                new["outputs"] = []
             new["execution_count"] = None
             cells.append(new)
 
@@ -402,8 +453,49 @@ def _assert_portable(nb: "nbformat.NotebookNode") -> None:
             tags = cell.get("metadata", {}).get("tags", [])
             if set(tags) & HIDE_TAGS:
                 raise SystemExit(f"portable code cell keeps a hide tag: {tags}")
-            if cell.get("outputs"):
-                raise SystemExit("portable code cell keeps stored outputs")
+            if cell.get("outputs") and cell["id"] not in PRESERVE_OUTPUT_IDS:
+                raise SystemExit(
+                    f"portable code cell {cell['id']} keeps stored outputs"
+                )
+            if cell.get("execution_count") is not None:
+                raise SystemExit(
+                    f"portable code cell {cell['id']} keeps an execution_count"
+                )
+
+    # The one output-preserving cell must actually carry its deterministic,
+    # sanitised pandas tables, and nothing else.
+    preserved = [c for c in nb.cells if c["id"] in PRESERVE_OUTPUT_IDS]
+    if len(preserved) != len(PRESERVE_OUTPUT_IDS):
+        raise SystemExit("portable notebook lost an output-preserving cell")
+    for cell in preserved:
+        outs = cell.get("outputs") or []
+        if not outs:
+            raise SystemExit(f"cell {cell['id']} lost its preserved outputs")
+        if set(cell.get("metadata", {}).get("tags", [])) & HIDE_TAGS:
+            raise SystemExit(f"output-preserving cell {cell['id']} has a hide tag")
+        for out in outs:
+            if out.get("output_type") not in {"display_data", "execute_result", "stream"}:
+                raise SystemExit(f"cell {cell['id']} has an unexpected output type: {out.get('output_type')!r}")
+            if "execution_count" in out and out["execution_count"] is not None:
+                raise SystemExit(f"cell {cell['id']} output kept an execution_count")
+            if out.get("metadata"):
+                raise SystemExit(f"cell {cell['id']} output kept transient metadata")
+            payload = out.get("text", "") or "".join(
+                "".join(v) if isinstance(v, list) else v
+                for v in out.get("data", {}).values()
+            )
+            if "SITE_ID" not in payload:
+                raise SystemExit(f"cell {cell['id']} preserved output is not the expected pandas table")
+
+    outputful = [
+        c["id"]
+        for c in nb.cells
+        if c["cell_type"] == "code" and (c.get("outputs") or [])
+    ]
+    if set(outputful) != set(PRESERVE_OUTPUT_IDS):
+        raise SystemExit(
+            f"exactly {sorted(PRESERVE_OUTPUT_IDS)} may keep outputs; got {sorted(outputful)}"
+        )
 
     joined = "\n".join(
         "".join(c["source"]) if isinstance(c["source"], list) else c["source"]

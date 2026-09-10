@@ -109,8 +109,39 @@ class BuildPortable(unittest.TestCase):
             if cell["cell_type"] == "code":
                 tags = cell.get("metadata", {}).get("tags", [])
                 self.assertEqual(set(tags) & bpn.HIDE_TAGS, set())
-                self.assertEqual(cell.get("outputs"), [])
                 self.assertIsNone(cell.get("execution_count"))
+                if cell["id"] not in bpn.PRESERVE_OUTPUT_IDS:
+                    self.assertEqual(cell.get("outputs"), [])
+
+    def test_only_the_sampling_cell_keeps_saved_outputs(self):
+        with_outputs = {
+            c["id"]
+            for c in self.nb.cells
+            if c["cell_type"] == "code" and c.get("outputs")
+        }
+        self.assertEqual(with_outputs, set(bpn.PRESERVE_OUTPUT_IDS))
+
+    def test_sampling_cell_keeps_three_sanitised_pandas_tables(self):
+        cell = next(c for c in self.nb.cells if c["id"] in bpn.PRESERVE_OUTPUT_IDS)
+        self.assertEqual(cell["cell_type"], "code")
+        self.assertEqual(cell.get("metadata", {}).get("tags", []), [])
+        self.assertIsNone(cell.get("execution_count"))
+        self.assertIn("n = 8", cell["source"])
+        self.assertIn("Change n or random_state", cell["source"])
+        outs = cell["outputs"]
+        self.assertEqual(len(outs), 3)
+        for out in outs:
+            self.assertEqual(out["output_type"], "display_data")
+            self.assertEqual(out.get("metadata", {}), {})
+            self.assertNotIn("execution_count", out)
+            plain = out["data"].get("text/plain", "")
+            plain = "".join(plain) if isinstance(plain, list) else plain
+            self.assertIn("SITE_ID", plain)
+            self.assertIn("SUB_ID", plain)
+
+    def test_no_range_check_or_iqr_remnant(self):
+        for needle in ("IQR", "range check", "flagged", "56 of 1114", "lower_fence"):
+            self.assertNotIn(needle, self.text)
 
     def test_iframe_cells_replaced_with_published_links(self):
         # all four activity titles are gone, replaced by the same course URL

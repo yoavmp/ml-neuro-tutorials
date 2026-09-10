@@ -142,41 +142,61 @@ describe("formatCell", () => {
   });
 });
 
-describe("table-inspection against the committed abide_retention.json", () => {
+describe("table-inspection against the committed abide_table_inspection.json", () => {
   async function loadArtifact() {
     const fs = await import("node:fs/promises");
     const url = new URL(
-      "../../book/_static/widgets/data/abide_retention.json",
+      "../../book/_static/widgets/data/abide_table_inspection.json",
       import.meta.url,
     );
     return JSON.parse(await fs.readFile(url, "utf-8")) as {
       rowCount: number;
+      columnOrder: string[];
+      identifierFields: string[];
       columns: Record<string, CellValue[]>;
     };
   }
 
+  // All 13 curated columns, in the canonical order (WP10 §2).
   const DISPLAY = [
     "SITE_ID",
+    "SUB_ID",
     "DX_GROUP",
     "AGE_AT_SCAN",
     "SEX",
     "HANDEDNESS_CATEGORY",
     "FIQ",
+    "VIQ",
+    "PIQ",
+    "CURRENT_MED_STATUS",
     "SRS_TOTAL_RAW",
     "ADOS_G_TOTAL",
+    "ADI_R_SOCIAL_TOTAL_A",
   ];
 
-  it("head(8) is one site with no missing display cells; tail(8) is one site with missing cells", async () => {
+  it("carries every one of the 13 curated columns in canonical order, SUB_ID included", async () => {
+    const art = await loadArtifact();
+    expect(art.columnOrder).toEqual(DISPLAY);
+    expect(Object.keys(art.columns).sort()).toEqual([...DISPLAY].sort());
+    expect(art.identifierFields).toEqual(["SITE_ID", "SUB_ID"]);
+    const subId = art.columns.SUB_ID ?? [];
+    expect(subId.length).toBe(art.rowCount);
+    expect(subId.every((v) => typeof v === "string" && v.length > 0)).toBe(true);
+  });
+
+  it("head(8) and tail(8) each stay inside one site; the summary counts all 13 columns", async () => {
     const art = await loadArtifact();
     const sites = art.columns.SITE_ID as string[];
     const head = summariseView(art.columns, sites, DISPLAY, selectRowIndices("head", art.rowCount, 8, 7));
     const tail = summariseView(art.columns, sites, DISPLAY, selectRowIndices("tail", art.rowCount, 8, 7));
     expect(head.siteCount).toBe(1);
     expect(head.sites).toEqual(["ABIDEII-BNI_1"]);
-    expect(head.missingCells).toBe(0);
+    expect(head.totalCells).toBe(8 * 13);
+    expect(head.missingCells).toBe(24);
     expect(tail.siteCount).toBe(1);
     expect(tail.sites).toEqual(["ABIDEII-USM_1"]);
-    expect(tail.missingCells).toBe(19);
+    expect(tail.totalCells).toBe(8 * 13);
+    expect(tail.missingCells).toBe(35);
   });
 
   it("sample(8, seed 7) spans 8 sites with far fewer missing cells than tail", async () => {
@@ -186,6 +206,14 @@ describe("table-inspection against the committed abide_retention.json", () => {
     expect(idx).toEqual([12, 482, 585, 680, 773, 858, 976, 1098]);
     const v = summariseView(art.columns, sites, DISPLAY, idx);
     expect(v.siteCount).toBe(8);
-    expect(v.missingCells).toBe(7);
+    expect(v.totalCells).toBe(8 * 13);
+    expect(v.missingCells).toBe(17);
+  });
+
+  it("an 11-row view inspects 11 * 13 = 143 cells", async () => {
+    const art = await loadArtifact();
+    const sites = art.columns.SITE_ID as string[];
+    const v = summariseView(art.columns, sites, DISPLAY, selectRowIndices("head", art.rowCount, 11, 7));
+    expect(v.totalCells).toBe(143);
   });
 });

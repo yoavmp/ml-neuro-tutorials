@@ -124,6 +124,8 @@ class NotebookStreamlining(unittest.TestCase):
         self.assertNotIn("NumPy", prereq_line)
         self.assertNotIn("`NumPy`", covers)
         self.assertNotIn("numpy", covers.lower())
+        # WP10 §4: the overview no longer promises the removed range-check unit.
+        self.assertNotIn("range check", covers.lower())
 
     # --- §7: the 13-column curated table ---------------------------------
     def test_curated_column_config_is_the_13_column_table(self):
@@ -262,22 +264,32 @@ class NotebookStreamlining(unittest.TestCase):
         self.assertNotIn("7af020ab-570e-43ce-a88a-eb51b34aa8b6", self.by_id)
         self.assertNotIn("random_state=42", self.code_src)
 
-    def test_think_first_then_explanation_then_collapsed_python_equivalent(self):
+    def test_think_first_then_explanation_then_code_to_show_each_method(self):
         self.assertIn("```{admonition} Think first", self.by_id["7a1e5c93d202"]["source"])
         expl = self.by_id["7a1e5c93d203"]["source"]
         self.assertIn("deterministic", expl)
         self.assertIn("random_state", expl)
+        # the explanation introduces the next cell as code to display each
+        # method, not three more results to study (WP10 §3).
+        self.assertIn("Python code for each of these three sampling", expl)
         pyeq = self.by_id["7a1e5c93d204"]
         self.assertEqual(pyeq["cell_type"], "code")
-        self.assertIn("hide-input", pyeq["metadata"].get("tags", []))
-        self.assertIn("phenotypes.head(8)", pyeq["source"])
-        self.assertIn("phenotypes.tail(8)", pyeq["source"])
-        self.assertIn("phenotypes.sample(8, random_state=0)", pyeq["source"])
+        tags = pyeq["metadata"].get("tags", [])
+        # WP10 §3: code visible by default, output collapsed via hide-output.
+        self.assertIn("hide-output", tags)
+        self.assertNotIn("hide-input", tags)
+        # n is defined once; the comment invites changing n / random_state.
+        self.assertIn("n = 8", pyeq["source"])
+        self.assertIn("Change n or random_state", pyeq["source"])
+        self.assertIn("phenotypes.head(n)", pyeq["source"])
+        self.assertIn("phenotypes.tail(n)", pyeq["source"])
+        self.assertIn("phenotypes.sample(n, random_state=0)", pyeq["source"])
 
-    # --- §12: cell / visibility counts --------------------------------
+    # --- §12: cell / visibility counts (WP10: -3 range-check cells; the
+    # sampling-equivalent cell moved from hide-input to hide-output) -------
     def test_cell_and_visibility_counts(self):
-        self.assertEqual(len(self.nb.cells), 76)
-        self.assertEqual(len(self.code), 20)
+        self.assertEqual(len(self.nb.cells), 73)
+        self.assertEqual(len(self.code), 19)
         vis = {"visible": 0, "hide-input": 0, "hide-cell": 0, "hide-output": 0}
         for c in self.code:
             tags = set(c["metadata"].get("tags", []))
@@ -286,7 +298,7 @@ class NotebookStreamlining(unittest.TestCase):
                 "visible",
             )
             vis[key] += 1
-        self.assertEqual(vis, {"visible": 10, "hide-input": 8, "hide-cell": 2, "hide-output": 0})
+        self.assertEqual(vis, {"visible": 9, "hide-input": 7, "hide-cell": 2, "hide-output": 1})
 
     def test_valid_and_unique_ids_only_hide_tags(self):
         nbformat.validate(self.nb)
@@ -309,9 +321,28 @@ class NotebookStreamlining(unittest.TestCase):
         self.assertIn('x="AGE_AT_SCAN"', hist["source"])
         self.assertIn("bins=25", hist["source"])
 
-    def test_iqr_range_check_still_flags_56(self):
-        text = _output_text(self.by_id["7bf82a8cd5a9"])
-        self.assertIn("56 of 1114 participants flagged", text)
+    # --- WP10 §4: the range-check teaching unit is gone entirely ---------
+    def test_range_check_subsection_fully_removed(self):
+        for cid in ("58db4c1fc44e", "7bf82a8cd5a9", "c374c2ec5540"):
+            self.assertNotIn(cid, self.by_id)
+        full = self.md + "\n\n" + self.code_src
+        for needle in (
+            "Range checks and flagged values",
+            "range check",
+            "IQR",
+            "interquartile",
+            "lower_fence",
+            "upper_fence",
+            "flagged_age",
+            "1.5",
+            "56 of 1114",
+            "participants flagged",
+        ):
+            self.assertNotIn(needle, full, f"range-check remnant: {needle!r}")
+        # the histogram, group comparison and correlation lesson stay.
+        self.assertIn("e6f7a8b9c0d1", self.by_id)  # age histogram example
+        self.assertIn("9b478759eff3", self.by_id)  # Pearson matrix
+        self.assertIn("### Pearson and Spearman correlations", self.md)
 
 
 def _output_text(cell) -> str:
