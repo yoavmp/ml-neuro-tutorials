@@ -17,6 +17,11 @@ const CHAPTERS = [
     url: "/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html",
     portable: "book/downloads/chapter_02/exercise_02_portable.ipynb",
   },
+  {
+    name: "Chapter 3",
+    url: "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html",
+    portable: "book/downloads/chapter_03/exercise_03_portable.ipynb",
+  },
 ];
 
 for (const { name, url, portable } of CHAPTERS) {

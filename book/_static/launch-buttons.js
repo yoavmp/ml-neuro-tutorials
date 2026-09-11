@@ -36,6 +36,8 @@
       "book/downloads/chapter_01/exercise_01_portable.ipynb",
     "chapters/chapter_02/exercise_02.html":
       "book/downloads/chapter_02/exercise_02_portable.ipynb",
+    "chapters/chapter_03/exercise_03.html":
+      "book/downloads/chapter_03/exercise_03_portable.ipynb",
   };
 
   function portableFor(pathname) {

@@ -13,6 +13,10 @@ Notebooks and their expected strings:
 * ``chapter_02/exercise_02_portable.ipynb`` -- the merged modelling table loads
   with `age` available for all 1004 participants; the held-out linear-regression
   workflow runs and prints its R-squared; the learning curve prints n/p.
+* ``chapter_03/exercise_03_portable.ipynb`` -- the same modelling table; the
+  held-out KNN workflow runs with k=15 and prints its R-squared; the
+  from-scratch empirical k=1..N_fit curve runs and verifies the k=N_fit
+  endpoint.
 
 Needs network access (the notebooks download pinned public CSVs). Used by CI and
 runnable locally:
@@ -48,6 +52,16 @@ SMOKE = {
             "age available for 1004 of 1004",
             "held-out R^2 =",
             "n_features (p) = 358",
+        ),
+    },
+    "chapter_03": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
+        "expect": (
+            "age available for 1004 of 1004",
+            "k = 15",
+            "held-out R^2 = 0.647",
+            "N_fit = 564   N_val = 189",
+            "every validation prediction equals the fitting-set mean",
         ),
     },
 }

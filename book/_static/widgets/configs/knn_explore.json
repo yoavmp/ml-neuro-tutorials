@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "type": "knn-explore",
+  "title": "Vary k and watch the tradeoff",
+  "description": "Course activity for Exercise 3: move the k slider to refit standardized KNN regression for age at scan, from k=1 through every participant in the fitting set, and watch fitting error, validation error, and the observed-vs-predicted scatter change together.",
+  "data": "../data/abide_knn_explore.json",
+  "instructions": "Drag the slider (or use the arrow keys) to change k, the number of nearest neighbours KNN averages over. Every plot and every number below updates from the actual refitted model at that k -- nothing here is a canned label.",
+  "curseOfDimensionalityNote": "This activity uses the same 358 standardized cortical-thickness features as Exercise 2's canonical recipe, not the full 1432-feature brain. In many dimensions, most pairs of points end up roughly equally far apart, so \"nearest neighbour\" stops meaning much -- the curse of dimensionality. The Exercise 3 audit (see the notebook) found this 358-feature recipe already gives KNN a clearly positive validation score, so a smaller hand-picked bundle was not needed here; that will not be true of every feature set or every dataset.",
+  "endpointNoteK1": "Every fitting participant is its own nearest neighbour at distance zero, so fitting error is perfect (R² = 1) -- a trivial, not a generalising, result. Validation error is usually far worse: a single nearest neighbour is a noisy, high-variance prediction.",
+  "endpointNoteKMax": "KNN averages every fitting participant for every prediction, so the model predicts the same constant -- the fitting-set mean age -- for every validation participant, no matter their brain measurements. Maximum smoothing, maximum bias, minimum variance.",
+  "defaultK": "validation-optimal",
+  "reflectionPrompts": [
+    "Move k from 1 up to about 20. What happens to the gap between fitting error and validation error, and why does that gap mean something different here than it did for linear regression's train/test gap?",
+    "Move k all the way to its maximum. Confirm every predicted point in the scatter plot lands on the same horizontal line. What is that line?",
+    "Find the k with the lowest validation error. Would you trust that exact k as your final reported choice? What would you need to do differently for an honest final estimate?"
+  ]
+}

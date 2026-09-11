@@ -1,0 +1,684 @@
+{
+  "candidates": [
+    {
+      "bundle": "all-eligible",
+      "cv_curve": [
+        {
+          "cv_mse_mean": 46.3737,
+          "cv_r2_mean": 0.451527,
+          "cv_r2_std": 0.121616,
+          "k": 1
+        },
+        {
+          "cv_mse_mean": 42.2688,
+          "cv_r2_mean": 0.501921,
+          "cv_r2_std": 0.139997,
+          "k": 2
+        },
+        {
+          "cv_mse_mean": 36.8692,
+          "cv_r2_mean": 0.568658,
+          "cv_r2_std": 0.122948,
+          "k": 3
+        },
+        {
+          "cv_mse_mean": 35.4528,
+          "cv_r2_mean": 0.582092,
+          "cv_r2_std": 0.114544,
+          "k": 4
+        },
+        {
+          "cv_mse_mean": 34.8726,
+          "cv_r2_mean": 0.591395,
+          "cv_r2_std": 0.107628,
+          "k": 5
+        },
+        {
+          "cv_mse_mean": 35.7381,
+          "cv_r2_mean": 0.578037,
+          "cv_r2_std": 0.118155,
+          "k": 7
+        },
+        {
+          "cv_mse_mean": 34.5121,
+          "cv_r2_mean": 0.595023,
+          "cv_r2_std": 0.098016,
+          "k": 10
+        },
+        {
+          "cv_mse_mean": 34.4648,
+          "cv_r2_mean": 0.598251,
+          "cv_r2_std": 0.086677,
+          "k": 15
+        },
+        {
+          "cv_mse_mean": 35.2808,
+          "cv_r2_mean": 0.588457,
+          "cv_r2_std": 0.072638,
+          "k": 20
+        },
+        {
+          "cv_mse_mean": 37.4173,
+          "cv_r2_mean": 0.564602,
+          "cv_r2_std": 0.064299,
+          "k": 30
+        },
+        {
+          "cv_mse_mean": 38.9638,
+          "cv_r2_mean": 0.547704,
+          "cv_r2_std": 0.05811,
+          "k": 40
+        },
+        {
+          "cv_mse_mean": 40.1095,
+          "cv_r2_mean": 0.535461,
+          "cv_r2_std": 0.053948,
+          "k": 48
+        },
+        {
+          "cv_mse_mean": 41.4781,
+          "cv_r2_mean": 0.52088,
+          "cv_r2_std": 0.045607,
+          "k": 57
+        },
+        {
+          "cv_mse_mean": 43.0094,
+          "cv_r2_mean": 0.503637,
+          "cv_r2_std": 0.044591,
+          "k": 69
+        },
+        {
+          "cv_mse_mean": 44.5386,
+          "cv_r2_mean": 0.487247,
+          "cv_r2_std": 0.040605,
+          "k": 82
+        },
+        {
+          "cv_mse_mean": 45.9842,
+          "cv_r2_mean": 0.471128,
+          "cv_r2_std": 0.037176,
+          "k": 99
+        },
+        {
+          "cv_mse_mean": 47.6024,
+          "cv_r2_mean": 0.453133,
+          "cv_r2_std": 0.034693,
+          "k": 118
+        },
+        {
+          "cv_mse_mean": 49.5293,
+          "cv_r2_mean": 0.431786,
+          "cv_r2_std": 0.035076,
+          "k": 142
+        },
+        {
+          "cv_mse_mean": 51.4271,
+          "cv_r2_mean": 0.411122,
+          "cv_r2_std": 0.035635,
+          "k": 170
+        },
+        {
+          "cv_mse_mean": 53.7789,
+          "cv_r2_mean": 0.38515,
+          "cv_r2_std": 0.036772,
+          "k": 204
+        },
+        {
+          "cv_mse_mean": 56.6946,
+          "cv_r2_mean": 0.352234,
+          "cv_r2_std": 0.035674,
+          "k": 244
+        },
+        {
+          "cv_mse_mean": 60.1245,
+          "cv_r2_mean": 0.313202,
+          "cv_r2_std": 0.034264,
+          "k": 292
+        },
+        {
+          "cv_mse_mean": 64.2224,
+          "cv_r2_mean": 0.26632,
+          "cv_r2_std": 0.031687,
+          "k": 350
+        },
+        {
+          "cv_mse_mean": 69.1876,
+          "cv_r2_mean": 0.208943,
+          "cv_r2_std": 0.028091,
+          "k": 419
+        },
+        {
+          "cv_mse_mean": 76.1968,
+          "cv_r2_mean": 0.126941,
+          "cv_r2_std": 0.020119,
+          "k": 502
+        },
+        {
+          "cv_mse_mean": 87.6711,
+          "cv_r2_mean": -0.008606,
+          "cv_r2_std": 0.00838,
+          "k": 602
+        }
+      ],
+      "feature_space": "all-eligible x CT (Exercise 2 canonical)",
+      "fitting_set_endpoint": {
+        "all_predictions_equal_training_mean": true,
+        "k": 753,
+        "n_fit": 753,
+        "test_mse": 93.3741,
+        "test_r2": -0.000264,
+        "train_mean": 15.062039
+      },
+      "folds": 5,
+      "k1_cv_mse": 46.3737,
+      "k1_cv_r2": 0.451527,
+      "k_grid": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        10,
+        15,
+        20,
+        30,
+        40,
+        48,
+        57,
+        69,
+        82,
+        99,
+        118,
+        142,
+        170,
+        204,
+        244,
+        292,
+        350,
+        419,
+        502,
+        602
+      ],
+      "k_grid_max_valid_in_cv": 602,
+      "locked_test_eval": {
+        "k": 15,
+        "n_test": 251,
+        "n_train": 753,
+        "test_mse": 32.9885,
+        "test_r2": 0.646613,
+        "train_mse": 29.7681,
+        "train_r2": 0.659477
+      },
+      "measures": [
+        "CT"
+      ],
+      "n_test": 251,
+      "n_train": 753,
+      "p": 358,
+      "selected_k": 15,
+      "selected_k_cv_mse": 34.4648,
+      "selected_k_cv_r2": 0.598251,
+      "usable_n": 1004
+    },
+    {
+      "bundle": "frontoparietal",
+      "cv_curve": [
+        {
+          "cv_mse_mean": 98.9598,
+          "cv_r2_mean": -0.1553,
+          "cv_r2_std": 0.151448,
+          "k": 1
+        },
+        {
+          "cv_mse_mean": 81.983,
+          "cv_r2_mean": 0.033443,
+          "cv_r2_std": 0.158964,
+          "k": 2
+        },
+        {
+          "cv_mse_mean": 72.2651,
+          "cv_r2_mean": 0.151808,
+          "cv_r2_std": 0.103742,
+          "k": 3
+        },
+        {
+          "cv_mse_mean": 67.6168,
+          "cv_r2_mean": 0.208974,
+          "cv_r2_std": 0.082899,
+          "k": 4
+        },
+        {
+          "cv_mse_mean": 67.0578,
+          "cv_r2_mean": 0.210144,
+          "cv_r2_std": 0.113882,
+          "k": 5
+        },
+        {
+          "cv_mse_mean": 61.5836,
+          "cv_r2_mean": 0.276121,
+          "cv_r2_std": 0.107168,
+          "k": 7
+        },
+        {
+          "cv_mse_mean": 63.2229,
+          "cv_r2_mean": 0.25748,
+          "cv_r2_std": 0.110105,
+          "k": 10
+        },
+        {
+          "cv_mse_mean": 60.3516,
+          "cv_r2_mean": 0.290285,
+          "cv_r2_std": 0.108719,
+          "k": 15
+        },
+        {
+          "cv_mse_mean": 58.6445,
+          "cv_r2_mean": 0.310528,
+          "cv_r2_std": 0.112434,
+          "k": 20
+        },
+        {
+          "cv_mse_mean": 56.4197,
+          "cv_r2_mean": 0.337624,
+          "cv_r2_std": 0.100177,
+          "k": 30
+        },
+        {
+          "cv_mse_mean": 55.49,
+          "cv_r2_mean": 0.349674,
+          "cv_r2_std": 0.094417,
+          "k": 40
+        },
+        {
+          "cv_mse_mean": 55.2303,
+          "cv_r2_mean": 0.35364,
+          "cv_r2_std": 0.088017,
+          "k": 48
+        },
+        {
+          "cv_mse_mean": 54.9365,
+          "cv_r2_mean": 0.35876,
+          "cv_r2_std": 0.076989,
+          "k": 57
+        },
+        {
+          "cv_mse_mean": 54.9015,
+          "cv_r2_mean": 0.360942,
+          "cv_r2_std": 0.074156,
+          "k": 69
+        },
+        {
+          "cv_mse_mean": 54.9871,
+          "cv_r2_mean": 0.361966,
+          "cv_r2_std": 0.067358,
+          "k": 82
+        },
+        {
+          "cv_mse_mean": 55.5624,
+          "cv_r2_mean": 0.356513,
+          "cv_r2_std": 0.0627,
+          "k": 99
+        },
+        {
+          "cv_mse_mean": 56.3425,
+          "cv_r2_mean": 0.348668,
+          "cv_r2_std": 0.058396,
+          "k": 118
+        },
+        {
+          "cv_mse_mean": 57.0147,
+          "cv_r2_mean": 0.342546,
+          "cv_r2_std": 0.051577,
+          "k": 142
+        },
+        {
+          "cv_mse_mean": 58.2508,
+          "cv_r2_mean": 0.32996,
+          "cv_r2_std": 0.045593,
+          "k": 170
+        },
+        {
+          "cv_mse_mean": 59.5925,
+          "cv_r2_mean": 0.315784,
+          "cv_r2_std": 0.040046,
+          "k": 204
+        },
+        {
+          "cv_mse_mean": 61.6893,
+          "cv_r2_mean": 0.292947,
+          "cv_r2_std": 0.035877,
+          "k": 244
+        },
+        {
+          "cv_mse_mean": 64.0775,
+          "cv_r2_mean": 0.266379,
+          "cv_r2_std": 0.032379,
+          "k": 292
+        },
+        {
+          "cv_mse_mean": 67.4573,
+          "cv_r2_mean": 0.227794,
+          "cv_r2_std": 0.028255,
+          "k": 350
+        },
+        {
+          "cv_mse_mean": 71.6233,
+          "cv_r2_mean": 0.180063,
+          "cv_r2_std": 0.02483,
+          "k": 419
+        },
+        {
+          "cv_mse_mean": 76.7032,
+          "cv_r2_mean": 0.120591,
+          "cv_r2_std": 0.017872,
+          "k": 502
+        },
+        {
+          "cv_mse_mean": 87.669,
+          "cv_r2_mean": -0.008577,
+          "cv_r2_std": 0.008396,
+          "k": 602
+        }
+      ],
+      "feature_space": "frontoparietal x CT (P-FIT compact)",
+      "fitting_set_endpoint": {
+        "all_predictions_equal_training_mean": true,
+        "k": 753,
+        "n_fit": 753,
+        "test_mse": 93.3741,
+        "test_r2": -0.000264,
+        "train_mean": 15.062039
+      },
+      "folds": 5,
+      "k1_cv_mse": 98.9598,
+      "k1_cv_r2": -0.1553,
+      "k_grid": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        10,
+        15,
+        20,
+        30,
+        40,
+        48,
+        57,
+        69,
+        82,
+        99,
+        118,
+        142,
+        170,
+        204,
+        244,
+        292,
+        350,
+        419,
+        502,
+        602
+      ],
+      "k_grid_max_valid_in_cv": 602,
+      "locked_test_eval": {
+        "k": 82,
+        "n_test": 251,
+        "n_train": 753,
+        "test_mse": 48.8205,
+        "test_r2": 0.477014,
+        "train_mse": 54.0936,
+        "train_r2": 0.381214
+      },
+      "measures": [
+        "CT"
+      ],
+      "n_test": 251,
+      "n_train": 753,
+      "p": 78,
+      "selected_k": 82,
+      "selected_k_cv_mse": 54.9871,
+      "selected_k_cv_r2": 0.361966,
+      "usable_n": 1004
+    },
+    {
+      "bundle": "occipital",
+      "cv_curve": [
+        {
+          "cv_mse_mean": 79.3473,
+          "cv_r2_mean": 0.081399,
+          "cv_r2_std": 0.089779,
+          "k": 1
+        },
+        {
+          "cv_mse_mean": 62.9887,
+          "cv_r2_mean": 0.277404,
+          "cv_r2_std": 0.028267,
+          "k": 2
+        },
+        {
+          "cv_mse_mean": 57.4662,
+          "cv_r2_mean": 0.342688,
+          "cv_r2_std": 0.041113,
+          "k": 3
+        },
+        {
+          "cv_mse_mean": 53.4818,
+          "cv_r2_mean": 0.387858,
+          "cv_r2_std": 0.041083,
+          "k": 4
+        },
+        {
+          "cv_mse_mean": 52.3212,
+          "cv_r2_mean": 0.398674,
+          "cv_r2_std": 0.046505,
+          "k": 5
+        },
+        {
+          "cv_mse_mean": 49.1217,
+          "cv_r2_mean": 0.435059,
+          "cv_r2_std": 0.02903,
+          "k": 7
+        },
+        {
+          "cv_mse_mean": 46.2652,
+          "cv_r2_mean": 0.470885,
+          "cv_r2_std": 0.05037,
+          "k": 10
+        },
+        {
+          "cv_mse_mean": 45.8044,
+          "cv_r2_mean": 0.471443,
+          "cv_r2_std": 0.045484,
+          "k": 15
+        },
+        {
+          "cv_mse_mean": 45.5482,
+          "cv_r2_mean": 0.47522,
+          "cv_r2_std": 0.042946,
+          "k": 20
+        },
+        {
+          "cv_mse_mean": 47.3714,
+          "cv_r2_mean": 0.455536,
+          "cv_r2_std": 0.046506,
+          "k": 30
+        },
+        {
+          "cv_mse_mean": 48.0286,
+          "cv_r2_mean": 0.447724,
+          "cv_r2_std": 0.041735,
+          "k": 40
+        },
+        {
+          "cv_mse_mean": 48.1682,
+          "cv_r2_mean": 0.446957,
+          "cv_r2_std": 0.037845,
+          "k": 48
+        },
+        {
+          "cv_mse_mean": 48.8046,
+          "cv_r2_mean": 0.439251,
+          "cv_r2_std": 0.03067,
+          "k": 57
+        },
+        {
+          "cv_mse_mean": 49.7085,
+          "cv_r2_mean": 0.430204,
+          "cv_r2_std": 0.03182,
+          "k": 69
+        },
+        {
+          "cv_mse_mean": 50.0858,
+          "cv_r2_mean": 0.425726,
+          "cv_r2_std": 0.033297,
+          "k": 82
+        },
+        {
+          "cv_mse_mean": 50.7983,
+          "cv_r2_mean": 0.417506,
+          "cv_r2_std": 0.027649,
+          "k": 99
+        },
+        {
+          "cv_mse_mean": 51.4696,
+          "cv_r2_mean": 0.410435,
+          "cv_r2_std": 0.028452,
+          "k": 118
+        },
+        {
+          "cv_mse_mean": 52.7555,
+          "cv_r2_mean": 0.396549,
+          "cv_r2_std": 0.03166,
+          "k": 142
+        },
+        {
+          "cv_mse_mean": 54.0275,
+          "cv_r2_mean": 0.382952,
+          "cv_r2_std": 0.032132,
+          "k": 170
+        },
+        {
+          "cv_mse_mean": 55.8877,
+          "cv_r2_mean": 0.361838,
+          "cv_r2_std": 0.031182,
+          "k": 204
+        },
+        {
+          "cv_mse_mean": 58.2369,
+          "cv_r2_mean": 0.335099,
+          "cv_r2_std": 0.031898,
+          "k": 244
+        },
+        {
+          "cv_mse_mean": 61.2356,
+          "cv_r2_mean": 0.300875,
+          "cv_r2_std": 0.032637,
+          "k": 292
+        },
+        {
+          "cv_mse_mean": 64.9528,
+          "cv_r2_mean": 0.257954,
+          "cv_r2_std": 0.030231,
+          "k": 350
+        },
+        {
+          "cv_mse_mean": 69.7622,
+          "cv_r2_mean": 0.202178,
+          "cv_r2_std": 0.027244,
+          "k": 419
+        },
+        {
+          "cv_mse_mean": 76.7423,
+          "cv_r2_mean": 0.120502,
+          "cv_r2_std": 0.019601,
+          "k": 502
+        },
+        {
+          "cv_mse_mean": 87.6707,
+          "cv_r2_mean": -0.008602,
+          "cv_r2_std": 0.008386,
+          "k": 602
+        }
+      ],
+      "feature_space": "occipital x CT (comparison bundle)",
+      "fitting_set_endpoint": {
+        "all_predictions_equal_training_mean": true,
+        "k": 753,
+        "n_fit": 753,
+        "test_mse": 93.3741,
+        "test_r2": -0.000264,
+        "train_mean": 15.062039
+      },
+      "folds": 5,
+      "k1_cv_mse": 79.3473,
+      "k1_cv_r2": 0.081399,
+      "k_grid": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        10,
+        15,
+        20,
+        30,
+        40,
+        48,
+        57,
+        69,
+        82,
+        99,
+        118,
+        142,
+        170,
+        204,
+        244,
+        292,
+        350,
+        419,
+        502,
+        602
+      ],
+      "k_grid_max_valid_in_cv": 602,
+      "locked_test_eval": {
+        "k": 20,
+        "n_test": 251,
+        "n_train": 753,
+        "test_mse": 53.6394,
+        "test_r2": 0.425391,
+        "train_mse": 41.4919,
+        "train_r2": 0.525366
+      },
+      "measures": [
+        "CT"
+      ],
+      "n_test": 251,
+      "n_train": 753,
+      "p": 46,
+      "selected_k": 20,
+      "selected_k_cv_mse": 45.5482,
+      "selected_k_cv_r2": 0.47522,
+      "usable_n": 1004
+    }
+  ],
+  "generated_by": "scripts/knn_model_audit.py --run",
+  "protocol": {
+    "cv_for_k_selection": "KFold(n_splits=5, shuffle=True, random_state=0)",
+    "note": "k is selected by 5-fold CV on the outer-TRAINING partition only (the same CV protocol Exercise 2 documents). The outer test set is evaluated exactly once per candidate, after k is already locked, and is never used to select k, the feature space, scaling, the distance metric, or weighting.",
+    "outer_holdout_split": {
+      "random_state": 42,
+      "stratify": "group",
+      "test_size": 0.25
+    }
+  },
+  "runtime_seconds": 12.49,
+  "source": {
+    "brainTableSha256": "ad0db42f85c77cbb8b4e023df288d34b29f1a63870a0cf1955c5b3b0d357579e",
+    "phenotypeTableSha256": "537e541114884f63a2e736ba4d223a816dd013f701e56fb223ebe42e219e06f6",
+    "pinnedCommit": "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"
+  },
+  "target": "age"
+}

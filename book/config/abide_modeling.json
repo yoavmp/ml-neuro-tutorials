@@ -128,6 +128,27 @@
     "identifiability_rule": "An entry is offered only if its feature count p is below 0.7 * (fold training n). all-eligible x [CT,Area] (p=716) and any entry with p >= that bound is disabled with a visible reason rather than fitted with a pseudo-inverse.",
     "note": "The interactive feature-set comparison activity offers ordinary least squares only, never regularised models; that restriction is about this activity being unregularised OLS, not about p vs n in general (WP12 6.3) - the separate regularisation-preview computation (protocol.regularisation_preview) is where ridge / lasso are used, on the full p=1432 space, computed directly in the notebook rather than exposed as extra activity controls. Trying many entries here is still exploratory model comparison; the cross-validation score of the best-looking entry is not an unbiased estimate of its performance."
   },
+  "knn": {
+    "target": "age",
+    "canonical_recipe": {
+      "bundle": "all-eligible",
+      "measures": ["CT"],
+      "note": "Identical to protocol.canonical_recipe (p=358), reused so Exercise 3's KNN result is directly comparable to Exercise 2's OLS result: same participants, split, target, and feature set."
+    },
+    "cv_for_k_selection": {"kind": "KFold", "n_splits": 5, "shuffle": true, "random_state": 0, "note": "Selects k on the outer-TRAINING partition only (753 rows); Exercise 2's own documented cross-validation protocol, reused verbatim."},
+    "dev_split": {
+      "test_size": 0.25,
+      "random_state": 7,
+      "stratify": "group",
+      "note": "Further splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189) for the empirical all-k curve (Exercise 3 section 4.5) and the interactive activity (section 4.6). Independent of, and never touching, the outer test set (251 rows) locked by protocol.holdout_split."
+    },
+    "audit_script": "scripts/knn_model_audit.py",
+    "audit_result": "scripts/knn_model_audit_result.json",
+    "selected_k": 15,
+    "selected_k_rationale": "WP13 audit (scripts/knn_model_audit.py --run): 5-fold CV on the outer-training partition only, canonical all-eligible x CT recipe (p=358); k=15 maximises mean CV R2 (+0.598) over a log-spaced grid spanning 1..602 (the largest k valid inside that CV). Locked held-out test R2=+0.647 (MSE 32.99), evaluated exactly once after k was already fixed -- higher than the two smaller predeclared bundles tested (frontoparietal p=78: k*=82, test R2=+0.477; occipital p=46: k*=20, test R2=+0.425) and higher than Exercise 2's OLS result (R2=+0.475) on the identical participants/split/target/features. No curse-of-dimensionality problem was observed for standardized KNN on this canonical recipe, so the canonical feature set is retained (not a smaller bundle) both for the cleanest result and so the Exercise 2 comparison is apples-to-apples.",
+    "export_data_script": "scripts/export_knn_explore_data.py",
+    "export_data_artifact": "book/_static/widgets/data/abide_knn_explore.json"
+  },
   "bundles": {
     "frontoparietal": {
       "label": "Frontoparietal (P-FIT)",

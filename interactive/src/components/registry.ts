@@ -9,6 +9,7 @@ import { retentionComponent } from "./retention";
 import { correlationComponent } from "./correlation";
 import { tableInspectionComponent } from "./table-inspection";
 import { regressionCompareComponent } from "./regression-compare";
+import { knnExploreComponent } from "./knn-explore";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -17,3 +18,4 @@ registry.register(retentionComponent);
 registry.register(correlationComponent);
 registry.register(tableInspectionComponent);
 registry.register(regressionCompareComponent);
+registry.register(knnExploreComponent);

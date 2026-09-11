@@ -668,6 +668,52 @@ describe("parseActivityConfig — regression-compare", () => {
   });
 });
 
+const validKnnExplore = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "knn-explore",
+  title: "Vary k and watch the tradeoff",
+  data: "../data/abide_knn_explore.json",
+  instructions: "Drag the slider to change k.",
+  curseOfDimensionalityNote: "In many dimensions, near stops meaning much.",
+  endpointNoteK1: "Every fitting participant is its own nearest neighbour.",
+  endpointNoteKMax: "The model predicts the fitting-set mean for everyone.",
+  defaultK: "validation-optimal" as const,
+};
+
+describe("parseActivityConfig — knn-explore", () => {
+  it("accepts a well-formed knn-explore config with a string defaultK", () => {
+    const r = parseActivityConfig(validKnnExplore);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("accepts a numeric defaultK", () => {
+    const r = parseActivityConfig({ ...validKnnExplore, defaultK: 15 });
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("rejects an unknown defaultK string", () => {
+    const r = parseActivityConfig({ ...validKnnExplore, defaultK: "smallest" });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects a non-positive numeric defaultK", () => {
+    const r = parseActivityConfig({ ...validKnnExplore, defaultK: 0 });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validKnnExplore, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/knn_explore.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL("../../book/_static/widgets/configs/knn_explore.json", import.meta.url);
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
 describe("parseActivityConfigJson", () => {
   it("parses and validates a JSON string", () => {
     const r = parseActivityConfigJson(JSON.stringify(valid));

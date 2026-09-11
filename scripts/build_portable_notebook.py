@@ -60,6 +60,9 @@ PUBLISHED_PAGE = (
 PUBLISHED_PAGE_CH2 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html"
 )
+PUBLISHED_PAGE_CH3 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html"
+)
 
 BANNER_ID = "portable-banner"
 SETUP_ID = "portable-setup"
@@ -343,7 +346,77 @@ CHAPTER_02 = NotebookSpec(
     colab_title="Exercise 2: Regression",
 )
 
-NOTEBOOKS = {CHAPTER_01.key: CHAPTER_01, CHAPTER_02.key: CHAPTER_02}
+_CH3_BANNER = (
+    "# Exercise 3: KNN and the Bias–Variance Tradeoff - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 3 KNN practice from\n"
+    "**Machine Learning for Neuroscience**, generated from the canonical\n"
+    "course notebook by `scripts/build_portable_notebook.py`. It is meant for\n"
+    "running or editing the code in Google Colab or in a local VS Code /\n"
+    "Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the k-exploration activity embedded and\n"
+    "running in the browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH3 + ">\n"
+    "\n"
+    "In this notebook the interactive activity is replaced by a link to that\n"
+    "page plus a non-interactive Matplotlib version of the same k exploration;\n"
+    "every other Python analysis cell is kept and runnable. Questions marked\n"
+    "*Think first* are followed, where one exists, by a collapsible *Check\n"
+    "your reasoning* block; open questions are left without one fixed answer."
+)
+
+_CH3_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads two\n"
+    "public data files the first time it runs, so it needs internet access."
+)
+
+_CH3_IFRAME_REPLACEMENT = (
+    "### Explore k yourself on the course website\n"
+    "\n"
+    "The interactive activity lets you drag a slider across every k from 1\n"
+    "through every participant in the fitting set and watch fitting error,\n"
+    "validation error, and the observed-vs-predicted scatter update from the\n"
+    "actual refitted model at that k.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 3 page:\n"
+    "> <" + PUBLISHED_PAGE_CH3 + ">\n"
+    "> This portable notebook links to it instead of embedding it. Section 5\n"
+    "> above already computes and plots the same k = 1..N_fit exploration as a\n"
+    "> static Matplotlib figure, from the same fitting/validation split -- run\n"
+    "> it and change `FIT_RANDOM_STATE` or the split size to explore further."
+)
+
+CHAPTER_03 = NotebookSpec(
+    key="chapter_03",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH3,
+    banner_source=_CH3_BANNER,
+    setup_source=_CH3_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive KNN neighbour-count exploration for predicting age from brain structure": (
+            _CH3_IFRAME_REPLACEMENT
+        )
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 3: KNN and the Bias-Variance Tradeoff",
+)
+
+NOTEBOOKS = {CHAPTER_01.key: CHAPTER_01, CHAPTER_02.key: CHAPTER_02, CHAPTER_03.key: CHAPTER_03}
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).
 CANONICAL = CHAPTER_01.canonical

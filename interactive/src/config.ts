@@ -236,6 +236,21 @@ const regressionCompareConfig = z
   })
   .strict();
 
+const knnExploreDefaultK = z.union([z.literal("validation-optimal"), z.number().int().positive()]);
+
+const knnExploreConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("knn-explore"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    curseOfDimensionalityNote: z.string().min(1, "config.curseOfDimensionalityNote must be a non-empty string"),
+    endpointNoteK1: z.string().min(1, "config.endpointNoteK1 must be a non-empty string"),
+    endpointNoteKMax: z.string().min(1, "config.endpointNoteKMax must be a non-empty string"),
+    defaultK: knnExploreDefaultK,
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -247,6 +262,7 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   edaCorrelationConfig,
   tableInspectionConfig,
   regressionCompareConfig,
+  knnExploreConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -256,6 +272,7 @@ export type EdaRetentionConfig = z.infer<typeof edaRetentionConfig>;
 export type EdaCorrelationConfig = z.infer<typeof edaCorrelationConfig>;
 export type TableInspectionConfig = z.infer<typeof tableInspectionConfig>;
 export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
+export type KnnExploreConfig = z.infer<typeof knnExploreConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
