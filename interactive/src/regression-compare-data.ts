@@ -94,9 +94,9 @@ export const regressionCatalogSchema = z
     if (data.observed.length !== data.cohort.n) {
       add(["observed"], `observed has ${data.observed.length} values, expected cohort.n ${data.cohort.n}`);
     }
-    if (!data.observed.every((v) => Number.isInteger(v))) {
-      add(["observed"], "observed must be integer target values");
-    }
+    // observed need not be integer: age (years) is fractional, FIQ is an
+    // integer standard score. z.number().finite() on the array element already
+    // rejects NaN / Infinity / non-numbers.
     if (data.foldOf.length !== data.observed.length) {
       add(["foldOf"], "foldOf must align with observed");
     }

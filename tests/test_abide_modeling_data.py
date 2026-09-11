@@ -78,11 +78,17 @@ class ManifestCheck(unittest.TestCase):
     def test_targets_have_the_two_required_roles(self):
         roles = {t["role"] for t in MANIFEST["targets"].values()}
         self.assertIn("main", roles)
-        self.assertIn("lower_availability", roles)
+        self.assertIn("regularization_preview", roles)
+
+    def test_main_target_is_age(self):
+        # WP12: the modelling audit found age has reliably positive
+        # out-of-sample R2 while FIQ does not, even with regularisation.
+        self.assertEqual(MANIFEST["targets"]["age"]["role"], "main")
+        self.assertEqual(MANIFEST["targets"]["FIQ"]["role"], "regularization_preview")
 
     def test_canonical_recipe_is_a_real_bundle_and_measure(self):
         recipe = MANIFEST["protocol"]["canonical_recipe"]
-        self.assertIn(recipe["bundle"], MANIFEST["bundles"])
+        self.assertTrue(recipe["bundle"] == "all-eligible" or recipe["bundle"] in MANIFEST["bundles"])
         for m in recipe["measures"]:
             self.assertIn(m, MANIFEST["measures"])
 
@@ -171,7 +177,15 @@ class LeakageGuard(unittest.TestCase):
 
     def test_feature_matrix_rejects_an_unknown_target(self):
         with self.assertRaises(ValueError):
-            amd.feature_matrix(synthetic_frame(), "frontoparietal", ["CT"], "age")
+            amd.feature_matrix(synthetic_frame(), "frontoparietal", ["CT"], "not_a_real_target")
+
+    def test_feature_matrix_accepts_age_as_a_target(self):
+        # age (WP12 main target) is native to the brain table, no join needed.
+        X, y, cols = amd.feature_matrix(synthetic_frame(), "frontoparietal", ["CT"], "age")
+        self.assertEqual(X.shape, (len(synthetic_frame()), 78))
+        self.assertEqual(len(y), X.shape[0])
+        amd.assert_brain_only(cols)
+        self.assertNotIn("age", cols)
 
 
 if __name__ == "__main__":

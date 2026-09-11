@@ -17,7 +17,7 @@ function appUrl(prefix: string, query = ""): string {
 
 for (const { name, prefix } of BASES) {
   test.describe(`regression-compare @ ${name}`, () => {
-    test("both panels render, defaults match the P-FIT-vs-comparison setup, and metrics are real", async ({
+    test("both panels render, defaults are the frontoparietal-vs-occipital comparison, and metrics are real", async ({
       page,
     }) => {
       const failed: string[] = [];
@@ -51,13 +51,13 @@ for (const { name, prefix } of BASES) {
         /[1-9]/,
       );
 
-      // metrics: FIQ is not predictable here — held-out R^2 is negative and the
-      // panel exposes the exact value.
+      // metrics: age IS predictable here — held-out R^2 is positive and the
+      // panel exposes the exact value (no "worse than the mean" suffix).
       const aMetrics = await page.locator('[data-testid="regression-A-metrics"]').innerText();
-      expect(aMetrics).toMatch(/Out-of-sample R2 = -0\.\d+/);
-      expect(aMetrics).toContain("worse than predicting the mean");
+      expect(aMetrics).toMatch(/Out-of-sample R2 = 0\.\d+/);
+      expect(aMetrics).not.toContain("worse than predicting the mean");
       const aR2 = Number(await panelA.getAttribute("data-r2"));
-      expect(aR2).toBeLessThan(0);
+      expect(aR2).toBeGreaterThan(0);
 
       // no CDN / kernel / socket
       expect(sockets).toEqual([]);
@@ -82,7 +82,10 @@ for (const { name, prefix } of BASES) {
 
       expect(afterR2).not.toEqual(beforeR2);
       expect(afterRender).toBeGreaterThan(beforeRender);
-      expect(Number(afterR2)).toBeLessThan(-0.5); // all 358 features -> much worse
+      // unlike FIQ, age keeps a real, positive signal with every eligible
+      // cortical-thickness region — more features here is a modest improvement,
+      // not a collapse.
+      expect(Number(afterR2)).toBeGreaterThan(0.4);
     });
 
     test("an unsupported p >= n combination is disabled with a visible reason, not fitted", async ({

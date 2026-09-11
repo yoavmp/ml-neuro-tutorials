@@ -337,7 +337,7 @@ def _check_manifest(manifest: dict[str, Any]) -> list[str]:
                 problems.append(f"bundle {name!r}: ROI {roi!r} is not bilateral")
 
     recipe = manifest["protocol"]["canonical_recipe"]
-    if recipe["bundle"] not in manifest["bundles"]:
+    if recipe["bundle"] != "all-eligible" and recipe["bundle"] not in manifest["bundles"]:
         problems.append(f"canonical recipe bundle {recipe['bundle']!r} is not defined")
     for m in recipe["measures"]:
         if m not in manifest["measures"]:
@@ -368,7 +368,7 @@ def _check_manifest(manifest: dict[str, Any]) -> list[str]:
                 col = f"{prefix}_{hemi}_{roi}_ROI"
                 if pattern.search(col):
                     problems.append(f"forbidden pattern wrongly rejects a real brain column: {col}")
-    for roles in (("main", "lower_availability"),):
+    for roles in (("main", "regularization_preview"),):
         seen = {t["role"] for t in manifest["targets"].values()}
         for role in roles:
             if role not in seen:

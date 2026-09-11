@@ -297,6 +297,25 @@ html[data-theme="dark"] {
 }
 
 /* --------------------------------------------------------------------------
+   WP12 -- per-page Colab launch button (launch-buttons.js), styled to sit
+   beside the theme's own source/download dropdown buttons in the article
+   header without touching theme internals.
+   -------------------------------------------------------------------------- */
+.header-article-items__end .dropdown-launch-button {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.25rem;
+}
+.header-article-items__end .dropdown-launch-button .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+.header-article-items__end .dropdown-launch-button .colab-launch-label {
+  font-size: 0.8rem;
+}
+
+/* --------------------------------------------------------------------------
    Links & focus visibility
    -------------------------------------------------------------------------- */
 .bd-article a {

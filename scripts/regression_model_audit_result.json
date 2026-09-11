@@ -1,0 +1,1732 @@
+{
+  "candidates": [
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        160.0465,
+        129.0184,
+        120.7123,
+        119.3431,
+        135.3196
+      ],
+      "cv_mse_mean": 132.888,
+      "cv_r2_folds": [
+        -0.66475,
+        -0.558649,
+        -0.707611,
+        -0.154002,
+        -0.493489
+      ],
+      "cv_r2_mean": -0.5157,
+      "cv_r2_std": 0.196066,
+      "feature_space": "all-eligible x all measures",
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 803,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 1432,
+      "p_over_n_train": 1.7833,
+      "target": "age",
+      "underdetermined": true,
+      "underdetermined_note": "p=1432 >= n_train=803; ordinary least squares is underdetermined (sklearn returns the minimum-norm lstsq solution). Diagnostic only.",
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 1000.0,
+      "alpha_per_fold": [
+        1000.0,
+        1778.28,
+        1778.28,
+        1000.0,
+        1000.0
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        30.7111,
+        29.0375,
+        23.4554,
+        32.3538,
+        21.8551
+      ],
+      "cv_mse_mean": 27.4826,
+      "cv_r2_folds": [
+        0.680554,
+        0.649204,
+        0.668197,
+        0.687151,
+        0.758791
+      ],
+      "cv_r2_mean": 0.688779,
+      "cv_r2_std": 0.037314,
+      "feature_space": "all-eligible x all measures",
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 1432,
+      "nonzero_coef_per_fold": [
+        1432,
+        1432,
+        1432,
+        1432,
+        1432
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 1432,
+      "p_over_n_train": 1.7833,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 0.158489,
+      "alpha_per_fold": [
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        30.4141,
+        30.0942,
+        21.8208,
+        34.0323,
+        22.9462
+      ],
+      "cv_mse_mean": 27.8615,
+      "cv_r2_folds": [
+        0.683643,
+        0.636437,
+        0.69132,
+        0.67092,
+        0.746748
+      ],
+      "cv_r2_mean": 0.685814,
+      "cv_r2_std": 0.035799,
+      "feature_space": "all-eligible x all measures",
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 193,
+      "nonzero_coef_per_fold": [
+        198,
+        178,
+        205,
+        193,
+        192
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 1432,
+      "p_over_n_train": 1.7833,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        911.6741,
+        903.9186,
+        1115.8748,
+        1070.0505,
+        896.9603
+      ],
+      "cv_mse_mean": 979.6957,
+      "cv_r2_folds": [
+        -2.886112,
+        -3.339466,
+        -3.964578,
+        -3.358288,
+        -2.629958
+      ],
+      "cv_r2_mean": -3.235681,
+      "cv_r2_std": 0.457426,
+      "feature_space": "all-eligible x all measures",
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 726,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 1432,
+      "p_over_n_train": 1.9725,
+      "target": "FIQ",
+      "underdetermined": true,
+      "underdetermined_note": "p=1432 >= n_train=726; ordinary least squares is underdetermined (sklearn returns the minimum-norm lstsq solution). Diagnostic only.",
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 10000.0,
+      "alpha_per_fold": [
+        3162.28,
+        10000.0,
+        10000.0,
+        100000.0,
+        100000.0
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        233.9334,
+        217.4006,
+        220.6852,
+        241.0518,
+        257.0279
+      ],
+      "cv_mse_mean": 234.0198,
+      "cv_r2_folds": [
+        0.002833,
+        -0.043681,
+        0.018161,
+        0.018202,
+        -0.04018
+      ],
+      "cv_r2_mean": -0.008933,
+      "cv_r2_std": 0.027541,
+      "feature_space": "all-eligible x all measures",
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 1432,
+      "nonzero_coef_per_fold": [
+        1432,
+        1432,
+        1432,
+        1432,
+        1432
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 1432,
+      "p_over_n_train": 1.9725,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 1.58489,
+      "alpha_per_fold": [
+        0.630957,
+        1.58489,
+        1.58489,
+        1.58489,
+        1.58489
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        230.4505,
+        211.837,
+        221.847,
+        242.7097,
+        254.9256
+      ],
+      "cv_mse_mean": 232.3539,
+      "cv_r2_folds": [
+        0.017679,
+        -0.016971,
+        0.012993,
+        0.01145,
+        -0.031672
+      ],
+      "cv_r2_mean": -0.001304,
+      "cv_r2_std": 0.019469,
+      "feature_space": "all-eligible x all measures",
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 8,
+      "nonzero_coef_per_fold": [
+        92,
+        8,
+        6,
+        7,
+        11
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 1432,
+      "p_over_n_train": 1.9725,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        50.7562,
+        48.6629,
+        41.724,
+        54.9451,
+        41.4646
+      ],
+      "cv_mse_mean": 47.5106,
+      "cv_r2_folds": [
+        0.472051,
+        0.412112,
+        0.409767,
+        0.468702,
+        0.542365
+      ],
+      "cv_r2_mean": 0.460999,
+      "cv_r2_std": 0.048614,
+      "feature_space": "all-eligible x CT",
+      "measures": [
+        "CT"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 803,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "underdetermined": false,
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 562.341,
+      "alpha_per_fold": [
+        562.341,
+        562.341,
+        562.341,
+        562.341,
+        562.341
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        35.5418,
+        32.5436,
+        25.0615,
+        35.8106,
+        24.9493
+      ],
+      "cv_mse_mean": 30.7813,
+      "cv_r2_folds": [
+        0.630306,
+        0.606847,
+        0.645477,
+        0.653725,
+        0.724641
+      ],
+      "cv_r2_mean": 0.652199,
+      "cv_r2_std": 0.039576,
+      "feature_space": "all-eligible x CT",
+      "measures": [
+        "CT"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 358,
+      "nonzero_coef_per_fold": [
+        358,
+        358,
+        358,
+        358,
+        358
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 0.158489,
+      "alpha_per_fold": [
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        35.511,
+        33.7623,
+        26.0565,
+        35.9646,
+        25.8824
+      ],
+      "cv_mse_mean": 31.4354,
+      "cv_r2_folds": [
+        0.630626,
+        0.592124,
+        0.631402,
+        0.652236,
+        0.714342
+      ],
+      "cv_r2_mean": 0.644146,
+      "cv_r2_std": 0.040111,
+      "feature_space": "all-eligible x CT",
+      "measures": [
+        "CT"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 117,
+      "nonzero_coef_per_fold": [
+        117,
+        112,
+        124,
+        113,
+        125
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        575.6551,
+        550.3945,
+        476.4811,
+        432.4786,
+        538.7976
+      ],
+      "cv_mse_mean": 514.7614,
+      "cv_r2_folds": [
+        -1.453794,
+        -1.642294,
+        -1.119886,
+        -0.761474,
+        -1.18049
+      ],
+      "cv_r2_mean": -1.231587,
+      "cv_r2_std": 0.30138,
+      "feature_space": "all-eligible x CT",
+      "measures": [
+        "CT"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 726,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "underdetermined": false,
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 5623.41,
+      "alpha_per_fold": [
+        1778.28,
+        3162.28,
+        5623.41,
+        17782.8,
+        5623.41
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        238.6094,
+        219.9802,
+        220.0891,
+        242.529,
+        249.8721
+      ],
+      "cv_mse_mean": 234.216,
+      "cv_r2_folds": [
+        -0.017099,
+        -0.056065,
+        0.020813,
+        0.012186,
+        -0.011221
+      ],
+      "cv_r2_mean": -0.010277,
+      "cv_r2_std": 0.026889,
+      "feature_space": "all-eligible x CT",
+      "measures": [
+        "CT"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 358,
+      "nonzero_coef_per_fold": [
+        358,
+        358,
+        358,
+        358,
+        358
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 100.0,
+      "alpha_per_fold": [
+        0.630957,
+        1.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        239.91,
+        216.3688,
+        226.6497,
+        245.5449,
+        248.5329
+      ],
+      "cv_mse_mean": 235.4013,
+      "cv_r2_folds": [
+        -0.022643,
+        -0.038728,
+        -0.008375,
+        -9.8e-05,
+        -0.005802
+      ],
+      "cv_r2_mean": -0.015129,
+      "cv_r2_std": 0.013942,
+      "feature_space": "all-eligible x CT",
+      "measures": [
+        "CT"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 0,
+      "nonzero_coef_per_fold": [
+        46,
+        17,
+        0,
+        0,
+        0
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        71.9715,
+        67.0012,
+        67.3084,
+        73.2705,
+        82.4504
+      ],
+      "cv_mse_mean": 72.4004,
+      "cv_r2_folds": [
+        0.251376,
+        0.19057,
+        0.047847,
+        0.291502,
+        0.090016
+      ],
+      "cv_r2_mean": 0.174262,
+      "cv_r2_std": 0.092775,
+      "feature_space": "all-eligible x Area",
+      "measures": [
+        "Area"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 803,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "underdetermined": false,
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 316.228,
+      "alpha_per_fold": [
+        316.228,
+        316.228,
+        316.228,
+        316.228,
+        316.228
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        50.4912,
+        49.0245,
+        44.9701,
+        57.6501,
+        54.7039
+      ],
+      "cv_mse_mean": 51.368,
+      "cv_r2_folds": [
+        0.474808,
+        0.407744,
+        0.363848,
+        0.442545,
+        0.396246
+      ],
+      "cv_r2_mean": 0.417038,
+      "cv_r2_std": 0.038304,
+      "feature_space": "all-eligible x Area",
+      "measures": [
+        "Area"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 358,
+      "nonzero_coef_per_fold": [
+        358,
+        358,
+        358,
+        358,
+        358
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 0.158489,
+      "alpha_per_fold": [
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        52.3747,
+        50.3916,
+        44.0344,
+        59.6499,
+        56.0887
+      ],
+      "cv_mse_mean": 52.5079,
+      "cv_r2_folds": [
+        0.455216,
+        0.391228,
+        0.377084,
+        0.423208,
+        0.380963
+      ],
+      "cv_r2_mean": 0.40554,
+      "cv_r2_std": 0.02966,
+      "feature_space": "all-eligible x Area",
+      "measures": [
+        "Area"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 138,
+      "nonzero_coef_per_fold": [
+        143,
+        138,
+        141,
+        135,
+        131
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        495.2965,
+        514.772,
+        422.9376,
+        404.5344,
+        464.0921
+      ],
+      "cv_mse_mean": 460.3265,
+      "cv_r2_folds": [
+        -1.111256,
+        -1.47128,
+        -0.881669,
+        -0.647658,
+        -0.87816
+      ],
+      "cv_r2_mean": -0.998005,
+      "cv_r2_std": 0.278372,
+      "feature_space": "all-eligible x Area",
+      "measures": [
+        "Area"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 726,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "underdetermined": false,
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 5623.41,
+      "alpha_per_fold": [
+        3162.28,
+        3162.28,
+        5623.41,
+        31622.8,
+        17782.8
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        223.8993,
+        215.1317,
+        222.6634,
+        241.1742,
+        259.4615
+      ],
+      "cv_mse_mean": 232.466,
+      "cv_r2_folds": [
+        0.045604,
+        -0.032788,
+        0.009361,
+        0.017704,
+        -0.050029
+      ],
+      "cv_r2_mean": -0.00203,
+      "cv_r2_std": 0.034751,
+      "feature_space": "all-eligible x Area",
+      "measures": [
+        "Area"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 358,
+      "nonzero_coef_per_fold": [
+        358,
+        358,
+        358,
+        358,
+        358
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 1.0,
+      "alpha_per_fold": [
+        0.630957,
+        1.0,
+        1.0,
+        1.58489,
+        1.58489
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        222.6164,
+        210.9358,
+        224.0115,
+        241.1021,
+        253.1027
+      ],
+      "cv_mse_mean": 230.3537,
+      "cv_r2_folds": [
+        0.051073,
+        -0.012645,
+        0.003363,
+        0.017998,
+        -0.024295
+      ],
+      "cv_r2_mean": 0.007099,
+      "cv_r2_std": 0.026237,
+      "feature_space": "all-eligible x Area",
+      "measures": [
+        "Area"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 12,
+      "nonzero_coef_per_fold": [
+        36,
+        14,
+        12,
+        6,
+        7
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        52.2476,
+        54.1706,
+        49.2213,
+        58.9264,
+        46.853
+      ],
+      "cv_mse_mean": 52.2838,
+      "cv_r2_folds": [
+        0.456538,
+        0.345575,
+        0.30371,
+        0.430204,
+        0.482895
+      ],
+      "cv_r2_mean": 0.403784,
+      "cv_r2_std": 0.068034,
+      "feature_space": "all-eligible x Vol",
+      "measures": [
+        "Vol"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 803,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "underdetermined": false,
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 562.341,
+      "alpha_per_fold": [
+        316.228,
+        562.341,
+        562.341,
+        562.341,
+        316.228
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        37.9588,
+        34.8776,
+        31.5055,
+        44.2108,
+        31.5739
+      ],
+      "cv_mse_mean": 36.0253,
+      "cv_r2_folds": [
+        0.605165,
+        0.57865,
+        0.55432,
+        0.572499,
+        0.651526
+      ],
+      "cv_r2_mean": 0.592432,
+      "cv_r2_std": 0.033746,
+      "feature_space": "all-eligible x Vol",
+      "measures": [
+        "Vol"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 358,
+      "nonzero_coef_per_fold": [
+        358,
+        358,
+        358,
+        358,
+        358
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 0.158489,
+      "alpha_per_fold": [
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        43.6423,
+        36.6479,
+        34.1386,
+        46.0447,
+        35.4484
+      ],
+      "cv_mse_mean": 39.1844,
+      "cv_r2_folds": [
+        0.546048,
+        0.557263,
+        0.517071,
+        0.554765,
+        0.608765
+      ],
+      "cv_r2_mean": 0.556782,
+      "cv_r2_std": 0.02966,
+      "feature_space": "all-eligible x Vol",
+      "measures": [
+        "Vol"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 139,
+      "nonzero_coef_per_fold": [
+        139,
+        136,
+        141,
+        142,
+        123
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        511.2365,
+        508.7513,
+        447.8301,
+        420.5437,
+        475.9067
+      ],
+      "cv_mse_mean": 472.8537,
+      "cv_r2_folds": [
+        -1.179202,
+        -1.442376,
+        -0.992417,
+        -0.712864,
+        -0.925973
+      ],
+      "cv_r2_mean": -1.050566,
+      "cv_r2_std": 0.246175,
+      "feature_space": "all-eligible x Vol",
+      "measures": [
+        "Vol"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 726,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "underdetermined": false,
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 5623.41,
+      "alpha_per_fold": [
+        1778.28,
+        3162.28,
+        5623.41,
+        31622.8,
+        17782.8
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        231.7885,
+        217.4165,
+        221.6531,
+        242.6299,
+        257.2672
+      ],
+      "cv_mse_mean": 234.151,
+      "cv_r2_folds": [
+        0.011976,
+        -0.043757,
+        0.013855,
+        0.011775,
+        -0.041149
+      ],
+      "cv_r2_mean": -0.00946,
+      "cv_r2_std": 0.026961,
+      "feature_space": "all-eligible x Vol",
+      "measures": [
+        "Vol"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 358,
+      "nonzero_coef_per_fold": [
+        358,
+        358,
+        358,
+        358,
+        358
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 1.58489,
+      "alpha_per_fold": [
+        1.58489,
+        1.58489,
+        1.0,
+        1.58489,
+        1.0
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        231.2989,
+        211.7272,
+        224.8033,
+        243.8287,
+        261.8443
+      ],
+      "cv_mse_mean": 234.7005,
+      "cv_r2_folds": [
+        0.014063,
+        -0.016444,
+        -0.00016,
+        0.006892,
+        -0.059672
+      ],
+      "cv_r2_mean": -0.011064,
+      "cv_r2_std": 0.026322,
+      "feature_space": "all-eligible x Vol",
+      "measures": [
+        "Vol"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 3,
+      "nonzero_coef_per_fold": [
+        3,
+        3,
+        10,
+        3,
+        12
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        71.8956,
+        67.0046,
+        67.3636,
+        73.1115,
+        82.3755
+      ],
+      "cv_mse_mean": 72.3502,
+      "cv_r2_folds": [
+        0.252166,
+        0.190529,
+        0.047066,
+        0.29304,
+        0.090841
+      ],
+      "cv_r2_mean": 0.174728,
+      "cv_r2_std": 0.093358,
+      "feature_space": "all-eligible x LGI",
+      "measures": [
+        "LGI"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 803,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "underdetermined": false,
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 316.228,
+      "alpha_per_fold": [
+        316.228,
+        316.228,
+        316.228,
+        316.228,
+        316.228
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        50.4415,
+        49.001,
+        44.9801,
+        57.5473,
+        54.6862
+      ],
+      "cv_mse_mean": 51.3312,
+      "cv_r2_folds": [
+        0.475324,
+        0.408028,
+        0.363706,
+        0.44354,
+        0.396442
+      ],
+      "cv_r2_mean": 0.417408,
+      "cv_r2_std": 0.038597,
+      "feature_space": "all-eligible x LGI",
+      "measures": [
+        "LGI"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 358,
+      "nonzero_coef_per_fold": [
+        358,
+        358,
+        358,
+        358,
+        358
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 0.158489,
+      "alpha_per_fold": [
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        52.3875,
+        50.3531,
+        44.0743,
+        59.5541,
+        56.0639
+      ],
+      "cv_mse_mean": 52.4866,
+      "cv_r2_folds": [
+        0.455082,
+        0.391693,
+        0.376519,
+        0.424134,
+        0.381236
+      ],
+      "cv_r2_mean": 0.405733,
+      "cv_r2_std": 0.029748,
+      "feature_space": "all-eligible x LGI",
+      "measures": [
+        "LGI"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 139,
+      "nonzero_coef_per_fold": [
+        142,
+        139,
+        142,
+        134,
+        130
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4458,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        495.4008,
+        514.3806,
+        422.6114,
+        403.1073,
+        463.8059
+      ],
+      "cv_mse_mean": 459.8612,
+      "cv_r2_folds": [
+        -1.111701,
+        -1.469401,
+        -0.880217,
+        -0.641845,
+        -0.877001
+      ],
+      "cv_r2_mean": -0.996033,
+      "cv_r2_std": 0.279459,
+      "feature_space": "all-eligible x LGI",
+      "measures": [
+        "LGI"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 726,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "underdetermined": false,
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 5623.41,
+      "alpha_per_fold": [
+        3162.28,
+        3162.28,
+        5623.41,
+        31622.8,
+        17782.8
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        223.89,
+        215.1368,
+        222.6452,
+        241.1734,
+        259.4555
+      ],
+      "cv_mse_mean": 232.4602,
+      "cv_r2_folds": [
+        0.045644,
+        -0.032813,
+        0.009441,
+        0.017707,
+        -0.050005
+      ],
+      "cv_r2_mean": -0.002005,
+      "cv_r2_std": 0.034765,
+      "feature_space": "all-eligible x LGI",
+      "measures": [
+        "LGI"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 358,
+      "nonzero_coef_per_fold": [
+        358,
+        358,
+        358,
+        358,
+        358
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 1.0,
+      "alpha_per_fold": [
+        0.630957,
+        1.0,
+        1.0,
+        1.58489,
+        1.58489
+      ],
+      "bundle": "all-eligible",
+      "cv_mse_folds": [
+        222.603,
+        210.9422,
+        224.0986,
+        241.1468,
+        253.1415
+      ],
+      "cv_mse_mean": 230.3864,
+      "cv_r2_folds": [
+        0.05113,
+        -0.012676,
+        0.002975,
+        0.017815,
+        -0.024452
+      ],
+      "cv_r2_mean": 0.006958,
+      "cv_r2_std": 0.026295,
+      "feature_space": "all-eligible x LGI",
+      "measures": [
+        "LGI"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 12,
+      "nonzero_coef_per_fold": [
+        36,
+        14,
+        12,
+        6,
+        7
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 358,
+      "p_over_n_train": 0.4931,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "bundle": "frontoparietal",
+      "cv_mse_folds": [
+        62.5646,
+        54.3392,
+        39.0513,
+        57.9288,
+        47.7468
+      ],
+      "cv_mse_mean": 52.3261,
+      "cv_r2_folds": [
+        0.349224,
+        0.343537,
+        0.447576,
+        0.439851,
+        0.47303
+      ],
+      "cv_r2_mean": 0.410644,
+      "cv_r2_std": 0.053637,
+      "feature_space": "frontoparietal x CT (P-FIT compact)",
+      "measures": [
+        "CT"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 803,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 78,
+      "p_over_n_train": 0.0971,
+      "target": "age",
+      "underdetermined": false,
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 316.228,
+      "alpha_per_fold": [
+        316.228,
+        316.228,
+        316.228,
+        316.228,
+        316.228
+      ],
+      "bundle": "frontoparietal",
+      "cv_mse_folds": [
+        59.9949,
+        51.5552,
+        36.043,
+        56.2371,
+        44.4291
+      ],
+      "cv_mse_mean": 49.6518,
+      "cv_r2_folds": [
+        0.375953,
+        0.377171,
+        0.490132,
+        0.456209,
+        0.509647
+      ],
+      "cv_r2_mean": 0.441822,
+      "cv_r2_std": 0.055964,
+      "feature_space": "frontoparietal x CT (P-FIT compact)",
+      "measures": [
+        "CT"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 78,
+      "nonzero_coef_per_fold": [
+        78,
+        78,
+        78,
+        78,
+        78
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 78,
+      "p_over_n_train": 0.0971,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 0.158489,
+      "alpha_per_fold": [
+        0.158489,
+        0.158489,
+        0.158489,
+        0.158489,
+        0.251189
+      ],
+      "bundle": "frontoparietal",
+      "cv_mse_folds": [
+        58.6594,
+        50.81,
+        36.276,
+        55.849,
+        44.7691
+      ],
+      "cv_mse_mean": 49.2727,
+      "cv_r2_folds": [
+        0.389844,
+        0.386174,
+        0.486835,
+        0.459961,
+        0.505894
+      ],
+      "cv_r2_mean": 0.445742,
+      "cv_r2_std": 0.04936,
+      "feature_space": "frontoparietal x CT (P-FIT compact)",
+      "measures": [
+        "CT"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 803,
+      "nonzero_coef_median": 39,
+      "nonzero_coef_per_fold": [
+        40,
+        39,
+        39,
+        37,
+        30
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 78,
+      "p_over_n_train": 0.0971,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "frontoparietal",
+      "cv_mse_folds": [
+        299.7695,
+        242.506,
+        259.7351,
+        265.2372,
+        298.7191
+      ],
+      "cv_mse_mean": 273.1934,
+      "cv_r2_folds": [
+        -0.277801,
+        -0.164205,
+        -0.155573,
+        -0.080304,
+        -0.208903
+      ],
+      "cv_r2_mean": -0.177357,
+      "cv_r2_std": 0.06504,
+      "feature_space": "frontoparietal x CT (P-FIT compact)",
+      "measures": [
+        "CT"
+      ],
+      "model": "linear",
+      "n_train_per_fold": 726,
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 78,
+      "p_over_n_train": 0.1074,
+      "target": "FIQ",
+      "underdetermined": false,
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-1, 6, 29)",
+      "alpha_median": 1000000.0,
+      "alpha_per_fold": [
+        1778.28,
+        10000.0,
+        1000000.0,
+        1000000.0,
+        1000000.0
+      ],
+      "bundle": "frontoparietal",
+      "cv_mse_folds": [
+        236.7868,
+        216.1774,
+        226.6574,
+        245.5343,
+        248.54
+      ],
+      "cv_mse_mean": 234.7392,
+      "cv_r2_folds": [
+        -0.00933,
+        -0.037809,
+        -0.008409,
+        -5.5e-05,
+        -0.00583
+      ],
+      "cv_r2_mean": -0.012287,
+      "cv_r2_std": 0.013164,
+      "feature_space": "frontoparietal x CT (P-FIT compact)",
+      "measures": [
+        "CT"
+      ],
+      "model": "ridge",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 78,
+      "nonzero_coef_per_fold": [
+        78,
+        78,
+        78,
+        78,
+        78
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 78,
+      "p_over_n_train": 0.1074,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "alpha_grid": "np.logspace(-3, 2, 26)",
+      "alpha_median": 1.0,
+      "alpha_per_fold": [
+        0.630957,
+        1.0,
+        100.0,
+        0.630957,
+        100.0
+      ],
+      "bundle": "frontoparietal",
+      "cv_mse_folds": [
+        234.4704,
+        214.4561,
+        226.6497,
+        240.8659,
+        248.5329
+      ],
+      "cv_mse_mean": 232.995,
+      "cv_r2_folds": [
+        0.000544,
+        -0.029545,
+        -0.008375,
+        0.018959,
+        -0.005802
+      ],
+      "cv_r2_mean": -0.004844,
+      "cv_r2_std": 0.015615,
+      "feature_space": "frontoparietal x CT (P-FIT compact)",
+      "measures": [
+        "CT"
+      ],
+      "model": "lasso",
+      "n_train_per_fold": 726,
+      "nonzero_coef_median": 4,
+      "nonzero_coef_per_fold": [
+        7,
+        4,
+        0,
+        4,
+        0
+      ],
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+      "p": 78,
+      "p_over_n_train": 0.1074,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "bundle": "all-eligible",
+      "feature_space": "all-eligible x CT",
+      "kind": "locked-holdout-once",
+      "locked_holdout": {
+        "mse": 49.0215,
+        "n_test": 251,
+        "n_train": 753,
+        "r2": 0.47486,
+        "split": "train_test_split(test_size=0.25, random_state=42, stratify=group)"
+      },
+      "measures": [
+        "CT"
+      ],
+      "model": "linear",
+      "p": 358,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "frontoparietal",
+      "feature_space": "frontoparietal x CT (P-FIT compact)",
+      "kind": "locked-holdout-once",
+      "locked_holdout": {
+        "mse": 52.7045,
+        "n_test": 251,
+        "n_train": 753,
+        "r2": 0.435406,
+        "split": "train_test_split(test_size=0.25, random_state=42, stratify=group)"
+      },
+      "measures": [
+        "CT"
+      ],
+      "model": "linear",
+      "p": 78,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "all-eligible",
+      "feature_space": "all-eligible x all measures",
+      "kind": "locked-holdout-once",
+      "locked_holdout": {
+        "alpha": 1778.28,
+        "mse": 28.0073,
+        "n_test": 251,
+        "n_train": 753,
+        "nonzero_coef": 1432,
+        "r2": 0.699974,
+        "split": "train_test_split(test_size=0.25, random_state=42, stratify=group)"
+      },
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "ridge",
+      "p": 1432,
+      "target": "age",
+      "usable_n": 1004
+    },
+    {
+      "bundle": "all-eligible",
+      "feature_space": "all-eligible x all measures",
+      "kind": "locked-holdout-once",
+      "locked_holdout": {
+        "alpha": 177828.0,
+        "mse": 249.6458,
+        "n_test": 227,
+        "n_train": 681,
+        "nonzero_coef": 1432,
+        "r2": 0.015771,
+        "split": "train_test_split(test_size=0.25, random_state=42, stratify=group)"
+      },
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "ridge",
+      "p": 1432,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "bundle": "all-eligible",
+      "feature_space": "all-eligible x all measures",
+      "kind": "locked-holdout-once",
+      "locked_holdout": {
+        "alpha": 1.58489,
+        "mse": 249.3286,
+        "n_test": 227,
+        "n_train": 681,
+        "nonzero_coef": 6,
+        "r2": 0.017022,
+        "split": "train_test_split(test_size=0.25, random_state=42, stratify=group)"
+      },
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "lasso",
+      "p": 1432,
+      "target": "FIQ",
+      "usable_n": 908
+    },
+    {
+      "bundle": "all-eligible",
+      "feature_space": "all-eligible x all measures",
+      "kind": "locked-holdout-once",
+      "locked_holdout": {
+        "alpha": 0.251189,
+        "mse": 28.8689,
+        "n_test": 251,
+        "n_train": 753,
+        "nonzero_coef": 128,
+        "r2": 0.690744,
+        "split": "train_test_split(test_size=0.25, random_state=42, stratify=group)"
+      },
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
+      "model": "lasso",
+      "p": 1432,
+      "target": "age",
+      "usable_n": 1004
+    }
+  ],
+  "generated_by": "scripts/regression_model_audit.py --run",
+  "protocol": {
+    "inner_cv": "KFold(n_splits=5, shuffle=True, random_state=1)",
+    "lasso_alpha_grid": "np.logspace(-3, 2, 26)",
+    "note": "Nested CV chooses alpha with the inner CV on the training partition only. The locked held-out split is evaluated exactly once per candidate and is not used to select target, feature set, model family, or alpha.",
+    "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=0)",
+    "pipeline": "Pipeline(StandardScaler(), estimator); scaler fitted on train/fold only",
+    "ridge_alpha_grid": "np.logspace(-1, 6, 29)"
+  },
+  "source": {
+    "brainTableSha256": "ad0db42f85c77cbb8b4e023df288d34b29f1a63870a0cf1955c5b3b0d357579e",
+    "phenotypeTableSha256": "537e541114884f63a2e736ba4d223a816dd013f701e56fb223ebe42e219e06f6",
+    "pinnedCommit": "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"
+  },
+  "targets": {
+    "FIQ": {
+      "mean": 111.141,
+      "missing_brain_feature_cells": 0,
+      "missing_n": 96,
+      "range": [
+        49.0,
+        149.0
+      ],
+      "sd": 15.271,
+      "usable_n": 908
+    },
+    "age": {
+      "mean": 15.1013,
+      "missing_brain_feature_cells": 0,
+      "missing_n": 0,
+      "range": [
+        5.127999999999999,
+        64.0
+      ],
+      "sd": 9.429,
+      "usable_n": 1004
+    }
+  }
+}

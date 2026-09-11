@@ -11,8 +11,8 @@ Notebooks and their expected strings:
 * ``chapter_01/exercise_01_portable.ipynb`` -- ABIDE-II table loads as
   1114 x 13; the complete-case retention example reports all 13 variables.
 * ``chapter_02/exercise_02_portable.ipynb`` -- the merged modelling table loads
-  as 1004 participants; the held-out linear-regression workflow runs and prints
-  its R-squared; the learning curve prints n/p.
+  with `age` available for all 1004 participants; the held-out linear-regression
+  workflow runs and prints its R-squared; the learning curve prints n/p.
 
 Needs network access (the notebooks download pinned public CSVs). Used by CI and
 runnable locally:
@@ -45,9 +45,9 @@ SMOKE = {
     "chapter_02": {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb",
         "expect": (
-            "1004 participants",
+            "age available for 1004 of 1004",
             "held-out R^2 =",
-            "n_features (p) = 78",
+            "n_features (p) = 358",
         ),
     },
 }

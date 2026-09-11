@@ -40,11 +40,15 @@ class CommittedArtifact(unittest.TestCase):
     def test_shape_and_cohort(self):
         a = self.artifact
         self.assertEqual(a["activity"], "regression-compare")
-        self.assertEqual(a["cohort"]["n"], 908)
-        self.assertEqual(len(a["observed"]), 908)
-        self.assertEqual(len(a["foldOf"]), 908)
+        # WP12: the catalog target is age (native, N=1004), not FIQ (N=908).
+        self.assertEqual(a["target"]["name"], "age")
+        self.assertEqual(a["cohort"]["n"], 1004)
+        self.assertEqual(len(a["observed"]), 1004)
+        self.assertEqual(len(a["foldOf"]), 1004)
         self.assertEqual(sorted(set(a["foldOf"])), [0, 1, 2, 3, 4])
-        self.assertTrue(all(isinstance(v, int) for v in a["observed"]))
+        # age is fractional years, not an integer standard score like FIQ.
+        self.assertTrue(all(isinstance(v, (int, float)) for v in a["observed"]))
+        self.assertFalse(all(float(v).is_integer() for v in a["observed"]))
 
     def test_contains_no_participant_identifier(self):
         blob = json.dumps(self.artifact)
@@ -68,14 +72,15 @@ class CommittedArtifact(unittest.TestCase):
             r2, mse = erc._metrics(obs, m["predicted"])
             self.assertAlmostEqual(r2, m["cvR2"], places=4)
             self.assertAlmostEqual(mse, m["cvMSE"], places=2)
-            self.assertEqual(len(m["predicted"]), 908)
+            self.assertEqual(len(m["predicted"]), 1004)
 
-    def test_literature_bundle_does_not_win(self):
+    def test_every_bundle_predicts_age_above_chance(self):
+        # WP12: unlike FIQ (WP11, every model negative), age has a real signal
+        # in cortical structure -- every enabled configuration is positive.
         by_key = {m["key"]: m for m in self.artifact["models"] if not m["disabled"]}
-        # every FIQ model has negative held-out R^2 in this sample
-        self.assertTrue(all(m["cvR2"] < 0 for m in by_key.values()))
-        # the P-FIT frontoparietal thickness bundle does worse than the
-        # similarly scoped occipital comparison bundle
+        self.assertTrue(all(m["cvR2"] > 0 for m in by_key.values()))
+        # the frontoparietal (originally IQ-literature) bundle is not the best
+        # comparison bundle for age either -- occipital still edges it out.
         self.assertLess(by_key["frontoparietal__CT"]["cvR2"], by_key["occipital__CT"]["cvR2"])
 
     def test_a_high_dimensional_combination_is_disabled_with_a_reason(self):

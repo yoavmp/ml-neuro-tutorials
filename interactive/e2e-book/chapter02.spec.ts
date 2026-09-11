@@ -6,7 +6,7 @@ import { expect, test, type Frame } from "@playwright/test";
 
 const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html";
 const IFRAME_SELECTOR =
-  'iframe[title="Interactive feature-set comparison for predicting IQ from brain structure"]';
+  'iframe[title="Interactive feature-set comparison for predicting age from brain structure"]';
 
 async function activityFrame(page: import("@playwright/test").Page): Promise<Frame> {
   const handle = await page.locator(IFRAME_SELECTOR).elementHandle();
@@ -57,7 +57,7 @@ test.describe("Chapter 2 built page — embedded feature-set comparison", () => 
     );
 
     const metricsA = await frame.locator('[data-testid="regression-A-metrics"]').innerText();
-    expect(metricsA).toMatch(/Out-of-sample R2 = -0\.\d+/);
+    expect(metricsA).toMatch(/Out-of-sample R2 = 0\.\d+/);
 
     // a real control change: switch Model A to "All eligible ROIs" -> feature
     // count and R^2 both change (not just a label)

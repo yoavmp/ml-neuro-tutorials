@@ -92,7 +92,7 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
   lit.className = "widget-note";
   lit.setAttribute("data-testid", "regression-literature-note");
   const litSummary = document.createElement("summary");
-  litSummary.textContent = "Where the frontoparietal bundle comes from";
+  litSummary.textContent = "Where these ROI bundles come from";
   const litBody = document.createElement("p");
   litBody.textContent = config.literatureNote;
   lit.append(litSummary, litBody);

@@ -23,6 +23,13 @@ html:
 # Jupyter Book notebook (iframes + MyST directives), not the portable notebook.
 # The Chapter 1 opening links to the deterministic portable notebook instead:
 #   book/downloads/chapter_01/exercise_01_portable.ipynb
+#
+# WP12: `_static/launch-buttons.js` adds the missing per-page Colab CONTROL
+# (not the theme's `launch_buttons.colab_url`) as an article-header button next
+# to the theme's own download button, targeting the same portable notebook the
+# opening admonition links to. It is a static, explicit page -> portable-path
+# map so it can never point at the canonical notebook; unmapped pages get no
+# button. Both Chapter 1 and Chapter 2 use it.
 
 # The portable notebook is a downloadable artifact (served from raw GitHub on
 # `main`, linked from the Chapter 1 opening), not a book page. Keep Sphinx from
@@ -42,3 +49,4 @@ sphinx:
       - custom.css
     html_js_files:
       - sidebar-toggle-fix.js
+      - launch-buttons.js

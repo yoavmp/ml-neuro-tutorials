@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "type": "regression-compare",
   "title": "Compare two feature sets",
-  "description": "Course activity for Exercise II: configure two linear-regression models that predict full-scale IQ from FreeSurfer brain morphometry, changing the measurement type and the anatomical ROI bundle, and compare their cross-validated performance side by side on one fixed cohort and one fixed set of folds.",
-  "instructions": "Set a measurement type and an ROI bundle for Model A and for Model B. Each panel shows observed vs out-of-fold predicted IQ with a perfect-prediction diagonal, the cross-validated R-squared and MSE, and the feature count. The cohort and the folds are identical for every configuration, so any difference you see is a real difference between the feature sets.",
+  "description": "Course activity for Exercise 2: configure two linear-regression models that predict age at scan from FreeSurfer brain morphometry, changing the measurement type and the anatomical ROI bundle, and compare their cross-validated performance side by side on one fixed cohort and one fixed set of folds.",
+  "instructions": "Set a measurement type and an ROI bundle for Model A and for Model B. Each panel shows observed vs out-of-fold predicted age with a perfect-prediction diagonal, the cross-validated R-squared and MSE, and the feature count. The cohort and the folds are identical for every configuration, so any difference you see is a real difference between the feature sets.",
   "data": "../data/abide_regression_models.json",
-  "targetLabel": "Full-scale IQ (FIQ)",
+  "targetLabel": "Age at scan (years)",
   "measurementSubsets": [
     { "measures": ["CT"], "label": "Cortical thickness" },
     { "measures": ["Area"], "label": "Surface area" },
@@ -14,7 +14,7 @@
     { "measures": ["CT", "Area"], "label": "Thickness + area" }
   ],
   "bundles": [
-    { "key": "frontoparietal", "label": "Frontoparietal (P-FIT)" },
+    { "key": "frontoparietal", "label": "Frontoparietal" },
     { "key": "frontal", "label": "Prefrontal only" },
     { "key": "parietal", "label": "Parietal only" },
     { "key": "temporal", "label": "Lateral temporal (comparison)" },
@@ -24,11 +24,11 @@
   ],
   "defaultA": { "measures": ["CT"], "bundle": "frontoparietal" },
   "defaultB": { "measures": ["CT"], "bundle": "occipital" },
-  "literatureNote": "The Parieto-Frontal Integration Theory (Jung & Haier, 2007, doi:10.1017/S0140525X07001185) and Narr et al.'s cortical-thickness work (2007, doi:10.1093/cercor/bhl125) point to dorsolateral prefrontal cortex, the inferior and superior parietal lobules and the intraparietal sulcus, and dorsal anterior cingulate as the cortex most often linked to intelligence. The frontoparietal bundle maps those regions onto the HCP-MMP1 (Glasser) atlas labels used here. This is a hypothesis about which features to try first - it is not a promise that those features will predict IQ in this sample, and it does not make a better-scoring bundle biologically causal.",
+  "literatureNote": "Cortical structure changes with age across most of the brain rather than in one circumscribed system: large multi-site lifespan mapping (Bethlehem et al., 2022, doi:10.1038/s41586-022-04554-y) and longitudinal work on adult cortical change (Storsve et al., 2014, doi:10.1523/JNEUROSCI.0391-14.2014) both describe widespread, region-varying change with age. So, unlike a theory that predicts where to look first for IQ, there is no single small region set the age literature prefers here. The bundles below -- including 'Frontoparietal', originally assembled from IQ literature for a different activity -- are used simply as several differently sized, differently located anatomical comparisons for age.",
   "selectionBiasNote": "Trying many configurations here is exploratory model comparison. If you pick the best-looking one and report its cross-validated R-squared as the model's performance, that number is optimistic: you chose it because it looked good on this very data. An honest final estimate needs a locked-away test set or a nested procedure.",
   "reflectionPrompts": [
     "Hold the ROI bundle fixed and change only the measurement type. Then hold the measurement type fixed and change only the bundle. Which control moves R-squared more?",
-    "Compare the frontoparietal bundle with a similarly sized comparison bundle using the same measurement type. Does the literature-motivated bundle predict IQ better here?",
-    "Set one model to 'All eligible ROIs'. What happens to the feature count and to R-squared, and why?"
+    "Set one model to 'All eligible ROIs'. What happens to the feature count and to R-squared? Is that the same direction of change you would expect for a barely-predictable target like FIQ?",
+    "Find the single best-scoring configuration you can. Would you trust its R-squared as your final reported number for this exercise? Why or why not?"
   ]
 }

@@ -160,6 +160,10 @@ class NotebookSpec:
     rewrite_columns: bool = False
     require_pinned_source: str = "neurohackademy/nh2020-curriculum/"
     extra_banned: dict[str, str] = field(default_factory=dict)
+    # The name Colab shows in its own tab / title bar for this notebook. When
+    # set, written to `metadata.colab.name` (Colab reads this in preference to
+    # the file name). None leaves the notebook metadata untouched.
+    colab_title: str | None = None
 
 
 _CH1_BANNER = (
@@ -197,9 +201,9 @@ _CH1_SETUP = (
 )
 
 _CH2_BANNER = (
-    "# Exercise II: Regression - portable notebook\n"
+    "# Exercise 2: Regression - portable notebook\n"
     "\n"
-    "This is the **portable version** of the Exercise II regression practice\n"
+    "This is the **portable version** of the Exercise 2 regression practice\n"
     "from **Machine Learning for Neuroscience**, generated from the canonical\n"
     "course notebook by `scripts/build_portable_notebook.py`. It is meant for\n"
     "running or editing the code in Google Colab or in a local VS Code /\n"
@@ -330,12 +334,13 @@ CHAPTER_02 = NotebookSpec(
     lesson_packages="numpy pandas matplotlib scikit-learn",
     drop_admonition_titles=DROP_ADMONITION_TITLES,
     iframe_replacements={
-        "Interactive feature-set comparison for predicting IQ from brain structure": (
+        "Interactive feature-set comparison for predicting age from brain structure": (
             _CH2_IFRAME_REPLACEMENT
         )
     },
     preserve_output_ids=frozenset(),
     rewrite_columns=False,
+    colab_title="Exercise 2: Regression",
 )
 
 NOTEBOOKS = {CHAPTER_01.key: CHAPTER_01, CHAPTER_02.key: CHAPTER_02}
@@ -461,6 +466,10 @@ def build_portable(
         },
         "language_info": {"name": "python"},
     }
+    if spec.colab_title:
+        # Colab shows this in its own tab / title bar in preference to the
+        # file name; it does not affect nbformat validation or any other tool.
+        out["metadata"]["colab"] = {"name": spec.colab_title}
     out["nbformat"] = 4
     out["nbformat_minor"] = 5
 

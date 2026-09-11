@@ -121,9 +121,12 @@ describe("parseRegressionCatalog", () => {
     const r = parseRegressionCatalog(raw);
     expect(r.ok, r.ok ? "" : r.error).toBe(true);
     if (r.ok) {
-      expect(r.data.cohort.n).toBe(908);
-      expect(r.data.observed).toHaveLength(908);
-      expect(r.data.foldOf).toHaveLength(908);
+      // WP12: the activity's target is `age` (native brain-table column, N =
+      // 1004, no join / no missingness) -- not `FIQ` (N = 908) any more.
+      expect(r.data.target.name).toBe("age");
+      expect(r.data.cohort.n).toBe(1004);
+      expect(r.data.observed).toHaveLength(1004);
+      expect(r.data.foldOf).toHaveLength(1004);
       expect(r.data.crossValidation.nSplits).toBe(5);
       expect(r.data.activity).toBe("regression-compare");
       const enabled = r.data.models.filter((m) => !m.disabled);
@@ -132,11 +135,15 @@ describe("parseRegressionCatalog", () => {
       for (const m of enabled) {
         expect(Math.abs(r2Score(r.data.observed, m.predicted!) - m.cvR2!)).toBeLessThan(1e-3);
       }
-      // The literature-motivated frontoparietal-CT bundle does NOT beat occipital-CT here.
+      // Unlike FIQ (WP11), age is genuinely predictable from cortical structure:
+      // every enabled configuration scores above zero.
+      for (const m of enabled) {
+        expect(m.cvR2!).toBeGreaterThan(0);
+      }
+      // The default panels (frontoparietal vs occipital, both cortical
+      // thickness) still differ, just both positive now.
       const fpar = enabled.find((m) => m.key === "frontoparietal__CT")!;
       const occ = enabled.find((m) => m.key === "occipital__CT")!;
-      expect(fpar.cvR2!).toBeLessThan(0);
-      expect(occ.cvR2!).toBeLessThan(0);
       expect(fpar.cvR2!).toBeLessThan(occ.cvR2!);
     }
   });

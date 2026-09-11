@@ -63,8 +63,24 @@
     "age_years": {"min": 5.128, "max": 64.0, "mean": 15.1}
   },
   "targets": {
-    "FIQ": {
+    "age": {
       "role": "main",
+      "label": "Age at scan",
+      "unit": "years",
+      "source": "brain_table",
+      "meaning": "Age at scan in years; a native column of abide2.tsv itself (no phenotypic-file join needed) and the Yarkoni tutorial's own target.",
+      "available_n": 1004,
+      "missing_n": 0,
+      "range": [5.128, 64.0],
+      "mean": 15.101,
+      "sd": 9.429,
+      "structural_note": "Present for every one of the 1004 participants with usable brain data; 0 missing. Spans childhood through late adulthood (5.1-64.0 yr) across all 17 sites.",
+      "rationale": "WP12 audit (scripts/regression_model_audit.py --run; book/config/regression_model_audit_result.json): age has reliably positive out-of-sample R2 with ordinary linear regression, unlike every FIQ configuration tested (all negative). WP12 5.4 policy: a target with reliably positive out-of-sample R2 becomes the main ordinary-linear-regression example. It also needs no join (available for all 1004 brain-table rows, not 908) and lets the leakage/scoring and sample-size sections use a signal that is actually there to lose to overfitting, rather than one that is not."
+    },
+    "FIQ": {
+      "role": "regularization_preview",
+      "label": "Full-scale IQ (FIQ)",
+      "unit": "IQ points",
       "source": "phenotype",
       "meaning": "Full-scale IQ (composite standard score; the exact test instrument varies by site and is not recorded per row in the merged 1004 - FIQ_TEST_TYPE is entirely empty here).",
       "available_n": 908,
@@ -73,19 +89,7 @@
       "mean": 111.1,
       "sd": 15.3,
       "structural_note": "Present at 16 of 17 sites; missing entirely only at ABIDEII-EMC_1 (n=53). Balanced across diagnosis (autism 423, control 485).",
-      "rationale": "Highest availability of any cognitive/behavioural score after requiring usable brain data, and the target the Exercise II literature framing (Jung & Haier P-FIT; Narr et al. cortical thickness and IQ) is about."
-    },
-    "SRS_TOTAL_RAW": {
-      "role": "lower_availability",
-      "source": "phenotype",
-      "meaning": "Social Responsiveness Scale total raw score (higher = more reported social difficulty).",
-      "available_n": 764,
-      "missing_n": 240,
-      "range": [0.0, 199.0],
-      "mean": 54.8,
-      "sd": 42.7,
-      "structural_note": "Present at 13 of 17 sites, both diagnostic groups (autism 364, control 400). Missing entirely at EMC_1, IP_1, ONRC_2, UCLA_1.",
-      "rationale": "The only continuous behavioural score that is (a) documented, (b) not essentially confined to one site, and (c) present for both diagnostic groups. The FIQ (908) vs SRS_TOTAL_RAW (764) contrast is modest and is described as such; the rigorous sample-size demonstrations (matched-N subsampling, learning curve) both run on FIQ alone."
+      "rationale": "WP11 established FIQ is barely predictable from cortical morphometry in this sample (every tested feature set gives negative held-out/cross-validated R2 under ordinary least squares). WP12 keeps FIQ as a compact secondary example specifically to show, honestly, whether ridge or lasso regularisation can turn a broad brain-wide feature space from underdetermined-and-useless into something at or above zero -- see protocol.regularisation_preview. It is deliberately not the main worked example: WP12 5.4 says a target whose regularised score remains at or below zero must be reported as such, not promoted."
     }
   },
   "rejected_targets": {
@@ -93,7 +97,7 @@
     "PIQ": "IQ subscale; same reason as VIQ.",
     "ADOS_G_TOTAL": "n=306 but ~87% autism group and near-absent at several sites (SDSU_1 0, OHSU_1 3, UCD_1 1, NYU_2 1); essentially confined to one diagnostic group and a handful of sites.",
     "ADI_R_SOCIAL_TOTAL_A": "n=285, 0 controls; structurally an autism-only instrument, so a performance difference would be uninterpretable.",
-    "age": "Strongly predictable (held-out R2 about 0.45) and the Yarkoni tutorial's own target, but whole-brain rather than a literature-specified regional bundle, so it does not support the P-FIT / cortical-morphometry framing the exercise is built around."
+    "SRS_TOTAL_RAW": "WP11's lower-availability secondary target (n=764, both diagnostic groups, 13/17 sites) for a FIQ-vs-SRS availability contrast. That contrast no longer has a role once age (n=1004, 0 missing) is the main target and FIQ is the regularisation-preview secondary target (WP12 5.4/6.4); the WP12 audit did not re-test SRS_TOTAL_RAW as a candidate main target because it is a phenotype column requiring the same join as FIQ, with materially lower availability, and no literature framing distinct from FIQ. Still fetched by the merge (source.merge.phenotype_columns_kept) and available for a future exercise."
   },
   "leakage_guard": {
     "principle": "Every column of the model input matrix X must match atlas.column_pattern and name an ROI in roi_label_inventory. Nothing else may enter X.",
@@ -105,14 +109,24 @@
     "cross_validation": {"kind": "KFold", "n_splits": 5, "shuffle": true, "random_state": 0},
     "preprocessing": "sklearn Pipeline(StandardScaler(), LinearRegression()); the scaler is fitted on training rows / training folds only. No imputation is needed - the brain features have no missing values and rows missing the target are dropped before splitting.",
     "generalisation_target": "Held-out participants drawn from the same 17 ABIDE-II sites. A random participant split does NOT estimate generalisation to unseen scanners or sites.",
-    "canonical_recipe": {"bundle": "frontoparietal", "measures": ["CT"], "note": "Bilateral cortical thickness over the 39-label frontoparietal (P-FIT) bundle: p=78. Chosen a priori from the intelligence literature - NOT because it maximises this dataset's score (it does not; see the catalog)."}
+    "canonical_recipe": {"bundle": "all-eligible", "measures": ["CT"], "note": "Bilateral cortical thickness across every eligible cortical region (p=358). Age-related cortical thinning is a whole-cortex phenomenon (Bethlehem et al. 2022; Storsve et al. 2014), not one a small literature-specified regional bundle would represent fairly, so the canonical recipe uses the full eligible ROI set for one measure rather than a hand-picked subset. p=358 stays well under n_train (~803 at the full holdout split, ~726 at 5-fold), so ordinary least squares is well posed."},
+    "regularisation_preview": {
+      "purpose": "WP12 6.1: a short, honest demonstration of what happens when p is comparable to or exceeds n_train, and whether ridge / lasso stabilise it, for BOTH targets.",
+      "bundle": "all-eligible",
+      "measures": ["CT", "Area", "Vol", "LGI"],
+      "note": "p=1432 exceeds n_train at every split used in this manifest (holdout ~753-681, 5-fold ~803-726), so ordinary least squares is underdetermined for both age and FIQ here (diagnostic only, never the recommended model). Ridge and lasso are fitted with StandardScaler inside the pipeline and their alpha is chosen by an inner cross-validation on the training partition only - never by consulting held-out or outer-CV score.",
+      "ridge_alpha_grid": "np.logspace(-1, 6, 29)",
+      "lasso_alpha_grid": "np.logspace(-3, 2, 26)",
+      "audit_script": "scripts/regression_model_audit.py",
+      "audit_result": "scripts/regression_model_audit_result.json"
+    }
   },
   "catalog": {
-    "target": "FIQ",
+    "target": "age",
     "measurement_subsets": [["CT"], ["Area"], ["Vol"], ["LGI"], ["CT", "Area"]],
     "bundles": ["frontoparietal", "frontal", "parietal", "temporal", "occipital", "sensorimotor", "all-eligible"],
-    "identifiability_rule": "An entry is offered only if its feature count p is below 0.7 * (fold training n). all-eligible x [CT,Area] (p=720) and any entry with p >= that bound is disabled with a visible reason rather than fitted with a pseudo-inverse.",
-    "note": "No ridge / regularisation is introduced in this work package. Trying many entries is exploratory model comparison; the cross-validation score of the best-looking entry is not an unbiased estimate of its performance."
+    "identifiability_rule": "An entry is offered only if its feature count p is below 0.7 * (fold training n). all-eligible x [CT,Area] (p=716) and any entry with p >= that bound is disabled with a visible reason rather than fitted with a pseudo-inverse.",
+    "note": "The interactive feature-set comparison activity offers ordinary least squares only, never regularised models; that restriction is about this activity being unregularised OLS, not about p vs n in general (WP12 6.3) - the separate regularisation-preview computation (protocol.regularisation_preview) is where ridge / lasso are used, on the full p=1432 space, computed directly in the notebook rather than exposed as extra activity controls. Trying many entries here is still exploratory model comparison; the cross-validation score of the best-looking entry is not an unbiased estimate of its performance."
   },
   "bundles": {
     "frontoparietal": {

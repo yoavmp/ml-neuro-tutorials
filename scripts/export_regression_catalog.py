@@ -106,9 +106,11 @@ def build_catalog(frame: "Any", manifest: dict[str, Any] | None = None) -> dict[
     present = frame[TARGET].notna().to_numpy()
     y = frame.loc[present, TARGET].to_numpy(dtype="float64")
     n = int(len(y))
-    if not np.allclose(y, np.round(y)):
-        raise ValueError(f"{TARGET} is expected to be integer-valued")
-    observed = [int(round(v)) for v in y]
+    # The target need not be integer-valued (age is fractional years; FIQ is an
+    # integer standard score). Round to the same precision as the stored
+    # predictions rather than forcing round-to-nearest-int, which would distort
+    # a continuous target like age.
+    observed = [round(float(v), PRED_DECIMALS) for v in y]
     fold_of = _fold_assignment(n, cv)
     fold_train_n = n - max(fold_of.count(f) for f in range(cv_cfg["n_splits"]))
     p_bound = IDENTIFIABILITY_FRACTION * fold_train_n
@@ -135,7 +137,7 @@ def build_catalog(frame: "Any", manifest: dict[str, Any] | None = None) -> dict[
                 models.append(entry)
                 continue
             X, y_chk, _ = feature_matrix(frame, bundle, measures, TARGET, manifest=manifest)
-            if not np.array_equal(np.round(y_chk), np.round(y)):
+            if not np.allclose(y_chk, y):
                 raise RuntimeError(f"{key}: cohort mismatch with the shared target vector")
             pred = cross_val_predict(_pipeline(), X, y, cv=cv)
             r2, mse = _metrics(y, pred)
@@ -160,8 +162,8 @@ def build_catalog(frame: "Any", manifest: dict[str, Any] | None = None) -> dict[
         },
         "target": {
             "name": TARGET,
-            "label": "Full-scale IQ (FIQ)",
-            "unit": "IQ points",
+            "label": manifest["targets"][TARGET]["label"],
+            "unit": manifest["targets"][TARGET]["unit"],
         },
         "cohort": {
             "n": n,
@@ -238,8 +240,8 @@ def validate_catalog(artifact: Any, manifest: dict[str, Any] | None = None) -> l
     n_splits = artifact.get("crossValidation", {}).get("nSplits")
     if sorted(set(fold_of)) != list(range(n_splits or 0)):
         problems.append(f"foldOf must use every fold index 0..{(n_splits or 0) - 1}")
-    if any(not isinstance(v, int) or isinstance(v, bool) for v in observed):
-        problems.append("observed must be integers")
+    if any(isinstance(v, bool) or not isinstance(v, (int, float)) for v in observed):
+        problems.append("observed must be numeric (int or float) target values")
 
     identifier_token = ("id", "sub", "subject", "site", "participant")
     for key in ("observed", "foldOf"):
