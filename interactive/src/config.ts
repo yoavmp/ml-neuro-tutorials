@@ -247,6 +247,21 @@ const knnExploreConfig = z
     endpointNoteK1: z.string().min(1, "config.endpointNoteK1 must be a non-empty string"),
     endpointNoteKMax: z.string().min(1, "config.endpointNoteKMax must be a non-empty string"),
     defaultK: knnExploreDefaultK,
+    // WP14 §4.8/§4.9: three-training-sample variance/bias-like proxy panels.
+    trainingSampleInstructions: z.string().min(1, "config.trainingSampleInstructions must be a non-empty string"),
+    varianceProxyNote: z.string().min(1, "config.varianceProxyNote must be a non-empty string"),
+    biasProxyNote: z.string().min(1, "config.biasProxyNote must be a non-empty string"),
+    kComplexityNote: z.string().min(1, "config.kComplexityNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const knnAbcConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("knn-abc"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    k1Note: z.string().min(1, "config.k1Note must be a non-empty string"),
     reflectionPrompts: z.array(z.string().min(1)).optional(),
   })
   .strict();
@@ -263,6 +278,7 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   tableInspectionConfig,
   regressionCompareConfig,
   knnExploreConfig,
+  knnAbcConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -273,6 +289,7 @@ export type EdaCorrelationConfig = z.infer<typeof edaCorrelationConfig>;
 export type TableInspectionConfig = z.infer<typeof tableInspectionConfig>;
 export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
 export type KnnExploreConfig = z.infer<typeof knnExploreConfig>;
+export type KnnAbcConfig = z.infer<typeof knnAbcConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

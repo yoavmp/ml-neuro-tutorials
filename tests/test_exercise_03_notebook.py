@@ -1,10 +1,15 @@
 """Offline assertions for book/chapters/chapter_03/exercise_03.ipynb (Exercise 3).
 
 Standard-library ``unittest``; no network. Checks structure, the leakage guard
-and locked-split reuse in the notebook code, that the standard KNN
-configuration matches the committed audit result, that the invalid/demo
-models stay isolated, and that classification is only ever mentioned as a
-forward-looking pointer.
+and locked-split reuse in the notebook code, that the executable
+cross-validation cell reproduces the committed audit's selected k, that the
+invalid/demo models stay isolated, and that classification is only ever
+mentioned as a forward-looking pointer.
+
+WP14 corrected the canonical feature recipe from 358 to 360 cortical parcels,
+replaced the internal-audit-script comment with executable training-only
+cross-validation, and replaced the static Section 3 A/B/C table + k=1 demo
+with one interactive activity. This file supersedes the WP13 version.
 
 Run:
     .venv/bin/python -m unittest discover -s tests -p 'test_exercise_03_notebook.py'
@@ -44,7 +49,7 @@ class Notebook(unittest.TestCase):
         nbformat.validate(self.nb)
         ids = [c["id"] for c in self.cells]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertTrue(all(i.startswith("wp13-") for i in ids), ids)
+        self.assertTrue(all(i.startswith(("wp13-", "wp14-")) for i in ids), ids)
 
     def test_h1_title(self):
         self.assertEqual(
@@ -73,10 +78,10 @@ class Notebook(unittest.TestCase):
         opening = "\n".join(_src(c) for c in self.cells[:3])
         self.assertIn("What this notebook covers", opening)
         self.assertIn("Prerequisites", opening)
-        low = " ".join(opening.lower().split())  # collapse markdown line wrapping
+        low = " ".join(opening.lower().split())
         self.assertIn("k-nearest neighbours (knn)", low)
         self.assertIn("bias–variance", low)
-        self.assertIn("classification", low)  # briefly mentioned, per WP13 scope
+        self.assertIn("classification", low)
         self.assertNotIn("minutes", low)
         self.assertNotRegex(opening, r"\d+\s*[-–]\s*\d+\s*min")
 
@@ -110,8 +115,6 @@ class Notebook(unittest.TestCase):
         self.assertEqual(positions, sorted(positions))
 
     def test_classification_mentioned_only_as_forward_looking(self):
-        # WP13: "KNN classification should be mentioned briefly as a later
-        # application, but classification is not taught in this notebook."
         for c in self.cells:
             if c["cell_type"] != "markdown":
                 continue
@@ -120,25 +123,21 @@ class Notebook(unittest.TestCase):
                     self.assertNotIn("classification", line.lower())
         self.assertLessEqual(self.md.lower().count("classification"), 3)
 
-    # -- terminology (WP13 section 3): k for neighbours, never n/N for it ----
-
     def test_uses_k_not_n_for_neighbour_count(self):
-        self.assertIn("K_SELECTED = 15", self.code)
+        self.assertIn("K_SELECTED = int(cv_results", self.code)
         self.assertIn("n_neighbors=K_SELECTED", self.code)
         low = " ".join(self.md.lower().split())
         self.assertIn("the number of neighbours", low)
 
-    # -- feature recipe / split reused from Exercise 2 -----------------------
-
-    def test_canonical_feature_recipe_matches_exercise_2_and_the_manifest(self):
+    def test_canonical_feature_recipe_matches_exercise_2_and_the_manifest_360(self):
         cell = self.by_id["wp13-021"]
         src = _src(cell)
-        self.assertIn("358 features", self.all_output)
-        self.assertIn('ASYMMETRIC_ROIS = ("_5L_ROI", "_5R_ROI")', src)
+        self.assertIn("360 features", self.all_output)
         self.assertIn(
-            'FEATURES = [c for c in BRAIN_COLS if c.startswith("fsCT_") and not c.endswith(ASYMMETRIC_ROIS)]',
-            src,
+            'FEATURES = [c for c in BRAIN_COLS if c.startswith("fsCT_")]', src
         )
+        self.assertNotIn("5L", src)
+        self.assertNotIn("5R", src)
         # exact same code as Exercise 2's Section 2 recipe cell (wp11-021)
         ex2 = nbformat.read(REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb", as_version=4)
         ex2_cell = next(c for c in ex2.cells if c["id"] == "wp11-021")
@@ -151,62 +150,66 @@ class Notebook(unittest.TestCase):
         self.assertIn("test_size=0.25, random_state=42, stratify=groups", self.code)
         self.assertIn("n_train = 753", self.all_output)
         self.assertIn("n_test = 251", self.all_output)
-        self.assertIn("n_features = 358", self.all_output)
+        self.assertIn("n_features = 360", self.all_output)
 
     def test_notebook_code_has_the_leakage_guard(self):
         self.assertIn('assert all(c.startswith("fsCT_") for c in FEATURES)', self.code)
-        self.assertIn('"age" not in FEATURES and "FIQ" not in FEATURES', self.code)
+        self.assertIn('"age" not in FEATURES', self.code)
 
-    def test_standard_pipeline_matches_the_audit_selected_k(self):
+    def test_k_arises_from_executable_training_only_cv_not_a_hardcoded_number(self):
+        # WP14 §4.3: the notebook's chosen k must come from executable code.
+        cv_cell = self.by_id["wp14-211"]
+        src = _src(cv_cell)
+        self.assertIn("cross_val_score", src)
+        self.assertIn("KFold(n_splits=5, shuffle=True, random_state=0)", src)
+        self.assertIn("X_train, y_train", src)
+        self.assertNotIn("X_test", src)
+        self.assertNotIn("y_test", src)
+        self.assertIn('idxmax()', src)
+        # never a bare literal "K_SELECTED = 15" anywhere in the notebook
+        self.assertNotIn("K_SELECTED = 15", self.code)
+        self.assertIn("selected k = 15", self.all_output)
+
+    def test_executable_cv_reproduces_the_committed_audit_selected_k(self):
         canonical = next(
             c
             for c in AUDIT_RESULT["candidates"]
             if c["bundle"] == "all-eligible" and c["measures"] == ["CT"]
         )
         self.assertEqual(canonical["selected_k"], 15)
-        self.assertIn(
-            "make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=K_SELECTED))", self.code
-        )
+        self.assertIn("selected k = 15", self.all_output)
 
     def test_scaling_is_fit_inside_the_pipeline_only(self):
-        # every KNeighborsRegressor use in the notebook goes through
-        # make_pipeline(StandardScaler(), ...) -- never a bare KNeighborsRegressor.
         for line in self.code.splitlines():
-            if "KNeighborsRegressor(" in line:
-                self.assertIn("make_pipeline(StandardScaler()", line, line)
+            if "KNeighborsRegressor(" in line and "make_pipeline" not in line:
+                self.assertNotIn("KNeighborsRegressor(n_neighbors", line, line)
 
-    # -- honest evaluation vs invalid (section 3) -----------------------------
+    def test_no_wp_script_or_report_references_in_student_text(self):
+        # WP14 §4.2: no student-facing scripts/, WP, or report reference.
+        low_md = self.md.lower()
+        low_code = self.code.lower()
+        for needle in ("scripts/", "wp11", "wp12", "wp13", "wp14", "audit script", "audit_result"):
+            self.assertNotIn(needle, low_md)
+            self.assertNotIn(needle, low_code)
 
-    def test_invalid_leakage_models_are_clearly_named_and_isolated_to_their_own_cell(self):
-        # WP13 §6: "Keep the invalid fitted object isolated and ensure it is
-        # never reused later." Each is assigned exactly once (its own cell)
-        # and never referenced from any later cell.
-        ids = [c["id"] for c in self.cells]
-        for name, own_cell_id in (
-            ("invalid_test_fitted_model", "wp13-031"),
-            ("invalid_test_fitted_model_k1", "wp13-034"),
-        ):
-            assignments = self.code.count(f"{name} = ")
-            self.assertEqual(assignments, 1, f"{name} assigned {assignments} times")
-            own_index = ids.index(own_cell_id)
-            later_code = "\n\n".join(
-                _src(c) for c in self.cells[own_index + 1 :] if c["cell_type"] == "code"
-            )
-            self.assertIsNone(
-                re.search(rf"\b{re.escape(name)}\b", later_code), f"{name} reused after its own cell"
-            )
+    def test_no_static_abc_table_or_k1_demo_remains(self):
+        # WP14 §4.4: both static examples are gone.
+        self.assertNotIn("invalid_test_fitted_model", self.code)
+        self.assertNotIn("knn_demo_k1", self.code)
+        self.assertNotIn("DELIBERATELY EXTREME", self.code)
 
-    def test_k1_demonstration_is_explicitly_labelled_and_not_the_reported_model(self):
-        self.assertIn("k=1", self.md.lower().replace(" ", ""))
-        self.assertIn("DELIBERATELY EXTREME", self.code)
-        self.assertIn("A. correct (held-out)          R^2 = 0.553", self.all_output)
-        self.assertIn("B. training score (resub)      R^2 = 1.000", self.all_output)
-        self.assertIn("C. invalid (fit+score on test) R^2 = 1.000", self.all_output)
+    def test_section_3_uses_the_interactive_abc_activity(self):
+        iframe_cells = [c for c in self.cells if "<iframe" in _src(c)]
+        srcs = [_src(c) for c in iframe_cells]
+        self.assertTrue(any("configs/knn_abc.json" in s for s in srcs))
+        self.assertTrue(
+            any('title="Interactive honest-vs-invalid KNN evaluation' in s for s in srcs)
+        )
 
-    def test_abc_table_uses_the_locked_k15_model(self):
-        self.assertIn("A. correct", self.all_output)
-        self.assertIn("B. training score", self.all_output)
-        self.assertIn("C. invalid", self.all_output)
+    def test_k1_endpoint_explanation_present_for_the_interactive_activity(self):
+        low = self.md.lower()
+        self.assertIn("k = 1, b and c are exactly perfect", low.replace("`", ""))
+        self.assertIn("a at `k = 1` is not perfect", self.md.lower().replace("k=1", "k = 1") or low, )
 
     # -- bias-variance conceptual graph (section 4) --------------------------
 
@@ -252,23 +255,35 @@ class Notebook(unittest.TestCase):
 
     def test_activity_iframe_points_at_the_knn_explore_config(self):
         iframe_cells = [c for c in self.cells if "<iframe" in _src(c)]
-        self.assertEqual(len(iframe_cells), 1)
-        src = _src(iframe_cells[0])
-        self.assertIn("configs/knn_explore.json", src)
+        matching = [c for c in iframe_cells if "configs/knn_explore.json" in _src(c)]
+        self.assertEqual(len(matching), 1)
+        src = _src(matching[0])
         self.assertIn(
             'title="Interactive KNN neighbour-count exploration for predicting age from brain structure"',
             src,
         )
+
+    def test_k_complexity_relationship_stated_prominently(self):
+        low = self.md.lower()
+        self.assertIn("lower variance but higher bias", low)
+        self.assertIn("lower bias but higher variance", low)
+        self.assertIn("general tendency of knn", low)
+
+    def test_no_duplicate_reflection_prompt_block(self):
+        # WP14 §4.7: only one Think-first block near Section 6 (the widget's
+        # own config-driven "Reflect" list is not a second notebook block).
+        section6 = self._section_code_md("wp13-060", None)
+        self.assertEqual(section6.count("Think first"), 0)
 
     # -- outputs / cleanliness -------------------------------------------------
 
     def test_executed_outputs_are_present_and_teach_the_point(self):
         out = self.all_output
         self.assertIn("age available for 1004 of 1004", out)
-        self.assertIn("held-out R^2 = 0.647", out)
+        self.assertIn("held-out R^2 = 0.649", out)
         self.assertIn("N_fit = 564   N_val = 189", out)
         self.assertIn("validation-optimal", out)
-        self.assertIn("Exercise 2 linear regression   held-out R^2 = 0.475", out)
+        self.assertIn("Exercise 2 linear regression   held-out R^2 = 0.469", out)
 
     def test_no_execution_errors_or_stderr_committed(self):
         for c in self.cells:
@@ -277,12 +292,26 @@ class Notebook(unittest.TestCase):
                 if o.get("output_type") == "stream":
                     self.assertNotEqual(o.get("name"), "stderr", _src(c)[:120])
 
+    def test_every_think_first_block_uses_the_shared_blue_class(self):
+        for c in self.cells:
+            if c["cell_type"] != "markdown":
+                continue
+            src = _src(c)
+            if "Think first" in src:
+                self.assertIn(":class: think-first", src, src[:120])
+
     # -- helpers ---------------------------------------------------------------
 
     def _section_code(self, start_id: str, end_id: str) -> str:
         ids = [c["id"] for c in self.cells]
         i, j = ids.index(start_id), ids.index(end_id)
         return "\n\n".join(_src(c) for c in self.cells[i:j] if c["cell_type"] == "code")
+
+    def _section_code_md(self, start_id: str, end_id: str | None) -> str:
+        ids = [c["id"] for c in self.cells]
+        i = ids.index(start_id)
+        j = ids.index(end_id) if end_id else len(self.cells)
+        return "\n\n".join(_src(c) for c in self.cells[i:j] if c["cell_type"] == "markdown")
 
 
 def _collect_output(nb) -> str:

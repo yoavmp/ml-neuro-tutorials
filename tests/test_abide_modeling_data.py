@@ -60,13 +60,37 @@ class ManifestCheck(unittest.TestCase):
 
     def test_every_bundle_roi_is_a_real_bilateral_atlas_label(self):
         inv = set(MANIFEST["atlas"]["roi_label_inventory"])
-        asym = set(MANIFEST["atlas"]["asymmetric_labels"])
         for name, bundle in MANIFEST["bundles"].items():
             with self.subTest(bundle=name):
                 self.assertEqual(len(bundle["rois"]), len(set(bundle["rois"])))
                 for roi in bundle["rois"]:
                     self.assertIn(roi, inv)
-                    self.assertNotIn(roi, asym)
+
+    def test_atlas_inventory_is_exactly_180_bilateral_parcels(self):
+        # WP14 audit: raw abide2.tsv has 360 CT columns (180 per hemisphere);
+        # every canonical ROI id is genuinely bilateral. See
+        # atlas.hemisphere_specific_labels for the one ROI whose raw column
+        # label differs by hemisphere ("5L" in the L column, "5R" in the R
+        # column, never the reverse).
+        atlas = MANIFEST["atlas"]
+        self.assertEqual(len(atlas["roi_label_inventory"]), 180)
+        self.assertEqual(atlas["bilateral_label_count"], 180)
+        self.assertEqual(atlas["n_rois"], 360)
+        self.assertIn("5", atlas["roi_label_inventory"])
+        self.assertNotIn("5L", atlas["roi_label_inventory"])
+        self.assertNotIn("5R", atlas["roi_label_inventory"])
+        hemi_specific = atlas["hemisphere_specific_labels"]
+        self.assertEqual(hemi_specific["5"]["L"], "5L")
+        self.assertEqual(hemi_specific["5"]["R"], "5R")
+
+    def test_all_eligible_bundle_is_exactly_360_ct_columns(self):
+        cols = amd.bundle_columns("all-eligible", ["CT"])
+        self.assertEqual(len(cols), 360)
+        self.assertEqual(len(cols), len(set(cols)))
+        self.assertIn("fsCT_L_5L_ROI", cols)
+        self.assertIn("fsCT_R_5R_ROI", cols)
+        self.assertNotIn("fsCT_R_5L_ROI", cols)
+        self.assertNotIn("fsCT_L_5R_ROI", cols)
 
     def test_leakage_forbidden_list_covers_every_target(self):
         forbidden = set(MANIFEST["leakage_guard"]["forbidden_exact"])
@@ -113,10 +137,19 @@ class BrainColumnParsing(unittest.TestCase):
         with self.assertRaises(ValueError):
             amd.parse_brain_column("fsCT_L_NOTAROI_ROI")
 
-    def test_enforces_hemisphere_of_asymmetric_labels(self):
+    def test_enforces_hemisphere_of_hemisphere_specific_labels(self):
         self.assertEqual(amd.parse_brain_column("fsCT_L_5L_ROI").roi, "5L")
+        self.assertEqual(amd.parse_brain_column("fsCT_R_5R_ROI").roi, "5R")
         with self.assertRaises(ValueError):
             amd.parse_brain_column("fsCT_R_5L_ROI")
+        with self.assertRaises(ValueError):
+            amd.parse_brain_column("fsCT_L_5R_ROI")
+
+    def test_raw_label_for_hemisphere_specific_and_ordinary_rois(self):
+        self.assertEqual(amd.raw_label_for("5", "L"), "5L")
+        self.assertEqual(amd.raw_label_for("5", "R"), "5R")
+        self.assertEqual(amd.raw_label_for("46", "L"), "46")
+        self.assertEqual(amd.raw_label_for("46", "R"), "46")
 
     def test_classify_columns_splits_the_three_kinds(self):
         frame = synthetic_frame()
@@ -137,11 +170,6 @@ class Bundles(unittest.TestCase):
         ])
         self.assertEqual(len(cols), 39 * 2 * 2)
         self.assertEqual(len(cols), len(set(cols)))
-
-    def test_all_eligible_excludes_asymmetric_labels(self):
-        cols = amd.bundle_columns("all-eligible", ["CT"])
-        self.assertEqual(len(cols), 179 * 2)
-        self.assertNotIn("fsCT_L_5L_ROI", cols)
 
     def test_rejects_unknown_measure_and_bundle(self):
         with self.assertRaises(ValueError):

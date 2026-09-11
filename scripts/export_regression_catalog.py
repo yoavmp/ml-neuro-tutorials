@@ -188,8 +188,7 @@ def build_catalog(frame: "Any", manifest: dict[str, Any] | None = None) -> dict[
                     else manifest["bundles"][b]["label"]
                 ),
                 "rois": (
-                    [r for r in manifest["atlas"]["roi_label_inventory"]
-                     if r not in manifest["atlas"]["asymmetric_labels"]]
+                    list(manifest["atlas"]["roi_label_inventory"])
                     if b == "all-eligible"
                     else list(manifest["bundles"][b]["rois"])
                 ),

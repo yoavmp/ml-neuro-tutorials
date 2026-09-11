@@ -32,7 +32,7 @@ Design rules (WP13 section 1):
 Predeclared feature spaces (WP13 section 1):
 
 1. the exact Exercise 2 canonical recipe -- ``all-eligible`` bilateral cortical
-   thickness, p = 358;
+   thickness, p = 360;
 2. two already-predeclared, smaller anatomical bundles from
    ``book/config/abide_modeling.json`` (``frontoparietal`` p = 78,
    ``occipital`` p = 46) to see whether lower dimensionality changes standardized

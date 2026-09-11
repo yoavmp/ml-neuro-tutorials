@@ -104,6 +104,50 @@ body {
   max-width: 60vw;
 }
 
+.widget-number-input {
+  width: 6ch;
+  padding: 3px 6px;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.widget-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+
+.widget-tabs button {
+  padding: 6px 12px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--surface-alt);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.widget-tabs button:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.widget-tabs button[aria-selected="true"] {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.widget-tabs button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--accent);

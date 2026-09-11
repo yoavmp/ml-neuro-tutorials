@@ -26,9 +26,16 @@ const curveSchema = z
   })
   .passthrough();
 
+const trainingSampleSchema = z
+  .object({
+    fitTargetMean: z.number().finite(),
+    neighborTargetsByProximity: z.array(z.array(z.number().finite())).min(1),
+  })
+  .passthrough();
+
 export const knnExploreDataSchema = z
   .object({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     activity: z.literal("knn-explore"),
     source: z
       .object({
@@ -64,6 +71,9 @@ export const knnExploreDataSchema = z
     observedValidation: z.array(z.number().finite()).min(1),
     observedFitting: z.array(z.number().finite()).min(1),
     neighborTargetsByProximity: z.array(z.array(z.number().finite())).min(1),
+    trainingSamples: z
+      .object({ A: trainingSampleSchema, B: trainingSampleSchema, C: trainingSampleSchema })
+      .strict(),
     curve: curveSchema,
   })
   .passthrough()
@@ -96,6 +106,29 @@ export const knnExploreDataSchema = z
         add(["neighborTargetsByProximity", i], `row must have ${nFit} entries, got ${row.length}`);
         break;
       }
+    }
+
+    for (const label of ["A", "B", "C"] as const) {
+      const sample = data.trainingSamples[label];
+      if (sample.neighborTargetsByProximity.length !== nValidation) {
+        add(
+          ["trainingSamples", label, "neighborTargetsByProximity"],
+          `expected ${nValidation} rows, got ${sample.neighborTargetsByProximity.length}`,
+        );
+      }
+      for (let i = 0; i < sample.neighborTargetsByProximity.length; i += 1) {
+        const row = sample.neighborTargetsByProximity[i]!;
+        if (row.length !== nFit) {
+          add(["trainingSamples", label, "neighborTargetsByProximity", i], `row must have ${nFit} entries, got ${row.length}`);
+          break;
+        }
+      }
+    }
+    if (
+      JSON.stringify(data.trainingSamples.A.neighborTargetsByProximity) !==
+      JSON.stringify(data.neighborTargetsByProximity)
+    ) {
+      add(["trainingSamples", "A"], "trainingSamples.A must equal the top-level neighborTargetsByProximity");
     }
 
     const { k, fitR2, fitMSE, valR2, valMSE } = data.curve;

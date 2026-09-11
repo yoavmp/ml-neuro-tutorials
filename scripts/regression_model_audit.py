@@ -26,7 +26,7 @@ Predeclared feature spaces (WP12 section 5.2):
 
 1. ``all-eligible`` x every measure (CT, Area, Vol, LGI together) -- every
    eligible cortical brain feature across all measures (p = 1432);
-2. ``all-eligible`` x one measurement family at a time (p = 358 each);
+2. ``all-eligible`` x one measurement family at a time (p = 360 each);
 3. the predeclared compact anatomical bundle ``frontoparietal`` x CT (p = 78) --
    scientifically motivated for FIQ (P-FIT); run for age too as a comparison.
 

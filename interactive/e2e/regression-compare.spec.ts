@@ -76,7 +76,7 @@ for (const { name, prefix } of BASES) {
       const beforeRender = Number(await plotA.getAttribute("data-render-count"));
 
       await page.locator('[data-testid="regression-A-bundle"]').selectOption("all-eligible");
-      await expect(panelA).toHaveAttribute("data-feature-count", "358");
+      await expect(panelA).toHaveAttribute("data-feature-count", "360");
       const afterR2 = await panelA.getAttribute("data-r2");
       const afterRender = Number(await plotA.getAttribute("data-render-count"));
 

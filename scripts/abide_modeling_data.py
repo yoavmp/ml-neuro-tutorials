@@ -62,7 +62,21 @@ MANIFEST = load_manifest()
 _ATLAS = MANIFEST["atlas"]
 BRAIN_COLUMN_RE = re.compile(_ATLAS["column_pattern"])
 ROI_INVENTORY: tuple[str, ...] = tuple(_ATLAS["roi_label_inventory"])
-ASYMMETRIC_LABELS: frozenset[str] = frozenset(_ATLAS["asymmetric_labels"])
+
+# A handful of HCP-MMP1 parcels are genuinely bilateral (present in both
+# hemispheres) but this source table's two hemisphere columns do not share a
+# common raw label suffix -- e.g. canonical ROI "5" is spelled "5L" in its own
+# left-hemisphere column and "5R" in its own right-hemisphere column, never
+# the reverse. HEMISPHERE_SPECIFIC_LABELS maps canonical roi id -> {hemi: raw
+# label}; every other canonical roi id uses its own id as the raw label in
+# both hemispheres. See atlas.hemisphere_specific_labels for the audit note.
+HEMISPHERE_SPECIFIC_LABELS: dict[str, dict[str, str]] = _ATLAS.get("hemisphere_specific_labels", {})
+_RAW_LABEL_LOCK: dict[str, tuple[str, str]] = {
+    raw: (canonical, hemi)
+    for canonical, hemi_map in HEMISPHERE_SPECIFIC_LABELS.items()
+    for hemi, raw in hemi_map.items()
+    if hemi in ("L", "R")
+}
 MEASURE_PREFIX: dict[str, str] = {k: v["prefix"] for k, v in MANIFEST["measures"].items()}
 PREFIX_MEASURE: dict[str, str] = {v: k for k, v in MEASURE_PREFIX.items()}
 NON_BRAIN_COLUMNS: tuple[str, ...] = tuple(MANIFEST["non_brain_columns"])
@@ -162,6 +176,17 @@ def is_brain_column(name: str) -> bool:
     return bool(BRAIN_COLUMN_RE.match(name))
 
 
+def raw_label_for(roi: str, hemi: str, manifest: dict[str, Any] | None = None) -> str:
+    """The literal column-name label for a canonical ROI id in one hemisphere.
+
+    Identity for every ordinary ROI; looks up ``atlas.hemisphere_specific_labels``
+    for the few ROIs whose raw column label differs by hemisphere.
+    """
+    manifest = manifest or MANIFEST
+    hemi_specific = manifest["atlas"].get("hemisphere_specific_labels", {})
+    return hemi_specific.get(roi, {}).get(hemi, roi)
+
+
 def parse_brain_column(name: str) -> BrainColumn:
     """Parse ``fs<Measure>_<L|R>_<label>_ROI``. Raise on anything malformed."""
     match = BRAIN_COLUMN_RE.match(name)
@@ -172,15 +197,21 @@ def parse_brain_column(name: str) -> BrainColumn:
         )
     measure = PREFIX_MEASURE["fs" + match.group("measure")]
     hemi = match.group("hemi")
-    roi = match.group("label")
-    if roi not in ROI_INVENTORY:
+    raw_label = match.group("label")
+    if raw_label in _RAW_LABEL_LOCK:
+        canonical, want_hemi = _RAW_LABEL_LOCK[raw_label]
+        if hemi != want_hemi:
+            raise ValueError(
+                f"{name!r}: label {raw_label!r} only exists in hemisphere {want_hemi} "
+                f"(it is the {want_hemi}-hemisphere raw label for canonical ROI {canonical!r})"
+            )
+        roi = raw_label
+    elif raw_label in ROI_INVENTORY:
+        roi = raw_label
+    else:
         raise ValueError(
-            f"{name!r} names ROI {roi!r}, which is not in the HCP-MMP1 label inventory"
+            f"{name!r} names ROI {raw_label!r}, which is not in the HCP-MMP1 label inventory"
         )
-    if roi in ASYMMETRIC_LABELS:
-        want = {"5L": "L", "5R": "R"}[roi]
-        if hemi != want:
-            raise ValueError(f"{name!r}: ROI {roi!r} only exists in hemisphere {want}")
     return BrainColumn(name, measure, hemi, roi)
 
 
@@ -203,7 +234,7 @@ def classify_columns(columns: "Any") -> dict[str, Any]:
     hemis: set[str] = set()
     for bc in brain:
         by_measure[bc.measure] = by_measure.get(bc.measure, 0) + 1
-        rois.add(bc.roi)
+        rois.add(_RAW_LABEL_LOCK.get(bc.roi, (bc.roi, None))[0])
         hemis.add(bc.hemisphere)
     return {
         "identifiers": identifiers,
@@ -222,7 +253,10 @@ def classify_columns(columns: "Any") -> dict[str, Any]:
 def bundle_rois(bundle: str, manifest: dict[str, Any] | None = None) -> list[str]:
     manifest = manifest or MANIFEST
     if bundle == "all-eligible":
-        return [r for r in manifest["atlas"]["roi_label_inventory"] if r not in ASYMMETRIC_LABELS]
+        # Every canonical ROI id in the inventory is genuinely bilateral (see
+        # atlas.hemisphere_specific_labels for the few whose raw column label
+        # differs by hemisphere) -- no exclusion needed.
+        return list(manifest["atlas"]["roi_label_inventory"])
     try:
         rois = manifest["bundles"][bundle]["rois"]
     except KeyError:
@@ -256,13 +290,10 @@ def bundle_columns(
     for roi in bundle_rois(bundle, manifest):
         if roi not in inventory:
             raise ValueError(f"bundle {bundle!r}: ROI {roi!r} is not an HCP-MMP1 label")
-        if roi in ASYMMETRIC_LABELS:
-            raise ValueError(
-                f"bundle {bundle!r}: ROI {roi!r} is not bilateral and cannot be used in a bundle"
-            )
         for m in measures:
             for hemi in ("L", "R"):
-                name = f"{MEASURE_PREFIX[m]}_{hemi}_{roi}_ROI"
+                raw_label = raw_label_for(roi, hemi, manifest)
+                name = f"{MEASURE_PREFIX[m]}_{hemi}_{raw_label}_ROI"
                 if available_set is not None and name not in available_set:
                     raise ValueError(
                         f"bundle {bundle!r} recipe: expected column {name!r} is not in the data"
@@ -321,10 +352,15 @@ def feature_matrix(
 def _check_manifest(manifest: dict[str, Any]) -> list[str]:
     problems: list[str] = []
     inv = set(manifest["atlas"]["roi_label_inventory"])
-    asym = set(manifest["atlas"]["asymmetric_labels"])
-    bilat = inv - asym
-    if len(bilat) != manifest["atlas"].get("bilateral_label_count"):
-        problems.append("atlas.bilateral_label_count disagrees with the inventory")
+    hemi_specific = manifest["atlas"].get("hemisphere_specific_labels", {})
+    if len(inv) != manifest["atlas"].get("bilateral_label_count"):
+        problems.append("atlas.bilateral_label_count disagrees with the inventory (every ROI is bilateral)")
+    for canonical, hemi_map in hemi_specific.items():
+        if canonical not in inv:
+            problems.append(f"hemisphere_specific_labels canonical ROI {canonical!r} not in the atlas inventory")
+        raw_labels = {hemi_map.get("L"), hemi_map.get("R")}
+        if None in raw_labels or len(raw_labels) != 2:
+            problems.append(f"hemisphere_specific_labels[{canonical!r}] must give distinct L and R raw labels")
 
     for name, bundle in manifest["bundles"].items():
         rois = bundle["rois"]
@@ -333,8 +369,6 @@ def _check_manifest(manifest: dict[str, Any]) -> list[str]:
         for roi in rois:
             if roi not in inv:
                 problems.append(f"bundle {name!r}: ROI {roi!r} not in the atlas inventory")
-            elif roi in asym:
-                problems.append(f"bundle {name!r}: ROI {roi!r} is not bilateral")
 
     recipe = manifest["protocol"]["canonical_recipe"]
     if recipe["bundle"] != "all-eligible" and recipe["bundle"] not in manifest["bundles"]:
@@ -361,11 +395,10 @@ def _check_manifest(manifest: dict[str, Any]) -> list[str]:
         if target not in manifest["leakage_guard"]["forbidden_exact"]:
             problems.append(f"target {target!r} is missing from leakage_guard.forbidden_exact")
     for roi in list(inv)[:] + [b for bundle in manifest["bundles"].values() for b in bundle["rois"]]:
-        if roi in asym:
-            continue
         for prefix in MEASURE_PREFIX.values():
             for hemi in ("L", "R"):
-                col = f"{prefix}_{hemi}_{roi}_ROI"
+                raw_label = hemi_specific.get(roi, {}).get(hemi, roi)
+                col = f"{prefix}_{hemi}_{raw_label}_ROI"
                 if pattern.search(col):
                     problems.append(f"forbidden pattern wrongly rejects a real brain column: {col}")
     for roles in (("main", "regularization_preview"),):
@@ -377,7 +410,7 @@ def _check_manifest(manifest: dict[str, Any]) -> list[str]:
     # No bundle ROI may look like an identifier/target under the leak pattern.
     for name, bundle in manifest["bundles"].items():
         for roi in bundle["rois"]:
-            col = f"fsCT_L_{roi}_ROI"
+            col = f"fsCT_L_{hemi_specific.get(roi, {}).get('L', roi)}_ROI"
             if pattern.search(col):
                 problems.append(f"bundle {name!r} ROI {roi!r} expands to a name the leak guard rejects: {col}")
     return problems

@@ -160,6 +160,12 @@ class NotebookSpec:
     drop_admonition_titles: frozenset[str]
     iframe_replacements: dict[str, str]
     preserve_output_ids: frozenset[str]
+    # Optional runnable Python cell inserted immediately after an iframe's
+    # markdown replacement, keyed by the same iframe `title`. Used where a
+    # static, non-interactive equivalent is practical and not already covered
+    # by an earlier section (WP14 section 4.4).
+    iframe_followup_code: dict[str, str] = field(default_factory=dict)
+    iframe_followup_ids: dict[str, str] = field(default_factory=dict)
     rewrite_columns: bool = False
     require_pinned_source: str = "neurohackademy/nh2020-curriculum/"
     extra_banned: dict[str, str] = field(default_factory=dict)
@@ -397,6 +403,58 @@ _CH3_IFRAME_REPLACEMENT = (
     "> it and change `FIT_RANDOM_STATE` or the split size to explore further."
 )
 
+_CH3_ABC_IFRAME_REPLACEMENT = (
+    "### Try the honest-vs-invalid comparison yourself on the course website\n"
+    "\n"
+    "The interactive activity lets you drag a slider across every valid k (from\n"
+    "1 through the smaller of the training and test sample sizes) and watch all\n"
+    "three panels -- A (valid), B (resubstitution), C (invalid leakage) --\n"
+    "recompute together.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 3 page:\n"
+    "> <" + PUBLISHED_PAGE_CH3 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell computes the same three panels for one editable `k_demo` value --\n"
+    "> change it and rerun the cell to explore further."
+)
+
+_CH3_ABC_FOLLOWUP_CODE = (
+    "# Static three-panel equivalent of the honest-vs-invalid activity above.\n"
+    "# Change k_demo (from 1 to min(n_train, n_test)) and rerun this cell.\n"
+    "k_demo = K_SELECTED\n"
+    "\n"
+    "\n"
+    "def _fit_predict(X_fit_raw, y_fit_arr, X_query_raw, k):\n"
+    "    model = make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=k))\n"
+    "    model.fit(X_fit_raw, y_fit_arr)\n"
+    "    return model.predict(X_query_raw)\n"
+    "\n"
+    "\n"
+    "pred_a = _fit_predict(X_train, y_train, X_test, k_demo)\n"
+    "pred_b = _fit_predict(X_train, y_train, X_train, k_demo)\n"
+    "pred_c = _fit_predict(X_test, y_test, X_test, k_demo)\n"
+    "\n"
+    "panels = [\n"
+    '    ("A. valid\\n(fit train, test test)", y_test, pred_a),\n'
+    '    ("B. resubstitution\\n(fit train, score train)", y_train, pred_b),\n'
+    '    ("C. invalid\\n(fit test, score test)", y_test, pred_c),\n'
+    "]\n"
+    "allv = np.concatenate([y_train, y_test, pred_a, pred_b, pred_c])\n"
+    "lims = [allv.min() - 3, allv.max() + 3]\n"
+    "fig, axes = plt.subplots(1, 3, figsize=(11, 3.9), sharex=True, sharey=True)\n"
+    "for ax, (title, obs, pred) in zip(axes, panels):\n"
+    "    r2 = r2_score(obs, pred)\n"
+    '    ax.plot(lims, lims, "--", color="0.4", lw=1, label="Perfect prediction (observed = predicted)")\n'
+    "    ax.scatter(obs, pred, s=10, alpha=0.4)\n"
+    "    ax.set_xlim(lims); ax.set_ylim(lims); ax.set_aspect(\"equal\")\n"
+    '    ax.set_title(f"{title}\\nk={k_demo}, R$^2$ = {r2:.3f}", fontsize=9)\n'
+    '    ax.set_xlabel("observed age")\n'
+    'axes[0].set_ylabel("predicted age")\n'
+    'axes[0].legend(loc="upper left", fontsize=7)\n'
+    "plt.tight_layout(); plt.show()"
+)
+
 CHAPTER_03 = NotebookSpec(
     key="chapter_03",
     canonical=REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
@@ -409,7 +467,20 @@ CHAPTER_03 = NotebookSpec(
     iframe_replacements={
         "Interactive KNN neighbour-count exploration for predicting age from brain structure": (
             _CH3_IFRAME_REPLACEMENT
-        )
+        ),
+        "Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure": (
+            _CH3_ABC_IFRAME_REPLACEMENT
+        ),
+    },
+    iframe_followup_code={
+        "Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure": (
+            _CH3_ABC_FOLLOWUP_CODE
+        ),
+    },
+    iframe_followup_ids={
+        "Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure": (
+            "portable-knn-abc-demo"
+        ),
     },
     preserve_output_ids=frozenset(),
     rewrite_columns=False,
@@ -569,6 +640,13 @@ def build_portable(
             new["id"] = src_cell["id"]
             new["metadata"] = {}
             cells.append(new)
+            if iframe_title is not None and iframe_title in spec.iframe_followup_code:
+                followup = nbf.new_code_cell(spec.iframe_followup_code[iframe_title])
+                followup["id"] = spec.iframe_followup_ids[iframe_title]
+                followup["metadata"] = {}
+                followup["outputs"] = []
+                followup["execution_count"] = None
+                cells.append(followup)
 
         elif cell_type == "code":
             if spec.rewrite_columns and "eda_phenotype_columns.json" in source:

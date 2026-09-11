@@ -7,22 +7,28 @@ function base() {
   // recomputed, since this fixture tests the *schema*, not the export script
   // (that recomputation is tested against real data in
   // tests/test_export_knn_explore_data.py).
+  const neighborTargetsByProximity = [
+    [10, 20, 30],
+    [30, 20, 10],
+  ];
   return {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     activity: "knn-explore" as const,
     source: { pinnedCommit: "abc123", brainTableSha256: "aa", phenotypeTableSha256: "bb" },
     target: { name: "age", label: "Age at scan", unit: "years" },
-    featureRecipe: { bundle: "all-eligible", measures: ["CT"], featureCount: 358 },
+    featureRecipe: { bundle: "all-eligible", measures: ["CT"], featureCount: 360 },
     split: { nOuterTrain: 5, nFit: 3, nValidation: 2 },
     fitTargetMean: 20,
     validationOptimalK: 2,
     selectedKFromAudit: 2,
     observedValidation: [12, 25],
     observedFitting: [10, 20, 30],
-    neighborTargetsByProximity: [
-      [10, 20, 30],
-      [30, 20, 10],
-    ],
+    neighborTargetsByProximity,
+    trainingSamples: {
+      A: { fitTargetMean: 20, neighborTargetsByProximity },
+      B: { fitTargetMean: 21, neighborTargetsByProximity: [[11, 21, 31], [31, 21, 11]] },
+      C: { fitTargetMean: 19, neighborTargetsByProximity: [[9, 19, 29], [29, 19, 9]] },
+    },
     curve: {
       k: [1, 2, 3],
       fitR2: [1, 0.5, 0],
@@ -91,6 +97,32 @@ describe("parseKnnExploreData", () => {
     if (!r.ok) expect(r.error).toMatch(/identifier-shaped/);
   });
 
+  it("rejects a missing training sample", () => {
+    const b = base() as Record<string, unknown>;
+    delete (b.trainingSamples as Record<string, unknown>).C;
+    const r = parseKnnExploreData(b);
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects a training sample whose neighborTargetsByProximity row has the wrong length", () => {
+    const b = base();
+    b.trainingSamples.B.neighborTargetsByProximity[0] = [1, 2];
+    const r = parseKnnExploreData(b);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/trainingSamples/);
+  });
+
+  it("rejects trainingSamples.A that does not equal the top-level baseline", () => {
+    const b = base();
+    b.trainingSamples.A.neighborTargetsByProximity = [
+      [1, 2, 3],
+      [3, 2, 1],
+    ];
+    const r = parseKnnExploreData(b);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/trainingSamples.*A/);
+  });
+
   it("validates the committed abide_knn_explore.json artifact", async () => {
     const fs = await import("node:fs/promises");
     const url = new URL("../../book/_static/widgets/data/abide_knn_explore.json", import.meta.url);
@@ -99,7 +131,7 @@ describe("parseKnnExploreData", () => {
     expect(r.ok, r.ok ? "" : r.error).toBe(true);
     if (r.ok) {
       expect(r.data.target.name).toBe("age");
-      expect(r.data.featureRecipe.featureCount).toBe(358);
+      expect(r.data.featureRecipe.featureCount).toBe(360);
       expect(r.data.split.nOuterTrain).toBe(753);
       expect(r.data.split.nFit).toBe(564);
       expect(r.data.split.nValidation).toBe(189);
@@ -107,6 +139,11 @@ describe("parseKnnExploreData", () => {
       expect(r.data.observedFitting).toHaveLength(564);
       expect(r.data.neighborTargetsByProximity).toHaveLength(189);
       expect(r.data.neighborTargetsByProximity[0]).toHaveLength(564);
+      expect(Object.keys(r.data.trainingSamples).sort()).toEqual(["A", "B", "C"]);
+      expect(r.data.trainingSamples.A.neighborTargetsByProximity).toEqual(r.data.neighborTargetsByProximity);
+      expect(r.data.trainingSamples.B.neighborTargetsByProximity).toHaveLength(189);
+      expect(r.data.trainingSamples.B.neighborTargetsByProximity[0]).toHaveLength(564);
+      expect(r.data.trainingSamples.B.neighborTargetsByProximity).not.toEqual(r.data.neighborTargetsByProximity);
       expect(r.data.curve.k).toHaveLength(564);
       expect(r.data.curve.k[0]).toBe(1);
       expect(r.data.curve.k[563]).toBe(564);

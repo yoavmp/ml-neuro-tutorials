@@ -63,7 +63,7 @@ test.describe("Chapter 2 built page — embedded feature-set comparison", () => 
     // count and R^2 both change (not just a label)
     const beforeR2 = await panelA.getAttribute("data-r2");
     await frame.locator('[data-testid="regression-A-bundle"]').selectOption("all-eligible");
-    await expect(panelA).toHaveAttribute("data-feature-count", "358");
+    await expect(panelA).toHaveAttribute("data-feature-count", "360");
     expect(await panelA.getAttribute("data-r2")).not.toEqual(beforeR2);
 
     // no CDN / kernel / socket / off-origin from the activity

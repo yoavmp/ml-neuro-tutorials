@@ -57,13 +57,13 @@ class CommittedResult(unittest.TestCase):
         canonical = next(
             c for c in self.result["candidates"] if c["bundle"] == "all-eligible" and c["measures"] == ["CT"]
         )
-        self.assertEqual(canonical["p"], 358)
+        self.assertEqual(canonical["p"], 360)
         self.assertEqual(canonical["n_train"], 753)
         self.assertEqual(canonical["n_test"], 251)
 
     def test_canonical_recipe_was_selected_for_the_notebook(self):
         # WP13 §1: the audit found no curse-of-dimensionality problem for the
-        # canonical 358-feature recipe, so it -- not a smaller bundle -- is
+        # canonical 360-feature recipe, so it -- not a smaller bundle -- is
         # used as the notebook's standard example.
         candidates = {c["feature_space"]: c for c in self.result["candidates"]}
         canonical = next(c for c in candidates.values() if c["bundle"] == "all-eligible")
@@ -106,7 +106,7 @@ class CommittedResult(unittest.TestCase):
 def _tiny_frame():
     # 60 participants, ~78 CT + 78 Area features (frontoparietal + occipital
     # bundles) -- reused from test_abide_modeling_data, fast for isolation
-    # tests that do not need the full 358-feature canonical recipe.
+    # tests that do not need the full 360-feature canonical recipe.
     return synthetic_frame(n=60, seed=7)
 
 

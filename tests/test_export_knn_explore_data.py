@@ -43,7 +43,7 @@ class CommittedArtifact(unittest.TestCase):
         a = self.artifact
         self.assertEqual(a["activity"], "knn-explore")
         self.assertEqual(a["target"]["name"], "age")
-        self.assertEqual(a["featureRecipe"]["featureCount"], 358)
+        self.assertEqual(a["featureRecipe"]["featureCount"], 360)
         self.assertEqual(a["split"]["nOuterTrain"], 753)
         self.assertEqual(a["split"]["nFit"], 564)
         self.assertEqual(a["split"]["nValidation"], 189)
@@ -86,11 +86,97 @@ class CommittedArtifact(unittest.TestCase):
         on_disk = ekd.ARTIFACT_PATH.read_text(encoding="utf-8")
         self.assertEqual(ekd.serialize(self.artifact), on_disk)
 
+    def test_schema_version_is_2(self):
+        self.assertEqual(self.artifact["schemaVersion"], 2)
+
+    def test_three_training_samples_present_and_shaped(self):
+        a = self.artifact
+        samples = a["trainingSamples"]
+        self.assertEqual(set(samples), {"A", "B", "C"})
+        n_fit, n_val = a["split"]["nFit"], a["split"]["nValidation"]
+        for label, sample in samples.items():
+            with self.subTest(sample=label):
+                rows = sample["neighborTargetsByProximity"]
+                self.assertEqual(len(rows), n_val)
+                self.assertTrue(all(len(row) == n_fit for row in rows))
+                # independent structural re-verification of the k=n_fit
+                # endpoint for every sample (WP14 §7.14)
+                for row in rows:
+                    self.assertAlmostEqual(sum(row) / n_fit, sample["fitTargetMean"], places=3)
+
+    def test_training_sample_a_matches_the_top_level_baseline(self):
+        a = self.artifact
+        self.assertEqual(a["trainingSamples"]["A"]["neighborTargetsByProximity"], a["neighborTargetsByProximity"])
+        self.assertEqual(a["trainingSamples"]["A"]["fitTargetMean"], a["fitTargetMean"])
+
+    def test_training_samples_b_and_c_are_genuinely_different_draws(self):
+        # bootstrap resamples of the same pool must not be byte-identical to A
+        a = self.artifact
+        self.assertNotEqual(
+            a["trainingSamples"]["B"]["neighborTargetsByProximity"],
+            a["trainingSamples"]["A"]["neighborTargetsByProximity"],
+        )
+        self.assertNotEqual(
+            a["trainingSamples"]["C"]["neighborTargetsByProximity"],
+            a["trainingSamples"]["A"]["neighborTargetsByProximity"],
+        )
+        self.assertNotEqual(
+            a["trainingSamples"]["B"]["neighborTargetsByProximity"],
+            a["trainingSamples"]["C"]["neighborTargetsByProximity"],
+        )
+
+    def test_independent_variance_and_bias_proxy_recomputation_at_representative_k(self):
+        # WP14 §7.13: independent verification of the variance proxy and the
+        # bias-like proxy, mirroring the exact client-side formulas
+        # (interactive/src/knn-explore.ts) against the committed artifact.
+        a = self.artifact
+        n_val = a["split"]["nValidation"]
+        samples = [a["trainingSamples"][k]["neighborTargetsByProximity"] for k in ("A", "B", "C")]
+        observed = a["observedValidation"]
+
+        for k in (1, a["selectedKFromAudit"], a["split"]["nFit"]):
+            preds = [[sum(row[:k]) / k for row in sample] for sample in samples]  # 3 x n_val
+            # variance proxy: mean across validation participants of the SD of
+            # the 3 samples' predictions for that participant
+            sds = []
+            for i in range(n_val):
+                vals = [preds[s][i] for s in range(3)]
+                mean = sum(vals) / 3
+                var = sum((v - mean) ** 2 for v in vals) / 3
+                sds.append(var**0.5)
+            variance_proxy = sum(sds) / n_val
+            self.assertGreaterEqual(variance_proxy, 0.0)
+            if k == 1:
+                # smallest k: this dataset's fitting-set nearest neighbour is
+                # sensitive to which training draw was used
+                self.assertGreater(variance_proxy, 0.0)
+            if k == a["split"]["nFit"]:
+                # k = n_fit: every sample's predictions collapse to that
+                # sample's own (slightly different, since bootstrap) mean --
+                # variance proxy is small but need not be exactly zero
+                self.assertLess(variance_proxy, 1.0)
+
+            # bias-like proxy: calibration slope of the ensemble-mean
+            # prediction (average of the 3 samples) regressed on the observed
+            # value; slope near 1 = little flattening, near 0 = fully flattened
+            ensemble = [sum(preds[s][i] for s in range(3)) / 3 for i in range(n_val)]
+            mean_obs = sum(observed) / n_val
+            mean_ens = sum(ensemble) / n_val
+            cov = sum((observed[i] - mean_obs) * (ensemble[i] - mean_ens) for i in range(n_val))
+            var_obs = sum((o - mean_obs) ** 2 for o in observed)
+            slope = cov / var_obs if var_obs > 0 else 0.0
+            if k == a["split"]["nFit"]:
+                # at k=n_fit every sample is a constant predictor -> slope is
+                # exactly 0 (no relationship at all with the observed value)
+                self.assertAlmostEqual(slope, 0.0, places=6)
+            else:
+                self.assertLessEqual(slope, 1.2)  # sanity bound, not a tight claim
+
 
 def _mini_manifest():
     # The synthetic frame only carries frontoparietal + occipital ROIs (WP12's
     # test_abide_modeling_data.synthetic_frame), not the full all-eligible
-    # 358-feature recipe -- so the mini manifest points the KNN recipe at the
+    # 360-feature recipe -- so the mini manifest points the KNN recipe at the
     # frontoparietal bundle instead, purely for testing build_artifact /
     # validate_artifact without downloading real data.
     man = copy.deepcopy(ekd.MANIFEST)

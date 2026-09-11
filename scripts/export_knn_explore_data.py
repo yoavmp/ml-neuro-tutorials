@@ -18,7 +18,14 @@ fragile, so this script precomputes, once and deterministically:
   **reordered by distance** (nearest first). This lets the browser recompute
   the exact observed-vs-predicted scatter for *any* chosen ``k`` with one
   client-side prefix mean, without ever seeing a brain feature, a distance, or
-  a participant identifier -- only target-value floats, in neighbour order.
+  a participant identifier -- only target-value floats, in neighbour order;
+* (WP14 section 4.8) the same reordering for two more deterministic bootstrap
+  resamples ("B", "C") of the fitting pool, alongside the original ("A"), so
+  the browser can show how predictions at a fixed validation participant and
+  a fixed k vary across different training-set draws -- an empirical
+  training-sample-sensitivity ("variance-proxy") and systematic-smoothing
+  ("bias-like-proxy") illustration, computed client-side, never touching the
+  outer test set.
 
 Both computations are validated against a real, independently-fitted
 ``Pipeline(StandardScaler(), KNeighborsRegressor(k))`` at representative ``k``
@@ -28,7 +35,7 @@ Split protocol (``book/config/abide_modeling.json`` -> ``knn``):
 
 1. Exercise 2's own locked outer holdout split
    (``protocol.holdout_split``: ``test_size=0.25, random_state=42,
-   stratify=group``) on the canonical ``all-eligible x CT`` recipe (p=358) --
+   stratify=group``) on the canonical ``all-eligible x CT`` recipe (p=360) --
    the SAME 753/251 participants as Exercise 2's own workflow. The outer test
    partition (251 rows) never appears in this artifact at all.
 2. ``knn.dev_split`` (``test_size=0.25, random_state=7, stratify=group``)
@@ -68,9 +75,17 @@ from abide_modeling_data import (  # noqa: E402
 )
 
 ARTIFACT_PATH = REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_knn_explore.json"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DECIMALS = 4
 TARGET = MANIFEST["knn"]["target"]
+
+# WP14 section 4.8: three deterministic alternative training-set selections
+# from the SAME fitting pool, used by the enhanced explorer's variance/bias
+# proxy panels. "A" is the fitting pool itself (already computed above); "B"
+# and "C" are equal-sized bootstrap resamples (with replacement) of it, each
+# with its own StandardScaler refit on its own resampled rows -- a genuine
+# "what if you had drawn a different training sample" re-fit, not a relabel.
+BOOTSTRAP_SEEDS = {"B": 101, "C": 102}
 
 
 def _outer_split(frame: Any, manifest: dict[str, Any] | None = None):
@@ -149,6 +164,60 @@ def _validate_against_sklearn(X_fit, y_fit, X_val, pred_val_all_k, sample_ks: li
             )
 
 
+def _bootstrap_training_sample(
+    X_fit_raw: Any, y_fit: Any, X_val_raw: Any, seed: int
+) -> dict[str, Any]:
+    """One bootstrap resample (with replacement) of the fitting pool, refit
+    with its own StandardScaler, and the resulting validation neighbour-target
+    matrix. Independently validated against a real sklearn Pipeline."""
+    import numpy as np
+    from sklearn.preprocessing import StandardScaler
+
+    n_fit = len(y_fit)
+    rng = np.random.default_rng(seed)
+    idx = rng.choice(n_fit, size=n_fit, replace=True)
+    X_resampled_raw = X_fit_raw[idx]
+    y_resampled = y_fit[idx]
+
+    scaler_b = StandardScaler().fit(X_resampled_raw)
+    Xf_b = scaler_b.transform(X_resampled_raw)
+    Xv_b = scaler_b.transform(X_val_raw)
+
+    sorted_val_b = _sorted_neighbor_targets(Xv_b, Xf_b, y_resampled)
+    cum_b = np.cumsum(sorted_val_b, axis=1)
+    ks = np.arange(1, n_fit + 1)
+    pred_val_all_k_b = cum_b / ks[None, :]
+
+    sample_ks = sorted({k for k in (1, 5, 15, 17, 50, 200, n_fit) if k <= n_fit})
+    for k in sample_ks:
+        from sklearn.neighbors import KNeighborsRegressor
+        from sklearn.pipeline import make_pipeline
+        from sklearn.preprocessing import StandardScaler as _SS
+
+        real = (
+            make_pipeline(_SS(), KNeighborsRegressor(n_neighbors=k))
+            .fit(X_resampled_raw, y_resampled)
+            .predict(X_val_raw)
+        )
+        mine = pred_val_all_k_b[:, k - 1]
+        if not np.allclose(real, mine, atol=1e-6):
+            raise RuntimeError(
+                f"bootstrap sample (seed={seed}): cumulative-sum predictions disagree with sklearn "
+                f"at k={k}: max abs diff {np.max(np.abs(real - mine))}"
+            )
+
+    fit_mean_b = float(np.mean(y_resampled))
+    if not np.allclose(pred_val_all_k_b[:, -1], fit_mean_b, atol=1e-6):
+        raise RuntimeError(f"bootstrap sample (seed={seed}): k=n_fit predictions are not all equal to its own mean")
+
+    return {
+        "fitTargetMean": round(fit_mean_b, 6),
+        "neighborTargetsByProximity": [
+            [round(float(v), DECIMALS) for v in row] for row in sorted_val_b
+        ],
+    }
+
+
 def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[str, Any]:
     import numpy as np
     from sklearn.preprocessing import StandardScaler
@@ -187,6 +256,17 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
     val_r2_arr = np.array(val_r2)
     validation_optimal_k = int(np.argmax(val_r2_arr)) + 1
 
+    training_samples = {
+        "A": {
+            "fitTargetMean": round(fit_mean, 6),
+            "neighborTargetsByProximity": [
+                [round(float(v), DECIMALS) for v in row] for row in sorted_val
+            ],
+        }
+    }
+    for label, seed in BOOTSTRAP_SEEDS.items():
+        training_samples[label] = _bootstrap_training_sample(X_fit, y_fit, X_val, seed)
+
     src = manifest["source"]
     return {
         "schemaVersion": SCHEMA_VERSION,
@@ -221,6 +301,7 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
         "neighborTargetsByProximity": [
             [round(float(v), DECIMALS) for v in row] for row in sorted_val
         ],
+        "trainingSamples": training_samples,
         "curve": {
             "k": [int(k) for k in ks],
             "fitR2": fit_r2,
@@ -267,6 +348,34 @@ def validate_artifact(artifact: Any, manifest: dict[str, Any] | None = None) -> 
             if not isinstance(row, list) or len(row) != n_fit:
                 problems.append("neighborTargetsByProximity row must have n_fit entries")
                 break
+
+    training_samples = artifact.get("trainingSamples")
+    if not isinstance(training_samples, dict) or set(training_samples) != {"A", "B", "C"}:
+        problems.append("trainingSamples must have exactly keys A, B, C")
+    else:
+        for label, sample in training_samples.items():
+            rows = sample.get("neighborTargetsByProximity") if isinstance(sample, dict) else None
+            if not isinstance(rows, list) or len(rows) != n_val:
+                problems.append(f"trainingSamples.{label}.neighborTargetsByProximity must have one row per validation participant")
+                continue
+            for row in rows:
+                if not isinstance(row, list) or len(row) != n_fit:
+                    problems.append(f"trainingSamples.{label}.neighborTargetsByProximity row must have n_fit entries")
+                    break
+            fit_mean_b = sample.get("fitTargetMean") if isinstance(sample, dict) else None
+            if not isinstance(fit_mean_b, (int, float)):
+                problems.append(f"trainingSamples.{label}.fitTargetMean must be numeric")
+            elif rows and len(rows[0]) == n_fit:
+                # structural endpoint: k=n_fit predicts this sample's own mean
+                k_nfit_pred = sum(rows[0]) / n_fit
+                if abs(k_nfit_pred - fit_mean_b) > 1e-3:
+                    problems.append(f"trainingSamples.{label}: k=n_fit prediction does not match fitTargetMean")
+
+    if isinstance(neighbours, list) and isinstance(training_samples, dict) and isinstance(training_samples.get("A"), dict):
+        if training_samples["A"].get("neighborTargetsByProximity") != neighbours:
+            problems.append("trainingSamples.A.neighborTargetsByProximity must equal the top-level neighborTargetsByProximity")
+        if isinstance(artifact.get("fitTargetMean"), (int, float)) and training_samples["A"].get("fitTargetMean") != artifact.get("fitTargetMean"):
+            problems.append("trainingSamples.A.fitTargetMean must equal the top-level fitTargetMean")
 
     k_list = curve.get("k")
     if not isinstance(k_list, list) or k_list != list(range(1, n_fit + 1)):

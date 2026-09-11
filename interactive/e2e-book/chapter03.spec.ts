@@ -122,3 +122,73 @@ test.describe("Chapter 3 built page — embedded KNN k-exploration", () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 });
+
+// Proof that the embedded knn-abc (Section 3) activity works on the final
+// built Exercise 3 HTML page, served beneath the simulated GitHub Pages
+// project subpath.
+const ABC_IFRAME_SELECTOR =
+  'iframe[title="Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure"]';
+
+async function abcFrame(page: import("@playwright/test").Page): Promise<Frame> {
+  const handle = await page.locator(ABC_IFRAME_SELECTOR).elementHandle();
+  expect(handle, "iframe element present").not.toBeNull();
+  const frame = await handle!.contentFrame();
+  expect(frame, "iframe content frame present").not.toBeNull();
+  return frame!;
+}
+
+test.describe("Chapter 3 built page — embedded honest-vs-invalid KNN activity", () => {
+  test("iframe loads, config+data are 200, all three panels render with the audit-selected default k", async ({
+    page,
+  }) => {
+    const responses: { url: string; status: number }[] = [];
+    page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
+
+    await page.goto(CHAPTER_URL);
+    const iframe = page.locator(ABC_IFRAME_SELECTOR);
+    await expect(iframe).toHaveCount(1);
+    await iframe.scrollIntoViewIfNeeded();
+
+    const frame = await abcFrame(page);
+    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    const configResp = responses.find((r) => r.url.endsWith("/configs/knn_abc.json"));
+    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_knn_abc.json"));
+    expect(configResp?.status, "config HTTP status").toBe(200);
+    expect(dataResp?.status, "data HTTP status").toBe(200);
+
+    await expect(frame.locator('[data-testid="knn-abc-k-slider"]')).toHaveValue("15");
+    for (const panel of ["a", "b", "c"]) {
+      await expect(frame.locator(`[data-testid="knn-abc-panel-${panel}-plot"]`)).toHaveAttribute(
+        "data-render-count",
+        /[1-9]/,
+      );
+    }
+  });
+
+  test("k=1 makes panels B and C exactly perfect on the built page", async ({ page }) => {
+    await page.goto(CHAPTER_URL);
+    await page.locator(ABC_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    const frame = await abcFrame(page);
+    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    await frame.locator('[data-testid="knn-abc-k-slider"]').fill("1");
+    const bMetrics = await frame.locator('[data-testid="knn-abc-panel-b-metrics"]').innerText();
+    const cMetrics = await frame.locator('[data-testid="knn-abc-panel-c-metrics"]').innerText();
+    expect(bMetrics).toMatch(/R2 = 1\.000/);
+    expect(cMetrics).toMatch(/R2 = 1\.000/);
+  });
+
+  test("embedded honest-vs-invalid activity is usable at a narrow viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto(CHAPTER_URL);
+    await page.locator(ABC_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    const frame = await abcFrame(page);
+    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    await expect(frame.locator('[data-testid="knn-abc-panel-a-plot"]')).toBeVisible();
+    const overflow = await frame.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+});
