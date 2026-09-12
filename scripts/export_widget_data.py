@@ -7,16 +7,26 @@ raw ABIDE-II phenotypic CSV at viewer runtime. This script pins that CSV by URL
 writes byte-for-byte deterministic JSON artifacts that the widgets load as
 same-origin static files.
 
-Two artifacts are produced from the *same* pinned source:
+Three artifacts are produced from the *same* pinned source:
 
-* ``abide_histogram.json`` (activity ``eda-histogram``, WP03): eight numeric
-  variables, no identifier of any kind.
+* ``abide_histogram.json`` (activity ``eda-histogram``, WP03): the seven numeric
+  variables of the curated teaching table, no identifier of any kind.
 * ``abide_retention.json`` (activity ``eda-retention``, WP04): the approved
   complete-case candidate variables **plus** ``SITE_ID``. ``SITE_ID`` is the
-  only identifier-shaped field allowed anywhere in these artifacts, and only in
-  the retention artifact, because grouped retention summaries are impossible
-  without a site-grouping label. It is a coarse, non-personal acquisition-site
-  code; ``SUB_ID`` and every other participant identifier stay rejected.
+  only identifier-shaped field allowed in the histogram/retention artifacts, and
+  only in the retention artifact, because grouped retention summaries are
+  impossible without a site-grouping label. It is a coarse, non-personal
+  acquisition-site code; ``SUB_ID`` and every other participant identifier stay
+  rejected here. The same retention artifact also backs the ``eda-correlation``
+  activity.
+* ``abide_table_inspection.json`` (activity ``table-inspection``, WP09 §11 /
+  WP10 §2): every column of the 13-column curated teaching table, in the exact
+  order of ``book/config/eda_phenotype_columns.json``. This activity shows real
+  rows of the curated table so a student can compare what ``head()``, ``tail()``
+  and ``sample()`` return, which means it needs the two identifier-shaped
+  string columns ``SITE_ID`` and ``SUB_ID`` as non-selectable display columns.
+  That two-name exception is confined to this one artifact; every other column
+  is still a curated, non-identifier variable.
 
 Modes:
 
@@ -30,11 +40,11 @@ Modes:
   SHA-256 without writing anything, to support an intentional, reviewed hash
   update (see ``interactive/README.md``).
 
-``--artifact {histogram,retention,all}`` (default ``all``) scopes ``--refresh``
-and ``--check``. The bare WP03 invocations ``--refresh`` / ``--check`` keep
-working and now cover *both* artifacts. ``--artifact histogram`` only ever
-touches ``abide_histogram.json``; ``--artifact retention`` only ever touches
-``abide_retention.json`` -- refreshing one cannot rewrite or delete the other.
+``--artifact {histogram,retention,table-inspection,all}`` (default ``all``)
+scopes ``--refresh`` and ``--check``. The bare WP03 invocations ``--refresh`` /
+``--check`` keep working and now cover *all three* artifacts. Each named
+selector only ever touches its own file -- refreshing one cannot rewrite or
+delete another.
 
 Determinism guarantees for every artifact:
 
@@ -77,25 +87,28 @@ SOURCE_SHA256 = "537e541114884f63a2e736ba4d223a816dd013f701e56fb223ebe42e219e06f
 
 SCHEMA_VERSION = 1
 
-# Histogram variables (WP03 §2.6). All must be present in the local curated
-# column authority and in the source; none may look like an identifier.
+# Histogram variables (WP03 §2.6, retrimmed in WP09 §7). All must be present in
+# the local curated column authority and in the source; none may look like an
+# identifier. These are exactly the numeric columns of the 13-column curated
+# teaching table.
 HISTOGRAM_VARIABLES = [
     "AGE_AT_SCAN",
     "FIQ",
     "VIQ",
     "PIQ",
-    "ADOS_G_TOTAL",
-    "ADOS_2_TOTAL",
     "SRS_TOTAL_RAW",
-    "SCQ_TOTAL",
+    "ADOS_G_TOTAL",
+    "ADI_R_SOCIAL_TOTAL_A",
 ]
 
-# Complete-case retention candidate variables (WP04 §"Candidate variables").
+# Complete-case retention candidate variables (WP04 §"Candidate variables",
+# retrimmed in WP09 §7 to the 13-column curated teaching table minus the two
+# identifiers SITE_ID/SUB_ID; SITE_ID is re-added below as the grouping label).
 # Grouped in the config; the export just needs the flat, ordered list. Each is
 # in the curated authority and in the pinned source. Categorical variables are
 # coded as integers in this source (DX_GROUP 1/2, SEX 1/2,
-# HANDEDNESS_CATEGORY 1/2/3, CURRENT_MED_STATUS 0/1, EYE_STATUS_AT_SCAN 0/1/2)
-# and are exported as those documented codes, never imputed.
+# HANDEDNESS_CATEGORY 1/2/3, CURRENT_MED_STATUS 0/1) and are exported as those
+# documented codes, never imputed.
 RETENTION_VARIABLES = [
     "DX_GROUP",
     "AGE_AT_SCAN",
@@ -104,12 +117,10 @@ RETENTION_VARIABLES = [
     "FIQ",
     "VIQ",
     "PIQ",
-    "ADOS_G_TOTAL",
-    "ADOS_2_TOTAL",
-    "SRS_TOTAL_RAW",
-    "SCQ_TOTAL",
     "CURRENT_MED_STATUS",
-    "EYE_STATUS_AT_SCAN",
+    "SRS_TOTAL_RAW",
+    "ADOS_G_TOTAL",
+    "ADI_R_SOCIAL_TOTAL_A",
 ]
 
 # The single, deliberately narrow exception to identifier rejection. Only this
@@ -117,11 +128,20 @@ RETENTION_VARIABLES = [
 # non-personal site-grouping label. Anything else identifier-shaped is refused.
 SITE_FIELD = "SITE_ID"
 
+# The ``table-inspection`` activity (WP09 §11, widened to the full curated table
+# in WP10 §2) shows real rows of the curated table, so it needs both the
+# site-grouping label and the study-assigned participant id ``SUB_ID`` -- seeing
+# the identifier column is part of what head()/tail()/sample() are being
+# compared on. These two exact names, and only in the table-inspection artifact,
+# are allowed through as non-selectable string display columns.
+TABLE_INSPECTION_IDENTIFIER_FIELDS = ("SITE_ID", "SUB_ID")
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ALLOWED_COLUMNS_PATH = REPO_ROOT / "book" / "config" / "eda_phenotype_columns.json"
 WIDGET_DATA_DIR = REPO_ROOT / "book" / "_static" / "widgets" / "data"
 HISTOGRAM_ARTIFACT_PATH = WIDGET_DATA_DIR / "abide_histogram.json"
 RETENTION_ARTIFACT_PATH = WIDGET_DATA_DIR / "abide_retention.json"
+TABLE_INSPECTION_ARTIFACT_PATH = WIDGET_DATA_DIR / "abide_table_inspection.json"
 
 # Backwards-compatible alias for WP03 callers / tests.
 ARTIFACT_PATH = HISTOGRAM_ARTIFACT_PATH
@@ -191,6 +211,25 @@ def _site_label(value: Any) -> str:
     text = str(value).strip()
     if not text:
         raise ValueError("SITE_ID has a blank value; site grouping requires a label on every row")
+    return text
+
+
+def _identifier_label(value: Any, field: str) -> str:
+    """Coerce one identifier cell to a non-empty string. Missing is rejected.
+
+    Integer ids (``SUB_ID`` is ``29006`` etc. in the source) are rendered
+    without a trailing ``.0`` so the value matches the notebook's
+    ``astype("string")`` display.
+    """
+    import pandas as pd
+
+    if value is None or pd.isna(value):
+        raise ValueError(f"{field} has a missing value; every displayed row needs one")
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+    text = str(value).strip()
+    if not text:
+        raise ValueError(f"{field} has a blank value; every displayed row needs one")
     return text
 
 
@@ -327,6 +366,188 @@ def build_retention_artifact(
         "variables": variable_meta,
         "columns": columns,
     }
+
+
+def build_table_inspection_artifact(
+    frame: "Any",
+    allowed_columns: list[str],
+    identifier_fields: tuple[str, ...] = TABLE_INSPECTION_IDENTIFIER_FIELDS,
+) -> dict[str, Any]:
+    """Build the deterministic ``table-inspection`` artifact.
+
+    The displayed columns are derived directly from the curated column authority
+    (``allowed_columns``) so the artifact -- and the activity config tested
+    against it -- can never drift from the canonical 13-column list. Exactly the
+    two names in ``identifier_fields`` (``SITE_ID``, ``SUB_ID``) are emitted as
+    non-empty strings; every other curated column is emitted as documented
+    codes / numbers / ``null`` just like the retention artifact.
+    """
+    allowed = set(allowed_columns)
+    row_count = int(len(frame))
+
+    id_fields = tuple(identifier_fields)
+    if id_fields != TABLE_INSPECTION_IDENTIFIER_FIELDS:
+        raise ValueError(
+            f"the table-inspection artifact only permits "
+            f"{TABLE_INSPECTION_IDENTIFIER_FIELDS} as identifier columns, got {id_fields!r}"
+        )
+    for field in id_fields:
+        if field not in allowed:
+            raise ValueError(f"{field!r} is not in the curated column authority")
+        if field not in frame.columns:
+            raise ValueError(f"{field!r} is not present in the source CSV")
+
+    variable_names = [c for c in allowed_columns if c not in id_fields]
+    for name in variable_names:
+        _check_exportable(name, allowed, frame)
+
+    columns: dict[str, list[Any]] = {}
+    for field in id_fields:
+        labels = [_identifier_label(v, field) for v in frame[field].tolist()]
+        if len(labels) != row_count:
+            raise ValueError(f"identifier column {field!r} length {len(labels)} != row count {row_count}")
+        columns[field] = labels
+
+    variable_meta: list[dict[str, Any]] = []
+    for name in variable_names:
+        values = column_to_json_values(frame[name])
+        if len(values) != row_count:
+            raise ValueError(f"column {name!r} length {len(values)} != row count {row_count}")
+        available = sum(1 for v in values if v is not None)
+        columns[name] = values
+        variable_meta.append(
+            {"name": name, "availableN": available, "missingN": row_count - available}
+        )
+
+    site_field = id_fields[0]
+    site_values = columns[site_field]
+    site_totals: dict[str, int] = {}
+    for label in site_values:
+        site_totals[label] = site_totals.get(label, 0) + 1
+    sites_meta = [{"label": label, "total": total} for label, total in site_totals.items()]
+
+    return {
+        "schemaVersion": SCHEMA_VERSION,
+        "activity": "table-inspection",
+        "source": {
+            "url": SOURCE_URL,
+            "sha256": SOURCE_SHA256,
+            "sourceRows": row_count,
+            "sourceColumns": int(frame.shape[1]),
+        },
+        "rowCount": row_count,
+        "columnOrder": list(allowed_columns),
+        "identifierFields": list(id_fields),
+        "site": {
+            "field": site_field,
+            "siteCount": len(sites_meta),
+            "sites": sites_meta,
+        },
+        "variables": variable_meta,
+        "columns": columns,
+    }
+
+
+def validate_table_inspection_artifact(
+    artifact: Any,
+    allowed_columns: list[str],
+    identifier_fields: tuple[str, ...] = TABLE_INSPECTION_IDENTIFIER_FIELDS,
+) -> list[str]:
+    """Return human-readable problems for the ``table-inspection`` artifact.
+
+    Enforces: ``columnOrder`` equals the curated authority exactly (order
+    included); the column set matches ``columnOrder``; the two identifier
+    columns are non-empty strings with no missing value; every other column is
+    a curated, non-identifier number/null array; ``site`` and ``variables``
+    metadata agree with the data.
+    """
+    allowed = set(allowed_columns)
+    problems, row_count, columns = _validate_common(artifact, allowed, "table-inspection")
+    if not isinstance(artifact, dict):
+        return problems
+
+    id_fields = tuple(identifier_fields)
+    if id_fields != TABLE_INSPECTION_IDENTIFIER_FIELDS:
+        problems.append(f"identifier fields must be {TABLE_INSPECTION_IDENTIFIER_FIELDS}, got {id_fields!r}")
+    if artifact.get("identifierFields") != list(id_fields):
+        problems.append(
+            f"identifierFields must be {list(id_fields)!r}, got {artifact.get('identifierFields')!r}"
+        )
+
+    column_order = artifact.get("columnOrder")
+    if column_order != list(allowed_columns):
+        problems.append(
+            "columnOrder must equal the curated column authority exactly "
+            f"({allowed_columns!r}), got {column_order!r}"
+        )
+    elif set(columns) != set(column_order):
+        problems.append(
+            f"columns keys {sorted(columns)!r} do not match columnOrder {column_order!r}"
+        )
+
+    for name, values in columns.items():
+        if name in id_fields:
+            if not isinstance(values, list):
+                problems.append(f"identifier column {name!r} is not an array")
+                continue
+            if row_count is not None and len(values) != row_count:
+                problems.append(f"column {name!r} has {len(values)} values, expected {row_count}")
+            for i, v in enumerate(values):
+                if not isinstance(v, str) or v.strip() == "":
+                    problems.append(f"identifier column {name!r}[{i}] is not a non-empty string: {v!r}")
+                    break
+            continue
+        if looks_like_identifier(name):
+            problems.append(f"identifier-like column present: {name!r}")
+        if name not in allowed:
+            problems.append(f"column {name!r} is not in the curated column authority")
+        _validate_numeric_column(name, values, row_count, problems)
+
+    _validate_variable_meta(artifact.get("variables"), columns, row_count, problems)
+    # variables metadata must cover exactly the non-identifier columns.
+    meta_names = {m.get("name") for m in artifact.get("variables", []) if isinstance(m, dict)}
+    expected_var_names = {c for c in allowed_columns if c not in id_fields}
+    if meta_names != expected_var_names:
+        problems.append(
+            f"variables metadata {sorted(meta_names)!r} must be exactly the "
+            f"non-identifier curated columns {sorted(expected_var_names)!r}"
+        )
+
+    site_meta = artifact.get("site")
+    site_field = id_fields[0]
+    if not isinstance(site_meta, dict):
+        problems.append("site metadata must be an object")
+    elif site_field in columns and isinstance(columns[site_field], list):
+        first_seen: dict[str, int] = {}
+        for label in columns[site_field]:
+            if isinstance(label, str):
+                first_seen[label] = first_seen.get(label, 0) + 1
+        if site_meta.get("field") != site_field:
+            problems.append(f"site.field must be {site_field!r}, got {site_meta.get('field')!r}")
+        if site_meta.get("siteCount") != len(first_seen):
+            problems.append(
+                f"site.siteCount {site_meta.get('siteCount')!r} != distinct labels {len(first_seen)}"
+            )
+        sites = site_meta.get("sites")
+        if not isinstance(sites, list) or len(sites) != len(first_seen):
+            problems.append("site.sites must list every distinct site exactly once")
+        else:
+            if [s.get("label") if isinstance(s, dict) else None for s in sites] != list(first_seen.keys()):
+                problems.append("site.sites is not in first-appearance order of the SITE_ID column")
+            total_sum = 0
+            for s in sites:
+                if not isinstance(s, dict):
+                    continue
+                if not isinstance(s.get("total"), int) or isinstance(s.get("total"), bool):
+                    problems.append(f"site {s.get('label')!r}.total must be an integer")
+                    continue
+                if first_seen.get(s.get("label")) != s.get("total"):
+                    problems.append(f"site {s.get('label')!r}.total {s.get('total')} != actual {first_seen.get(s.get('label'))}")
+                total_sum += s["total"]
+            if row_count is not None and total_sum != row_count:
+                problems.append(f"site totals sum to {total_sum}, expected rowCount {row_count}")
+
+    return problems
 
 
 def _validate_common(artifact: Any, allowed: set[str], expected_activity: str) -> tuple[list[str], int | None, dict[str, Any]]:
@@ -563,6 +784,13 @@ ARTIFACTS: dict[str, ArtifactSpec] = {
         lambda frame, allowed: build_retention_artifact(frame, RETENTION_VARIABLES, allowed),
         lambda artifact, allowed: validate_retention_artifact(artifact, allowed),
     ),
+    "table-inspection": ArtifactSpec(
+        "table-inspection",
+        "table-inspection",
+        TABLE_INSPECTION_ARTIFACT_PATH,
+        lambda frame, allowed: build_table_inspection_artifact(frame, allowed),
+        lambda artifact, allowed: validate_table_inspection_artifact(artifact, allowed),
+    ),
 }
 
 
@@ -698,7 +926,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--artifact",
-        choices=("histogram", "retention", "all"),
+        choices=("histogram", "retention", "table-inspection", "all"),
         default="all",
         help="which artifact --refresh / --check operates on (default: all)",
     )

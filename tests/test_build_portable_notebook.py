@@ -85,8 +85,21 @@ class BuildPortable(unittest.TestCase):
     def test_banner_and_setup_prepended(self):
         self.assertEqual(self.nb.cells[0]["id"], bpn.BANNER_ID)
         self.assertEqual(self.nb.cells[1]["id"], bpn.SETUP_ID)
+        self.assertEqual(self.nb.cells[2]["id"], bpn.SETUP_INSTALL_ID)
         self.assertIn(bpn.PUBLISHED_PAGE, self.nb.cells[0]["source"])
-        self.assertIn("requirements.txt", self.nb.cells[1]["source"])
+        self.assertIn("Machine Learning for Neuroscience", self.nb.cells[0]["source"])
+
+    def test_setup_has_no_repo_instruction_and_a_commented_install_cell(self):
+        setup = self.nb.cells[1]["source"]
+        self.assertNotIn("requirements.txt", setup)
+        self.assertNotIn("repository", setup.lower())
+        install = self.nb.cells[2]
+        self.assertEqual(install["cell_type"], "code")
+        self.assertEqual(install["metadata"], {})
+        self.assertIn(f"# %pip install {bpn.LESSON_PACKAGES}", install["source"])
+        # the pip line is commented out, never active
+        for line in install["source"].splitlines():
+            self.assertFalse(line.strip().startswith(("%pip", "!pip")))
 
     def test_no_iframe_or_static_or_directive_or_hidetag(self):
         self.assertNotIn("<iframe", self.text)
@@ -96,14 +109,46 @@ class BuildPortable(unittest.TestCase):
             if cell["cell_type"] == "code":
                 tags = cell.get("metadata", {}).get("tags", [])
                 self.assertEqual(set(tags) & bpn.HIDE_TAGS, set())
-                self.assertEqual(cell.get("outputs"), [])
                 self.assertIsNone(cell.get("execution_count"))
+                if cell["id"] not in bpn.PRESERVE_OUTPUT_IDS:
+                    self.assertEqual(cell.get("outputs"), [])
+
+    def test_only_the_sampling_cell_keeps_saved_outputs(self):
+        with_outputs = {
+            c["id"]
+            for c in self.nb.cells
+            if c["cell_type"] == "code" and c.get("outputs")
+        }
+        self.assertEqual(with_outputs, set(bpn.PRESERVE_OUTPUT_IDS))
+
+    def test_sampling_cell_keeps_three_sanitised_pandas_tables(self):
+        cell = next(c for c in self.nb.cells if c["id"] in bpn.PRESERVE_OUTPUT_IDS)
+        self.assertEqual(cell["cell_type"], "code")
+        self.assertEqual(cell.get("metadata", {}).get("tags", []), [])
+        self.assertIsNone(cell.get("execution_count"))
+        self.assertIn("n = 8", cell["source"])
+        self.assertIn("Change n or random_state", cell["source"])
+        outs = cell["outputs"]
+        self.assertEqual(len(outs), 3)
+        for out in outs:
+            self.assertEqual(out["output_type"], "display_data")
+            self.assertEqual(out.get("metadata", {}), {})
+            self.assertNotIn("execution_count", out)
+            plain = out["data"].get("text/plain", "")
+            plain = "".join(plain) if isinstance(plain, list) else plain
+            self.assertIn("SITE_ID", plain)
+            self.assertIn("SUB_ID", plain)
+
+    def test_no_range_check_or_iqr_remnant(self):
+        for needle in ("IQR", "range check", "flagged", "56 of 1114", "lower_fence"):
+            self.assertNotIn(needle, self.text)
 
     def test_iframe_cells_replaced_with_published_links(self):
-        # all three activity titles are gone, replaced by the same course URL
+        # all four activity titles are gone, replaced by the same course URL
+        self.assertEqual(len(bpn.IFRAME_REPLACEMENTS), 4)
         for title in bpn.IFRAME_REPLACEMENTS:
             self.assertNotIn(f'title="{title}"', self.text)
-        self.assertEqual(self.text.count(bpn.PUBLISHED_PAGE), 1 + 3)  # banner + 3
+        self.assertEqual(self.text.count(bpn.PUBLISHED_PAGE), 1 + 4)  # banner + 4
 
     def test_dropped_navigation_admonitions(self):
         for cell in self.nb.cells:
@@ -115,6 +160,9 @@ class BuildPortable(unittest.TestCase):
         self.assertIn("phenotypes = phenotypes[CURATED_COLUMNS].copy()", self.text)
         self.assertNotIn("COLUMNS_URL", self.text)
         self.assertNotIn("pd.read_json(", self.text)
+        self.assertNotIn("CURATED_COLUMNS = json.loads", self.text)
+        self.assertNotIn("../../config/", self.text)
+        self.assertNotIn("requirements.txt", self.text)
         # the pinned CSV URL is kept
         self.assertIn("neurohackademy/nh2020-curriculum/", self.text)
         # every curated column is embedded, in order
@@ -135,6 +183,36 @@ class BuildPortable(unittest.TestCase):
 
     def test_valid_nbformat(self):
         nbformat.validate(self.nb)
+
+    def test_all_four_activities_are_recognised_explicitly(self):
+        self.assertEqual(
+            set(bpn.IFRAME_REPLACEMENTS),
+            {
+                "Interactive head, tail, and sample comparison for the ABIDE-II table",
+                "Interactive ABIDE-II complete-case retention explorer",
+                "Interactive histogram of ABIDE-II variable distributions",
+                "Interactive ABIDE-II feature correlation explorer",
+            },
+        )
+
+    def test_unknown_iframe_title_still_fails_generation(self):
+        nb = _load_canonical()
+        for cell in nb.cells:
+            if cell["cell_type"] == "markdown" and "<iframe" in cell["source"]:
+                cell["source"] = cell["source"].replace(
+                    'title="', 'title="Totally unknown activity ', 1
+                )
+                break
+        with self.assertRaises(SystemExit):
+            bpn.build_portable(nb, _columns())
+
+    def test_no_active_pip_install_anywhere(self):
+        for cell in self.nb.cells:
+            for line in cell["source"].splitlines():
+                self.assertFalse(
+                    line.strip().startswith(("%pip install", "!pip install")),
+                    f"active install command: {line!r}",
+                )
 
 
 class Determinism(unittest.TestCase):

@@ -156,6 +156,116 @@ const edaCorrelationConfig = z
   })
   .strict();
 
+const tableInspectionColumnRef = z
+  .object({
+    name: z.string().min(1, "column.name must be a non-empty string"),
+    label: z.string().min(1, "column.label must be a non-empty string"),
+  })
+  .strict();
+
+const tableInspectionRowCount = z
+  .object({
+    min: z.number().int().positive(),
+    max: z.number().int().positive(),
+    default: z.number().int().positive(),
+  })
+  .strict();
+
+const tableInspectionMethod = z.enum(["head", "tail", "sample"]);
+
+const tableInspectionConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("table-inspection"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    siteField: z.string().min(1, "config.siteField must be a non-empty string"),
+    siteLabel: z.string().min(1, "config.siteLabel must be a non-empty string"),
+    methods: z
+      .array(tableInspectionMethod)
+      .min(1, "config.methods must list at least one inspection method"),
+    defaultMethod: tableInspectionMethod,
+    rowCount: tableInspectionRowCount,
+    // Fixed PRNG seed for the initial deterministic sample() view. Required
+    // whenever "sample" is offered; ignored otherwise.
+    sampleSeed: z.number().int().nonnegative().optional(),
+    columns: z
+      .array(tableInspectionColumnRef)
+      .min(1, "config.columns must list at least one column"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const regressionMeasurementSubset = z
+  .object({
+    measures: z.array(z.string().min(1)).min(1, "each subset must list at least one measure"),
+    label: z.string().min(1, "subset.label must be a non-empty string"),
+  })
+  .strict();
+
+const regressionBundleRef = z
+  .object({
+    key: z.string().min(1, "bundle.key must be a non-empty string"),
+    label: z.string().min(1, "bundle.label must be a non-empty string"),
+  })
+  .strict();
+
+const regressionModelChoice = z
+  .object({
+    measures: z.array(z.string().min(1)).min(1),
+    bundle: z.string().min(1),
+  })
+  .strict();
+
+const regressionCompareConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("regression-compare"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    targetLabel: z.string().min(1, "config.targetLabel must be a non-empty string"),
+    measurementSubsets: z
+      .array(regressionMeasurementSubset)
+      .min(1, "config.measurementSubsets must list at least one subset"),
+    bundles: z
+      .array(regressionBundleRef)
+      .min(2, "config.bundles must list at least two ROI bundles"),
+    defaultA: regressionModelChoice,
+    defaultB: regressionModelChoice,
+    literatureNote: z.string().min(1, "config.literatureNote must be a non-empty string"),
+    selectionBiasNote: z.string().min(1, "config.selectionBiasNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const knnExploreDefaultK = z.union([z.literal("validation-optimal"), z.number().int().positive()]);
+
+const knnExploreConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("knn-explore"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    curseOfDimensionalityNote: z.string().min(1, "config.curseOfDimensionalityNote must be a non-empty string"),
+    endpointNoteK1: z.string().min(1, "config.endpointNoteK1 must be a non-empty string"),
+    endpointNoteKMax: z.string().min(1, "config.endpointNoteKMax must be a non-empty string"),
+    defaultK: knnExploreDefaultK,
+    // WP14 §4.8/§4.9: three-training-sample variance/bias-like proxy panels.
+    trainingSampleInstructions: z.string().min(1, "config.trainingSampleInstructions must be a non-empty string"),
+    varianceProxyNote: z.string().min(1, "config.varianceProxyNote must be a non-empty string"),
+    biasProxyNote: z.string().min(1, "config.biasProxyNote must be a non-empty string"),
+    kComplexityNote: z.string().min(1, "config.kComplexityNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const knnAbcConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("knn-abc"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    k1Note: z.string().min(1, "config.k1Note must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -165,6 +275,10 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   edaHistogramConfig,
   edaRetentionConfig,
   edaCorrelationConfig,
+  tableInspectionConfig,
+  regressionCompareConfig,
+  knnExploreConfig,
+  knnAbcConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -172,6 +286,10 @@ export type RuntimeSmokeConfig = z.infer<typeof runtimeSmokeConfig>;
 export type EdaHistogramConfig = z.infer<typeof edaHistogramConfig>;
 export type EdaRetentionConfig = z.infer<typeof edaRetentionConfig>;
 export type EdaCorrelationConfig = z.infer<typeof edaCorrelationConfig>;
+export type TableInspectionConfig = z.infer<typeof tableInspectionConfig>;
+export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
+export type KnnExploreConfig = z.infer<typeof knnExploreConfig>;
+export type KnnAbcConfig = z.infer<typeof knnAbcConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
@@ -274,6 +392,68 @@ function checkSemantics(config: ActivityConfig): string | null {
       const dupCodes = [...new Set(codes.filter((c, i) => codes.indexOf(c) !== i))];
       if (dupCodes.length > 0) {
         return `config.groupings["${g.key}"] has duplicate code(s): ${dupCodes.join(", ")}`;
+      }
+    }
+  }
+  if (config.type === "table-inspection") {
+    const names = config.columns.map((c) => c.name);
+    const dupNames = [...new Set(names.filter((n, i) => names.indexOf(n) !== i))];
+    if (dupNames.length > 0) {
+      return `config.columns has duplicate name(s): ${dupNames.join(", ")}`;
+    }
+    if (!names.includes(config.siteField)) {
+      return (
+        `config.siteField "${config.siteField}" must also appear in config.columns ` +
+        `so the site column is displayed (${names.join(", ")})`
+      );
+    }
+    const methods = config.methods;
+    const dupMethods = [...new Set(methods.filter((m, i) => methods.indexOf(m) !== i))];
+    if (dupMethods.length > 0) {
+      return `config.methods has duplicate method(s): ${dupMethods.join(", ")}`;
+    }
+    if (!methods.includes(config.defaultMethod)) {
+      return (
+        `config.defaultMethod "${config.defaultMethod}" is not one of ` +
+        `config.methods (${methods.join(", ")})`
+      );
+    }
+    const { min, max, default: dflt } = config.rowCount;
+    if (min > max) {
+      return `config.rowCount.min (${min}) must not exceed config.rowCount.max (${max})`;
+    }
+    if (dflt < min || dflt > max) {
+      return `config.rowCount.default (${dflt}) must be within [${min}, ${max}]`;
+    }
+    if (methods.includes("sample") && config.sampleSeed === undefined) {
+      return `config.sampleSeed is required when config.methods includes "sample"`;
+    }
+  }
+  if (config.type === "regression-compare") {
+    const bundleKeys = config.bundles.map((b) => b.key);
+    const dupBundles = [...new Set(bundleKeys.filter((k, i) => bundleKeys.indexOf(k) !== i))];
+    if (dupBundles.length > 0) {
+      return `config.bundles has duplicate key(s): ${dupBundles.join(", ")}`;
+    }
+    const subsetKeys = config.measurementSubsets.map((s) => s.measures.join("+"));
+    const dupSubsets = [...new Set(subsetKeys.filter((k, i) => subsetKeys.indexOf(k) !== i))];
+    if (dupSubsets.length > 0) {
+      return `config.measurementSubsets has duplicate measure combination(s): ${dupSubsets.join(", ")}`;
+    }
+    const bundleSet = new Set(bundleKeys);
+    const subsetSet = new Set(subsetKeys);
+    for (const [name, choice] of [
+      ["defaultA", config.defaultA],
+      ["defaultB", config.defaultB],
+    ] as const) {
+      if (!bundleSet.has(choice.bundle)) {
+        return `config.${name}.bundle "${choice.bundle}" is not one of config.bundles (${bundleKeys.join(", ")})`;
+      }
+      if (!subsetSet.has(choice.measures.join("+"))) {
+        return (
+          `config.${name}.measures "${choice.measures.join("+")}" is not one of ` +
+          `config.measurementSubsets (${subsetKeys.join(", ")})`
+        );
       }
     }
   }

@@ -1,0 +1,602 @@
+{
+  "candidates": [
+    {
+      "columns": [
+        "fsCT_L_4_ROI",
+        "fsCT_R_4_ROI",
+        "fsCT_L_3a_ROI",
+        "fsCT_R_3a_ROI",
+        "fsCT_L_3b_ROI",
+        "fsCT_R_3b_ROI",
+        "fsCT_L_1_ROI",
+        "fsCT_R_1_ROI",
+        "fsCT_L_2_ROI",
+        "fsCT_R_2_ROI"
+      ],
+      "decision": {
+        "checks": {
+          "clear_upward_trend": true,
+          "final_model_meaningful": true,
+          "instability_narrows_materially": true,
+          "no_dominant_reversal": true,
+          "seed_robust": true,
+          "smallest_size_comfortably_above_p": true
+        },
+        "max_consecutive_drop": -0.013475,
+        "passes": true,
+        "seed_disagreement": 0.045726
+      },
+      "name": "sensorimotor_core",
+      "p": 10,
+      "rationale": "Primary motor cortex (BA4) plus primary somatosensory cortex (BA 3a/3b/1/2) -- the classic sensorimotor strip (Penfield & Rasmussen 1950 homunculus; HCP-MMP1 areas 4/3a/3b/1/2, Glasser et al. 2016). A minimal, maximally well-established anatomical system, chosen for its textbook clarity, independent of any age or cognition literature.",
+      "rois": [
+        "4",
+        "3a",
+        "3b",
+        "1",
+        "2"
+      ],
+      "rows": [
+        {
+          "hi90_mean_over_seeds": 0.20472,
+          "lo10_mean_over_seeds": -0.432342,
+          "median_r2_by_seed": [
+            0.050748,
+            0.038775,
+            0.027511
+          ],
+          "median_r2_mean_over_seeds": 0.039011,
+          "n": 40,
+          "n_over_p": 4.0,
+          "p": 10,
+          "spread_mean_over_seeds": 0.637061
+        },
+        {
+          "hi90_mean_over_seeds": 0.268679,
+          "lo10_mean_over_seeds": -0.055676,
+          "median_r2_by_seed": [
+            0.135148,
+            0.144092,
+            0.167811
+          ],
+          "median_r2_mean_over_seeds": 0.149017,
+          "n": 60,
+          "n_over_p": 6.0,
+          "p": 10,
+          "spread_mean_over_seeds": 0.324355
+        },
+        {
+          "hi90_mean_over_seeds": 0.283648,
+          "lo10_mean_over_seeds": 0.094127,
+          "median_r2_by_seed": [
+            0.202877,
+            0.214044,
+            0.248603
+          ],
+          "median_r2_mean_over_seeds": 0.221841,
+          "n": 90,
+          "n_over_p": 9.0,
+          "p": 10,
+          "spread_mean_over_seeds": 0.189521
+        },
+        {
+          "hi90_mean_over_seeds": 0.303053,
+          "lo10_mean_over_seeds": 0.204278,
+          "median_r2_by_seed": [
+            0.26557,
+            0.250403,
+            0.263083
+          ],
+          "median_r2_mean_over_seeds": 0.259686,
+          "n": 130,
+          "n_over_p": 13.0,
+          "p": 10,
+          "spread_mean_over_seeds": 0.098775
+        },
+        {
+          "hi90_mean_over_seeds": 0.315695,
+          "lo10_mean_over_seeds": 0.252609,
+          "median_r2_by_seed": [
+            0.293477,
+            0.284762,
+            0.29699
+          ],
+          "median_r2_mean_over_seeds": 0.291743,
+          "n": 200,
+          "n_over_p": 20.0,
+          "p": 10,
+          "spread_mean_over_seeds": 0.063086
+        },
+        {
+          "hi90_mean_over_seeds": 0.322764,
+          "lo10_mean_over_seeds": 0.285644,
+          "median_r2_by_seed": [
+            0.303388,
+            0.309398,
+            0.310673
+          ],
+          "median_r2_mean_over_seeds": 0.30782,
+          "n": 300,
+          "n_over_p": 30.0,
+          "p": 10,
+          "spread_mean_over_seeds": 0.03712
+        },
+        {
+          "hi90_mean_over_seeds": 0.321295,
+          "lo10_mean_over_seeds": 0.321295,
+          "median_r2_by_seed": [
+            0.321295,
+            0.321295,
+            0.321295
+          ],
+          "median_r2_mean_over_seeds": 0.321295,
+          "n": 564,
+          "n_over_p": 56.4,
+          "p": 10,
+          "spread_mean_over_seeds": 0.0
+        }
+      ],
+      "source_preference": 2
+    },
+    {
+      "columns": [
+        "fsCT_L_V1_ROI",
+        "fsCT_R_V1_ROI",
+        "fsCT_L_V2_ROI",
+        "fsCT_R_V2_ROI",
+        "fsCT_L_V3_ROI",
+        "fsCT_R_V3_ROI",
+        "fsCT_L_V4_ROI",
+        "fsCT_R_V4_ROI"
+      ],
+      "decision": {
+        "checks": {
+          "clear_upward_trend": true,
+          "final_model_meaningful": true,
+          "instability_narrows_materially": true,
+          "no_dominant_reversal": true,
+          "seed_robust": true,
+          "smallest_size_comfortably_above_p": true
+        },
+        "max_consecutive_drop": -0.009201,
+        "passes": true,
+        "seed_disagreement": 0.025036
+      },
+      "name": "early_visual",
+      "p": 8,
+      "rationale": "Early visual hierarchy V1-V4 (Felleman & Van Essen 1991 canonical visual processing hierarchy; HCP-MMP1 areas V1/V2/V3/V4).",
+      "rois": [
+        "V1",
+        "V2",
+        "V3",
+        "V4"
+      ],
+      "rows": [
+        {
+          "hi90_mean_over_seeds": 0.237564,
+          "lo10_mean_over_seeds": -0.306163,
+          "median_r2_by_seed": [
+            0.094794,
+            0.071323,
+            0.08283
+          ],
+          "median_r2_mean_over_seeds": 0.082982,
+          "n": 40,
+          "n_over_p": 5.0,
+          "p": 8,
+          "spread_mean_over_seeds": 0.543726
+        },
+        {
+          "hi90_mean_over_seeds": 0.265755,
+          "lo10_mean_over_seeds": 0.017712,
+          "median_r2_by_seed": [
+            0.137762,
+            0.145232,
+            0.154863
+          ],
+          "median_r2_mean_over_seeds": 0.145952,
+          "n": 60,
+          "n_over_p": 7.5,
+          "p": 8,
+          "spread_mean_over_seeds": 0.248043
+        },
+        {
+          "hi90_mean_over_seeds": 0.272893,
+          "lo10_mean_over_seeds": 0.115137,
+          "median_r2_by_seed": [
+            0.214804,
+            0.228014,
+            0.23984
+          ],
+          "median_r2_mean_over_seeds": 0.227553,
+          "n": 90,
+          "n_over_p": 11.25,
+          "p": 8,
+          "spread_mean_over_seeds": 0.157756
+        },
+        {
+          "hi90_mean_over_seeds": 0.292101,
+          "lo10_mean_over_seeds": 0.164366,
+          "median_r2_by_seed": [
+            0.255554,
+            0.238853,
+            0.244884
+          ],
+          "median_r2_mean_over_seeds": 0.24643,
+          "n": 130,
+          "n_over_p": 16.25,
+          "p": 8,
+          "spread_mean_over_seeds": 0.127735
+        },
+        {
+          "hi90_mean_over_seeds": 0.29235,
+          "lo10_mean_over_seeds": 0.226998,
+          "median_r2_by_seed": [
+            0.265787,
+            0.267867,
+            0.261675
+          ],
+          "median_r2_mean_over_seeds": 0.26511,
+          "n": 200,
+          "n_over_p": 25.0,
+          "p": 8,
+          "spread_mean_over_seeds": 0.065353
+        },
+        {
+          "hi90_mean_over_seeds": 0.299574,
+          "lo10_mean_over_seeds": 0.249892,
+          "median_r2_by_seed": [
+            0.272175,
+            0.281819,
+            0.273012
+          ],
+          "median_r2_mean_over_seeds": 0.275669,
+          "n": 300,
+          "n_over_p": 37.5,
+          "p": 8,
+          "spread_mean_over_seeds": 0.049682
+        },
+        {
+          "hi90_mean_over_seeds": 0.28487,
+          "lo10_mean_over_seeds": 0.28487,
+          "median_r2_by_seed": [
+            0.28487,
+            0.28487,
+            0.28487
+          ],
+          "median_r2_mean_over_seeds": 0.28487,
+          "n": 564,
+          "n_over_p": 70.5,
+          "p": 8,
+          "spread_mean_over_seeds": 0.0
+        }
+      ],
+      "source_preference": 2
+    },
+    {
+      "columns": [
+        "fsCT_L_A1_ROI",
+        "fsCT_R_A1_ROI",
+        "fsCT_L_LBelt_ROI",
+        "fsCT_R_LBelt_ROI",
+        "fsCT_L_MBelt_ROI",
+        "fsCT_R_MBelt_ROI",
+        "fsCT_L_PBelt_ROI",
+        "fsCT_R_PBelt_ROI"
+      ],
+      "decision": {
+        "checks": {
+          "clear_upward_trend": true,
+          "final_model_meaningful": true,
+          "instability_narrows_materially": true,
+          "no_dominant_reversal": true,
+          "seed_robust": true,
+          "smallest_size_comfortably_above_p": true
+        },
+        "max_consecutive_drop": -0.010992,
+        "passes": true,
+        "seed_disagreement": 0.034191
+      },
+      "name": "auditory_core_belt",
+      "p": 8,
+      "rationale": "Primary auditory core (A1) plus its immediately surrounding belt regions (Kaas & Hackett 2000 core-belt-parabelt auditory hierarchy; HCP-MMP1 areas A1/LBelt/MBelt/PBelt).",
+      "rois": [
+        "A1",
+        "LBelt",
+        "MBelt",
+        "PBelt"
+      ],
+      "rows": [
+        {
+          "hi90_mean_over_seeds": 0.292482,
+          "lo10_mean_over_seeds": -0.092479,
+          "median_r2_by_seed": [
+            0.160599,
+            0.163193,
+            0.129002
+          ],
+          "median_r2_mean_over_seeds": 0.150931,
+          "n": 40,
+          "n_over_p": 5.0,
+          "p": 8,
+          "spread_mean_over_seeds": 0.384961
+        },
+        {
+          "hi90_mean_over_seeds": 0.321029,
+          "lo10_mean_over_seeds": 0.0716,
+          "median_r2_by_seed": [
+            0.233893,
+            0.250521,
+            0.245765
+          ],
+          "median_r2_mean_over_seeds": 0.243393,
+          "n": 60,
+          "n_over_p": 7.5,
+          "p": 8,
+          "spread_mean_over_seeds": 0.249429
+        },
+        {
+          "hi90_mean_over_seeds": 0.342522,
+          "lo10_mean_over_seeds": 0.18484,
+          "median_r2_by_seed": [
+            0.291899,
+            0.289713,
+            0.293407
+          ],
+          "median_r2_mean_over_seeds": 0.291673,
+          "n": 90,
+          "n_over_p": 11.25,
+          "p": 8,
+          "spread_mean_over_seeds": 0.157682
+        },
+        {
+          "hi90_mean_over_seeds": 0.357355,
+          "lo10_mean_over_seeds": 0.254767,
+          "median_r2_by_seed": [
+            0.310597,
+            0.312397,
+            0.326245
+          ],
+          "median_r2_mean_over_seeds": 0.316413,
+          "n": 130,
+          "n_over_p": 16.25,
+          "p": 8,
+          "spread_mean_over_seeds": 0.102588
+        },
+        {
+          "hi90_mean_over_seeds": 0.361947,
+          "lo10_mean_over_seeds": 0.31022,
+          "median_r2_by_seed": [
+            0.341132,
+            0.332805,
+            0.333976
+          ],
+          "median_r2_mean_over_seeds": 0.335971,
+          "n": 200,
+          "n_over_p": 25.0,
+          "p": 8,
+          "spread_mean_over_seeds": 0.051727
+        },
+        {
+          "hi90_mean_over_seeds": 0.367427,
+          "lo10_mean_over_seeds": 0.329102,
+          "median_r2_by_seed": [
+            0.349834,
+            0.353287,
+            0.356483
+          ],
+          "median_r2_mean_over_seeds": 0.353201,
+          "n": 300,
+          "n_over_p": 37.5,
+          "p": 8,
+          "spread_mean_over_seeds": 0.038325
+        },
+        {
+          "hi90_mean_over_seeds": 0.364193,
+          "lo10_mean_over_seeds": 0.364193,
+          "median_r2_by_seed": [
+            0.364193,
+            0.364193,
+            0.364193
+          ],
+          "median_r2_mean_over_seeds": 0.364193,
+          "n": 564,
+          "n_over_p": 70.5,
+          "p": 8,
+          "spread_mean_over_seeds": 0.0
+        }
+      ],
+      "source_preference": 2
+    },
+    {
+      "columns": [
+        "fsCT_L_1_ROI",
+        "fsCT_R_1_ROI",
+        "fsCT_L_5m_ROI",
+        "fsCT_R_5m_ROI",
+        "fsCT_L_EC_ROI",
+        "fsCT_R_EC_ROI",
+        "fsCT_L_OFC_ROI",
+        "fsCT_R_OFC_ROI",
+        "fsCT_L_ProS_ROI",
+        "fsCT_R_ProS_ROI",
+        "fsCT_L_V4t_ROI",
+        "fsCT_R_V4t_ROI"
+      ],
+      "decision": {
+        "checks": {
+          "clear_upward_trend": true,
+          "final_model_meaningful": true,
+          "instability_narrows_materially": true,
+          "no_dominant_reversal": true,
+          "seed_robust": true,
+          "smallest_size_comfortably_above_p": true
+        },
+        "max_consecutive_drop": -0.011235,
+        "passes": true,
+        "seed_disagreement": 0.078896
+      },
+      "name": "atlas_order_every_30th",
+      "p": 12,
+      "rationale": "Deterministic atlas-order sampling rule: every 30th canonical ROI id in atlas.roi_label_inventory (fixed indices 0, 30, 60, 90, 120, 150 of the 180-entry inventory), chosen from column order / atlas structure alone, with no reference to region identity, age, or performance.",
+      "rois": [
+        "1",
+        "5m",
+        "EC",
+        "OFC",
+        "ProS",
+        "V4t"
+      ],
+      "rows": [
+        {
+          "hi90_mean_over_seeds": 0.295455,
+          "lo10_mean_over_seeds": -0.390186,
+          "median_r2_by_seed": [
+            0.136436,
+            0.11945,
+            0.05754
+          ],
+          "median_r2_mean_over_seeds": 0.104475,
+          "n": 40,
+          "n_over_p": 3.3333,
+          "p": 12,
+          "spread_mean_over_seeds": 0.685641
+        },
+        {
+          "hi90_mean_over_seeds": 0.387279,
+          "lo10_mean_over_seeds": 0.033064,
+          "median_r2_by_seed": [
+            0.249471,
+            0.280646,
+            0.23045
+          ],
+          "median_r2_mean_over_seeds": 0.253522,
+          "n": 60,
+          "n_over_p": 5.0,
+          "p": 12,
+          "spread_mean_over_seeds": 0.354215
+        },
+        {
+          "hi90_mean_over_seeds": 0.41272,
+          "lo10_mean_over_seeds": 0.205982,
+          "median_r2_by_seed": [
+            0.335462,
+            0.330063,
+            0.34064
+          ],
+          "median_r2_mean_over_seeds": 0.335389,
+          "n": 90,
+          "n_over_p": 7.5,
+          "p": 12,
+          "spread_mean_over_seeds": 0.206738
+        },
+        {
+          "hi90_mean_over_seeds": 0.426527,
+          "lo10_mean_over_seeds": 0.287747,
+          "median_r2_by_seed": [
+            0.380728,
+            0.363451,
+            0.379117
+          ],
+          "median_r2_mean_over_seeds": 0.374432,
+          "n": 130,
+          "n_over_p": 10.8333,
+          "p": 12,
+          "spread_mean_over_seeds": 0.13878
+        },
+        {
+          "hi90_mean_over_seeds": 0.445249,
+          "lo10_mean_over_seeds": 0.350966,
+          "median_r2_by_seed": [
+            0.413852,
+            0.394485,
+            0.396699
+          ],
+          "median_r2_mean_over_seeds": 0.401679,
+          "n": 200,
+          "n_over_p": 16.6667,
+          "p": 12,
+          "spread_mean_over_seeds": 0.094283
+        },
+        {
+          "hi90_mean_over_seeds": 0.442824,
+          "lo10_mean_over_seeds": 0.381348,
+          "median_r2_by_seed": [
+            0.422887,
+            0.423659,
+            0.422203
+          ],
+          "median_r2_mean_over_seeds": 0.422916,
+          "n": 300,
+          "n_over_p": 25.0,
+          "p": 12,
+          "spread_mean_over_seeds": 0.061477
+        },
+        {
+          "hi90_mean_over_seeds": 0.434151,
+          "lo10_mean_over_seeds": 0.434151,
+          "median_r2_by_seed": [
+            0.434151,
+            0.434151,
+            0.434151
+          ],
+          "median_r2_mean_over_seeds": 0.434151,
+          "n": 564,
+          "n_over_p": 47.0,
+          "p": 12,
+          "spread_mean_over_seeds": 0.0
+        }
+      ],
+      "source_preference": 3
+    }
+  ],
+  "decision_rule_thresholds": {
+    "max_consecutive_drop": 0.02,
+    "max_seed_disagreement": 0.15,
+    "max_spread_fraction_at_largest": 0.35,
+    "min_final_median_r2": 0.15,
+    "min_n_over_p_at_smallest": 3.0,
+    "min_r2_gain_first_to_last": 0.05
+  },
+  "generated_by": "scripts/sample_size_audit.py --run",
+  "protocol": {
+    "inner_dev_split": {
+      "note": "Further splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189) for the empirical all-k curve (Exercise 3 section 4.5) and the interactive activity (section 4.6). Independent of, and never touching, the outer test set (251 rows) locked by protocol.holdout_split.",
+      "random_state": 7,
+      "stratify": "group",
+      "test_size": 0.25
+    },
+    "inner_fit_n": 564,
+    "inner_val_n": 189,
+    "n_rep": 40,
+    "note": "The outer test set (251 rows, protocol.holdout_split) is never loaded as a scoring target anywhere in this audit. Every candidate is scored against the fixed inner-val partition (189 rows) carved from the outer-TRAINING partition only, using the same dev-split parameters already established for the KNN audit (knn.dev_split).",
+    "outer_holdout_split": {
+      "random_state": 42,
+      "stratify": "group",
+      "test_size": 0.25
+    },
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "sizes": [
+      40,
+      60,
+      90,
+      130,
+      200,
+      300,
+      564
+    ]
+  },
+  "selection": {
+    "outcome": "small-subset",
+    "reason": "First predeclared candidate (declaration order, source preference 2) whose training-only audit passed every decision-rule check. Passing candidates in order considered: ['sensorimotor_core', 'early_visual', 'auditory_core_belt', 'atlas_order_every_30th'].",
+    "selected": "sensorimotor_core"
+  },
+  "source": {
+    "brainTableSha256": "ad0db42f85c77cbb8b4e023df288d34b29f1a63870a0cf1955c5b3b0d357579e",
+    "pinnedCommit": "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"
+  }
+}

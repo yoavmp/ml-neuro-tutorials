@@ -153,12 +153,12 @@ describe("computeRetention — against the committed abide_retention.json", () =
     expect(r.sites.reduce((a, s) => a + s.retained, 0)).toBe(1015);
   });
 
-  it("behavioral pair {SCQ_TOTAL, ADOS_2_TOTAL}: 119 / 1114 retained (10.6822%)", async () => {
+  it("behavioral pair {ADOS_G_TOTAL, ADI_R_SOCIAL_TOTAL_A}: 152 / 1114 retained (13.6445%)", async () => {
     const art = await loadArtifact();
     const sites = art.columns.SITE_ID as string[];
-    const r = computeRetention(art.columns, sites, ["SCQ_TOTAL", "ADOS_2_TOTAL"]);
-    expect(r.retained).toBe(119);
-    expect(r.retainedPct).toBeCloseTo(10.6822, 4);
+    const r = computeRetention(art.columns, sites, ["ADOS_G_TOTAL", "ADI_R_SOCIAL_TOTAL_A"]);
+    expect(r.retained).toBe(152);
+    expect(r.retainedPct).toBeCloseTo(13.6445, 4);
   });
 
   it("no selection against the real artifact keeps all 1114 and flags no criterion", async () => {

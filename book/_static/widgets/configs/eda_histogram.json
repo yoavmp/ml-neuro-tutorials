@@ -10,10 +10,9 @@
     { "name": "FIQ", "label": "Full-scale IQ" },
     { "name": "VIQ", "label": "Verbal IQ" },
     { "name": "PIQ", "label": "Performance IQ" },
-    { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
-    { "name": "ADOS_2_TOTAL", "label": "ADOS-2 total" },
     { "name": "SRS_TOTAL_RAW", "label": "SRS total (raw)" },
-    { "name": "SCQ_TOTAL", "label": "SCQ total" }
+    { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
+    { "name": "ADI_R_SOCIAL_TOTAL_A", "label": "ADI-R social total" }
   ],
   "defaultVariable": "AGE_AT_SCAN",
   "bins": { "min": 5, "max": 60, "step": 1, "default": 25 },
@@ -22,6 +21,6 @@
   "reflectionPrompts": [
     "Before moving the slider, predict what information disappears with very few bins and what artefacts appear with very many.",
     "Compare age, an IQ score, and a questionnaire score. Which variable needs the most bins before its shape is readable?",
-    "Read the available N and missing N for each variable. Why do ADOS and SCQ totals have so many fewer observations than age?"
+    "Read the available N and missing N for each variable. Why do the ADOS-G and ADI-R totals have so many fewer observations than age?"
   ]
 }

@@ -111,16 +111,14 @@ describe("parseAbideRetentionData", () => {
       expect(r.data.columns.SITE_ID).toHaveLength(1114);
       expect(Object.keys(r.data.columns).sort()).toEqual(
         [
-          "ADOS_2_TOTAL",
+          "ADI_R_SOCIAL_TOTAL_A",
           "ADOS_G_TOTAL",
           "AGE_AT_SCAN",
           "CURRENT_MED_STATUS",
           "DX_GROUP",
-          "EYE_STATUS_AT_SCAN",
           "FIQ",
           "HANDEDNESS_CATEGORY",
           "PIQ",
-          "SCQ_TOTAL",
           "SEX",
           "SITE_ID",
           "SRS_TOTAL_RAW",

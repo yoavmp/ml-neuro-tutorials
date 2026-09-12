@@ -83,7 +83,7 @@ for (const { name, prefix } of BASES) {
 
       // ticking another variable changes retained N and the actual bar geometry
       const geomBefore = await barGeometry(page);
-      await page.locator('[data-testid="retention-var-SCQ_TOTAL"]').check();
+      await page.locator('[data-testid="retention-var-ADOS_G_TOTAL"]').check();
       await expect(plot).toHaveAttribute("data-selected-count", "5");
       await expect(plot).toHaveAttribute("data-render-count", "2");
       await expect
@@ -92,7 +92,7 @@ for (const { name, prefix } of BASES) {
       await expect.poll(async () => (await barGeometry(page)) !== geomBefore).toBe(true);
 
       // unticking it restores the default retention
-      await page.locator('[data-testid="retention-var-SCQ_TOTAL"]').uncheck();
+      await page.locator('[data-testid="retention-var-ADOS_G_TOTAL"]').uncheck();
       await expect(plot).toHaveAttribute("data-retained-n", "1015");
 
       // no failed / off-origin / CDN / kernel request, no WebSocket
@@ -115,7 +115,7 @@ for (const { name, prefix } of BASES) {
 
       // Select all -> low retention warning appears
       await page.locator('[data-testid="retention-select-all"]').click();
-      await expect(plot).toHaveAttribute("data-selected-count", "13");
+      await expect(plot).toHaveAttribute("data-selected-count", "11");
       await expect(plot).toHaveAttribute("data-low-retention", "true");
       await expect(page.locator('[data-testid="retention-warning"]')).toBeVisible();
       await expect(page.locator('[data-testid="retention-warning"]')).toContainText(
@@ -151,7 +151,7 @@ for (const { name, prefix } of BASES) {
       await page.goto(appUrl(prefix, QUERY));
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
       const plot = page.locator('[data-testid="retention-plot"]');
-      await page.locator('[data-testid="retention-var-ADOS_2_TOTAL"]').check();
+      await page.locator('[data-testid="retention-var-ADI_R_SOCIAL_TOTAL_A"]').check();
       await page.locator('[data-testid="retention-var-DX_GROUP"]').uncheck();
       await expect(plot).not.toHaveAttribute("data-retained-n", "1015");
 
@@ -159,7 +159,7 @@ for (const { name, prefix } of BASES) {
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
       await expect(plot).toHaveAttribute("data-selected-count", "4");
       await expect(plot).toHaveAttribute("data-retained-n", "1015");
-      await expect(page.locator('[data-testid="retention-var-ADOS_2_TOTAL"]')).not.toBeChecked();
+      await expect(page.locator('[data-testid="retention-var-ADI_R_SOCIAL_TOTAL_A"]')).not.toBeChecked();
     });
 
     test("hover template exposes aggregate site counts only", async ({ page }) => {

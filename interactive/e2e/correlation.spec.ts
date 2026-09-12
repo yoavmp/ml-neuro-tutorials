@@ -100,9 +100,9 @@ for (const { name, prefix } of BASES) {
 
       // change X -> a small selected subset (differing pairwise N teaching point)
       await page.locator('[data-testid="correlation-x"]').selectOption("ADOS_G_TOTAL");
-      await page.locator('[data-testid="correlation-y"]').selectOption("ADOS_2_TOTAL");
-      await expect(plot).toHaveAttribute("data-n", "81");
-      await expect(page.locator('[data-testid="correlation-stats"]')).toContainText("n = 81");
+      await page.locator('[data-testid="correlation-y"]').selectOption("ADI_R_SOCIAL_TOTAL_A");
+      await expect(plot).toHaveAttribute("data-n", "152");
+      await expect(page.locator('[data-testid="correlation-stats"]')).toContainText("n = 152");
 
       // no failed / off-origin / CDN / kernel request, no WebSocket
       const origin = new URL(page.url()).origin;

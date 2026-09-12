@@ -60,6 +60,21 @@ RETENTION_FIXTURE_CSV = (
 
 RETENTION_VARS = ["DX_GROUP", "AGE_AT_SCAN", "SEX", "FIQ", "CURRENT_MED_STATUS"]
 
+# 6 rows, 3 sites, for the table-inspection artifact. SITE_ID + SUB_ID are the
+# two identifier-shaped string columns; AGE_AT_SCAN / FIQ are ordinary numerics.
+TABLE_INSPECTION_FIXTURE_CSV = (
+    "SUB_ID,SITE_ID,DX_GROUP,AGE_AT_SCAN,FIQ\n"
+    "29006,SiteB,1,10.5,100\n"
+    "29007,SiteB,2,,95\n"
+    "29008,SiteA,1,21.0,\n"
+    "29009,SiteA,2,8.25,110\n"
+    "29010,SiteA,1,12.0,105\n"
+    "29011,SiteC,2,15.0,\n"
+).encode("latin-1")
+
+# columnOrder passed to the builder/validator == the "curated authority".
+TABLE_INSPECTION_AUTHORITY = ["SITE_ID", "SUB_ID", "DX_GROUP", "AGE_AT_SCAN", "FIQ"]
+
 
 def build_fixture_frame():
     return ew.parse_csv(FIXTURE_CSV)
@@ -67,6 +82,10 @@ def build_fixture_frame():
 
 def build_retention_frame():
     return ew.parse_csv(RETENTION_FIXTURE_CSV)
+
+
+def build_table_inspection_frame():
+    return ew.parse_csv(TABLE_INSPECTION_FIXTURE_CSV)
 
 
 class HelperTests(unittest.TestCase):
@@ -373,20 +392,125 @@ class RetentionSerializationTests(unittest.TestCase):
         self.assertEqual(ew.validate_retention_artifact(reloaded, ALLOWED), [])
 
 
-class ArtifactRegistryTests(unittest.TestCase):
-    def test_both_modes_are_registered_and_distinct(self):
-        self.assertEqual(set(ew.ARTIFACTS), {"histogram", "retention"})
-        self.assertNotEqual(
-            ew.ARTIFACTS["histogram"].path, ew.ARTIFACTS["retention"].path
+class BuildTableInspectionArtifactTests(unittest.TestCase):
+    def good(self):
+        frame = build_table_inspection_frame()
+        return ew.build_table_inspection_artifact(frame, TABLE_INSPECTION_AUTHORITY)
+
+    def test_happy_path_shape_and_metadata(self):
+        art = self.good()
+        self.assertEqual(art["activity"], "table-inspection")
+        self.assertEqual(art["schemaVersion"], ew.SCHEMA_VERSION)
+        self.assertEqual(art["rowCount"], 6)
+        self.assertEqual(art["columnOrder"], TABLE_INSPECTION_AUTHORITY)
+        self.assertEqual(art["identifierFields"], ["SITE_ID", "SUB_ID"])
+        self.assertEqual(set(art["columns"]), set(TABLE_INSPECTION_AUTHORITY))
+        # identifier columns are non-empty strings with no trailing ".0"
+        self.assertEqual(art["columns"]["SUB_ID"], ["29006", "29007", "29008", "29009", "29010", "29011"])
+        self.assertEqual(art["columns"]["SITE_ID"][:2], ["SiteB", "SiteB"])
+        # variable metadata covers exactly the non-identifier columns
+        self.assertEqual(
+            {m["name"] for m in art["variables"]}, {"DX_GROUP", "AGE_AT_SCAN", "FIQ"}
         )
-        self.assertEqual(ew.ARTIFACTS["histogram"].path.name, "abide_histogram.json")
-        self.assertEqual(ew.ARTIFACTS["retention"].path.name, "abide_retention.json")
+        meta = {m["name"]: m for m in art["variables"]}
+        self.assertEqual(meta["FIQ"]["availableN"], 4)
+        self.assertEqual(meta["AGE_AT_SCAN"]["availableN"], 5)
+        self.assertEqual(art["site"]["siteCount"], 3)
+
+    def test_nulls_and_codes_preserved_for_non_identifier_columns(self):
+        art = self.good()
+        self.assertEqual(art["columns"]["AGE_AT_SCAN"], [10.5, None, 21, 8.25, 12, 15])
+        self.assertEqual(art["columns"]["FIQ"], [100, 95, None, 110, 105, None])
+        self.assertEqual(art["columns"]["DX_GROUP"], [1, 2, 1, 2, 1, 2])
+
+    def test_round_trips_and_validates(self):
+        text = ew.serialize(self.good())
+        self.assertTrue(text.endswith("\n"))
+        self.assertEqual(text, ew.serialize(json.loads(text)))
+        self.assertEqual(
+            ew.validate_table_inspection_artifact(json.loads(text), TABLE_INSPECTION_AUTHORITY),
+            [],
+        )
+
+    def test_rejects_a_third_identifier_field(self):
+        frame = build_table_inspection_frame()
+        with self.assertRaises(ValueError):
+            ew.build_table_inspection_artifact(
+                frame, TABLE_INSPECTION_AUTHORITY, identifier_fields=("SITE_ID", "SUB_ID", "SCAN_ID")
+            )
+
+    def test_rejects_identifier_shaped_non_allowlisted_variable(self):
+        # A curated column that trips the identifier regex is still refused.
+        frame = ew.parse_csv(
+            b"SUB_ID,SITE_ID,SCANNER_UID\n29006,SiteA,1\n29007,SiteA,2\n"
+        )
+        with self.assertRaises(ValueError):
+            ew.build_table_inspection_artifact(frame, ["SITE_ID", "SUB_ID", "SCANNER_UID"])
+
+    def test_rejects_missing_identifier_value(self):
+        frame = ew.parse_csv(b"SUB_ID,SITE_ID,FIQ\n29006,SiteA,100\n,SiteA,95\n")
+        with self.assertRaises(ValueError):
+            ew.build_table_inspection_artifact(frame, ["SITE_ID", "SUB_ID", "FIQ"])
+
+
+class ValidateTableInspectionArtifactTests(unittest.TestCase):
+    def good(self):
+        frame = build_table_inspection_frame()
+        return ew.build_table_inspection_artifact(frame, TABLE_INSPECTION_AUTHORITY)
+
+    def test_good_artifact_passes(self):
+        self.assertEqual(
+            ew.validate_table_inspection_artifact(self.good(), TABLE_INSPECTION_AUTHORITY), []
+        )
+
+    def test_catches_column_order_drift(self):
+        art = self.good()
+        art["columnOrder"] = list(reversed(art["columnOrder"]))
+        problems = ew.validate_table_inspection_artifact(art, TABLE_INSPECTION_AUTHORITY)
+        self.assertTrue(any("columnOrder" in p for p in problems), problems)
+
+    def test_catches_identifier_shaped_extra_column(self):
+        art = self.good()
+        art["columns"]["SUBJECT_UID"] = [None] * art["rowCount"]
+        art["columnOrder"].append("SUBJECT_UID")
+        problems = ew.validate_table_inspection_artifact(
+            art, TABLE_INSPECTION_AUTHORITY + ["SUBJECT_UID"]
+        )
+        self.assertTrue(any("identifier-like" in p for p in problems), problems)
+
+    def test_catches_null_in_identifier_column(self):
+        art = self.good()
+        art["columns"]["SUB_ID"][0] = None
+        self.assertTrue(
+            any("identifier column 'SUB_ID'" in p for p in ew.validate_table_inspection_artifact(art, TABLE_INSPECTION_AUTHORITY))
+        )
+
+    def test_catches_wrong_activity(self):
+        art = self.good()
+        art["activity"] = "eda-retention"
+        self.assertTrue(
+            any("activity" in p for p in ew.validate_table_inspection_artifact(art, TABLE_INSPECTION_AUTHORITY))
+        )
+
+
+class ArtifactRegistryTests(unittest.TestCase):
+    def test_all_three_artifacts_are_registered_and_distinct(self):
+        self.assertEqual(set(ew.ARTIFACTS), {"histogram", "retention", "table-inspection"})
+        paths = {k: v.path.name for k, v in ew.ARTIFACTS.items()}
+        self.assertEqual(len(set(paths.values())), 3)
+        self.assertEqual(paths["histogram"], "abide_histogram.json")
+        self.assertEqual(paths["retention"], "abide_retention.json")
+        self.assertEqual(paths["table-inspection"], "abide_table_inspection.json")
 
     def test_selector_scopes_to_one_artifact(self):
         self.assertEqual([s.key for s in ew._selected_specs("histogram")], ["histogram"])
         self.assertEqual([s.key for s in ew._selected_specs("retention")], ["retention"])
         self.assertEqual(
-            sorted(s.key for s in ew._selected_specs("all")), ["histogram", "retention"]
+            [s.key for s in ew._selected_specs("table-inspection")], ["table-inspection"]
+        )
+        self.assertEqual(
+            sorted(s.key for s in ew._selected_specs("all")),
+            ["histogram", "retention", "table-inspection"],
         )
 
     def test_committed_artifacts_pass_their_own_validators(self):

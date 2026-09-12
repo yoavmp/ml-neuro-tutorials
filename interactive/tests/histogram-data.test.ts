@@ -62,12 +62,11 @@ describe("parseAbideHistogramData", () => {
       expect(r.data.rowCount).toBe(1114);
       expect(Object.keys(r.data.columns).sort()).toEqual(
         [
-          "ADOS_2_TOTAL",
+          "ADI_R_SOCIAL_TOTAL_A",
           "ADOS_G_TOTAL",
           "AGE_AT_SCAN",
           "FIQ",
           "PIQ",
-          "SCQ_TOTAL",
           "SRS_TOTAL_RAW",
           "VIQ",
         ],

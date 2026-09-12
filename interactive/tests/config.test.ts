@@ -463,6 +463,299 @@ describe("parseActivityConfig — eda-correlation", () => {
   });
 });
 
+const validTableInspection = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "table-inspection",
+  title: "Inspecting rows: head, tail, and sample",
+  instructions: "Choose head(), tail(), or sample().",
+  data: "../data/abide_table_inspection.json",
+  siteField: "SITE_ID",
+  siteLabel: "Acquisition site",
+  methods: ["head", "tail", "sample"],
+  defaultMethod: "head",
+  rowCount: { min: 5, max: 15, default: 8 },
+  sampleSeed: 7,
+  columns: [
+    { name: "SITE_ID", label: "Site" },
+    { name: "AGE_AT_SCAN", label: "Age at scan" },
+    { name: "FIQ", label: "Full-scale IQ" },
+  ],
+};
+
+describe("parseActivityConfig — table-inspection", () => {
+  it("accepts a well-formed table-inspection config", () => {
+    const r = parseActivityConfig(validTableInspection);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok && r.config.type === "table-inspection") {
+      expect(r.config.defaultMethod).toBe("head");
+      expect(r.config.methods).toEqual(["head", "tail", "sample"]);
+      expect(r.config.rowCount.default).toBe(8);
+      expect(r.config.sampleSeed).toBe(7);
+    }
+  });
+
+  it("accepts a config without the optional reflectionPrompts", () => {
+    expect(parseActivityConfig(validTableInspection).ok).toBe(true);
+  });
+
+  it("rejects a defaultMethod not in methods", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      methods: ["head", "tail"],
+      defaultMethod: "sample",
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/defaultMethod/);
+  });
+
+  it("rejects an unknown inspection method", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      methods: ["head", "middle"],
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects sample without a sampleSeed", () => {
+    const { sampleSeed: _omit, ...rest } = validTableInspection;
+    void _omit;
+    const r = parseActivityConfig(rest);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/sampleSeed is required/);
+  });
+
+  it("rejects a siteField that is not one of the displayed columns", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      siteField: "NOT_A_COLUMN",
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/siteField/);
+  });
+
+  it("rejects duplicate column names", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      columns: [
+        { name: "SITE_ID", label: "Site" },
+        { name: "FIQ", label: "a" },
+        { name: "FIQ", label: "b" },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate name/);
+  });
+
+  it("rejects a rowCount default outside [min, max]", () => {
+    const r = parseActivityConfig({
+      ...validTableInspection,
+      rowCount: { min: 5, max: 15, default: 99 },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/rowCount\.default/);
+  });
+
+  it("rejects an empty methods list", () => {
+    expect(parseActivityConfig({ ...validTableInspection, methods: [] }).ok).toBe(false);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validTableInspection, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/table_inspection.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/table_inspection.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
+const validRegressionCompare = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "regression-compare",
+  title: "Compare two feature sets",
+  data: "../data/abide_regression_models.json",
+  instructions: "Configure model A and model B.",
+  targetLabel: "Full-scale IQ (FIQ)",
+  measurementSubsets: [
+    { measures: ["CT"], label: "Cortical thickness" },
+    { measures: ["CT", "Area"], label: "Thickness + area" },
+  ],
+  bundles: [
+    { key: "frontoparietal", label: "Frontoparietal (P-FIT)" },
+    { key: "occipital", label: "Occipital (comparison)" },
+  ],
+  defaultA: { measures: ["CT"], bundle: "frontoparietal" },
+  defaultB: { measures: ["CT"], bundle: "occipital" },
+  literatureNote: "P-FIT motivates the frontoparietal bundle.",
+  selectionBiasNote: "Exploratory comparison is not a final estimate.",
+};
+
+describe("parseActivityConfig — regression-compare", () => {
+  it("accepts a well-formed regression-compare config", () => {
+    const r = parseActivityConfig(validRegressionCompare);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("rejects a defaultA.bundle not in bundles", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      defaultA: { measures: ["CT"], bundle: "temporal" },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/defaultA\.bundle/);
+  });
+
+  it("rejects a defaultB.measures combination not offered", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      defaultB: { measures: ["Vol"], bundle: "occipital" },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/defaultB\.measures/);
+  });
+
+  it("rejects duplicate bundle keys", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      bundles: [
+        { key: "frontoparietal", label: "a" },
+        { key: "frontoparietal", label: "b" },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate key/);
+  });
+
+  it("rejects duplicate measurement combinations", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      measurementSubsets: [
+        { measures: ["CT"], label: "a" },
+        { measures: ["CT"], label: "b" },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/duplicate measure combination/);
+  });
+
+  it("requires at least two bundles", () => {
+    const r = parseActivityConfig({
+      ...validRegressionCompare,
+      bundles: [{ key: "frontoparietal", label: "only one" }],
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validRegressionCompare, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/regression_compare.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/regression_compare.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
+const validKnnExplore = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "knn-explore",
+  title: "Vary k and watch the tradeoff",
+  data: "../data/abide_knn_explore_manifest.json",
+  instructions: "Drag the slider to change k.",
+  curseOfDimensionalityNote: "In many dimensions, near stops meaning much.",
+  endpointNoteK1: "Every fitting participant is its own nearest neighbour.",
+  endpointNoteKMax: "The model predicts the fitting-set mean for everyone.",
+  defaultK: "validation-optimal" as const,
+  trainingSampleInstructions: "Switch tabs to see how predictions shift across training samples.",
+  varianceProxyNote: "An empirical training-sample sensitivity measure, not the formal variance term.",
+  biasProxyNote: "An observable bias-like underfitting proxy, not formal bias squared.",
+  kComplexityNote: "Larger k: lower variance, higher bias. Smaller k: lower bias, higher variance.",
+};
+
+describe("parseActivityConfig — knn-explore", () => {
+  it("accepts a well-formed knn-explore config with a string defaultK", () => {
+    const r = parseActivityConfig(validKnnExplore);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("accepts a numeric defaultK", () => {
+    const r = parseActivityConfig({ ...validKnnExplore, defaultK: 15 });
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("rejects an unknown defaultK string", () => {
+    const r = parseActivityConfig({ ...validKnnExplore, defaultK: "smallest" });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects a non-positive numeric defaultK", () => {
+    const r = parseActivityConfig({ ...validKnnExplore, defaultK: 0 });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validKnnExplore, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/knn_explore.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL("../../book/_static/widgets/configs/knn_explore.json", import.meta.url);
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
+const validKnnAbc = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "knn-abc",
+  title: "Honest vs invalid evaluation, interactively",
+  data: "../data/abide_knn_abc_manifest.json",
+  instructions: "Drag the slider to change k.",
+  k1Note: "At k=1, B and C are exactly perfect.",
+};
+
+describe("parseActivityConfig — knn-abc", () => {
+  it("accepts a well-formed knn-abc config", () => {
+    const r = parseActivityConfig(validKnnAbc);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("accepts optional reflectionPrompts", () => {
+    const r = parseActivityConfig({ ...validKnnAbc, reflectionPrompts: ["Try k=1."] });
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validKnnAbc, extra: 1 }).ok).toBe(false);
+  });
+
+  it("rejects a missing k1Note", () => {
+    const { k1Note: _drop, ...rest } = validKnnAbc;
+    expect(parseActivityConfig(rest).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/knn_abc.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL("../../book/_static/widgets/configs/knn_abc.json", import.meta.url);
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
 describe("parseActivityConfigJson", () => {
   it("parses and validates a JSON string", () => {
     const r = parseActivityConfigJson(JSON.stringify(valid));
