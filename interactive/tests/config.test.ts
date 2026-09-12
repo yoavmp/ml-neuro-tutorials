@@ -672,7 +672,7 @@ const validKnnExplore = {
   schemaVersion: CONFIG_SCHEMA_VERSION,
   type: "knn-explore",
   title: "Vary k and watch the tradeoff",
-  data: "../data/abide_knn_explore.json",
+  data: "../data/abide_knn_explore_manifest.json",
   instructions: "Drag the slider to change k.",
   curseOfDimensionalityNote: "In many dimensions, near stops meaning much.",
   endpointNoteK1: "Every fitting participant is its own nearest neighbour.",
@@ -722,7 +722,7 @@ const validKnnAbc = {
   schemaVersion: CONFIG_SCHEMA_VERSION,
   type: "knn-abc",
   title: "Honest vs invalid evaluation, interactively",
-  data: "../data/abide_knn_abc.json",
+  data: "../data/abide_knn_abc_manifest.json",
   instructions: "Drag the slider to change k.",
   k1Note: "At k=1, B and C are exactly perfect.",
 };

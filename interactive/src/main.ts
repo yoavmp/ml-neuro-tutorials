@@ -123,7 +123,7 @@ async function boot(): Promise<void> {
     return;
   }
 
-  const dataResult = component.parseData(dataJson);
+  const dataResult = await component.parseData(dataJson, dataUrlResult.url);
   if (!dataResult.ok) {
     renderError(dataResult.error);
     return;

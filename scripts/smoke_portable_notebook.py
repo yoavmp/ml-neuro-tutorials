@@ -52,7 +52,8 @@ SMOKE = {
         "expect": (
             "age available for 1004 of 1004",
             "held-out R^2 =",
-            "n_features (p) = 360",
+            "n_features = 360",
+            "n_features (p) = 10",
         ),
     },
     "chapter_03": {

@@ -14,26 +14,35 @@ canonical 360-feature recipe:
   rows.
 
 As in ``export_knn_explore_data.py``, no brain feature or participant
-identifier is shipped: for every query participant in each panel, this script
-stores only its reference-pool target (age) values reordered nearest-first, so
-the browser recomputes the exact k-nearest-neighbour mean with one client-side
-prefix-mean per chosen k. Because C's reference pool (the 251 test rows) is
-smaller than A/B's (the 753 training rows), every panel's neighbour list is
-truncated to the shared valid range ``1..min(n_train, n_test)`` = 1..251 --
-the UI never offers a k value some panel cannot support.
+identifier is shipped, and (WP15 §3) neighbour target values are never stored
+directly: for every query participant in each panel, this script stores a row
+INDEX (nearest first) into that panel's own reference-pool target array, so
+the browser reconstructs the exact k-nearest-neighbour mean with one
+client-side prefix-mean per chosen k over ``refTargets[index]``. Because C's
+reference pool (the 251 test rows) is smaller than A/B's (the 753 training
+rows), every panel's neighbour list is truncated to the shared valid range
+``1..min(n_train, n_test)`` = 1..251 -- the UI never offers a k value some
+panel cannot support.
+
+Panels A and B share the exact same reference pool (the 753 training rows'
+targets, ``observedTrain``) -- only their QUERY sets differ (test rows for A,
+the training rows themselves for B) -- so ``observedTrain`` is stored once and
+both ``neighborIndexA``/``neighborIndexB`` index into it. Panel C is
+self-referential against the 251 test rows (``observedTest``).
 
 Split / recipe: exactly Exercise 2's own locked outer holdout
 (``protocol.holdout_split``) on the canonical ``all-eligible x CT`` recipe
 (p=360) -- the identical 753/251 participants used throughout this notebook.
 
-Output: ``book/_static/widgets/data/abide_knn_abc.json``.
+Output: ``book/_static/widgets/data/abide_knn_abc_manifest.json`` +
+``book/_static/widgets/data/abide_knn_abc.bin``.
 
 Modes (exactly one required):
 
 * ``--refresh``  (network): download + verify the pinned sources, recompute,
-  validate, and write.
-* ``--check``    (offline): re-validate the committed artifact and confirm it
-  is byte-for-byte canonical.
+  validate, and write both files.
+* ``--check``    (offline): re-validate the committed manifest + binary and
+  confirm both are byte-for-byte canonical.
 """
 
 from __future__ import annotations
@@ -54,10 +63,13 @@ from abide_modeling_data import (  # noqa: E402
     load_modeling_frame,
     sha256_hex,
 )
+from binary_asset import BinaryAssetBuilder, decode_section  # noqa: E402
 
-ARTIFACT_PATH = REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_knn_abc.json"
-SCHEMA_VERSION = 1
-DECIMALS = 3
+DATA_DIR = REPO_ROOT / "book" / "_static" / "widgets" / "data"
+MANIFEST_PATH = DATA_DIR / "abide_knn_abc_manifest.json"
+BINARY_PATH = DATA_DIR / "abide_knn_abc.bin"
+SCHEMA_VERSION = 2
+DISPLAY_DECIMALS = 3  # the rounding precision schema v1 used to display/round values at
 
 
 def _outer_split(frame: Any, manifest: dict[str, Any] | None = None):
@@ -84,18 +96,17 @@ def _outer_split(frame: Any, manifest: dict[str, Any] | None = None):
     return cols, X_train, X_test, y_train, y_test
 
 
-def _sorted_neighbor_targets(X_query: Any, X_ref: Any, y_ref: Any, top: int):
-    """For every row of X_query, the reference-set y values sorted by
+def _sorted_neighbor_index(X_query: Any, X_ref: Any, top: int):
+    """For every row of X_query, the reference-set row INDEX order, sorted by
     ascending Euclidean distance (already-scaled space), truncated to the
-    nearest ``top`` entries. Shape (n_query, top)."""
+    nearest ``top`` entries. Shape (n_query, top); values in [0, n_ref)."""
     import numpy as np
 
     d = np.linalg.norm(X_query[:, None, :] - X_ref[None, :, :], axis=2)
-    order = np.argsort(d, axis=1, kind="stable")[:, :top]
-    return y_ref[order]
+    return np.argsort(d, axis=1, kind="stable")[:, :top]
 
 
-def _validate_panel_against_sklearn(X_fit_raw, y_fit, X_query_raw, sorted_targets, k_values: list[int]) -> None:
+def _validate_panel_against_sklearn(X_fit_raw, y_fit, X_query_raw, sorted_target_values, k_values: list[int]) -> None:
     import numpy as np
     from sklearn.neighbors import KNeighborsRegressor
     from sklearn.pipeline import make_pipeline
@@ -107,7 +118,7 @@ def _validate_panel_against_sklearn(X_fit_raw, y_fit, X_query_raw, sorted_target
             .fit(X_fit_raw, y_fit)
             .predict(X_query_raw)
         )
-        cum = sorted_targets[:, :k].sum(axis=1) / k
+        cum = sorted_target_values[:, :k].sum(axis=1) / k
         if not np.allclose(real, cum, atol=1e-6):
             raise RuntimeError(
                 f"knn-abc panel disagrees with sklearn KNeighborsRegressor at k={k}: "
@@ -115,7 +126,24 @@ def _validate_panel_against_sklearn(X_fit_raw, y_fit, X_query_raw, sorted_target
             )
 
 
-def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[str, Any]:
+def _verify_float32_precision(index_u16: Any, ref_targets_f32: Any, ref_targets_f64: Any, k_values: list[int]) -> None:
+    """Prove float32(ref targets) + uint16(index) reconstructs the same
+    per-k means as the float64 computation, to the artifact's existing
+    display rounding (WP15 §3.2)."""
+    import numpy as np
+
+    sorted_f64 = ref_targets_f64[index_u16]
+    sorted_f32 = ref_targets_f32[index_u16].astype("float64")
+    tol = 10 ** (-DISPLAY_DECIMALS)
+    for k in k_values:
+        mean_f64 = sorted_f64[:, :k].mean(axis=1)
+        mean_f32 = sorted_f32[:, :k].mean(axis=1)
+        diff = float(np.max(np.abs(mean_f64 - mean_f32)))
+        if diff > tol:
+            raise RuntimeError(f"float32 round-trip precision check failed at k={k}: max abs diff {diff}, tolerance {tol}")
+
+
+def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> tuple[dict[str, Any], bytes]:
     import numpy as np
     from sklearn.preprocessing import StandardScaler
 
@@ -137,24 +165,36 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
     scaler_c = StandardScaler().fit(X_test)
     Xte_c = scaler_c.transform(X_test)
 
-    sorted_a = _sorted_neighbor_targets(Xte_ab, Xtr_ab, y_train, top=k_max)  # n_test x k_max
-    sorted_b = _sorted_neighbor_targets(Xtr_ab, Xtr_ab, y_train, top=k_max)  # n_train x k_max (self-inclusive)
-    sorted_c = _sorted_neighbor_targets(Xte_c, Xte_c, y_test, top=k_max)  # n_test x k_max (self-inclusive)
+    index_a = _sorted_neighbor_index(Xte_ab, Xtr_ab, top=k_max)  # n_test x k_max, into y_train
+    index_b = _sorted_neighbor_index(Xtr_ab, Xtr_ab, top=k_max)  # n_train x k_max (self-inclusive), into y_train
+    index_c = _sorted_neighbor_index(Xte_c, Xte_c, top=k_max)  # n_test x k_max (self-inclusive), into y_test
 
     sample_ks = sorted({k for k in (1, 5, 15, 17, 50, 100, k_max) if k <= k_max})
-    _validate_panel_against_sklearn(X_train, y_train, X_test, sorted_a, sample_ks)
-    _validate_panel_against_sklearn(X_train, y_train, X_train, sorted_b, sample_ks)
-    _validate_panel_against_sklearn(X_test, y_test, X_test, sorted_c, sample_ks)
+    _validate_panel_against_sklearn(X_train, y_train, X_test, y_train[index_a], sample_ks)
+    _validate_panel_against_sklearn(X_train, y_train, X_train, y_train[index_b], sample_ks)
+    _validate_panel_against_sklearn(X_test, y_test, X_test, y_test[index_c], sample_ks)
 
     # exact k=1 structural endpoint: B and C are perfect resubstitution
     # (every query point is its own nearest neighbour, distance 0); A is not.
-    if not np.allclose(sorted_b[:, 0], y_train, atol=1e-9):
+    if not np.allclose(y_train[index_b][:, 0], y_train, atol=1e-9):
         raise RuntimeError("k=1: B's nearest neighbour is not each training row itself")
-    if not np.allclose(sorted_c[:, 0], y_test, atol=1e-9):
+    if not np.allclose(y_test[index_c][:, 0], y_test, atol=1e-9):
         raise RuntimeError("k=1: C's nearest neighbour is not each test row itself")
 
+    _verify_float32_precision(index_a, y_train.astype("float32"), y_train, sample_ks)
+    _verify_float32_precision(index_b, y_train.astype("float32"), y_train, sample_ks)
+    _verify_float32_precision(index_c, y_test.astype("float32"), y_test, sample_ks)
+
+    builder = BinaryAssetBuilder()
+    builder.add("observedTrain", "float32", y_train)
+    builder.add("observedTest", "float32", y_test)
+    builder.add("neighborIndexA", "uint16", index_a)
+    builder.add("neighborIndexB", "uint16", index_b)
+    builder.add("neighborIndexC", "uint16", index_c)
+    blob = builder.build()
+
     src = manifest["source"]
-    return {
+    manifest_json: dict[str, Any] = {
         "schemaVersion": SCHEMA_VERSION,
         "activity": "knn-abc",
         "source": {
@@ -179,136 +219,177 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
             "kMax": k_max,
         },
         "selectedKFromAudit": knn_cfg["selected_k"],
-        "observedTrain": [round(float(v), DECIMALS) for v in y_train],
-        "observedTest": [round(float(v), DECIMALS) for v in y_test],
-        "neighborTargetsA": [[round(float(v), DECIMALS) for v in row] for row in sorted_a],
-        "neighborTargetsB": [[round(float(v), DECIMALS) for v in row] for row in sorted_b],
-        "neighborTargetsC": [[round(float(v), DECIMALS) for v in row] for row in sorted_c],
+        "binary": {
+            "path": BINARY_PATH.name,
+            "byteLength": len(blob),
+            "sha256": sha256_hex(blob),
+        },
+        "sections": builder.sections,
+    }
+    return manifest_json, blob
+
+
+def _reconstruct_logical(manifest_json: dict[str, Any], blob: bytes) -> dict[str, Any]:
+    sections = manifest_json["sections"]
+    observed_train = decode_section(blob, sections["observedTrain"])
+    observed_test = decode_section(blob, sections["observedTest"])
+    index_a = decode_section(blob, sections["neighborIndexA"])
+    index_b = decode_section(blob, sections["neighborIndexB"])
+    index_c = decode_section(blob, sections["neighborIndexC"])
+    return {
+        "observedTrain": observed_train,
+        "observedTest": observed_test,
+        "neighborTargetsA": observed_train[index_a],
+        "neighborTargetsB": observed_train[index_b],
+        "neighborTargetsC": observed_test[index_c],
     }
 
 
-def validate_artifact(artifact: Any, manifest: dict[str, Any] | None = None) -> list[str]:
+def validate_artifact(manifest_json: Any, blob: bytes, manifest: dict[str, Any] | None = None) -> list[str]:
+    import numpy as np
+
     manifest = manifest or MANIFEST
     problems: list[str] = []
-    if not isinstance(artifact, dict):
-        return ["artifact is not a JSON object"]
-    if artifact.get("schemaVersion") != SCHEMA_VERSION:
+    if not isinstance(manifest_json, dict):
+        return ["manifest is not a JSON object"]
+    if manifest_json.get("schemaVersion") != SCHEMA_VERSION:
         problems.append(f"schemaVersion must be {SCHEMA_VERSION}")
-    if artifact.get("activity") != "knn-abc":
+    if manifest_json.get("activity") != "knn-abc":
         problems.append("activity must be 'knn-abc'")
 
-    src = artifact.get("source", {})
+    src = manifest_json.get("source", {})
     if src.get("pinnedCommit") != manifest["source"]["pinned_commit"]:
         problems.append("source.pinnedCommit does not match the manifest")
 
-    split = artifact.get("split", {})
+    binary_meta = manifest_json.get("binary", {})
+    if binary_meta.get("byteLength") != len(blob):
+        problems.append(f"binary.byteLength {binary_meta.get('byteLength')} != actual {len(blob)}")
+    if binary_meta.get("sha256") != sha256_hex(blob):
+        problems.append("binary.sha256 does not match the actual binary file")
+
+    sections = manifest_json.get("sections", {})
+    required_sections = {"observedTrain", "observedTest", "neighborIndexA", "neighborIndexB", "neighborIndexC"}
+    if set(sections) != required_sections:
+        problems.append(f"sections keys {set(sections)} != required {required_sections}")
+        return problems
+    for name, sec in sections.items():
+        end = sec["byteOffset"] + sec["byteLength"]
+        if end > len(blob):
+            problems.append(f"section {name!r} extends past the end of the binary file")
+        if sec["byteOffset"] % 4 != 0:
+            problems.append(f"section {name!r} byteOffset {sec['byteOffset']} is not 4-byte aligned")
+
+    split = manifest_json.get("split", {})
     n_train, n_test, k_max = split.get("nTrain"), split.get("nTest"), split.get("kMax")
     if not all(isinstance(v, int) for v in (n_train, n_test, k_max)):
         return problems + ["split.nTrain / nTest / kMax must be integers"]
     if k_max != min(n_train, n_test):
         problems.append("split.kMax must equal min(nTrain, nTest)")
 
-    observed_train = artifact.get("observedTrain")
-    observed_test = artifact.get("observedTest")
-    if not isinstance(observed_train, list) or len(observed_train) != n_train:
-        problems.append("observedTrain must align with split.nTrain")
-    if not isinstance(observed_test, list) or len(observed_test) != n_test:
-        problems.append("observedTest must align with split.nTest")
-
-    panels = {
-        "neighborTargetsA": n_test,
-        "neighborTargetsB": n_train,
-        "neighborTargetsC": n_test,
-    }
-    for key, n_rows in panels.items():
-        rows = artifact.get(key)
-        if not isinstance(rows, list) or len(rows) != n_rows:
-            problems.append(f"{key} must have {n_rows} rows")
-            continue
-        for row in rows:
-            if not isinstance(row, list) or len(row) != k_max:
-                problems.append(f"{key} row must have kMax ({k_max}) entries")
-                break
-
-    # k=1 structural endpoint: B and C are exact resubstitution.
-    b_rows, c_rows = artifact.get("neighborTargetsB"), artifact.get("neighborTargetsC")
-    if isinstance(b_rows, list) and isinstance(observed_train, list) and len(b_rows) == len(observed_train):
-        if any(abs(row[0] - obs) > 1e-6 for row, obs in zip(b_rows, observed_train)):
-            problems.append("neighborTargetsB[:, 0] (k=1) must equal observedTrain -- each training row is its own nearest neighbour")
-    if isinstance(c_rows, list) and isinstance(observed_test, list) and len(c_rows) == len(observed_test):
-        if any(abs(row[0] - obs) > 1e-6 for row, obs in zip(c_rows, observed_test)):
-            problems.append("neighborTargetsC[:, 0] (k=1) must equal observedTest -- each test row is its own nearest neighbour")
-
-    selected_k = artifact.get("selectedKFromAudit")
-    if not isinstance(selected_k, int) or not (1 <= selected_k <= (k_max or 0)):
-        problems.append("selectedKFromAudit must be within [1, kMax]")
+    if sections["observedTrain"]["shape"] != [n_train]:
+        problems.append("observedTrain shape must be [nTrain]")
+    if sections["observedTest"]["shape"] != [n_test]:
+        problems.append("observedTest shape must be [nTest]")
+    if sections["neighborIndexA"]["shape"] != [n_test, k_max]:
+        problems.append("neighborIndexA shape must be [nTest, kMax]")
+    if sections["neighborIndexB"]["shape"] != [n_train, k_max]:
+        problems.append("neighborIndexB shape must be [nTrain, kMax]")
+    if sections["neighborIndexC"]["shape"] != [n_test, k_max]:
+        problems.append("neighborIndexC shape must be [nTest, kMax]")
 
     identifier_token = ("id", "sub", "subject", "site", "participant")
-    for key in artifact.keys():
+    for key in manifest_json.keys():
         if key.lower() in identifier_token:
-            problems.append(f"artifact has an identifier-shaped key: {key!r}")
+            problems.append(f"manifest has an identifier-shaped key: {key!r}")
+
+    try:
+        idx_a = decode_section(blob, sections["neighborIndexA"])
+        idx_b = decode_section(blob, sections["neighborIndexB"])
+        idx_c = decode_section(blob, sections["neighborIndexC"])
+        if idx_a.size and (int(idx_a.min()) < 0 or int(idx_a.max()) >= (n_train or 0)):
+            problems.append("neighborIndexA has an out-of-range index")
+        if idx_b.size and (int(idx_b.min()) < 0 or int(idx_b.max()) >= (n_train or 0)):
+            problems.append("neighborIndexB has an out-of-range index")
+        if idx_c.size and (int(idx_c.min()) < 0 or int(idx_c.max()) >= (n_test or 0)):
+            problems.append("neighborIndexC has an out-of-range index")
+
+        logical = _reconstruct_logical(manifest_json, blob)
+    except (ValueError, KeyError, IndexError) as exc:
+        problems.append(f"could not decode/reconstruct sections: {exc}")
+        return problems
+
+    observed_train, observed_test = logical["observedTrain"], logical["observedTest"]
+    b_rows, c_rows = logical["neighborTargetsB"], logical["neighborTargetsC"]
+    if b_rows.shape[0] == len(observed_train) and not np.allclose(b_rows[:, 0], observed_train, atol=1e-3):
+        problems.append("neighborTargetsB[:, 0] (k=1) must equal observedTrain -- each training row is its own nearest neighbour")
+    if c_rows.shape[0] == len(observed_test) and not np.allclose(c_rows[:, 0], observed_test, atol=1e-3):
+        problems.append("neighborTargetsC[:, 0] (k=1) must equal observedTest -- each test row is its own nearest neighbour")
+
+    selected_k = manifest_json.get("selectedKFromAudit")
+    if not isinstance(selected_k, int) or not (1 <= selected_k <= (k_max or 0)):
+        problems.append("selectedKFromAudit must be within [1, kMax]")
 
     return problems
 
 
-def serialize(artifact: dict[str, Any]) -> str:
-    return (
-        json.dumps(artifact, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
-        + "\n"
-    )
+def serialize_manifest(manifest_json: dict[str, Any]) -> str:
+    return json.dumps(manifest_json, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n"
 
 
-def _summary(artifact: dict[str, Any]) -> str:
-    s = artifact["split"]
+def _summary(manifest_json: dict[str, Any]) -> str:
+    s = manifest_json["split"]
+    b = manifest_json["binary"]
     return (
-        f"activity       : {artifact['activity']}\n"
-        f"feature recipe : {artifact['featureRecipe']['bundle']} x "
-        f"{'+'.join(artifact['featureRecipe']['measures'])} (p={artifact['featureRecipe']['featureCount']})\n"
+        f"activity       : {manifest_json['activity']}\n"
+        f"feature recipe : {manifest_json['featureRecipe']['bundle']} x "
+        f"{'+'.join(manifest_json['featureRecipe']['measures'])} (p={manifest_json['featureRecipe']['featureCount']})\n"
         f"n_train        : {s['nTrain']}   n_test : {s['nTest']}   k_max (shared) : {s['kMax']}\n"
-        f"default (audit-selected) k : {artifact['selectedKFromAudit']}"
+        f"default (audit-selected) k : {manifest_json['selectedKFromAudit']}\n"
+        f"binary payload : {b['byteLength']} bytes  sha256={b['sha256']}"
     )
 
 
 def cmd_refresh() -> int:
     frame = load_modeling_frame()
-    artifact = build_artifact(frame)
-    problems = validate_artifact(artifact)
+    manifest_json, blob = build_artifact(frame)
+    problems = validate_artifact(manifest_json, blob)
     if problems:
         print("ERROR: built artifact failed validation:", file=sys.stderr)
         for p in problems:
             print(f"  - {p}", file=sys.stderr)
         return 1
-    text = serialize(artifact)
-    ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    ARTIFACT_PATH.write_text(text, encoding="utf-8", newline="\n")
-    print(f"wrote {ARTIFACT_PATH.relative_to(REPO_ROOT)} ({len(text.encode('utf-8'))} bytes)")
-    print(f"artifact sha256: {sha256_hex(text.encode('utf-8'))}")
-    print(_summary(artifact))
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    BINARY_PATH.write_bytes(blob)
+    manifest_text = serialize_manifest(manifest_json)
+    MANIFEST_PATH.write_text(manifest_text, encoding="utf-8", newline="\n")
+    print(f"wrote {BINARY_PATH.relative_to(REPO_ROOT)} ({len(blob)} bytes)")
+    print(f"wrote {MANIFEST_PATH.relative_to(REPO_ROOT)} ({len(manifest_text.encode('utf-8'))} bytes)")
+    print(_summary(manifest_json))
     return 0
 
 
 def cmd_check() -> int:
-    if not ARTIFACT_PATH.exists():
-        print(f"ERROR: {ARTIFACT_PATH} does not exist; run --refresh first.", file=sys.stderr)
+    if not MANIFEST_PATH.exists() or not BINARY_PATH.exists():
+        print(f"ERROR: {MANIFEST_PATH} / {BINARY_PATH} missing; run --refresh first.", file=sys.stderr)
         return 1
-    on_disk = ARTIFACT_PATH.read_text(encoding="utf-8")
+    manifest_text = MANIFEST_PATH.read_text(encoding="utf-8")
     try:
-        artifact = json.loads(on_disk)
+        manifest_json = json.loads(manifest_text)
     except json.JSONDecodeError as exc:
-        print(f"ERROR: artifact is not valid JSON: {exc}", file=sys.stderr)
+        print(f"ERROR: manifest is not valid JSON: {exc}", file=sys.stderr)
         return 1
-    problems = validate_artifact(artifact)
+    blob = BINARY_PATH.read_bytes()
+    problems = validate_artifact(manifest_json, blob)
     if problems:
         print("ERROR: committed artifact failed validation:", file=sys.stderr)
         for p in problems:
             print(f"  - {p}", file=sys.stderr)
         return 1
-    if serialize(artifact) != on_disk:
-        print("ERROR: committed artifact is not canonical (re-serialization differs).", file=sys.stderr)
+    if serialize_manifest(manifest_json) != manifest_text:
+        print("ERROR: committed manifest is not canonical (re-serialization differs).", file=sys.stderr)
         return 1
-    print(f"OK: {ARTIFACT_PATH.relative_to(REPO_ROOT)} is valid and canonical.")
-    print(f"artifact sha256: {sha256_hex(on_disk.encode('utf-8'))}")
-    print(_summary(artifact))
+    print(f"OK: {MANIFEST_PATH.relative_to(REPO_ROOT)} + {BINARY_PATH.relative_to(REPO_ROOT)} are valid and canonical.")
+    print(_summary(manifest_json))
     return 0
 
 

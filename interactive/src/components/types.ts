@@ -31,7 +31,14 @@ export interface WidgetComponent<
   TData = unknown,
 > {
   readonly type: TConfig["type"];
-  parseData(raw: unknown): DataResult<TData>;
+  /**
+   * Validate (and, for binary-backed activities, finish loading) an
+   * activity's data. `dataUrl` is the already-resolved, same-origin URL the
+   * data JSON itself was fetched from -- components whose data is a compact
+   * binary-asset manifest (see binary-asset.ts) resolve their sibling
+   * `.bin` file against it. Most components are synchronous and ignore it.
+   */
+  parseData(raw: unknown, dataUrl: URL): DataResult<TData> | Promise<DataResult<TData>>;
   mount(args: MountArgs<TConfig, TData>): MountHandle;
 }
 

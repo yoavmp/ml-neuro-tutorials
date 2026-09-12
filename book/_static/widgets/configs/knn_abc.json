@@ -3,7 +3,7 @@
   "type": "knn-abc",
   "title": "Honest vs invalid evaluation, interactively",
   "description": "Course activity for Exercise 3 Section 3: choose k and watch three synchronized observed-vs-predicted panels -- A (valid), B (resubstitution), C (invalid leakage) -- recompute for standardized KNN regression on the exact same 360-feature age recipe as Section 2.",
-  "data": "../data/abide_knn_abc.json",
+  "data": "../data/abide_knn_abc_manifest.json",
   "instructions": "Drag the slider, use the arrow keys, or type an exact value in the number box to change k. All three panels use the same standardized 360-feature recipe and Exercise 2's own locked training/test split; only which rows were fitted on and which rows are scored differs between them.",
   "k1Note": "At k = 1, panels B and C are exactly perfect (R² = 1): every evaluated point is its own nearest neighbour, at distance zero, so the prediction reproduces the observation by construction, not because anything was learned. Panel A at k = 1 is not perfect, because the test participants it evaluates were never used for fitting. k = 1 is therefore the clearest evidence that evaluating on fitted data is invalid -- not evidence that KNN generalises perfectly. Increasing k averages more observations and usually reduces this dramatic resubstitution effect.",
   "reflectionPrompts": [

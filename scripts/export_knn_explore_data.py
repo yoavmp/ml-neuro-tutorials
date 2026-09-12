@@ -14,21 +14,54 @@ fragile, so this script precomputes, once and deterministically:
   ``k`` from 1 through ``N_fit`` (via the "sort distances once, cumulative-sum
   the targets" trick -- WP13 section 4.6 -- rather than refitting
   ``KNeighborsRegressor`` ``N_fit`` separate times);
-* for every validation participant, its ``N_fit`` fitting-set target values
-  **reordered by distance** (nearest first). This lets the browser recompute
-  the exact observed-vs-predicted scatter for *any* chosen ``k`` with one
-  client-side prefix mean, without ever seeing a brain feature, a distance, or
-  a participant identifier -- only target-value floats, in neighbour order;
-* (WP14 section 4.8) the same reordering for two more deterministic bootstrap
-  resamples ("B", "C") of the fitting pool, alongside the original ("A"), so
-  the browser can show how predictions at a fixed validation participant and
-  a fixed k vary across different training-set draws -- an empirical
-  training-sample-sensitivity ("variance-proxy") and systematic-smoothing
-  ("bias-like-proxy") illustration, computed client-side, never touching the
-  outer test set.
+* for every validation participant, the **row index** (nearest first) of its
+  ``N_fit`` fitting-set neighbours, rather than their target values directly
+  (WP15 §3: a compact binary format -- see below). The browser reconstructs
+  the exact observed-vs-predicted scatter for *any* chosen k with one
+  client-side prefix mean over ``fitTargets[index]``, without ever seeing a
+  brain feature, a distance, or a participant identifier -- only a small
+  target-value array plus small-integer indices into it;
+* (WP14 section 4.8) the same index reordering for two more deterministic
+  bootstrap resamples ("B", "C") of the fitting pool, alongside the original
+  ("A"), so the browser can show how predictions at a fixed validation
+  participant and a fixed k vary across different training-set draws -- an
+  empirical training-sample-sensitivity ("variance-proxy") and
+  systematic-smoothing ("bias-like-proxy") illustration, computed
+  client-side, never touching the outer test set.
 
 Both computations are validated against a real, independently-fitted
 ``Pipeline(StandardScaler(), KNeighborsRegressor(k))`` at representative ``k``
+before anything is written.
+
+WP15 §3 compact binary format
+------------------------------
+
+Schema v2 (WP13/WP14) stored, per training sample, an explicit
+``n_validation x n_fit`` matrix of ALREADY-REORDERED target values as JSON
+floats (three such matrices, one of them -- "A" -- a byte-for-byte duplicate
+of the top-level baseline matrix). Schema v3 stores instead:
+
+* each training sample's own reference-pool target array ONCE, as a flat
+  little-endian float32 array (``observedFitting`` doubles as sample A's own
+  pool; B/C get their own resampled ``fitTargetsB``/``fitTargetsC``);
+* one ``n_validation x n_fit`` matrix of little-endian **uint16 row indices**
+  into that sample's own target array (nearest-first), per sample --
+  ``neighborIndexA/B/C``. A's index matrix also stands in for the removed
+  top-level "baseline" matrix (they were always identical -- WP14's own
+  validation already proved ``trainingSamples.A == top-level`` byte-for-byte,
+  so schema v3 simply never duplicates that storage in the first place);
+* the five per-k curve series, still small (``N_fit`` entries each), as flat
+  float32 arrays.
+
+All of this lives in one deterministic binary file
+(``abide_knn_explore.bin``), described by a small JSON manifest
+(``abide_knn_explore_manifest.json``) giving every section's dtype, shape,
+byte offset/length, and the whole file's SHA-256 digest
+(``scripts/binary_asset.py``; the matching browser decoder is
+``interactive/src/binary-asset.ts``). float32 is proven sufficient, not
+assumed: :func:`_verify_float32_precision` recomputes the full curve/endpoint
+values from the float32-round-tripped arrays and asserts they still match the
+float64 computation at the artifact's existing 4-decimal display rounding
 before anything is written.
 
 Split protocol (``book/config/abide_modeling.json`` -> ``knn``):
@@ -42,17 +75,21 @@ Split protocol (``book/config/abide_modeling.json`` -> ``knn``):
    further splits the 753-row outer-TRAINING partition only, into a fitting
    subset (``N_fit`` = 564) and a validation subset (``N_val`` = 189).
 
-Output: ``book/_static/widgets/data/abide_knn_explore.json``.
+Output: ``book/_static/widgets/data/abide_knn_explore_manifest.json`` +
+``book/_static/widgets/data/abide_knn_explore.bin``.
 
 Modes (exactly one required):
 
 * ``--refresh``  (network): download + verify the pinned sources, recompute,
-  validate, and write.
-* ``--check``    (offline): re-validate the committed artifact and confirm it
-  is byte-for-byte canonical.
+  validate, and write both files.
+* ``--check``    (offline): re-validate the committed manifest + binary and
+  confirm both are byte-for-byte canonical.
 
-Determinism: ``sort_keys`` + compact separators, floats rounded to a fixed
-precision, a single trailing newline, no timestamps.
+Determinism: manifest JSON uses ``sort_keys`` + compact separators, no
+timestamps; the binary is little-endian, 4-byte-aligned, built the same way
+every time from the same inputs (proven by ``tests/test_binary_asset.py``'s
+own determinism test and this script's own two-build comparison in CI via
+``jupyter-book build`` x2, WP15 §5.12).
 """
 
 from __future__ import annotations
@@ -73,10 +110,13 @@ from abide_modeling_data import (  # noqa: E402
     load_modeling_frame,
     sha256_hex,
 )
+from binary_asset import BinaryAssetBuilder, decode_section  # noqa: E402
 
-ARTIFACT_PATH = REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_knn_explore.json"
-SCHEMA_VERSION = 2
-DECIMALS = 4
+DATA_DIR = REPO_ROOT / "book" / "_static" / "widgets" / "data"
+MANIFEST_PATH = DATA_DIR / "abide_knn_explore_manifest.json"
+BINARY_PATH = DATA_DIR / "abide_knn_explore.bin"
+SCHEMA_VERSION = 3
+DISPLAY_DECIMALS = 4  # the rounding precision schema v2 used to display/round values at
 TARGET = MANIFEST["knn"]["target"]
 
 # WP14 section 4.8: three deterministic alternative training-set selections
@@ -122,19 +162,19 @@ def _dev_split(X_train: Any, y_train: Any, g_train: Any, manifest: dict[str, Any
     return X_fit, X_val, y_fit, y_val
 
 
-def _sorted_neighbor_targets(X_query: Any, X_fit: Any, y_fit: Any):
-    """For every row of X_query, the fitting-set y values sorted by ascending
-    Euclidean distance (in already-scaled space). Shape (n_query, n_fit)."""
+def _sorted_neighbor_index(X_query: Any, X_fit: Any):
+    """For every row of X_query, the fitting-set row INDEX order, sorted by
+    ascending Euclidean distance (in already-scaled space). Shape
+    (n_query, n_fit); values in [0, n_fit)."""
     import numpy as np
 
     d = np.linalg.norm(X_query[:, None, :] - X_fit[None, :, :], axis=2)
-    order = np.argsort(d, axis=1, kind="stable")
-    return y_fit[order]
+    return np.argsort(d, axis=1, kind="stable")
 
 
 def _r2_mse_curve(sorted_targets: Any, observed: Any) -> tuple[list[float], list[float]]:
     """Per-k R2/MSE for every k=1..n_fit, from cumulative means of
-    `sorted_targets` (n_obs x n_fit, nearest-first)."""
+    `sorted_targets` (n_obs x n_fit, nearest-first target VALUES)."""
     import numpy as np
 
     n_fit = sorted_targets.shape[1]
@@ -164,12 +204,11 @@ def _validate_against_sklearn(X_fit, y_fit, X_val, pred_val_all_k, sample_ks: li
             )
 
 
-def _bootstrap_training_sample(
-    X_fit_raw: Any, y_fit: Any, X_val_raw: Any, seed: int
-) -> dict[str, Any]:
+def _bootstrap_training_sample(X_fit_raw: Any, y_fit: Any, X_val_raw: Any, seed: int) -> dict[str, Any]:
     """One bootstrap resample (with replacement) of the fitting pool, refit
-    with its own StandardScaler, and the resulting validation neighbour-target
-    matrix. Independently validated against a real sklearn Pipeline."""
+    with its own StandardScaler. Returns its own resampled target array and
+    the validation neighbour-INDEX matrix (into that array), independently
+    validated against a real sklearn Pipeline."""
     import numpy as np
     from sklearn.preprocessing import StandardScaler
 
@@ -183,7 +222,8 @@ def _bootstrap_training_sample(
     Xf_b = scaler_b.transform(X_resampled_raw)
     Xv_b = scaler_b.transform(X_val_raw)
 
-    sorted_val_b = _sorted_neighbor_targets(Xv_b, Xf_b, y_resampled)
+    index_b = _sorted_neighbor_index(Xv_b, Xf_b)  # n_val x n_fit
+    sorted_val_b = y_resampled[index_b]
     cum_b = np.cumsum(sorted_val_b, axis=1)
     ks = np.arange(1, n_fit + 1)
     pred_val_all_k_b = cum_b / ks[None, :]
@@ -210,15 +250,42 @@ def _bootstrap_training_sample(
     if not np.allclose(pred_val_all_k_b[:, -1], fit_mean_b, atol=1e-6):
         raise RuntimeError(f"bootstrap sample (seed={seed}): k=n_fit predictions are not all equal to its own mean")
 
-    return {
-        "fitTargetMean": round(fit_mean_b, 6),
-        "neighborTargetsByProximity": [
-            [round(float(v), DECIMALS) for v in row] for row in sorted_val_b
-        ],
-    }
+    return {"targets": y_resampled, "index": index_b, "fitTargetMean": round(fit_mean_b, 6)}
 
 
-def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[str, Any]:
+def _verify_float32_precision(
+    sorted_val_values_f64: Any,
+    targets_f32: Any,
+    index_u16: Any,
+    y_val: Any,
+) -> None:
+    """Prove -- not assume -- that reconstructing nearest-first target values
+    from the float32 target array + uint16 index matrix reproduces the
+    float64-computed curve to the artifact's existing 4-decimal display
+    rounding (WP15 §3.2: "unless comparison proves 64-bit precision is
+    required..."). Raises if it does not."""
+    import numpy as np
+
+    reconstructed = targets_f32[index_u16].astype("float64")
+    r2_f64, mse_f64 = _r2_mse_curve(sorted_val_values_f64, y_val)
+    r2_f32, mse_f32 = _r2_mse_curve(reconstructed, y_val)
+    r2_diff = max(abs(a - b) for a, b in zip(r2_f64, r2_f32))
+    mse_diff = max(abs(a - b) for a, b in zip(mse_f64, mse_f32))
+    # Both r2_f64/mse_f64 and r2_f32/mse_f32 are independently rounded to
+    # DISPLAY_DECIMALS places (_r2_mse_curve); comparing two independently
+    # rounded values at exactly that same quantum can differ by up to one
+    # full quantum from double-rounding alone, with no real precision loss.
+    # A 2x margin absorbs that without hiding genuine float32 inadequacy
+    # (which would show up as a difference many quanta wide, not one).
+    tol = 2 * 10 ** (-DISPLAY_DECIMALS)
+    if r2_diff > tol or mse_diff > tol:
+        raise RuntimeError(
+            f"float32 round-trip precision check failed: max |R2 diff|={r2_diff}, "
+            f"max |MSE diff|={mse_diff}, tolerance={tol} (float32 is insufficient; use float64)"
+        )
+
+
+def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> tuple[dict[str, Any], bytes]:
     import numpy as np
     from sklearn.preprocessing import StandardScaler
 
@@ -234,20 +301,22 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
     Xf = scaler.transform(X_fit)
     Xv = scaler.transform(X_val)
 
-    sorted_val = _sorted_neighbor_targets(Xv, Xf, y_fit)  # n_val x n_fit
-    sorted_fit = _sorted_neighbor_targets(Xf, Xf, y_fit)  # n_fit x n_fit (self-inclusive)
+    index_a = _sorted_neighbor_index(Xv, Xf)  # n_val x n_fit, indices into y_fit
+    index_fit_self = _sorted_neighbor_index(Xf, Xf)  # n_fit x n_fit self-inclusive, for the fit curve only
 
-    val_r2, val_mse = _r2_mse_curve(sorted_val, y_val)
-    fit_r2, fit_mse = _r2_mse_curve(sorted_fit, y_fit)
+    sorted_val_values = y_fit[index_a]
+    sorted_fit_values = y_fit[index_fit_self]
+    val_r2, val_mse = _r2_mse_curve(sorted_val_values, y_val)
+    fit_r2, fit_mse = _r2_mse_curve(sorted_fit_values, y_fit)
 
-    cum_val = np.cumsum(sorted_val, axis=1)
+    cum_val = np.cumsum(sorted_val_values, axis=1)
     ks = np.arange(1, n_fit + 1)
     pred_val_all_k = cum_val / ks[None, :]
     sample_ks = sorted({k for k in (1, 5, 15, 17, 50, 200, n_fit) if k <= n_fit})
     _validate_against_sklearn(Xf, y_fit, Xv, pred_val_all_k, sample_ks=sample_ks)
 
     # structural endpoint check: at k=n_fit, every validation prediction must
-    # equal the fitting-set mean (this is asserted again, independently, by
+    # equal the fitting-set mean (re-asserted independently by
     # tests/test_export_knn_explore_data.py and the notebook itself)
     fit_mean = float(np.mean(y_fit))
     if not np.allclose(pred_val_all_k[:, -1], fit_mean, atol=1e-6):
@@ -256,19 +325,39 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
     val_r2_arr = np.array(val_r2)
     validation_optimal_k = int(np.argmax(val_r2_arr)) + 1
 
-    training_samples = {
-        "A": {
-            "fitTargetMean": round(fit_mean, 6),
-            "neighborTargetsByProximity": [
-                [round(float(v), DECIMALS) for v in row] for row in sorted_val
-            ],
-        }
-    }
-    for label, seed in BOOTSTRAP_SEEDS.items():
-        training_samples[label] = _bootstrap_training_sample(X_fit, y_fit, X_val, seed)
+    sample_b = _bootstrap_training_sample(X_fit, y_fit, X_val, BOOTSTRAP_SEEDS["B"])
+    sample_c = _bootstrap_training_sample(X_fit, y_fit, X_val, BOOTSTRAP_SEEDS["C"])
+
+    _verify_float32_precision(sorted_val_values, y_fit.astype("float32"), index_a.astype("uint16"), y_val)
+    _verify_float32_precision(
+        sample_b["targets"].astype("float64")[sample_b["index"]],
+        sample_b["targets"].astype("float32"),
+        sample_b["index"].astype("uint16"),
+        y_val,
+    )
+    _verify_float32_precision(
+        sample_c["targets"].astype("float64")[sample_c["index"]],
+        sample_c["targets"].astype("float32"),
+        sample_c["index"].astype("uint16"),
+        y_val,
+    )
+
+    builder = BinaryAssetBuilder()
+    builder.add("observedValidation", "float32", y_val)
+    builder.add("observedFitting", "float32", y_fit)
+    builder.add("fitTargetsB", "float32", sample_b["targets"])
+    builder.add("fitTargetsC", "float32", sample_c["targets"])
+    builder.add("neighborIndexA", "uint16", index_a)
+    builder.add("neighborIndexB", "uint16", sample_b["index"])
+    builder.add("neighborIndexC", "uint16", sample_c["index"])
+    builder.add("curveFitR2", "float32", np.array(fit_r2))
+    builder.add("curveFitMSE", "float32", np.array(fit_mse))
+    builder.add("curveValR2", "float32", np.array(val_r2))
+    builder.add("curveValMSE", "float32", np.array(val_mse))
+    blob = builder.build()
 
     src = manifest["source"]
-    return {
+    manifest_json: dict[str, Any] = {
         "schemaVersion": SCHEMA_VERSION,
         "activity": "knn-explore",
         "source": {
@@ -294,183 +383,224 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
             "nValidation": n_val,
         },
         "fitTargetMean": round(fit_mean, 6),
+        "trainingSampleMeans": {
+            "A": round(fit_mean, 6),
+            "B": sample_b["fitTargetMean"],
+            "C": sample_c["fitTargetMean"],
+        },
         "validationOptimalK": validation_optimal_k,
         "selectedKFromAudit": knn_cfg["selected_k"],
-        "observedValidation": [round(float(v), DECIMALS) for v in y_val],
-        "observedFitting": [round(float(v), DECIMALS) for v in y_fit],
-        "neighborTargetsByProximity": [
-            [round(float(v), DECIMALS) for v in row] for row in sorted_val
-        ],
-        "trainingSamples": training_samples,
+        "binary": {
+            "path": BINARY_PATH.name,
+            "byteLength": len(blob),
+            "sha256": sha256_hex(blob),
+        },
+        "sections": builder.sections,
+    }
+    return manifest_json, blob
+
+
+def _reconstruct_logical(manifest_json: dict[str, Any], blob: bytes) -> dict[str, Any]:
+    """Decode the binary blob back into the SAME logical arrays schema v2
+    stored directly, for validation purposes (mirrors the browser loader's
+    own reconstruction, interactive/src/knn-explore-data.ts)."""
+    sections = manifest_json["sections"]
+    observed_validation = decode_section(blob, sections["observedValidation"])
+    observed_fitting = decode_section(blob, sections["observedFitting"])
+    fit_targets_b = decode_section(blob, sections["fitTargetsB"])
+    fit_targets_c = decode_section(blob, sections["fitTargetsC"])
+    index_a = decode_section(blob, sections["neighborIndexA"])
+    index_b = decode_section(blob, sections["neighborIndexB"])
+    index_c = decode_section(blob, sections["neighborIndexC"])
+    return {
+        "observedValidation": observed_validation,
+        "observedFitting": observed_fitting,
+        "neighborTargetsByProximity": observed_fitting[index_a],
+        "trainingSamples": {
+            "A": {"neighborTargetsByProximity": observed_fitting[index_a], "fitTargetMean": manifest_json["trainingSampleMeans"]["A"]},
+            "B": {"neighborTargetsByProximity": fit_targets_b[index_b], "fitTargetMean": manifest_json["trainingSampleMeans"]["B"]},
+            "C": {"neighborTargetsByProximity": fit_targets_c[index_c], "fitTargetMean": manifest_json["trainingSampleMeans"]["C"]},
+        },
         "curve": {
-            "k": [int(k) for k in ks],
-            "fitR2": fit_r2,
-            "fitMSE": fit_mse,
-            "valR2": val_r2,
-            "valMSE": val_mse,
+            "fitR2": decode_section(blob, sections["curveFitR2"]),
+            "fitMSE": decode_section(blob, sections["curveFitMSE"]),
+            "valR2": decode_section(blob, sections["curveValR2"]),
+            "valMSE": decode_section(blob, sections["curveValMSE"]),
         },
     }
 
 
-def validate_artifact(artifact: Any, manifest: dict[str, Any] | None = None) -> list[str]:
+def validate_artifact(manifest_json: Any, blob: bytes, manifest: dict[str, Any] | None = None) -> list[str]:
+    import numpy as np
+
     manifest = manifest or MANIFEST
     problems: list[str] = []
-    if not isinstance(artifact, dict):
-        return ["artifact is not a JSON object"]
-    if artifact.get("schemaVersion") != SCHEMA_VERSION:
+    if not isinstance(manifest_json, dict):
+        return ["manifest is not a JSON object"]
+    if manifest_json.get("schemaVersion") != SCHEMA_VERSION:
         problems.append(f"schemaVersion must be {SCHEMA_VERSION}")
-    if artifact.get("activity") != "knn-explore":
+    if manifest_json.get("activity") != "knn-explore":
         problems.append("activity must be 'knn-explore'")
 
-    src = artifact.get("source", {})
+    src = manifest_json.get("source", {})
     if src.get("pinnedCommit") != manifest["source"]["pinned_commit"]:
         problems.append("source.pinnedCommit does not match the manifest")
 
-    split = artifact.get("split", {})
-    n_fit = split.get("nFit")
-    n_val = split.get("nValidation")
+    binary_meta = manifest_json.get("binary", {})
+    if binary_meta.get("byteLength") != len(blob):
+        problems.append(f"binary.byteLength {binary_meta.get('byteLength')} != actual {len(blob)}")
+    if binary_meta.get("sha256") != sha256_hex(blob):
+        problems.append("binary.sha256 does not match the actual binary file")
+
+    sections = manifest_json.get("sections", {})
+    required_sections = {
+        "observedValidation", "observedFitting", "fitTargetsB", "fitTargetsC",
+        "neighborIndexA", "neighborIndexB", "neighborIndexC",
+        "curveFitR2", "curveFitMSE", "curveValR2", "curveValMSE",
+    }
+    if set(sections) != required_sections:
+        problems.append(f"sections keys {set(sections)} != required {required_sections}")
+        return problems  # everything below assumes the sections exist
+    for name, sec in sections.items():
+        end = sec["byteOffset"] + sec["byteLength"]
+        if end > len(blob):
+            problems.append(f"section {name!r} extends past the end of the binary file")
+        if sec["byteOffset"] % 4 != 0:
+            problems.append(f"section {name!r} byteOffset {sec['byteOffset']} is not 4-byte aligned")
+
+    split = manifest_json.get("split", {})
+    n_fit, n_val = split.get("nFit"), split.get("nValidation")
     if not isinstance(n_fit, int) or not isinstance(n_val, int):
         return problems + ["split.nFit / split.nValidation must be integers"]
 
-    observed_val = artifact.get("observedValidation")
-    observed_fit = artifact.get("observedFitting")
-    neighbours = artifact.get("neighborTargetsByProximity")
-    curve = artifact.get("curve", {})
-
-    if not isinstance(observed_val, list) or len(observed_val) != n_val:
-        problems.append("observedValidation must align with split.nValidation")
-    if not isinstance(observed_fit, list) or len(observed_fit) != n_fit:
-        problems.append("observedFitting must align with split.nFit")
-    if not isinstance(neighbours, list) or len(neighbours) != n_val:
-        problems.append("neighborTargetsByProximity must have one row per validation participant")
-    else:
-        for row in neighbours:
-            if not isinstance(row, list) or len(row) != n_fit:
-                problems.append("neighborTargetsByProximity row must have n_fit entries")
-                break
-
-    training_samples = artifact.get("trainingSamples")
-    if not isinstance(training_samples, dict) or set(training_samples) != {"A", "B", "C"}:
-        problems.append("trainingSamples must have exactly keys A, B, C")
-    else:
-        for label, sample in training_samples.items():
-            rows = sample.get("neighborTargetsByProximity") if isinstance(sample, dict) else None
-            if not isinstance(rows, list) or len(rows) != n_val:
-                problems.append(f"trainingSamples.{label}.neighborTargetsByProximity must have one row per validation participant")
-                continue
-            for row in rows:
-                if not isinstance(row, list) or len(row) != n_fit:
-                    problems.append(f"trainingSamples.{label}.neighborTargetsByProximity row must have n_fit entries")
-                    break
-            fit_mean_b = sample.get("fitTargetMean") if isinstance(sample, dict) else None
-            if not isinstance(fit_mean_b, (int, float)):
-                problems.append(f"trainingSamples.{label}.fitTargetMean must be numeric")
-            elif rows and len(rows[0]) == n_fit:
-                # structural endpoint: k=n_fit predicts this sample's own mean
-                k_nfit_pred = sum(rows[0]) / n_fit
-                if abs(k_nfit_pred - fit_mean_b) > 1e-3:
-                    problems.append(f"trainingSamples.{label}: k=n_fit prediction does not match fitTargetMean")
-
-    if isinstance(neighbours, list) and isinstance(training_samples, dict) and isinstance(training_samples.get("A"), dict):
-        if training_samples["A"].get("neighborTargetsByProximity") != neighbours:
-            problems.append("trainingSamples.A.neighborTargetsByProximity must equal the top-level neighborTargetsByProximity")
-        if isinstance(artifact.get("fitTargetMean"), (int, float)) and training_samples["A"].get("fitTargetMean") != artifact.get("fitTargetMean"):
-            problems.append("trainingSamples.A.fitTargetMean must equal the top-level fitTargetMean")
-
-    k_list = curve.get("k")
-    if not isinstance(k_list, list) or k_list != list(range(1, n_fit + 1)):
-        problems.append("curve.k must be exactly [1, 2, ..., n_fit]")
-    for key in ("fitR2", "fitMSE", "valR2", "valMSE"):
-        vals = curve.get(key)
-        if not isinstance(vals, list) or len(vals) != n_fit:
-            problems.append(f"curve.{key} must have n_fit entries")
-
-    # endpoint checks
-    if isinstance(k_list, list) and k_list and observed_fit and isinstance(curve.get("fitR2"), list):
-        if abs(curve["fitR2"][0] - 1.0) > 1e-6:
-            problems.append("curve.fitR2 at k=1 must be (numerically) 1.0 -- perfect resubstitution")
-        fit_mean = artifact.get("fitTargetMean")
-        if fit_mean is not None and abs(curve["fitR2"][-1]) > 1e-3:
-            problems.append("curve.fitR2 at k=n_fit must be (numerically) ~0.0 -- the constant-mean predictor")
+    if sections["observedValidation"]["shape"] != [n_val]:
+        problems.append("observedValidation shape must be [nValidation]")
+    if sections["observedFitting"]["shape"] != [n_fit]:
+        problems.append("observedFitting shape must be [nFit]")
+    for label in ("A", "B", "C"):
+        key = f"neighborIndex{label}"
+        if sections[key]["shape"] != [n_val, n_fit]:
+            problems.append(f"{key} shape must be [nValidation, nFit]")
+    for label in ("B", "C"):
+        key = f"fitTargets{label}"
+        if sections[key]["shape"] != [n_fit]:
+            problems.append(f"{key} shape must be [nFit]")
+    for key in ("curveFitR2", "curveFitMSE", "curveValR2", "curveValMSE"):
+        if sections[key]["shape"] != [n_fit]:
+            problems.append(f"{key} shape must be [nFit]")
 
     identifier_token = ("id", "sub", "subject", "site", "participant")
-    for key in artifact.keys():
+    for key in manifest_json.keys():
         if key.lower() in identifier_token:
-            problems.append(f"artifact has an identifier-shaped key: {key!r}")
+            problems.append(f"manifest has an identifier-shaped key: {key!r}")
 
-    vok = artifact.get("validationOptimalK")
-    if isinstance(vok, int) and isinstance(curve.get("valR2"), list):
-        best_val_r2 = max(curve["valR2"])
-        if abs(curve["valR2"][vok - 1] - best_val_r2) > 1e-9:
+    # Any shape/offset/length problem already recorded above means decoding
+    # below could raise (e.g. a reshape failure) rather than produce a
+    # comparable array; report that as one more problem instead of crashing.
+    try:
+        # index bounds: every index must be a valid row into its own target array
+        idx_a = decode_section(blob, sections["neighborIndexA"])
+        idx_b = decode_section(blob, sections["neighborIndexB"])
+        idx_c = decode_section(blob, sections["neighborIndexC"])
+        if idx_a.size and (int(idx_a.min()) < 0 or int(idx_a.max()) >= n_fit):
+            problems.append("neighborIndexA has an out-of-range index")
+        if idx_b.size and (int(idx_b.min()) < 0 or int(idx_b.max()) >= n_fit):
+            problems.append("neighborIndexB has an out-of-range index")
+        if idx_c.size and (int(idx_c.min()) < 0 or int(idx_c.max()) >= n_fit):
+            problems.append("neighborIndexC has an out-of-range index")
+
+        # k=1 / k=n_fit structural endpoints, and A == baseline, via reconstruction
+        logical = _reconstruct_logical(manifest_json, blob)
+    except (ValueError, KeyError, IndexError) as exc:
+        problems.append(f"could not decode/reconstruct sections: {exc}")
+        return problems
+    fit_r2 = logical["curve"]["fitR2"]
+    if len(fit_r2) and abs(float(fit_r2[0]) - 1.0) > 1e-3:
+        problems.append("curve.fitR2 at k=1 must be (numerically) 1.0 -- perfect resubstitution")
+    if len(fit_r2) and abs(float(fit_r2[-1])) > 1e-2:
+        problems.append("curve.fitR2 at k=n_fit must be (numerically) ~0.0 -- the constant-mean predictor")
+
+    for label in ("A", "B", "C"):
+        rows = logical["trainingSamples"][label]["neighborTargetsByProximity"]
+        mean = logical["trainingSamples"][label]["fitTargetMean"]
+        if rows.shape[0]:
+            preds_at_k_nfit = rows.mean(axis=1)  # k=n_fit prediction = mean over ALL n_fit neighbours
+            if not np.allclose(preds_at_k_nfit, mean, atol=1e-2):
+                problems.append(f"trainingSamples.{label}: k=n_fit prediction does not match its fitTargetMean")
+
+    if not np.array_equal(logical["trainingSamples"]["A"]["neighborTargetsByProximity"], logical["neighborTargetsByProximity"]):
+        problems.append("trainingSamples.A must reconstruct to the same values as the top-level baseline")
+
+    vok = manifest_json.get("validationOptimalK")
+    val_r2 = logical["curve"]["valR2"]
+    if isinstance(vok, int) and len(val_r2):
+        best = float(np.max(val_r2))
+        if abs(float(val_r2[vok - 1]) - best) > 1e-4:
             problems.append("validationOptimalK does not point at the argmax of curve.valR2")
 
     return problems
 
 
-def serialize(artifact: dict[str, Any]) -> str:
-    return (
-        json.dumps(artifact, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
-        + "\n"
-    )
+def serialize_manifest(manifest_json: dict[str, Any]) -> str:
+    return json.dumps(manifest_json, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n"
 
 
-def _summary(artifact: dict[str, Any]) -> str:
-    s = artifact["split"]
+def _summary(manifest_json: dict[str, Any]) -> str:
+    s = manifest_json["split"]
+    b = manifest_json["binary"]
     return (
-        f"activity            : {artifact['activity']}\n"
-        f"feature recipe      : {artifact['featureRecipe']['bundle']} x "
-        f"{'+'.join(artifact['featureRecipe']['measures'])} (p={artifact['featureRecipe']['featureCount']})\n"
+        f"activity            : {manifest_json['activity']}\n"
+        f"feature recipe      : {manifest_json['featureRecipe']['bundle']} x "
+        f"{'+'.join(manifest_json['featureRecipe']['measures'])} (p={manifest_json['featureRecipe']['featureCount']})\n"
         f"n_outer_train       : {s['nOuterTrain']}   n_fit : {s['nFit']}   n_val : {s['nValidation']}\n"
-        f"fitting-set mean    : {artifact['fitTargetMean']}\n"
-        f"validation-optimal k: {artifact['validationOptimalK']} "
-        f"(valR2={artifact['curve']['valR2'][artifact['validationOptimalK'] - 1]})\n"
-        f"audit-selected k    : {artifact['selectedKFromAudit']} "
-        f"(valR2={artifact['curve']['valR2'][artifact['selectedKFromAudit'] - 1]})\n"
-        f"k=1   fitR2={artifact['curve']['fitR2'][0]}  valR2={artifact['curve']['valR2'][0]}\n"
-        f"k=n_fit fitR2={artifact['curve']['fitR2'][-1]}  valR2={artifact['curve']['valR2'][-1]}"
+        f"fitting-set mean    : {manifest_json['fitTargetMean']}\n"
+        f"validation-optimal k: {manifest_json['validationOptimalK']}\n"
+        f"audit-selected k    : {manifest_json['selectedKFromAudit']}\n"
+        f"binary payload      : {b['byteLength']} bytes  sha256={b['sha256']}"
     )
 
 
 def cmd_refresh() -> int:
     frame = load_modeling_frame()
-    artifact = build_artifact(frame)
-    problems = validate_artifact(artifact)
+    manifest_json, blob = build_artifact(frame)
+    problems = validate_artifact(manifest_json, blob)
     if problems:
         print("ERROR: built artifact failed validation:", file=sys.stderr)
         for p in problems:
             print(f"  - {p}", file=sys.stderr)
         return 1
-    text = serialize(artifact)
-    ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    ARTIFACT_PATH.write_text(text, encoding="utf-8", newline="\n")
-    print(f"wrote {ARTIFACT_PATH.relative_to(REPO_ROOT)} ({len(text.encode('utf-8'))} bytes)")
-    print(f"artifact sha256: {sha256_hex(text.encode('utf-8'))}")
-    print(_summary(artifact))
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    BINARY_PATH.write_bytes(blob)
+    manifest_text = serialize_manifest(manifest_json)
+    MANIFEST_PATH.write_text(manifest_text, encoding="utf-8", newline="\n")
+    print(f"wrote {BINARY_PATH.relative_to(REPO_ROOT)} ({len(blob)} bytes)")
+    print(f"wrote {MANIFEST_PATH.relative_to(REPO_ROOT)} ({len(manifest_text.encode('utf-8'))} bytes)")
+    print(_summary(manifest_json))
     return 0
 
 
 def cmd_check() -> int:
-    if not ARTIFACT_PATH.exists():
-        print(f"ERROR: {ARTIFACT_PATH} does not exist; run --refresh first.", file=sys.stderr)
+    if not MANIFEST_PATH.exists() or not BINARY_PATH.exists():
+        print(f"ERROR: {MANIFEST_PATH} / {BINARY_PATH} missing; run --refresh first.", file=sys.stderr)
         return 1
-    on_disk = ARTIFACT_PATH.read_text(encoding="utf-8")
+    manifest_text = MANIFEST_PATH.read_text(encoding="utf-8")
     try:
-        artifact = json.loads(on_disk)
+        manifest_json = json.loads(manifest_text)
     except json.JSONDecodeError as exc:
-        print(f"ERROR: artifact is not valid JSON: {exc}", file=sys.stderr)
+        print(f"ERROR: manifest is not valid JSON: {exc}", file=sys.stderr)
         return 1
-    problems = validate_artifact(artifact)
+    blob = BINARY_PATH.read_bytes()
+    problems = validate_artifact(manifest_json, blob)
     if problems:
         print("ERROR: committed artifact failed validation:", file=sys.stderr)
         for p in problems:
             print(f"  - {p}", file=sys.stderr)
         return 1
-    if serialize(artifact) != on_disk:
-        print("ERROR: committed artifact is not canonical (re-serialization differs).", file=sys.stderr)
+    if serialize_manifest(manifest_json) != manifest_text:
+        print("ERROR: committed manifest is not canonical (re-serialization differs).", file=sys.stderr)
         return 1
-    print(f"OK: {ARTIFACT_PATH.relative_to(REPO_ROOT)} is valid and canonical.")
-    print(f"artifact sha256: {sha256_hex(on_disk.encode('utf-8'))}")
-    print(_summary(artifact))
+    print(f"OK: {MANIFEST_PATH.relative_to(REPO_ROOT)} + {BINARY_PATH.relative_to(REPO_ROOT)} are valid and canonical.")
+    print(_summary(manifest_json))
     return 0
 
 

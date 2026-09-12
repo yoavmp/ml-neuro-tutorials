@@ -42,9 +42,13 @@ test.describe("Chapter 3 built page — embedded KNN k-exploration", () => {
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
 
     const configResp = responses.find((r) => r.url.endsWith("/configs/knn_explore.json"));
-    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_knn_explore.json"));
+    const manifestResp = responses.find((r) => r.url.endsWith("/data/abide_knn_explore_manifest.json"));
+    const binaryResp = responses.find((r) => r.url.endsWith("/data/abide_knn_explore.bin"));
+    const obsoleteResp = responses.find((r) => r.url.endsWith("/data/abide_knn_explore.json"));
     expect(configResp?.status, "config HTTP status").toBe(200);
-    expect(dataResp?.status, "data HTTP status").toBe(200);
+    expect(manifestResp?.status, "manifest HTTP status").toBe(200);
+    expect(binaryResp?.status, "binary HTTP status").toBe(200);
+    expect(obsoleteResp, "no request for the obsolete large JSON asset").toBeUndefined();
 
     const slider = frame.locator('[data-testid="knn-k-slider"]');
     await expect(slider).toHaveValue("17"); // validation-optimal default
@@ -153,9 +157,13 @@ test.describe("Chapter 3 built page — embedded honest-vs-invalid KNN activity"
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
 
     const configResp = responses.find((r) => r.url.endsWith("/configs/knn_abc.json"));
-    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_knn_abc.json"));
+    const manifestResp = responses.find((r) => r.url.endsWith("/data/abide_knn_abc_manifest.json"));
+    const binaryResp = responses.find((r) => r.url.endsWith("/data/abide_knn_abc.bin"));
+    const obsoleteResp = responses.find((r) => r.url.endsWith("/data/abide_knn_abc.json"));
     expect(configResp?.status, "config HTTP status").toBe(200);
-    expect(dataResp?.status, "data HTTP status").toBe(200);
+    expect(manifestResp?.status, "manifest HTTP status").toBe(200);
+    expect(binaryResp?.status, "binary HTTP status").toBe(200);
+    expect(obsoleteResp, "no request for the obsolete large JSON asset").toBeUndefined();
 
     await expect(frame.locator('[data-testid="knn-abc-k-slider"]')).toHaveValue("15");
     for (const panel of ["a", "b", "c"]) {

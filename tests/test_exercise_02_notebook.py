@@ -263,13 +263,64 @@ class Notebook(unittest.TestCase):
         self.assertNotIn("10.1017/S0140525X07001185", self.md)  # Jung & Haier P-FIT
         self.assertNotIn("10.1093/cercor/bhl125", self.md)  # Narr et al.
 
-    def test_learning_curve_starts_at_low_n_and_spans_underdetermined_region(self):
-        self.assertIn("sizes = [50, 100, 200, 300, 400, 550, len(y_train)]", self.code)
+    def test_sample_size_section_uses_a_small_predeclared_subset_not_the_360_recipe(self):
+        # WP15 §2: Section 5 isolates sample size with a small (p<=12),
+        # documented, bilateral feature subset -- distinct from FEATURES
+        # (the 360-column recipe Sections 1-4 keep unchanged).
+        self.assertIn("sizes = [40, 60, 90, 130, 200, 300, len(y_train_ss)]", self.code)
         self.assertIn("n/p", self.code)
         # honest handling: no clipping of extreme R^2
         self.assertNotIn("clip(", self.code)
-        self.assertIn("UNDERDETERMINED", self.all_output)
-        self.assertIn("double descent", self.md.lower())
+        self.assertIn('SAMPLE_SIZE_ROIS = ["4", "3a", "3b", "1", "2"]', self.code)
+        self.assertIn("n_features (p) = 10", self.all_output)
+        # the small subset must never replace the 360-feature recipe used
+        # everywhere else in the notebook
+        self.assertIn("360 features", self.all_output)
+        self.assertIn("n_features = 360", self.all_output)
+
+        import sys
+
+        sys.path.insert(0, str(REPO_ROOT / "scripts"))
+        import abide_modeling_data as amd  # noqa: E402
+
+        expected = {
+            f"fsCT_{hemi}_{amd.raw_label_for(roi, hemi)}_ROI"
+            for roi in ["4", "3a", "3b", "1", "2"]
+            for hemi in ("L", "R")
+        }
+        self.assertEqual(len(expected), 10)
+        # every one of those columns is a real, bilateral, brain-only atlas column
+        amd.assert_brain_only(sorted(expected))
+
+    def test_sample_size_subset_reuses_the_same_participant_split_as_section_2(self):
+        self.assertIn(
+            "assert np.array_equal(y_train_ss, y_train) and np.array_equal(y_test_ss, y_test)",
+            self.code,
+        )
+
+    def test_no_stale_double_descent_or_underdetermined_claims(self):
+        # WP15 §2.5: the small subset's demo does not show double descent, so
+        # neither the old n=50/100 sizes, the old UNDERDETERMINED flag, nor
+        # the double-descent explanation may remain.
+        self.assertNotIn("sizes = [50, 100, 200, 300, 400, 550, len(y_train)]", self.code)
+        self.assertNotIn("UNDERDETERMINED", self.all_output)
+        self.assertNotIn("double descent", self.md.lower())
+        self.assertNotIn("interpolation threshold", self.md.lower())
+
+    def test_sample_size_curve_shows_a_clear_upward_trend_with_narrowing_spread(self):
+        cell = self.by_id["wp11-058"]
+        out = "\n".join(
+            "".join(o.get("text", "")) for o in cell.get("outputs", []) if o.get("output_type") == "stream"
+        )
+        import re
+
+        rows = re.findall(r"n_train\s*=\s*(\d+).*?median\s+([+-]\d+\.\d+).*?pct \[\s*([+-]\d+\.\d+),\s*([+-]\d+\.\d+)\]", out)
+        self.assertGreaterEqual(len(rows), 7)
+        medians = [float(r[1]) for r in rows]
+        spreads = [float(r[3]) - float(r[2]) for r in rows]
+        self.assertLess(medians[0], medians[-1])  # clear upward trend, first vs last
+        self.assertLess(spreads[-1], spreads[0])  # instability narrows materially
+        self.assertGreater(medians[-1], 0.15)  # final result is meaningful, not noise
 
     def test_no_wp_script_or_report_references_in_student_text(self):
         low_md = self.md.lower()
@@ -287,7 +338,7 @@ class Notebook(unittest.TestCase):
         self.assertIn("A. correct", out)
         self.assertIn("B. training score", out)
         self.assertIn("C. invalid", out)
-        self.assertIn("n_features (p) = 360", out)
+        self.assertIn("n_features (p) = 10", out)  # Section 5's compact sample-size subset
 
     def test_no_execution_errors_or_stderr_committed(self):
         for c in self.cells:
