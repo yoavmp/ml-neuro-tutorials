@@ -31,6 +31,12 @@ html:
 # map so it can never point at the canonical notebook; unmapped pages get no
 # button. Both Chapter 1 and Chapter 2 use it.
 
+# WP16: `_static/activity-resize.js` keeps each embedded activity iframe's
+# height in sync with its actual content height (see the file for why a
+# static `height` attribute alone cannot stay correct at every viewport
+# width). Each notebook's `height="N"` attribute remains as the pre-JS
+# fallback.
+
 # The portable notebook is a downloadable artifact (served from raw GitHub on
 # `main`, linked from the Chapter 1 opening), not a book page. Keep Sphinx from
 # treating book/downloads/ as source so it produces no "not in any toctree"
@@ -50,3 +56,4 @@ sphinx:
     html_js_files:
       - sidebar-toggle-fix.js
       - launch-buttons.js
+      - activity-resize.js

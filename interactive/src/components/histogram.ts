@@ -14,14 +14,7 @@ import {
   parseAbideHistogramData,
   type AbideHistogramData,
 } from "../histogram-data";
-
-function prefersDark(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-}
+import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
 
 function mount(args: MountArgs<EdaHistogramConfig, AbideHistogramData>): MountHandle {
   const { container, config, data } = args;
@@ -122,12 +115,8 @@ function mount(args: MountArgs<EdaHistogramConfig, AbideHistogramData>): MountHa
     container.append(promptsHeading, list);
   }
 
-  const dark = prefersDark();
-  const axisColor = dark ? "#c9c9c9" : "#333333";
-  const gridColor = dark ? "#3a3a3a" : "#e2e2e2";
-  const barColor = dark ? "#5a9bd4" : "#2a6f9e";
-
-  const plotConfig = { displayModeBar: false, responsive: true };
+  const theme = getPlotlyTheme();
+  const barColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
 
   let destroyed = false;
 
@@ -173,32 +162,21 @@ function mount(args: MountArgs<EdaHistogramConfig, AbideHistogramData>): MountHa
       y: result.counts,
       width: widths,
       customdata: result.binLabels,
-      marker: { color: barColor, line: { color: dark ? "#1b1b1b" : "#ffffff", width: 1 } },
+      marker: { color: barColor, line: { color: theme.dark ? "#1b1b1b" : "#ffffff", width: 1 } },
       hovertemplate: "Bin %{customdata}<br>Count %{y}<extra></extra>",
     };
 
-    const layout = {
-      margin: { t: 12, r: 12, b: 48, l: 56 },
+    const layout = buildPlotLayout(theme, {
       height: 360,
-      autosize: true,
       bargap: 0,
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: axisColor },
-      xaxis: {
-        title: { text: config.xAxisLabel ?? labelFor(variableName) },
-        gridcolor: gridColor,
-        zeroline: false,
-      },
+      xaxis: { title: { text: config.xAxisLabel ?? labelFor(variableName) } },
       yaxis: {
         title: { text: config.yAxisLabel ?? "Number of participants" },
-        gridcolor: gridColor,
-        zeroline: false,
         rangemode: "tozero" as const,
       },
-    };
+    });
 
-    await Plotly.react(plot, [trace], layout, plotConfig);
+    await Plotly.react(plot, [trace], layout, PLOT_CONFIG);
     if (destroyed) return;
 
     plot.dataset.barCount = String(result.counts.length);

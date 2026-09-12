@@ -14,16 +14,9 @@ import {
   parseAbideRetentionData,
   type AbideRetentionData,
 } from "../retention-data";
+import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
 
 const DEFAULT_LOW_RETENTION_PCT = 50;
-
-function prefersDark(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-}
 
 interface VariableRef {
   name: string;
@@ -159,14 +152,11 @@ function mount(args: MountArgs<EdaRetentionConfig, AbideRetentionData>): MountHa
     container.append(promptsHeading, list);
   }
 
-  const dark = prefersDark();
-  const axisColor = dark ? "#c9c9c9" : "#333333";
-  const gridColor = dark ? "#3a3a3a" : "#e2e2e2";
-  const okColor = dark ? "#5a9bd4" : "#2a6f9e";
-  const warnColor = dark ? "#d9a441" : "#b5760a";
-  const lineColor = dark ? "#d98b8b" : "#a12f2f";
+  const theme = getPlotlyTheme();
+  const okColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
+  const warnColor = theme.dark ? "#d9a441" : "#b5760a";
+  const lineColor = theme.dark ? "#d98b8b" : "#a12f2f";
 
-  const plotConfig = { displayModeBar: false, responsive: true };
   let destroyed = false;
 
   function selectedNames(): string[] {
@@ -239,26 +229,17 @@ function mount(args: MountArgs<EdaRetentionConfig, AbideRetentionData>): MountHa
         "(%{y:.1f}%)<extra></extra>",
     };
 
-    const layout = {
-      margin: { t: 12, r: 12, b: 110, l: 56 },
+    const layout = buildPlotLayout(theme, {
+      margin: { b: 110 },
       height: 380,
-      autosize: true,
       bargap: 0.2,
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: axisColor },
       xaxis: {
         title: { text: config.siteLabel },
         tickangle: -45,
-        automargin: true,
-        gridcolor: gridColor,
-        zeroline: false,
       },
       yaxis: {
         title: { text: "Participants retained (%)" },
         range: [0, 105],
-        gridcolor: gridColor,
-        zeroline: false,
       },
       shapes: [
         {
@@ -285,9 +266,9 @@ function mount(args: MountArgs<EdaRetentionConfig, AbideRetentionData>): MountHa
           font: { color: lineColor, size: 11 },
         },
       ],
-    };
+    });
 
-    await Plotly.react(plot, [trace], layout, plotConfig);
+    await Plotly.react(plot, [trace], layout, PLOT_CONFIG);
     if (destroyed) return;
     plot.dataset.barCount = String(result.sites.length);
     const next = Number(plot.dataset.renderCount ?? "0") + 1;

@@ -22,19 +22,12 @@ import {
   numericColumn,
   type AbideCorrelationData,
 } from "../correlation-data";
+import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
 
 // Okabe–Ito: colourblind-safe, and deliberately not a good/bad ramp.
 const GROUP_COLORS = ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#56B4E9", "#D55E00"];
 const UNGROUPED_COLOR_LIGHT = "#33566b";
 const UNGROUPED_COLOR_DARK = "#8fb6cc";
-
-function prefersDark(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-}
 
 function fmtR(r: number | null): string {
   return r === null ? "not defined" : (r >= 0 ? "+" : "") + r.toFixed(2);
@@ -181,11 +174,8 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
   }
 
   // --- theme ---
-  const dark = prefersDark();
-  const axisColor = dark ? "#c9c9c9" : "#333333";
-  const gridColor = dark ? "#3a3a3a" : "#e2e2e2";
-  const ungroupedColor = dark ? UNGROUPED_COLOR_DARK : UNGROUPED_COLOR_LIGHT;
-  const plotConfig = { displayModeBar: false, responsive: true };
+  const theme = getPlotlyTheme();
+  const ungroupedColor = theme.dark ? UNGROUPED_COLOR_DARK : UNGROUPED_COLOR_LIGHT;
   let destroyed = false;
 
   function groupingInput(key: string): GroupingInput | null {
@@ -223,7 +213,7 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
       plot.dataset.r = "null";
       plot.dataset.excludedN = "0";
       plot.dataset.traceCount = "0";
-      await Plotly.react(plot, [], { autosize: true }, plotConfig);
+      await Plotly.react(plot, [], buildPlotLayout(theme), PLOT_CONFIG);
       if (destroyed) return;
       const bump = Number(plot.dataset.renderCount ?? "0") + 1;
       plot.dataset.renderCount = String(bump);
@@ -314,28 +304,16 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
       ];
     }
 
-    const layout = {
-      margin: { t: 12, r: 12, b: 52, l: 62 },
+    const layout = buildPlotLayout(theme, {
+      margin: { b: 52, l: 62 },
       height: 420,
-      autosize: true,
       showlegend: Boolean(result.groups),
       legend: { orientation: "h" as const, y: -0.2 },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: axisColor },
-      xaxis: {
-        title: { text: xLabel },
-        gridcolor: gridColor,
-        zeroline: false,
-      },
-      yaxis: {
-        title: { text: yLabel },
-        gridcolor: gridColor,
-        zeroline: false,
-      },
-    };
+      xaxis: { title: { text: xLabel } },
+      yaxis: { title: { text: yLabel } },
+    });
 
-    await Plotly.react(plot, traces, layout, plotConfig);
+    await Plotly.react(plot, traces, layout, PLOT_CONFIG);
     if (destroyed) return;
 
     plot.dataset.n = String(result.overall.n);

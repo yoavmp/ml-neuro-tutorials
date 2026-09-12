@@ -19,14 +19,7 @@ import type { MountArgs, MountHandle, WidgetComponent } from "./types";
 import type { KnnAbcConfig } from "../config";
 import { r2Score, meanSquaredError, sharedAxisRange, predictAllForK } from "../knn-explore";
 import { parseKnnAbcData, type KnnAbcData } from "../knn-abc-data";
-
-function prefersDark(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-}
+import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
 
 function clampK(value: number, kMax: number): number {
   if (!Number.isFinite(value)) return 1;
@@ -52,12 +45,9 @@ function mount(args: MountArgs<KnnAbcConfig, KnnAbcData>): MountHandle {
     throw new Error(`selectedKFromAudit ${defaultK} is outside [1, ${kMax}]`);
   }
 
-  const dark = prefersDark();
-  const axisColor = dark ? "#c9c9c9" : "#333333";
-  const gridColor = dark ? "#3a3a3a" : "#e2e2e2";
-  const markerColor = dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
-  const diagColor = dark ? "#d98b5f" : "#b5622f";
-  const plotConfig = { displayModeBar: false, responsive: true };
+  const theme = getPlotlyTheme();
+  const markerColor = theme.dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
+  const diagColor = theme.dark ? "#d98b5f" : "#b5622f";
 
   const scatterAxisRange = sharedAxisRange([...data.observedTrain, ...data.observedTest], 0.05);
 
@@ -224,26 +214,21 @@ function mount(args: MountArgs<KnnAbcConfig, KnnAbcData>): MountHandle {
       name: "Perfect prediction (observed = predicted)",
       showlegend: true,
     };
-    const layout = {
-      margin: { t: 12, r: 8, b: 44, l: 52 },
+    const layout = buildPlotLayout(theme, {
+      margin: { r: 8, b: 44, l: 52 },
       height: 300,
-      autosize: true,
       showlegend: true,
       legend: { orientation: "h" as const, y: 1.18, font: { size: 9 } },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: axisColor, size: 10 },
-      xaxis: { title: { text: "Observed" }, gridcolor: gridColor, zeroline: false, range: [...scatterAxisRange] },
+      font: { size: 10 },
+      xaxis: { title: { text: "Observed" }, range: [...scatterAxisRange] },
       yaxis: {
         title: { text: "Predicted" },
-        gridcolor: gridColor,
-        zeroline: false,
         range: [...scatterAxisRange],
         scaleanchor: "x" as const,
         scaleratio: 1,
       },
-    };
-    await Plotly.react(plotDivs[panel.key]!, [scatter, diag], layout, plotConfig);
+    });
+    await Plotly.react(plotDivs[panel.key]!, [scatter, diag], layout, PLOT_CONFIG);
     if (destroyed) return;
     const n = Number(plotDivs[panel.key]!.dataset.renderCount ?? "0") + 1;
     plotDivs[panel.key]!.dataset.renderCount = String(n);
