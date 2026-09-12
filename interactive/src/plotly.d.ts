@@ -2,12 +2,14 @@
 // `plotly.js-cartesian-dist-min` ships no .d.ts. We only use newPlot / react /
 // purge, so declare just those rather than pulling in the full @types/plotly.js.
 declare module "plotly.js-cartesian-dist-min" {
-  type PlotData = Record<string, unknown>;
-  type Layout = Record<string, unknown>;
-  interface Config {
+  export type PlotData = Record<string, unknown>;
+  export type Layout = Record<string, unknown>;
+  export interface Config {
     displayModeBar?: boolean;
     staticPlot?: boolean;
     responsive?: boolean;
+    scrollZoom?: boolean;
+    doubleClick?: false | "reset" | "autosize" | "reset+autosize";
     [key: string]: unknown;
   }
 

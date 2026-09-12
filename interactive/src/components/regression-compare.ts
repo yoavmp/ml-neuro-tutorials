@@ -24,14 +24,7 @@ import {
   type RegressionCatalog,
   type RegressionModelEntry,
 } from "../regression-compare-data";
-
-function prefersDark(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-}
+import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
 
 interface PanelState {
   measuresKey: string;
@@ -63,12 +56,9 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
     throw new Error(`The catalog is missing: ${[...new Set(missing)].join(", ")}.`);
   }
 
-  const dark = prefersDark();
-  const axisColor = dark ? "#c9c9c9" : "#333333";
-  const gridColor = dark ? "#3a3a3a" : "#e2e2e2";
-  const markerColor = dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
-  const diagColor = dark ? "#d98b5f" : "#b5622f";
-  const plotConfig = { displayModeBar: false, responsive: true };
+  const theme = getPlotlyTheme();
+  const markerColor = theme.dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
+  const diagColor = theme.dark ? "#d98b5f" : "#b5622f";
 
   // Shared axis range: observed plus every enabled model's predictions.
   const allValues: number[] = [...data.observed];
@@ -287,30 +277,20 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
         hoverinfo: "skip" as const,
         name: "perfect prediction",
       };
-      const layout = {
-        margin: { t: 12, r: 12, b: 48, l: 56 },
+      const layout = buildPlotLayout(theme, {
         height: 320,
-        autosize: true,
-        showlegend: false,
-        paper_bgcolor: "rgba(0,0,0,0)",
-        plot_bgcolor: "rgba(0,0,0,0)",
-        font: { color: axisColor },
         xaxis: {
           title: { text: `Observed ${data.target.label}` },
-          gridcolor: gridColor,
-          zeroline: false,
           range: [...axisRange],
         },
         yaxis: {
           title: { text: `Predicted ${data.target.label} (out of fold)` },
-          gridcolor: gridColor,
-          zeroline: false,
           range: [...axisRange],
           scaleanchor: "x" as const,
           scaleratio: 1,
         },
-      };
-      await Plotly.react(plot, [scatter, diag], layout, plotConfig);
+      });
+      await Plotly.react(plot, [scatter, diag], layout, PLOT_CONFIG);
       if (destroyed) return;
       const n = Number(plot.dataset.renderCount ?? "0") + 1;
       plot.dataset.renderCount = String(n);

@@ -14,6 +14,7 @@ import { parseActivityConfigJson } from "./config";
 import { resolveConfigUrl, resolveDataUrl } from "./urls";
 import { registry } from "./components/registry";
 import type { MountHandle } from "./components/types";
+import { startHeightReporting } from "./resize-report";
 
 const root = document.getElementById("app");
 
@@ -66,6 +67,7 @@ let activeHandle: MountHandle | undefined;
 async function boot(): Promise<void> {
   if (!root) return;
   window.addEventListener("beforeunload", () => activeHandle?.destroy());
+  startHeightReporting();
 
   renderStatus("Loading activity…");
 

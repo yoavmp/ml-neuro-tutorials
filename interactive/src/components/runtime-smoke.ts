@@ -14,6 +14,7 @@ import type {
   WidgetComponent,
 } from "./types";
 import type { RuntimeSmokeConfig } from "../config";
+import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
 
 const seriesSchema = z.object({
   label: z.string().min(1),
@@ -107,14 +108,14 @@ function mount(
   plot.dataset.renderCount = "0";
   container.appendChild(plot);
 
-  const plotConfig = { displayModeBar: false, responsive: true };
-  const layout = {
+  const theme = getPlotlyTheme();
+  const layout = buildPlotLayout(theme, {
     margin: { t: 10, r: 10, b: 40, l: 40 },
     height: 320,
     bargap: 0.25,
     xaxis: { title: { text: "category" } },
     yaxis: { title: { text: "value" } },
-  };
+  });
 
   let destroyed = false;
 
@@ -122,7 +123,7 @@ function mount(
     const series = data.series[index];
     if (!series || destroyed) return;
     // Full redraw, not a partial restyle, so the trace data genuinely changes.
-    await Plotly.react(plot, [traceFor(series)], layout, plotConfig);
+    await Plotly.react(plot, [traceFor(series)], layout, PLOT_CONFIG);
     if (destroyed) return;
     const next = Number(plot.dataset.renderCount ?? "0") + 1;
     plot.dataset.renderCount = String(next);

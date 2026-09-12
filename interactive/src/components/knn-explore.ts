@@ -23,17 +23,10 @@ import {
   ensembleMeanForK,
 } from "../knn-explore";
 import { parseKnnExploreData, type KnnExploreData } from "../knn-explore-data";
+import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
 
 const SAMPLE_LABELS = ["A", "B", "C"] as const;
 type SampleLabel = (typeof SAMPLE_LABELS)[number];
-
-function prefersDark(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-}
 
 function resolveDefaultK(config: KnnExploreConfig, data: KnnExploreData): number {
   return config.defaultK === "validation-optimal" ? data.validationOptimalK : config.defaultK;
@@ -54,15 +47,12 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
     throw new Error(`config.defaultK resolved to ${defaultK}, outside [1, ${nFit}]`);
   }
 
-  const dark = prefersDark();
-  const axisColor = dark ? "#c9c9c9" : "#333333";
-  const gridColor = dark ? "#3a3a3a" : "#e2e2e2";
-  const markerColor = dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
-  const diagColor = dark ? "#d98b5f" : "#b5622f";
-  const fitCurveColor = dark ? "#8fb8da" : "#2a6f9e";
-  const valCurveColor = dark ? "#f0915c" : "#b5622f";
-  const markerLineColor = dark ? "#e2c48f" : "#8f5a1a";
-  const plotConfig = { displayModeBar: false, responsive: true };
+  const theme = getPlotlyTheme();
+  const markerColor = theme.dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
+  const diagColor = theme.dark ? "#d98b5f" : "#b5622f";
+  const fitCurveColor = theme.dark ? "#8fb8da" : "#2a6f9e";
+  const valCurveColor = theme.dark ? "#f0915c" : "#b5622f";
+  const markerLineColor = theme.dark ? "#e2c48f" : "#8f5a1a";
 
   const scatterAxisRange = sharedAxisRange([...data.observedValidation, ...data.observedFitting], 0.05);
   const sampleMatrices: Record<SampleLabel, readonly (readonly number[])[]> = {
@@ -293,31 +283,22 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
       name: "Perfect prediction (observed = predicted)",
       showlegend: true,
     };
-    const layout = {
-      margin: { t: 12, r: 12, b: 48, l: 56 },
+    const layout = buildPlotLayout(theme, {
       height: 340,
-      autosize: true,
       showlegend: true,
       legend: { orientation: "h" as const, y: 1.12 },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: axisColor },
       xaxis: {
         title: { text: `Observed ${data.target.label}` },
-        gridcolor: gridColor,
-        zeroline: false,
         range: [...scatterAxisRange],
       },
       yaxis: {
         title: { text: `Predicted ${data.target.label} (validation, training sample ${currentSample})` },
-        gridcolor: gridColor,
-        zeroline: false,
         range: [...scatterAxisRange],
         scaleanchor: "x" as const,
         scaleratio: 1,
       },
-    };
-    await Plotly.react(scatterPlot, [scatter, diag], layout, plotConfig);
+    });
+    await Plotly.react(scatterPlot, [scatter, diag], layout, PLOT_CONFIG);
     if (destroyed) return;
     const n = Number(scatterPlot.dataset.renderCount ?? "0") + 1;
     scatterPlot.dataset.renderCount = String(n);
@@ -354,25 +335,16 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
       hoverinfo: "skip" as const,
       showlegend: false,
     };
-    const layout = {
-      margin: { t: 12, r: 12, b: 48, l: 56 },
+    const layout = buildPlotLayout(theme, {
       height: 320,
-      autosize: true,
       showlegend: true,
       legend: { orientation: "h" as const, y: 1.15 },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: axisColor },
       xaxis: {
         title: { text: "k (number of neighbours, log scale)" },
         type: "log" as const,
-        gridcolor: gridColor,
-        zeroline: false,
       },
       yaxis: {
         title: { text: `Mean squared error (${data.target.unit}²)` },
-        gridcolor: gridColor,
-        zeroline: false,
         rangemode: "tozero" as const,
       },
       shapes: [
@@ -387,8 +359,8 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
           line: { color: markerLineColor, width: 1.5, dash: "dot" as const },
         },
       ],
-    };
-    await Plotly.react(curvePlot, [fitTrace, valTrace, currentMarker], layout, plotConfig);
+    });
+    await Plotly.react(curvePlot, [fitTrace, valTrace, currentMarker], layout, PLOT_CONFIG);
     if (destroyed) return;
     const n = Number(curvePlot.dataset.renderCount ?? "0") + 1;
     curvePlot.dataset.renderCount = String(n);
@@ -454,26 +426,19 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
       name: "Perfect prediction (observed = predicted)",
       showlegend: true,
     };
-    const layout = {
-      margin: { t: 12, r: 12, b: 48, l: 56 },
+    const layout = buildPlotLayout(theme, {
       height: 300,
-      autosize: true,
       showlegend: true,
       legend: { orientation: "h" as const, y: 1.18 },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: axisColor },
-      xaxis: { title: { text: `Observed ${data.target.label} (bin mean)` }, gridcolor: gridColor, zeroline: false, range: [...scatterAxisRange] },
+      xaxis: { title: { text: `Observed ${data.target.label} (bin mean)` }, range: [...scatterAxisRange] },
       yaxis: {
         title: { text: "Ensemble-mean predicted (bin mean)" },
-        gridcolor: gridColor,
-        zeroline: false,
         range: [...scatterAxisRange],
         scaleanchor: "x" as const,
         scaleratio: 1,
       },
-    };
-    void Plotly.react(biasPlot, [binTrace, diag], layout, plotConfig).then(() => {
+    });
+    void Plotly.react(biasPlot, [binTrace, diag], layout, PLOT_CONFIG).then(() => {
       if (destroyed) return;
       const n = Number(biasPlot.dataset.renderCount ?? "0") + 1;
       biasPlot.dataset.renderCount = String(n);
