@@ -33,6 +33,14 @@
   --ml-warning: #b8365a;
   --ml-code-bg: #f7f7fb;
 
+  /* WP14: one shared blue "Think first" treatment, deliberately distinct
+     from the rust --ml-accent used by .challenge / .how-to-use. */
+  --ml-think-border: #b9d0ef;
+  --ml-think-border-strong: #7fa8e0;
+  --ml-think-accent: #1d5fae;
+  --ml-think-accent-ink: #17488a; /* AA on #fff (>= 4.5:1) */
+  --ml-think-accent-soft: #e8f0fc;
+
   --ml-font-serif: Georgia, "Iowan Old Style", "Palatino Linotype",
     "Times New Roman", "Nimbus Roman", serif;
   --ml-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
@@ -74,6 +82,12 @@ html[data-theme="dark"] {
   --ml-surface: #1c1a26;
   --ml-surface-alt: #24222f;
   --ml-code-bg: #201e2b;
+
+  --ml-think-border: #35507e;
+  --ml-think-border-strong: #4d75b8;
+  --ml-think-accent: #7fb0f0;
+  --ml-think-accent-ink: #9cc4f5; /* AA on the dark surface below */
+  --ml-think-accent-soft: #1b2740;
 
   --pst-color-primary: #f0915c;
   --pst-color-primary-highlight: #f7ad82;
@@ -174,9 +188,8 @@ html[data-theme="dark"] {
 }
 
 /* --------------------------------------------------------------------------
-   Admonitions: "Think first" question cards, the how-to note, the challenge
+   Admonitions: the how-to note, the challenge (rust accent, unchanged WP06)
    -------------------------------------------------------------------------- */
-.bd-article .admonition.think-first,
 .bd-article .admonition.challenge,
 .bd-article .admonition.how-to-use {
   border: 1px solid var(--ml-border-strong);
@@ -185,7 +198,6 @@ html[data-theme="dark"] {
   box-shadow: none;
   background: var(--ml-surface);
 }
-.bd-article .admonition.think-first > .admonition-title,
 .bd-article .admonition.challenge > .admonition-title,
 .bd-article .admonition.how-to-use > .admonition-title {
   background: var(--ml-accent-soft);
@@ -197,13 +209,9 @@ html[data-theme="dark"] {
   text-transform: uppercase;
 }
 /* Replace the theme's default admonition icon with a small typographic mark. */
-.bd-article .admonition.think-first > .admonition-title::after,
 .bd-article .admonition.challenge > .admonition-title::after,
 .bd-article .admonition.how-to-use > .admonition-title::after {
   content: none;
-}
-.bd-article .admonition.think-first > .admonition-title::before {
-  content: "?";
 }
 .bd-article .admonition.challenge > .admonition-title::before {
   content: "\2691"; /* flag */
@@ -211,11 +219,47 @@ html[data-theme="dark"] {
 .bd-article .admonition.how-to-use > .admonition-title::before {
   content: "\2139"; /* info */
 }
-.bd-article .admonition.think-first > .admonition-title::before,
 .bd-article .admonition.challenge > .admonition-title::before,
 .bd-article .admonition.how-to-use > .admonition-title::before {
   font-family: var(--ml-font-mono);
   color: var(--ml-accent-ink);
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  width: auto;
+  height: auto;
+  margin-right: 0.55rem;
+  font-size: 0.9rem;
+}
+
+/* --------------------------------------------------------------------------
+   WP14: "Think first" question cards -- one shared class across every
+   chapter (Exercises 1-3), deliberately blue and distinct from the rust
+   challenge / how-to-use treatment above.
+   -------------------------------------------------------------------------- */
+.bd-article .admonition.think-first {
+  border: 1px solid var(--ml-think-border-strong);
+  border-left: 4px solid var(--ml-think-accent);
+  border-radius: var(--ml-radius);
+  box-shadow: none;
+  background: var(--ml-think-accent-soft);
+}
+.bd-article .admonition.think-first > .admonition-title {
+  background: var(--ml-think-border);
+  color: var(--ml-think-accent-ink);
+  font-family: var(--ml-font-mono);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.bd-article .admonition.think-first > .admonition-title::after {
+  content: none;
+}
+.bd-article .admonition.think-first > .admonition-title::before {
+  content: "?";
+  font-family: var(--ml-font-mono);
+  color: var(--ml-think-accent-ink);
   background: none;
   -webkit-mask: none;
   mask: none;
@@ -294,6 +338,25 @@ html[data-theme="dark"] {
   background: var(--ml-surface);
   box-shadow: 0 1px 3px rgba(27, 24, 38, 0.07);
   margin: 1.4rem 0;
+}
+
+/* --------------------------------------------------------------------------
+   WP12 -- per-page Colab launch button (launch-buttons.js), styled to sit
+   beside the theme's own source/download dropdown buttons in the article
+   header without touching theme internals.
+   -------------------------------------------------------------------------- */
+.header-article-items__end .dropdown-launch-button {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.25rem;
+}
+.header-article-items__end .dropdown-launch-button .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+.header-article-items__end .dropdown-launch-button .colab-launch-label {
+  font-size: 0.8rem;
 }
 
 /* --------------------------------------------------------------------------

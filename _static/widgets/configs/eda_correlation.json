@@ -10,10 +10,9 @@
     { "name": "FIQ", "label": "Full-scale IQ" },
     { "name": "VIQ", "label": "Verbal IQ" },
     { "name": "PIQ", "label": "Performance IQ" },
-    { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
-    { "name": "ADOS_2_TOTAL", "label": "ADOS-2 total" },
     { "name": "SRS_TOTAL_RAW", "label": "SRS total (raw)" },
-    { "name": "SCQ_TOTAL", "label": "SCQ total" }
+    { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
+    { "name": "ADI_R_SOCIAL_TOTAL_A", "label": "ADI-R social total" }
   ],
   "defaultX": "FIQ",
   "defaultY": "SRS_TOTAL_RAW",
@@ -40,7 +39,7 @@
   ],
   "reflectionPrompts": [
     "Before reading the coefficient, predict the sign and rough strength, and sketch the shape you expect (a line? a cloud? a curve?).",
-    "Compare FIQ vs Verbal IQ with ADOS-G total vs ADOS-2 total. Both look strong — but check the pairwise-complete n. Which coefficient describes almost the whole sample, and which describes a small selected subset?",
+    "Compare FIQ vs Verbal IQ with ADOS-G total vs ADI-R social total. Both are positive — but check the pairwise-complete n. Which coefficient describes almost the whole sample, and which describes a small selected subset?",
     "Full-scale IQ is built from Verbal and Performance IQ. Is a strong FIQ–VIQ correlation a finding about the brain, or a consequence of how the score is defined?",
     "Colour FIQ vs SRS total by diagnostic group. The overall correlation is moderate and negative; what happens to it inside the Autism group and inside the Control group, and what does that tell you about the overall number?",
     "A correlation — Pearson or Spearman — measures association, not causation. For a pair that correlates, name one third variable that could drive both."

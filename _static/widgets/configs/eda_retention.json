@@ -31,18 +31,16 @@
       "key": "behavioral",
       "label": "Diagnostic and behavioral measures",
       "variables": [
-        { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
-        { "name": "ADOS_2_TOTAL", "label": "ADOS-2 total" },
         { "name": "SRS_TOTAL_RAW", "label": "SRS total (raw)" },
-        { "name": "SCQ_TOTAL", "label": "SCQ total" }
+        { "name": "ADOS_G_TOTAL", "label": "ADOS-G total" },
+        { "name": "ADI_R_SOCIAL_TOTAL_A", "label": "ADI-R social total" }
       ]
     },
     {
       "key": "scan",
-      "label": "Medication and scan conditions",
+      "label": "Medication status",
       "variables": [
-        { "name": "CURRENT_MED_STATUS", "label": "Current medication status" },
-        { "name": "EYE_STATUS_AT_SCAN", "label": "Eye status at scan" }
+        { "name": "CURRENT_MED_STATUS", "label": "Current medication status" }
       ]
     }
   ],

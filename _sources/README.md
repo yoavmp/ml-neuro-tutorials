@@ -1,5 +1,5 @@
 # ml-neuro-tutorials
-This notebook contains tutorials for the Computational Learning for Neuroscience course Tel Aviv University
+This repository contains the practice materials for the Machine Learning for Neuroscience course, Tel Aviv University.
 
 ## License
 

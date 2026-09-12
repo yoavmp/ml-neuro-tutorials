@@ -1,0 +1,1420 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Exercise 3: KNN and the Bias–Variance Tradeoff &#8212; Machine Learning for Neuroscience</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=297790ed" />
+    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-BG2t3bTt.css?v=fcdde689" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_03/exercise_03';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
+    <script src="../../_static/launch-buttons.js?v=aa0ac59f"></script>
+    <script src="../../_static/widgets/app/assets/index-CpL_NfME.js?v=a6a45638"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="Exercise 2: Regression" href="../chapter_02/exercise_02.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Machine Learning for Neuroscience</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../intro.html">
+                    Introduction
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../syllabus.html">Syllabus</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../contents.html">Contents</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1 — Exploratory data analysis (EDA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_02/exercise_02.html">Exercise 2: Regression</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 3: KNN and the Bias–Variance Tradeoff</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/yoavmp/ml-neuro-tutorials" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/yoavmp/ml-neuro-tutorials/issues/new?title=Issue%20on%20page%20%2Fchapters/chapter_03/exercise_03.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/chapters/chapter_03/exercise_03.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Exercise 3: KNN and the Bias–Variance Tradeoff</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-modelling-table">1. The modelling table</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-standard-knn-regression-workflow">2. One standard KNN regression workflow</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-k-honestly">Choosing k honestly</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#honest-evaluation-versus-invalid-alternatives">3. Honest evaluation versus invalid alternatives</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-classic-biasvariance-tradeoff">4. The classic bias–variance tradeoff</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-k-1-to-every-participant-an-empirical-curve">5. From k = 1 to every participant: an empirical curve</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-k-yourself">6. Explore k yourself</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-summary">In summary</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-3-knn-and-the-biasvariance-tradeoff">
+<h1>Exercise 3: KNN and the Bias–Variance Tradeoff<a class="headerlink" href="#exercise-3-knn-and-the-biasvariance-tradeoff" title="Link to this heading">#</a></h1>
+<div class="how-to-use admonition">
+<p class="admonition-title">Run or download this notebook</p>
+<p>This page is fully readable as it is, and the interactive activity works
+here in the browser. To <strong>run or change the Python code</strong>, use the portable
+version of the notebook:</p>
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_03/exercise_03_portable.ipynb">Open the portable notebook in Colab</a></strong></p></li>
+<li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_03/exercise_03_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
+for VS Code or Jupyter</p></li>
+</ul>
+<p>The portable notebook keeps every Python analysis cell and swaps the embedded
+activity for a link back to this page.</p>
+</div>
+<section id="what-this-notebook-covers">
+<h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
+<p>This is Exercise 3 of <em>Machine Learning for Neuroscience</em>. <strong>K-nearest
+neighbours (KNN)</strong> predicts a new participant’s outcome from the outcomes of
+the training participants who look most similar:</p>
+<ul class="simple">
+<li><p>for <strong>regression</strong>, KNN averages the outcome of the <code class="docutils literal notranslate"><span class="pre">k</span></code> nearest training
+participants;</p></li>
+<li><p>KNN can also do <strong>classification</strong>, voting among the <code class="docutils literal notranslate"><span class="pre">k</span></code> nearest labels
+instead of averaging – you will see that later; this notebook is
+regression only.</p></li>
+</ul>
+<p>This practice uses <code class="docutils literal notranslate"><span class="pre">k</span></code> – the number of neighbours – to make the
+<strong>bias–variance tradeoff</strong> concrete: a small <code class="docutils literal notranslate"><span class="pre">k</span></code> is flexible (low bias,
+high variance); a large <code class="docutils literal notranslate"><span class="pre">k</span></code> is smooth (higher bias, low variance).</p>
+<p>In this notebook you will:</p>
+<ol class="arabic simple">
+<li><p>reuse Exercise 2’s modelling table, target, feature recipe, and locked
+train/test split;</p></li>
+<li><p>choose <code class="docutils literal notranslate"><span class="pre">k</span></code> yourself with executable training-only cross-validation, fit
+one standardized KNN regression workflow at that <code class="docutils literal notranslate"><span class="pre">k</span></code>, and compare it with
+Exercise 2’s linear regression on the exact same data;</p></li>
+<li><p>interactively compare honest evaluation with resubstitution and with a
+deliberately invalid leakage score, across every <code class="docutils literal notranslate"><span class="pre">k</span></code>;</p></li>
+<li><p>see the classic bias–variance tradeoff as a labelled, conceptual curve;</p></li>
+<li><p>compute an empirical curve, from this dataset, of fitting and validation
+error across every <code class="docutils literal notranslate"><span class="pre">k</span></code> from 1 to every participant in a development
+fitting set;</p></li>
+<li><p>explore that curve yourself with a browser activity, including how
+predictions vary across different training samples.</p></li>
+</ol>
+<p><strong>Prerequisites:</strong> Exercise 2’s train/test workflow, R² and MSE, and
+<code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> / <code class="docutils literal notranslate"><span class="pre">fit</span></code> / <code class="docutils literal notranslate"><span class="pre">predict</span></code> in scikit-learn.</p>
+</section>
+<section id="the-modelling-table">
+<h2>1. The modelling table<a class="headerlink" href="#the-modelling-table" title="Link to this heading">#</a></h2>
+<p>This is the same ABIDE-II modelling table Exercise 2 uses: one <strong>row per
+participant</strong>, phenotype columns (including the target, <code class="docutils literal notranslate"><span class="pre">age</span></code>), and brain
+columns (<code class="docutils literal notranslate"><span class="pre">fsCT</span></code>, <code class="docutils literal notranslate"><span class="pre">fsArea</span></code>, <code class="docutils literal notranslate"><span class="pre">fsVol</span></code>, <code class="docutils literal notranslate"><span class="pre">fsLGI</span></code>, one HCP-MMP1 cortical region per
+hemisphere). See Exercise 2 for the full provenance and column-by-column
+discussion; this notebook only reloads the table and previews it.</p>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data loading. In the published book this cell is collapsed; it is plain,</span>
+<span class="c1"># runnable Python -- one public CSV pinned to an immutable commit. Nothing</span>
+<span class="c1"># here is repository-specific. Same data and provenance as Exercise 2.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neighbors</span><span class="w"> </span><span class="kn">import</span> <span class="n">KNeighborsRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">KFold</span><span class="p">,</span> <span class="n">cross_val_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">r2_score</span><span class="p">,</span> <span class="n">mean_squared_error</span>
+
+<span class="n">PIN</span> <span class="o">=</span> <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"</span>
+<span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/</span><span class="si">{</span><span class="n">PIN</span><span class="si">}</span><span class="s2">/tu-machine-learning-yarkoni/data"</span>
+
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE</span><span class="si">}</span><span class="s2">/abide2.tsv"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Unnamed"</span><span class="p">)]]</span>
+
+<span class="n">BRAIN_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"modelling table: </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>modelling table: 1004 participants x 1446 columns
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># A compact preview only -- Exercise 2 already covers this table in full.</span>
+<span class="n">preview_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"subject"</span><span class="p">,</span> <span class="s2">"site"</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">,</span> <span class="s2">"sex"</span><span class="p">,</span> <span class="s2">"fsCT_L_46_ROI"</span><span class="p">]</span>
+<span class="n">display</span><span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="n">preview_cols</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"age available for"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span> <span class="s2">"of"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_df</span><span class="p">),</span> <span class="s2">"participants"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>subject</th>
+      <th>site</th>
+      <th>group</th>
+      <th>age</th>
+      <th>sex</th>
+      <th>fsCT_L_46_ROI</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>29293</td>
+      <td>ABIDEII-KKI_1</td>
+      <td>1.0</td>
+      <td>8.893151</td>
+      <td>2.0</td>
+      <td>2.366</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>28997</td>
+      <td>ABIDEII-OHSU_1</td>
+      <td>1.0</td>
+      <td>12.000000</td>
+      <td>2.0</td>
+      <td>2.579</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>28845</td>
+      <td>ABIDEII-GU_1</td>
+      <td>2.0</td>
+      <td>8.390000</td>
+      <td>1.0</td>
+      <td>2.690</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>age available for 1004 of 1004 participants
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="one-standard-knn-regression-workflow">
+<h2>2. One standard KNN regression workflow<a class="headerlink" href="#one-standard-knn-regression-workflow" title="Link to this heading">#</a></h2>
+<p><strong>Target:</strong> <code class="docutils literal notranslate"><span class="pre">age</span></code>, in years – Exercise 2’s own outcome. <strong>Features:</strong> the
+exact same recipe as Exercise 2’s canonical example – every one of the 360
+cortical atlas parcels for cortical thickness (<code class="docutils literal notranslate"><span class="pre">fsCT</span></code>), bilateral. <strong>Split:</strong>
+the exact same locked 75/25 train/test split as Exercise 2
+(<code class="docutils literal notranslate"><span class="pre">train_test_split(test_size=0.25,</span> <span class="pre">random_state=42,</span> <span class="pre">stratify=group)</span></code>),
+re-derived here from the same data so it lands on the identical 753
+training and 251 test participants.</p>
+<p>KNN regression predicts</p>
+<div class="math notranslate nohighlight">
+\[\hat{y}(x_0)=\frac{1}{k}\sum_{i\in\mathcal{N}_k(x_0)}y_i,\]</div>
+<p>the average outcome of the <code class="docutils literal notranslate"><span class="pre">k</span></code> training participants whose <strong>features</strong> are
+closest to <span class="math notranslate nohighlight">\(x_0\)</span>. The neighbourhood is found using predictors only – a new
+participant’s <code class="docutils literal notranslate"><span class="pre">age</span></code> is never used to find their neighbours.</p>
+<p>Feature scaling matters here more directly than it did for linear
+regression: KNN measures distance in feature space, and an unscaled feature
+with large numeric range would dominate that distance just because of its
+units, not because it is more informative. <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> belongs inside
+the <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> and must be fit on the training data only, exactly like
+Exercise 2.</p>
+<p><strong>A short note on dimensionality.</strong> In very high-dimensional feature spaces,
+most pairs of points end up roughly equally far apart, so “nearest
+neighbour” can stop meaning much – the <em>curse of dimensionality</em>. This
+recipe’s 360 standardized features are not astronomically high-dimensional
+for 753 training rows, and the cross-validation below found KNN works well
+here; a higher-dimensional recipe or a smaller sample could behave
+differently.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The full set of 360 cortical-thickness columns -- identical recipe and</span>
+<span class="c1"># code to Exercise 2's Section 2.</span>
+<span class="n">FEATURES</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">BRAIN_COLS</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)]</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES</span><span class="p">)</span>           <span class="c1"># brain-only</span>
+<span class="k">assert</span> <span class="s2">"age"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FEATURES</span>                                  <span class="c1"># no target leakage</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES</span><span class="p">)</span><span class="si">}</span><span class="s2"> features, e.g. </span><span class="si">{</span><span class="n">FEATURES</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>360 features, e.g. ['fsCT_L_V1_ROI', 'fsCT_L_MST_ROI', 'fsCT_L_V6_ROI']
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Brain-only X and target y, then the SAME fixed, stratified split as</span>
+<span class="c1"># Exercise 2 (groups is carried through only so Section 5 can re-split the</span>
+<span class="c1"># training partition later; it does not change X_train/X_test/y_train/y_test).</span>
+<span class="n">has_age</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">groups</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>      <span class="c1"># 1 = autism, 2 = control</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">groups_train</span><span class="p">,</span> <span class="n">groups_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_train = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_test = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_features = </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>n_train = 753   n_test = 251   n_features = 360
+</pre></div>
+</div>
+</div>
+</div>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>Exercise 2’s linear regression scored held-out R² = 0.469 on this exact
+split and feature set. Before running KNN: do you expect it to score
+higher, lower, or about the same – and why? (Hint: think about what each
+model assumes about how brain structure relates to age.)</p>
+</div>
+<section id="choosing-k-honestly">
+<h3>Choosing k honestly<a class="headerlink" href="#choosing-k-honestly" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">k</span></code> is a hyperparameter: it must be chosen <strong>without</strong> looking at the test
+set, the same discipline Exercise 2 used for every modelling choice. The cell
+below performs 5-fold cross-validation <strong>on the training partition only</strong>,
+for a manageable set of candidate <code class="docutils literal notranslate"><span class="pre">k</span></code> values, scaling inside a <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> so
+each fold’s scaler only ever sees that fold’s own training rows. It records
+the mean validation R² for every candidate and selects the best one. Only
+<em>after</em> <code class="docutils literal notranslate"><span class="pre">k</span></code> is fixed this way does the next cell refit on all 753 training
+rows and touch the test set – exactly once, to estimate performance, never
+to choose <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CANDIDATE_KS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">]</span>
+<span class="n">INNER_CV</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">cv_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">CANDIDATE_KS</span><span class="p">:</span>
+    <span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">))</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">INNER_CV</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">"r2"</span><span class="p">)</span>
+    <span class="n">cv_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"k"</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s2">"mean_cv_r2"</span><span class="p">:</span> <span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">"std_cv_r2"</span><span class="p">:</span> <span class="n">scores</span><span class="o">.</span><span class="n">std</span><span class="p">()})</span>
+<span class="n">cv_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">cv_rows</span><span class="p">)</span>
+
+<span class="n">K_SELECTED</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cv_results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">cv_results</span><span class="p">[</span><span class="s2">"mean_cv_r2"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmax</span><span class="p">(),</span> <span class="s2">"k"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"selected k = </span><span class="si">{</span><span class="n">K_SELECTED</span><span class="si">}</span><span class="s2">  (mean 5-fold training-only CV R^2 = </span><span class="si">{</span><span class="n">cv_results</span><span class="p">[</span><span class="s1">'mean_cv_r2'</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="n">cv_results</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>selected k = 15  (mean 5-fold training-only CV R^2 = 0.599)
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>k</th>
+      <th>mean_cv_r2</th>
+      <th>std_cv_r2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>0.457</td>
+      <td>0.121</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>3</td>
+      <td>0.567</td>
+      <td>0.124</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5</td>
+      <td>0.596</td>
+      <td>0.112</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>7</td>
+      <td>0.579</td>
+      <td>0.117</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>10</td>
+      <td>0.596</td>
+      <td>0.096</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>15</td>
+      <td>0.599</td>
+      <td>0.087</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>20</td>
+      <td>0.586</td>
+      <td>0.077</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>30</td>
+      <td>0.566</td>
+      <td>0.065</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>50</td>
+      <td>0.532</td>
+      <td>0.052</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>100</td>
+      <td>0.471</td>
+      <td>0.037</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>200</td>
+      <td>0.388</td>
+      <td>0.037</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">cv_results</span><span class="p">[</span><span class="s2">"k"</span><span class="p">],</span> <span class="n">cv_results</span><span class="p">[</span><span class="s2">"mean_cv_r2"</span><span class="p">],</span> <span class="n">yerr</span><span class="o">=</span><span class="n">cv_results</span><span class="p">[</span><span class="s2">"std_cv_r2"</span><span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#2a6f9e"</span><span class="p">,</span> <span class="n">capsize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">K_SELECTED</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"selected k = </span><span class="si">{</span><span class="n">K_SELECTED</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"k (log scale)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"mean 5-fold CV R$^2$ (training partition only)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Training-only cross-validation over candidate k"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/82e1d0e6e9218fce9e6ca38987e62225ac67f9e873602eb169985f80416764c2.png" src="../../_images/82e1d0e6e9218fce9e6ca38987e62225ac67f9e873602eb169985f80416764c2.png" />
+</div>
+</div>
+<p>The test set played no role above: every number in that table and plot comes
+from the 753 training rows alone, split five different ways. The test set’s
+only job, once <code class="docutils literal notranslate"><span class="pre">k</span></code> is fixed, is to <strong>estimate</strong> performance on new
+participants – not to help choose the model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">knn_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">K_SELECTED</span><span class="p">))</span>
+<span class="n">knn_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">knn_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">test_r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="n">test_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k = </span><span class="si">{</span><span class="n">K_SELECTED</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"held-out R^2 = </span><span class="si">{</span><span class="n">test_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"held-out MSE = </span><span class="si">{</span><span class="n">test_mse</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">  (RMSE </span><span class="si">{</span><span class="n">test_mse</span><span class="o">**</span><span class="mf">0.5</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> years)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>k = 15
+held-out R^2 = 0.649
+held-out MSE = 32.7  (RMSE 5.7 years)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Observed vs predicted on the test set, with the perfect-prediction diagonal.</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">4.4</span><span class="p">,</span> <span class="mf">4.4</span><span class="p">))</span>
+<span class="n">lims</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">y_test</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_test</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lims</span><span class="p">,</span> <span class="n">lims</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Perfect prediction (observed = predicted)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">lims</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">lims</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">"equal"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"observed age (years)"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"predicted age (years, held-out)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"KNN (k=</span><span class="si">{</span><span class="n">K_SELECTED</span><span class="si">}</span><span class="s2">), held-out R$^2$ = </span><span class="si">{</span><span class="n">test_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"upper left"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/1381bf22ff22ac86750bb1e57f391f990583432b96b3e49219b724d49ba244fa.png" src="../../_images/1381bf22ff22ac86750bb1e57f391f990583432b96b3e49219b724d49ba244fa.png" />
+</div>
+</div>
+<p>A few things to hold onto:</p>
+<ul class="simple">
+<li><p>KNN with the cross-validated <code class="docutils literal notranslate"><span class="pre">k</span></code> scores a genuinely <strong>positive held-out
+R²</strong> on this recipe – no curse-of-dimensionality problem here;</p></li>
+<li><p>unlike the linear-regression hyperplane, KNN makes no assumption about the
+<em>shape</em> of the relationship between features and age – it only assumes
+that similar brain measurements go with similar ages;</p></li>
+<li><p>this is still a random-participant split from the same 17 ABIDE-II sites,
+so it says nothing about generalisation to a new scanner or site.</p></li>
+</ul>
+<p><strong>Compared with Exercise 2.</strong> On these exact same 753 training and 251 test
+participants, the exact same 360-feature recipe, and the exact same target:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For comparison only -- exact same split/recipe/target as Exercise 2's</span>
+<span class="c1"># Section 2, refit here so the comparison is self-contained.</span>
+<span class="n">ols_compare</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">LinearRegression</span><span class="p">())</span>
+<span class="n">ols_compare</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">ols_r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">ols_compare</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Exercise 2 linear regression   held-out R^2 = </span><span class="si">{</span><span class="n">ols_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"This notebook's KNN (k=</span><span class="si">{</span><span class="n">K_SELECTED</span><span class="si">}</span><span class="s2">)    held-out R^2 = </span><span class="si">{</span><span class="n">test_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Exercise 2 linear regression   held-out R^2 = 0.469
+This notebook's KNN (k=15)    held-out R^2 = 0.649
+</pre></div>
+</div>
+</div>
+</div>
+<p>KNN scores higher than linear regression <strong>on this specific recipe and
+dataset</strong>. That is one comparison, not a universal claim that KNN beats
+linear regression – a different feature set, sample size, or outcome could
+easily reverse it. What it does show is that a non-parametric method with no
+assumption about the relationship’s shape found real, usable structure here.</p>
+</section>
+</section>
+<section id="honest-evaluation-versus-invalid-alternatives">
+<h2>3. Honest evaluation versus invalid alternatives<a class="headerlink" href="#honest-evaluation-versus-invalid-alternatives" title="Link to this heading">#</a></h2>
+<p>Same fixed split, same 360-feature recipe, but now for <strong>every</strong> <code class="docutils literal notranslate"><span class="pre">k</span></code>, not
+just one: <code class="docutils literal notranslate"><span class="pre">k</span></code> also changes how <em>dramatically</em> resubstitution and leakage
+inflate performance, and the interactive activity below lets you see that
+directly instead of reading it off two static tables.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p>fit on</p></th>
+<th class="head"><p>evaluate on</p></th>
+<th class="head"><p>what it estimates</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>A. Valid</strong></p></td>
+<td><p>training rows</p></td>
+<td><p>untouched test rows</p></td>
+<td><p>performance on new participants</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>B. Resubstitution</strong></p></td>
+<td><p>training rows</p></td>
+<td><p>those same training rows</p></td>
+<td><p>how well it fits data it has seen (a diagnostic, not a generalisation estimate)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C. Invalid (leakage)</strong></p></td>
+<td><p><strong>test rows</strong></p></td>
+<td><p>those same test rows</p></td>
+<td><p>nothing usable – the data used to fit cannot also give an honest score</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>At the cross-validated <code class="docutils literal notranslate"><span class="pre">k</span></code> from Section 2, predict the order of A, B, and C
+from largest to smallest R². Then predict what changes about that ordering
+at the smallest possible <code class="docutils literal notranslate"><span class="pre">k</span></code>, and why.</p>
+</div>
+<iframe
+  title="Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/knn_abc.json"
+  loading="lazy"
+  width="100%"
+  height="900"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<p>The activity recomputes real predictions, R², and MSE for all three panels
+at whichever <code class="docutils literal notranslate"><span class="pre">k</span></code> you choose – nothing is a canned label. A few things to
+notice as you move <code class="docutils literal notranslate"><span class="pre">k</span></code>:</p>
+<ul class="simple">
+<li><p><strong>at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>, B and C are exactly perfect (R² = 1.000):</strong> every evaluated
+point is its own nearest neighbour, at distance zero, so the prediction
+reproduces the observation by construction, not because anything was
+learned;</p></li>
+<li><p><strong>A at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code> is not perfect:</strong> the test participants it evaluates were
+never used for fitting, so <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>’s perfect B/C scores are the clearest
+possible evidence that evaluating on fitted data is invalid – not evidence
+that KNN generalises perfectly;</p></li>
+<li><p><strong>increasing <code class="docutils literal notranslate"><span class="pre">k</span></code> averages more observations,</strong> which usually reduces this
+dramatic resubstitution effect – watch how much closer A, B, and C stay to
+each other as <code class="docutils literal notranslate"><span class="pre">k</span></code> grows past the cross-validated value from Section 2.</p></li>
+</ul>
+</section>
+<section id="the-classic-biasvariance-tradeoff">
+<h2>4. The classic bias–variance tradeoff<a class="headerlink" href="#the-classic-biasvariance-tradeoff" title="Link to this heading">#</a></h2>
+<p>For a model <span class="math notranslate nohighlight">\(\hat f\)</span> predicting outcome <span class="math notranslate nohighlight">\(Y\)</span> from features <span class="math notranslate nohighlight">\(X\)</span>, the expected
+squared prediction error on a new observation decomposes as</p>
+<div class="math notranslate nohighlight">
+\[\mathbb{E}\left[(Y-\hat f(X))^2\right]
+=\operatorname{Bias}(\hat f(X))^2
++\operatorname{Var}(\hat f(X))
++\sigma^2.\]</div>
+<p>For KNN, <code class="docutils literal notranslate"><span class="pre">k</span></code> controls flexibility directly:</p>
+<ul class="simple">
+<li><p><strong>small <code class="docutils literal notranslate"><span class="pre">k</span></code></strong> -&gt; high flexibility, low bias, high variance (the model
+chases whichever few neighbours happened to be closest);</p></li>
+<li><p><strong>large <code class="docutils literal notranslate"><span class="pre">k</span></code></strong> -&gt; low flexibility, higher bias, lower variance (the model
+averages over so many neighbours it stops reacting to any one of them);</p></li>
+<li><p><strong>training error alone</strong> keeps falling as flexibility increases (Section
+3 showed <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code> reaching a perfect resubstitution score), so it favours
+excessive flexibility and cannot be used to choose <code class="docutils literal notranslate"><span class="pre">k</span></code>;</p></li>
+<li><p><strong>expected test error</strong> is minimised at some intermediate flexibility,
+where the falling bias² and the rising variance trade off against each
+other.</p></li>
+</ul>
+<p>This is a <strong>general tendency of KNN</strong>, not a guarantee for every finite
+sample: the curve below is a <strong>labelled, conceptual illustration</strong> of the
+tradeoff – smooth idealised curves, not a measurement from the ABIDE data.
+Sections 5 and 6 compute observable, honestly-labelled analogues <em>from this
+dataset</em>.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># CONCEPTUAL illustration only -- smooth idealised curves, not measured from</span>
+<span class="c1"># the ABIDE data. Sections 5-6 compute the empirical analogues.</span>
+<span class="n">flexibility</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>          <span class="c1"># 0 = very smooth, 1 = very flexible</span>
+<span class="n">bias_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">flexibility</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="mf">2.2</span>
+<span class="n">variance</span> <span class="o">=</span> <span class="n">flexibility</span> <span class="o">**</span> <span class="mf">2.2</span> <span class="o">*</span> <span class="mf">2.0</span>
+<span class="n">irreducible</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">)</span>
+<span class="n">expected_test_error</span> <span class="o">=</span> <span class="n">bias_sq</span> <span class="o">+</span> <span class="n">variance</span> <span class="o">+</span> <span class="n">irreducible</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.4</span><span class="p">,</span> <span class="mf">3.8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="n">bias_sq</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"squared bias"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#2a6f9e"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="n">variance</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"variance"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#b5622f"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="n">irreducible</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"irreducible error (sigma^2)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.55"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="n">expected_test_error</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"expected test error"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.1"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.2</span><span class="p">)</span>
+<span class="n">best</span> <span class="o">=</span> <span class="n">flexibility</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">expected_test_error</span><span class="p">)]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">"minimum expected</span><span class="se">\n</span><span class="s2">test error"</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">expected_test_error</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
+            <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">best</span> <span class="o">-</span> <span class="mf">0.30</span><span class="p">,</span> <span class="n">expected_test_error</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.85</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">"-&gt;"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.3"</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"model flexibility  (low k $</span><span class="se">\\</span><span class="s2">to$ high flexibility, for KNN)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"error (arbitrary units)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Bias</span><span class="se">\u2013</span><span class="s2">variance tradeoff -- CONCEPTUAL, not estimated from ABIDE data"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">"upper center"</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/0befe04a952e2272c33c024421e469677bed25aa0073cea438d4a469930ff324.png" src="../../_images/0befe04a952e2272c33c024421e469677bed25aa0073cea438d4a469930ff324.png" />
+</div>
+</div>
+</section>
+<section id="from-k-1-to-every-participant-an-empirical-curve">
+<h2>5. From k = 1 to every participant: an empirical curve<a class="headerlink" href="#from-k-1-to-every-participant-an-empirical-curve" title="Link to this heading">#</a></h2>
+<p>This section builds a <strong>separate, deterministic development demonstration</strong>
+using only the outer-<strong>training</strong> partition (<code class="docutils literal notranslate"><span class="pre">X_train</span></code>, <code class="docutils literal notranslate"><span class="pre">y_train</span></code>, 753
+rows) – the outer test set from Sections 2–3 is never touched here.</p>
+<p>Split the training partition itself into a <strong>fitting subset</strong> and a
+<strong>validation subset</strong>:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">N_fit</span></code> = number of participants used to fit KNN in this demonstration.</p>
+</div></blockquote>
+<p>Every integer <code class="docutils literal notranslate"><span class="pre">k</span></code> from 1 through <code class="docutils literal notranslate"><span class="pre">N_fit</span></code> is evaluated on both the fitting
+subset (resubstitution) and the validation subset, using the
+sort-distances-once-then-cumulative-sum trick (Section 6 reuses the same
+idea, and its plain-language description, in the browser).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">FIT_TEST_SIZE</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="n">FIT_RANDOM_STATE</span> <span class="o">=</span> <span class="mi">7</span>   <span class="c1"># independent of the outer split's random_state=42</span>
+<span class="n">X_fit</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">FIT_TEST_SIZE</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">FIT_RANDOM_STATE</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups_train</span>
+<span class="p">)</span>
+<span class="n">N_FIT</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_fit</span><span class="p">)</span>
+<span class="n">N_VAL</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_val</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"N_fit = </span><span class="si">{</span><span class="n">N_FIT</span><span class="si">}</span><span class="s2">   N_val = </span><span class="si">{</span><span class="n">N_VAL</span><span class="si">}</span><span class="s2">   (from the </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">-row outer-training partition only)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>N_fit = 564   N_val = 189   (from the 753-row outer-training partition only)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Scale using the fitting subset only, then sort each query point's distances</span>
+<span class="c1"># to every fitting point ONCE and derive predictions for every k from a</span>
+<span class="c1"># cumulative mean -- far cheaper than refitting KNeighborsRegressor N_fit times.</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">scaler_dev</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_fit</span><span class="p">)</span>
+<span class="n">Xf</span> <span class="o">=</span> <span class="n">scaler_dev</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_fit</span><span class="p">)</span>
+<span class="n">Xv</span> <span class="o">=</span> <span class="n">scaler_dev</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_val</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sorted_neighbor_targets</span><span class="p">(</span><span class="n">X_query</span><span class="p">,</span> <span class="n">X_ref</span><span class="p">,</span> <span class="n">y_ref</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X_query</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">X_ref</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y_ref</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+
+<span class="n">sorted_val</span> <span class="o">=</span> <span class="n">sorted_neighbor_targets</span><span class="p">(</span><span class="n">Xv</span><span class="p">,</span> <span class="n">Xf</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>   <span class="c1"># N_val x N_fit, nearest first</span>
+<span class="n">sorted_fit</span> <span class="o">=</span> <span class="n">sorted_neighbor_targets</span><span class="p">(</span><span class="n">Xf</span><span class="p">,</span> <span class="n">Xf</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>   <span class="c1"># N_fit x N_fit (self-inclusive)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">r2_mse_curve</span><span class="p">(</span><span class="n">sorted_targets</span><span class="p">,</span> <span class="n">observed</span><span class="p">):</span>
+    <span class="n">cum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">sorted_targets</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sorted_targets</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">pred_all_k</span> <span class="o">=</span> <span class="n">cum</span> <span class="o">/</span> <span class="n">ks</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">ss_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">observed</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred_all_k</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ss_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">observed</span> <span class="o">-</span> <span class="n">observed</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">r2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">ss_res</span> <span class="o">/</span> <span class="n">ss_tot</span>
+    <span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">observed</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred_all_k</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">r2</span><span class="p">,</span> <span class="n">mse</span>
+
+<span class="n">val_r2</span><span class="p">,</span> <span class="n">val_mse</span> <span class="o">=</span> <span class="n">r2_mse_curve</span><span class="p">(</span><span class="n">sorted_val</span><span class="p">,</span> <span class="n">y_val</span><span class="p">)</span>
+<span class="n">fit_r2</span><span class="p">,</span> <span class="n">fit_mse</span> <span class="o">=</span> <span class="n">r2_mse_curve</span><span class="p">(</span><span class="n">sorted_fit</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>
+<span class="n">ks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N_FIT</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">val_optimal_k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ks</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">val_r2</span><span class="p">)])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"computed </span><span class="si">{</span><span class="n">N_FIT</span><span class="si">}</span><span class="s2"> values of k for </span><span class="si">{</span><span class="n">N_FIT</span><span class="si">}</span><span class="s2"> fitting and </span><span class="si">{</span><span class="n">N_VAL</span><span class="si">}</span><span class="s2"> validation points in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k=1                        fit R^2=</span><span class="si">{</span><span class="n">fit_r2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">   val R^2=</span><span class="si">{</span><span class="n">val_r2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k=</span><span class="si">{</span><span class="n">val_optimal_k</span><span class="si">}</span><span class="s2"> (validation-optimal)      val R^2=</span><span class="si">{</span><span class="n">val_r2</span><span class="p">[</span><span class="n">val_optimal_k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k=N_fit=</span><span class="si">{</span><span class="n">N_FIT</span><span class="si">}</span><span class="s2">                fit R^2=</span><span class="si">{</span><span class="n">fit_r2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">   val R^2=</span><span class="si">{</span><span class="n">val_r2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>computed 564 values of k for 564 fitting and 189 validation points in 0.4s
+k=1                        fit R^2=1.000   val R^2=0.279
+k=17 (validation-optimal)      val R^2=0.634
+k=N_fit=564                fit R^2=-0.000   val R^2=-0.004
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Verify the k = N_fit endpoint explicitly: with every fitting participant as</span>
+<span class="c1"># a neighbour, "the k nearest" is just "everyone", so the prediction is the</span>
+<span class="c1"># SAME constant -- the fitting-set mean age -- for every validation participant.</span>
+<span class="n">pred_val_at_k_nfit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">sorted_val</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">N_FIT</span>
+<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">pred_val_at_k_nfit</span><span class="p">,</span> <span class="n">y_fit</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k = N_fit: every validation prediction equals the fitting-set mean, </span><span class="si">{</span><span class="n">y_fit</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> years"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>k = N_fit: every validation prediction equals the fitting-set mean, 15.192 years
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">3.9</span><span class="p">))</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">fit_mse</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"fitting MSE (resubstitution)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#2a6f9e"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">val_mse</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"validation MSE"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#b5622f"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"k (log scale) </span><span class="se">\u2014</span><span class="s2"> high flexibility (small k) $</span><span class="se">\\</span><span class="s2">to$ high smoothing (large k)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"mean squared error (years$^2$)"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k_mark</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"k=1"</span><span class="p">),</span> <span class="p">(</span><span class="n">val_optimal_k</span><span class="p">,</span> <span class="s2">"validation-optimal"</span><span class="p">),</span> <span class="p">(</span><span class="n">N_FIT</span><span class="p">,</span> <span class="s2">"k=N_fit"</span><span class="p">)]:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">k_mark</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Fitting vs validation error across k"</span><span class="p">)</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">val_r2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#b5622f"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">val_optimal_k</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s2">"validation-optimal</span><span class="se">\n</span><span class="s2">k=</span><span class="si">{</span><span class="n">val_optimal_k</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">val_optimal_k</span><span class="p">,</span> <span class="n">val_r2</span><span class="p">[</span><span class="n">val_optimal_k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]),</span>
+            <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">val_optimal_k</span> <span class="o">*</span> <span class="mf">2.2</span><span class="p">,</span> <span class="n">val_r2</span><span class="p">[</span><span class="n">val_optimal_k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.15</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">"-&gt;"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.3"</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"k (log scale)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"validation R$^2$"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Validation R$^2$ across k"</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/7a14fff98a44fd9d768ab47142f4889d9dd062728afa5957c2ed8c367dbb9f4f.png" src="../../_images/7a14fff98a44fd9d768ab47142f4889d9dd062728afa5957c2ed8c367dbb9f4f.png" />
+</div>
+</div>
+<div class="note admonition">
+<p class="admonition-title">What this curve shows – and does not</p>
+<p>Fitting error keeps falling as <code class="docutils literal notranslate"><span class="pre">k</span></code> shrinks (perfect at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>, exactly the
+resubstitution optimism Section 3 demonstrated) while validation error is
+lowest at an intermediate <code class="docutils literal notranslate"><span class="pre">k</span></code> and rises again toward both ends – <strong>behaviour
+consistent with</strong> the bias–variance tradeoff. It does not <strong>directly
+estimate</strong> bias and variance: the true population relationship between
+cortical structure and age is unknown, and this is one observational sample,
+not repeated draws from that population. The validation-optimal <code class="docutils literal notranslate"><span class="pre">k</span></code> here
+need not match the training-only cross-validated <code class="docutils literal notranslate"><span class="pre">k</span></code> from Section 2 – they
+come from different splits of different data and are not meant to agree
+exactly.</p>
+<p>This development curve is exploratory. It never retunes or replaces the
+Section 2 model: the outer test set stays locked, and the <code class="docutils literal notranslate"><span class="pre">k</span></code> reported there
+is the notebook’s one honest number.</p>
+</div>
+</section>
+<section id="explore-k-yourself">
+<h2>6. Explore k yourself<a class="headerlink" href="#explore-k-yourself" title="Link to this heading">#</a></h2>
+<p>The central <code class="docutils literal notranslate"><span class="pre">k</span></code>-complexity relationship, stated plainly: a <strong>larger <code class="docutils literal notranslate"><span class="pre">k</span></code></strong>
+averages more neighbours and approaches predicting the fitting-set mean – a
+<strong>simpler, smoother model</strong> with lower variance but higher bias. A
+<strong>smaller <code class="docutils literal notranslate"><span class="pre">k</span></code></strong> follows individual fitting participants more closely – a
+<strong>more flexible, more complex model</strong> with lower bias but higher variance and
+a greater risk of overfitting. “Lower bias” is a general tendency of KNN, not
+a guarantee for every finite sample – the activity below, and Section 3’s
+activity above, let you watch what actually happens in this one.</p>
+<p>The activity below lets you move the same <code class="docutils literal notranslate"><span class="pre">k</span></code> from 1 through <code class="docutils literal notranslate"><span class="pre">N_fit</span></code>
+yourself, on the same fitting/validation split as Section 5 – now with an
+exact numeric entry alongside the slider, and three deterministic
+alternative training samples so you can see directly how much predictions
+depend on <em>which</em> participants happened to be drawn for training, at small
+and large <code class="docutils literal notranslate"><span class="pre">k</span></code>. Every plot and every number recomputes from the actual
+refitted model at your chosen <code class="docutils literal notranslate"><span class="pre">k</span></code> – nothing is a canned label. It runs
+entirely in the browser, offline, with no brain features or participant
+identifiers ever sent anywhere.</p>
+<iframe
+  title="Interactive KNN neighbour-count exploration for predicting age from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/knn_explore.json"
+  loading="lazy"
+  width="100%"
+  height="2700"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+</section>
+<section id="in-summary">
+<h2>In summary<a class="headerlink" href="#in-summary" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>KNN regression predicts by averaging the <code class="docutils literal notranslate"><span class="pre">k</span></code> nearest training
+participants’ outcomes; <code class="docutils literal notranslate"><span class="pre">k</span></code> directly controls flexibility.</p></li>
+<li><p>Choosing <code class="docutils literal notranslate"><span class="pre">k</span></code> by executable cross-validation on the training partition
+only, then evaluating once on a locked test set, is the same honest
+workflow Exercise 2 used for linear regression – only the model family
+changed.</p></li>
+<li><p>Resubstitution and leakage inflate performance the same way they did for
+linear regression; how <em>dramatically</em> they inflate it depends on <code class="docutils literal notranslate"><span class="pre">k</span></code> –
+the Section 3 activity makes that dependence, and its extreme at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>,
+directly interactive.</p></li>
+<li><p>Small <code class="docutils literal notranslate"><span class="pre">k</span></code> means low bias and high variance; large <code class="docutils literal notranslate"><span class="pre">k</span></code> means higher bias
+and low variance; training error alone cannot choose between them. The
+Section 6 activity’s training-sample-sensitivity and binned-calibration
+panels make both halves of that tradeoff separately observable.</p></li>
+<li><p>An empirical fitting/validation curve computed from real data is
+<strong>consistent with</strong> the bias–variance tradeoff without being a direct
+measurement of it – the population relationship is unknown and only one
+sample is available.</p></li>
+</ul>
+<p>Next practice: classification, where KNN votes among neighbours’ labels
+instead of averaging their values.</p>
+<section id="questions-to-take-away">
+<h3>Questions to take away<a class="headerlink" href="#questions-to-take-away" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>What happens to flexibility when <code class="docutils literal notranslate"><span class="pre">k</span></code> increases?</p></li>
+<li><p>Why can <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code> achieve perfect resubstitution performance?</p></li>
+<li><p>Why is that not evidence of good generalisation?</p></li>
+<li><p>What does <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">N_fit</span></code> predict for every new participant?</p></li>
+<li><p>Why must scaling be learned only from training data, exactly as in
+Exercise 2?</p></li>
+<li><p>In Section 6, at a small <code class="docutils literal notranslate"><span class="pre">k</span></code>, why do the three training samples’ scatter
+plots differ more than they do at a large <code class="docutils literal notranslate"><span class="pre">k</span></code>?</p></li>
+<li><p>In Section 6’s binned calibration panel, why does the ensemble’s
+prediction line flatten as <code class="docutils literal notranslate"><span class="pre">k</span></code> grows, and which participants does that
+flattening hurt most?</p></li>
+<li><p>Why is a validation curve computed from one dataset not a direct
+measurement of bias and variance?</p></li>
+<li><p>Would the <code class="docutils literal notranslate"><span class="pre">k</span></code> selected here necessarily generalise to a completely new
+scanning site? Why or why not?</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./chapters/chapter_03"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../chapter_02/exercise_02.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Exercise 2: Regression</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-modelling-table">1. The modelling table</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-standard-knn-regression-workflow">2. One standard KNN regression workflow</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-k-honestly">Choosing k honestly</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#honest-evaluation-versus-invalid-alternatives">3. Honest evaluation versus invalid alternatives</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-classic-biasvariance-tradeoff">4. The classic bias–variance tradeoff</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-k-1-to-every-participant-an-empirical-curve">5. From k = 1 to every participant: an empirical curve</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-k-yourself">6. Explore k yourself</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-summary">In summary</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Yoav Melamed
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
