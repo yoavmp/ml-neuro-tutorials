@@ -1,15 +1,18 @@
 # WP16 — Repair Plotly axes, backgrounds, spacing, and production parity
 
-## Status: implementation complete, merged to local `main`; **push and production deploy withheld pending Yoav's go-ahead** (see §9)
+## Status: **SUCCESS — deployed and verified live**
 
-WP16 was executed in full through §5 (implementation + full local validation
-gate) and §6 steps 1–5 (commit, fetch, fast-forward `main`, merge, post-merge
-local re-validation). Steps 6–10 of §6 (push, monitor deploy, verify
-production) were **not** performed: when asked directly, Yoav said not to
-push unless explicitly instructed, and to leave that as an open item here
-instead. Nothing was force-pushed, no destructive git command was used, nothing was deployed.
-`main` locally is 3 commits ahead of `origin/main` and ready to push at any
-time — see §9 for the exact command.
+WP16 was executed in full: §1–§5 (inventory, implementation, full local
+validation gate), §6 steps 1–5 (commit, fetch, fast-forward `main`, merge,
+post-merge local re-validation), and — after Yoav's explicit go-ahead —
+§6 steps 6–10 (push, monitor the GitHub Pages workflow to success, verify
+all three live exercise pages, run the geometry/style Playwright suite
+against production, inspect live screenshots). Nothing was force-pushed, no
+destructive git command was used. Deployed and confirmed-live SHA:
+**`9154d7e27745adbe7c2b0278674c470e05ee0820`**. This report update
+(deployment evidence, §9–§12) is committed and pushed on top of it as a
+documentation-only commit — its own SHA is this WP's true final `main`
+HEAD, given in the terminal summary at the end of this session.
 
 ---
 
@@ -23,11 +26,14 @@ time — see §9 for the exact command.
 | Checkpoint commit (WP file added) | `b205985` |
 | Implementation commit | `f514b9c` — *"WP16: shared Plotly presentation policy + dynamic iframe height sync"* |
 | Merge commit (local `main`, `--no-ff`) | `4292e42` — *"Merge fix/interactive-plot-visuals into main (WP16)"* |
-| `origin/main` at start and now | `92cf7e0` (unchanged — nothing pushed yet) |
-| Local `main` HEAD | `4292e42` (3 commits ahead of `origin/main`) |
+| First report commit (pre-approval, deploy withheld) | `9154d7e` |
+| Deployed SHA (pushed, live) | `9154d7e27745adbe7c2b0278674c470e05ee0820` — confirmed via the JS/asset bundle served at the live URLs and the GH Pages workflow's own `headSha` |
+| Final report-update commit (this revision, deployment evidence added) | adds deployment evidence to `WPs/reports/WP16_REPORT.md` only — SHA in the terminal summary |
+| `origin/main` before this WP | `92cf7e0` |
+| `origin/main` now | identical to local `main` HEAD |
 
-`git status --short --branch` on `main`: `## main...origin/main [ahead 3]`,
-clean working tree.
+`git status --short --branch` on `main` after the final push: clean, `main`
+and `origin/main` identical.
 
 ---
 
@@ -268,41 +274,101 @@ or binary data were touched.
 
 ---
 
-## 9. Deployment — **withheld pending your decision**
+## 9. Deployment — **complete**
 
-Per WP16 §6, the intended remaining steps are: push `main`, monitor the
-GitHub Pages workflow, hard-refresh and verify the three live exercise
-pages, run the geometry/style Playwright checks against the live site, and
-inspect production screenshots. **None of this was done.** When I checked
-whether to push, you said not to unless explicitly instructed, and to leave
-it here as an open item instead.
-
-Local `main` is fully ready: 3 commits ahead of `origin/main`
-(`b205985` checkpoint → `f514b9c` implementation → `4292e42` merge), clean
-working tree, every test above green post-merge. To ship it:
+Yoav gave explicit approval to push and deploy. Sequence actually run:
 
 ```
-git push origin main
+git push origin main                    # 92cf7e0..9154d7e  main -> main
+gh run list --branch main --limit 5      # new run 34778058145 queued immediately
+gh run view 34778058145                  # watched to terminal state
 ```
 
-Then watch the "pages build and deployment" GitHub Actions workflow to
-terminal success, hard-refresh
-`https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html`
-(and chapters 1 and 3), and confirm the deployed revision matches
-`4292e42`. I can do all of that in one pass whenever you say go.
+`gh run view 34778058145` result:
+
+```
+✓ main Build and deploy Jupyter Book · 34778058145
+JOBS
+✓ build-and-deploy in 3m30s (ID 103779692750)
+ANNOTATIONS
+! Node.js 20 is deprecated … (pre-existing CI/environment notice, unrelated to this WP, not a failure)
+```
+
+Workflow succeeded in 3m30s. `gh run view 34778058145 --json
+headSha,conclusion,status` confirms
+`{"conclusion":"success","headSha":"9154d7e27745adbe7c2b0278674c470e05ee0820","status":"completed"}`
+— the deployed revision is exactly the commit that was pushed. Local `main`
+and `origin/main` are identical (`git status --short --branch` → clean, no
+divergence).
+
+**Deployed-revision confirmation:**
+
+```
+curl -s https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html
+  → HTTP 200, references assets/index-2B3eai7_.js (matches this WP's local build hash)
+curl -sI https://yoavmp.github.io/ml-neuro-tutorials/_static/activity-resize.js
+  → HTTP 200, content-type: application/javascript (the new resize-sync file is live)
+```
+
+**Live production Playwright smoke test** (temporary config pointing
+`baseURL` at `https://yoavmp.github.io`, no local web server — same pattern
+WP15 used, removed after the run): reused
+`e2e-book/{chapter01,chapter02,chapter03,chapter02-visual-policy}.spec.ts`
+unmodified against production.
+
+```
+npx playwright test --config playwright.live.config.ts   # 34 / 34 passed, 26.0s
+```
+
+This covers, against the live site:
+
+- **Exercise 1** (Chapter 1, 4 activities): histogram (both controls
+  redraw), retention (selection changes text + geometry, suggested-core
+  preset), correlation (X/Y/method/group controls, same-variable handling),
+  table-inspection (head/tail/sample method switch) — all render, all
+  survive a browser refresh restoring configured defaults, all usable at a
+  narrow viewport.
+- **Exercise 2** (Chapter 2, regression-compare): the full 12-test
+  `chapter02-visual-policy` suite at 742px / wide desktop / 390px — x-axis
+  title never escapes its SVG box, ≥12px clearance to the ROI-summary
+  disclosure, comparison-card background matches the page (not
+  `#f4f4f9`), no horizontal overflow, **no iframe clipping** (the dynamic
+  resize mechanism confirmed live — see below), and a real ROI-bundle
+  control change redraws the figure without disturbing the spacing/
+  background policy. Plus the pre-existing control-change and narrow-
+  viewport checks.
+- **Exercise 3** (Chapter 3, 2 activities): knn-explore (k-slider changes
+  metrics + both plots, k = n_fit collapses to the fitting-set mean,
+  refresh restores the default k), knn-abc (all three A/B/C panels render
+  with the audit-selected default k, k=1 makes B and C exactly R²=1.000) —
+  both usable at a narrow viewport.
+
+**Iframe dynamic-resize mechanism, confirmed live** (Exercise 2, 742px):
+
+```
+htmlHeightAttr: "1180"   # unchanged pre-JS fallback, exactly as designed
+styleHeight:    "1247px" # activity-resize.js overrode it live
+scrollHeight:   1245  clientHeight: 1245   # content and iframe height match — no clipping
+```
+
+**Live screenshot**: `WPs/reports/wp16_screenshots/ex2-regression-LIVE-742px.png`
+— captured directly from `https://yoavmp.github.io/…/exercise_02.html`,
+visually identical to the pre-deploy built-book screenshot: white
+comparison cards, clean axis titles fully inside their plots, clear gap
+before the ROI-summary disclosure.
 
 ---
 
-## 10. Live URLs (not yet re-verified against this change)
+## 10. Live URLs — verified against this deployment
 
-- `https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_01/exercise_01.html`
-- `https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html`
-- `https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html`
+- `https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_01/exercise_01.html` — ✅ verified (4 activities)
+- `https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html` — ✅ verified (the named defect; geometry/background/interaction/resize all confirmed fixed live)
+- `https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html` — ✅ verified (2 activities)
 
-These currently still serve the pre-WP16 build (`92cf7e0`), including the
-tight 8px clearance, the gray comparison-card background, and enabled axis
-dragging. They will reflect this WP's fix once `main` is pushed and the
-Pages workflow completes.
+All three now serve the WP16 build: guaranteed axis-title clearance, page-
+matching comparison-card backgrounds, locked axis drag/zoom with hover
+preserved, and a dynamically-resizing iframe that no longer clips content
+at any tested width.
 
 ---
 
@@ -316,6 +382,8 @@ Saved under `WPs/reports/wp16_screenshots/`, one pair (742px content width /
 - `ex2-regression-{742px,390px}.png`
 - `ex3-knn-abc-{742px,390px}.png`
 - `ex3-knn-explore-{742px,390px}.png`
+- `ex2-regression-LIVE-742px.png` — captured from the actual deployed
+  production URL after the push (§9), not the local built book.
 
 All show white/theme-matching plot cards, fully visible axis titles and
 legends, no modebar, and (Exercise 2, knn-abc) clean panel-to-panel
@@ -325,10 +393,7 @@ comparison with real clearance before the ROI-summary disclosure.
 
 ## 12. Deviations / items for Yoav's attention
 
-1. **Push/deploy/production verification not performed** — see §9. This is
-   the only incomplete part of WP16's own checklist, and it is incomplete
-   because you asked me to hold, not because anything failed.
-2. **The reported "~15px overlap" did not reproduce as a literal negative
+1. **The reported "~15px overlap" did not reproduce as a literal negative
    number in headless Chromium** against the pre-WP16 build — it reproduced
    as an 8px clearance (below the 12px minimum WP16 sets, and flush against
    the plot's own SVG edge). This is consistent with the same root cause
@@ -337,7 +402,7 @@ comparison with real clearance before the ROI-summary disclosure.
    pixel-for-pixel reproduction of "15px" specifically since the underlying
    defect (insufficient guaranteed clearance) and its fix are unambiguous
    either way.
-3. **A second, unnamed defect was found and fixed**: the static per-page
+2. **A second, unnamed defect was found and fixed**: the static per-page
    iframe `height` was already insufficient pre-WP16 (Exercise 2 clipped by
    61–1300px depending on width), and the same class of shortfall existed
    on all 5 other activities, most severely on mobile widths. Fixed
@@ -349,8 +414,8 @@ comparison with real clearance before the ROI-summary disclosure.
    anticipates exactly this ("update the existing embedding-height
    mechanism … rather than clipping content"; "or a shared ResizeObserver
    if necessary").
-4. **10 PNG screenshots (~2.1MB) were committed** to
-   `WPs/reports/wp16_screenshots/` as visual evidence — no prior WP report
-   committed images; flagging the convention change in case you'd rather
-   these live outside git history.
-5. No WP17 was started.
+3. **11 PNG screenshots (~2.3MB) were committed** to
+   `WPs/reports/wp16_screenshots/` as visual evidence (10 pre-deploy + 1
+   live-production) — no prior WP report committed images; flagging the
+   convention change in case you'd rather these live outside git history.
+4. No WP17 was started.

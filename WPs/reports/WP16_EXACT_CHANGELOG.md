@@ -92,13 +92,21 @@ additional changes.
   `interactive/e2e-book/*.spec.ts` other than the one new file,
   `tests/test_*.py`) — 0 lines changed.
 
-## Commit list (feature branch → merge)
+## Commit list (feature branch → merge → deploy)
 
 ```
 b205985 checkpoint: begin WP16 interactive plot visual repair
 f514b9c WP16: shared Plotly presentation policy + dynamic iframe height sync
-4292e42 Merge fix/interactive-plot-visuals into main (WP16)   [on main, --no-ff]
+4292e42 Merge fix/interactive-plot-visuals into main (WP16)                    [on main, --no-ff]
+9154d7e WP16 report: shared Plotly policy, iframe resize sync, deploy withheld [pushed, deployed]
 ```
 
 Tag `wp16-start` → `92cf7e0152338faf07e5a5e1da6614d9f8645441` (annotated,
 unsigned).
+
+`9154d7e` was pushed to `origin/main` and deployed by GitHub Actions run
+`34778058145` (`build-and-deploy`, success, 3m30s,
+`headSha=9154d7e27745adbe7c2b0278674c470e05ee0820`). See
+`WPs/reports/WP16_REPORT.md` §9 for the full live-production verification
+(34/34 Playwright tests against `https://yoavmp.github.io`, plus a direct
+screenshot of the deployed page).
