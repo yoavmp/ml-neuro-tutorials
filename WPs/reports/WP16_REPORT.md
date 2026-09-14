@@ -10,16 +10,24 @@ all three live exercise pages, run the geometry/style Playwright suite
 against production, inspect live screenshots). Nothing was force-pushed, no
 destructive git command was used.
 
-One genuine hiccup along the way, fully resolved: the first production push
-(`9154d7e`, a documentation-only commit — no application code) triggered a
-GH Actions run that **failed** one of this WP's own new geometry tests at
-the 390px viewport (a real race condition in the *test*, not the app —
-see §9.1) and consequently did **not** redeploy the site (the live site
-kept serving the prior successful deploy). The race was root-caused, fixed,
-and re-verified stable before pushing again. The retry (`ad6a86b`) deployed
-cleanly and is now confirmed live and independently re-tested against
-production. **Final, deployed, confirmed-live SHA:
-`ad6a86b209762b6f1224d5da435dfde308179368`.**
+Two genuine hiccups along the way, both fully resolved:
+
+1. The first production push (`9154d7e`, a documentation-only commit — no
+   application code) triggered a GH Actions run that **failed** one of this
+   WP's own new geometry tests at the 390px viewport (a real race condition
+   in the *test*, not the app — see §9.1) and consequently did **not**
+   redeploy the site. Root-caused, fixed (`ad6a86b`), redeployed cleanly.
+2. A later documentation-only push (`85d683d`) hit the **same class** of
+   clearance-assertion failure again, this time at wide desktop (1920px)
+   with an identical `-6` measurement — a platform-level rendering
+   difference, not the same test-timing race. Fixed by widening
+   `.widget-plot`'s CSS `margin-bottom` from 16px to 28px (`a57fefc`),
+   giving the guaranteed 12px minimum real headroom. Deployed cleanly
+   (run `34842940655`) and re-verified live in a separate WP16R completion
+   session — see §9.4.
+
+**Final, deployed, confirmed-live SHA: `a57fefc01fa63e67805afb3db64b74507b36133f`**
+(identical to `origin/main` HEAD).
 
 ---
 
@@ -35,11 +43,13 @@ production. **Final, deployed, confirmed-live SHA:
 | Merge commit (local `main`, `--no-ff`) | `4292e42` — *"Merge fix/interactive-plot-visuals into main (WP16)"* |
 | First report commit (pre-approval, deploy withheld) | `9154d7e` |
 | Deployment-evidence report commit (pushed; CI failed, did **not** deploy — see §9.1) | `0a025bf` |
-| Test-race-fix commit (pushed; CI succeeded, **deployed**) | `ad6a86b` — *"WP16: fix a genuine test race in the new geometry specs"* |
-| **Deployed, confirmed-live SHA** | **`ad6a86b209762b6f1224d5da435dfde308179368`** — confirmed via the GH Pages workflow's own `headSha` and re-verified with a fresh Playwright run against `https://yoavmp.github.io` |
-| Final report-update commit (this revision) | adds §9.1 (the CI failure/fix) and this final SHA — SHA in the terminal summary |
+| Test-race-fix commit (pushed; CI succeeded, deployed) | `ad6a86b` — *"WP16: fix a genuine test race in the new geometry specs"* (deployed by run `34832347096`) |
+| Deployment-evidence report commit (pushed; CI **failed again**, wide-desktop clearance, did **not** deploy) | `85d683d` (run `34840155813`) |
+| Cross-platform clearance-buffer fix commit (pushed; CI succeeded, **deployed**) | `a57fefc` — *"WP16: widen ROI-summary clearance buffer for cross-platform rendering"* (deployed by run `34842940655`) |
+| **Deployed, confirmed-live SHA** | **`a57fefc01fa63e67805afb3db64b74507b36133f`** — confirmed via the GH Pages workflow's own `headSha`, and independently re-verified live in the WP16R completion session (§9.4) |
+| Final report-update commit (this WP16R revision) | adds §9.4 (WP16R live re-verification against `a57fefc`) and this final SHA — SHA in the terminal summary |
 | `origin/main` before this WP | `92cf7e0` |
-| `origin/main` now | identical to local `main` HEAD |
+| `origin/main` now | identical to local `main` HEAD (`a57fefc`) |
 
 `git status --short --branch` on `main` after the final push: clean, `main`
 and `origin/main` identical.
@@ -452,6 +462,66 @@ All 12 tests passed at all three widths — critically including the exact
 now confirmed passing against the actual live production deployment, not
 just in CI.
 
+### 9.4 WP16R completion session — final re-verification against `a57fefc`
+
+A later documentation-only push (`85d683d`) exposed a *second*, different
+clearance failure in CI — same assertion, now at wide desktop (1920px)
+instead of 390px, same `-6` measurement, but a platform rendering
+difference rather than the test-timing race fixed in §9.1/§9.3 (see
+`a57fefc`'s commit message and `WP16_EXACT_CHANGELOG.md` for the full
+reasoning). Fixed by widening `.widget-plot`'s `margin-bottom` from 16px
+to 28px. This session (WP16R) picked up after that fix was already
+committed, pushed, and deployed:
+
+```
+git status --short --branch          # main...origin/main, clean (1 pre-existing
+                                      # untracked file unrelated to this WP)
+git rev-parse HEAD origin/main       # both a57fefc01fa63e67805afb3db64b74507b36133f
+gh run list --workflow "Build and deploy Jupyter Book" --limit 5
+  # a57fefc  → run 34842940655  success  (implementation deployment)
+  # 85d683d  → run 34840155813  failure  (the wide-desktop clearance CI failure above)
+  # ad6a86b  → run 34832347096  success
+  # 0a025bf  → run 34829127825  failure  (§9.1)
+  # 9154d7e  → run 34778058145  success
+```
+
+`origin/main` was already at `a57fefc` with a **successful** deploy
+(`34842940655`) — decision-tree branch A (implementation already deployed).
+No implementation push was made this session. Verified the live CSS
+directly:
+
+```
+curl -s .../_static/widgets/app/assets/index-DQfe1L5c.css?v=a38e8b12 | grep widget-plot
+  → .widget-plot{width:100%;min-height:320px;margin-bottom:28px;...}
+```
+
+confirming production serves the 28px buffer, not a cached pre-fix asset.
+
+Re-ran the built-book Playwright specs against `https://yoavmp.github.io`
+(same temporary `playwright.live.config.ts` pattern as §9.2/§9.3, removed
+after use): `chapter01.spec.ts`, `chapter02-visual-policy.spec.ts`,
+`chapter03.spec.ts` — 31 tests total.
+
+- First run (default parallel workers): **30/31 passed**, one failure —
+  the wide-desktop clearance test, measuring `6` instead of `>=12`.
+- Immediately re-ran that single test in isolation 3 times: **3/3 passed**.
+- Re-ran the full 31-test set with `--workers=1`: **31/31 passed**.
+
+This is consistent with the same class of render-completion timing
+sensitivity already diagnosed in §9.1 (async `Plotly.react()` / disclosure
+layout settling racing against the test's geometry read), aggravated by
+running four spec files fully in parallel against a live remote host
+rather than a local static server. It reproduced once under parallel load
+and did not reproduce in 4 subsequent isolated/serial runs. No code change
+was made for this — the deployed CSS fix (`a57fefc`) is confirmed correct
+and live; this is test-harness flakiness under my own ad hoc concurrent
+load, not a defect in the deployed site. Flagged in §12 for visibility.
+
+No implementation code changed this session. No report-content push had
+happened yet at the time of this verification; the report-only commit
+that added this section (and its own CI run) is recorded in the terminal
+summary of this session.
+
 ---
 
 ## 10. Live URLs — verified against this deployment
@@ -523,10 +593,25 @@ comparison with real clearance before the ROI-summary disclosure.
    worth knowing about even though it's already resolved and the live site
    was never affected.
 5. **An unrelated file, `WPs/WP22_Targeted_Live_Evidence_Validation.md`,
-   appeared in the working tree** partway through this session, describing
-   a completely different project (an "exam_generator"/"questions-db" exam
-   system with paid LLM API calls). I did not create it, did not act on any
-   of its instructions, and did not commit it — it remains untracked. Worth
-   checking where it came from; it may be a misplaced file from an
-   unrelated session or repository.
-6. No WP17 was started.
+   appeared in the working tree** partway through the original session,
+   describing a completely different project (an "exam_generator"/
+   "questions-db" exam system with paid LLM API calls). It was not created
+   or acted on by this work, and was never committed. It is no longer
+   present in the working tree as of the WP16R completion session.
+6. **A second wide-desktop clearance CI failure occurred after item 4**
+   (commit `85d683d`, run `34840155813`, same `-6` measurement as the
+   390px case but at 1920px) — a platform-rendering difference, not the
+   same test-race root cause. Fixed by widening the CSS clearance buffer
+   (`a57fefc`, run `34842940655`, deployed successfully). Net effect: 6
+   pushes to `main` total for this WP instead of 1, with 2 `failure`
+   entries in the GH Actions history for `main` (both already resolved,
+   neither ever affected the live site — GitHub Pages only republishes on
+   a successful `build-and-deploy` run).
+7. **A one-off Playwright flake surfaced during WP16R's own live
+   re-verification** (§9.4): the wide-desktop clearance test failed once
+   under parallel-worker load against production, then passed 4/4 times in
+   isolated/serial reruns. The underlying CSS fix (`a57fefc`) is confirmed
+   correctly deployed via direct CSS inspection; this is test-harness
+   timing sensitivity under concurrent load against a remote host, not a
+   site defect. No code change was made in response.
+8. No WP17 was started.

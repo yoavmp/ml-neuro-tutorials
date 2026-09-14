@@ -126,13 +126,33 @@ unsigned).
   `data-render-count` before reading geometry/state; same fix applied to
   the "control change" test's post-redraw read) — deployed by run
   `34832347096` (`build-and-deploy`, success, 3m36s,
-  `headSha=ad6a86b209762b6f1224d5da435dfde308179368`). **This is the final
-  deployed revision.**
+  `headSha=ad6a86b209762b6f1224d5da435dfde308179368`).
+- `85d683d` (report/screenshot only — zero application-code changes)
+  triggered run `34840155813`, which **failed** the same
+  `chapter02-visual-policy.spec.ts` clearance assertion again, this time
+  at **wide desktop (1920px)** instead of 390px, with the identical `-6`
+  measurement. Root cause this time: not the render-count test race (that
+  was already fixed by `ad6a86b`) — a constant `-6px` offset independent
+  of viewport width points to a platform-level rendering difference in the
+  browser's native `<summary>` disclosure-marker box (observed a few px
+  shorter on Linux/Chromium CI than on macOS). `Publish website` did not
+  run for this commit — the live site kept serving `ad6a86b` throughout.
+- `a57fefc` — widened `.widget-plot`'s CSS `margin-bottom` from `16px` to
+  `28px` (`interactive/src/styles.css`), giving the guaranteed 12px
+  minimum clearance real headroom against this class of small,
+  non-deterministic-per-machine rendering variance. Stable across 3
+  repeated local runs of the affected spec plus a full 158/158 run of both
+  Playwright suites. Deployed by run `34842940655` (`build-and-deploy`,
+  success, `headSha=a57fefc01fa63e67805afb3db64b74507b36133f`). **This is
+  the final deployed revision.**
 
 See `WPs/reports/WP16_REPORT.md` §9 for the full live-production
 verification: 34/34 Playwright tests against `https://yoavmp.github.io`
-after the first deploy, plus a further 12/12 re-run (including the exact
-previously-failing 390px case) against the final deployed revision.
+after the first deploy, a further 12/12 re-run (including the exact
+previously-failing 390px case) against `ad6a86b`, and (§9.4, WP16R
+completion session) a 31-test re-run against the final deployed revision
+`a57fefc` — 31/31 passing serially, with the live CSS directly confirmed
+to be serving the 28px buffer.
 
 ## Modified files (test-race fix, `0a025bf..ad6a86b`)
 
@@ -148,3 +168,11 @@ previously-failing 390px case) against the final deployed revision.
 No application code (components, `plotly-policy.ts`, CSS, `main.ts`,
 `resize-report.ts`, `activity-resize.js`) changed in this fix — test files
 only.
+
+## Modified files (cross-platform clearance-buffer fix, `85d683d..a57fefc`)
+
+- `interactive/src/styles.css` — `.widget-plot`'s `margin-bottom: 16px` →
+  `margin-bottom: 28px`, plus an explanatory comment. 1 rule changed, no
+  other selectors touched. `git show --stat a57fefc`:
+  `interactive/src/styles.css | 10 +++++++++-` (9 insertions, 1 deletion —
+  the extra lines are the added comment).
