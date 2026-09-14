@@ -8,11 +8,18 @@ post-merge local re-validation), and — after Yoav's explicit go-ahead —
 §6 steps 6–10 (push, monitor the GitHub Pages workflow to success, verify
 all three live exercise pages, run the geometry/style Playwright suite
 against production, inspect live screenshots). Nothing was force-pushed, no
-destructive git command was used. Deployed and confirmed-live SHA:
-**`9154d7e27745adbe7c2b0278674c470e05ee0820`**. This report update
-(deployment evidence, §9–§12) is committed and pushed on top of it as a
-documentation-only commit — its own SHA is this WP's true final `main`
-HEAD, given in the terminal summary at the end of this session.
+destructive git command was used.
+
+One genuine hiccup along the way, fully resolved: the first production push
+(`9154d7e`, a documentation-only commit — no application code) triggered a
+GH Actions run that **failed** one of this WP's own new geometry tests at
+the 390px viewport (a real race condition in the *test*, not the app —
+see §9.1) and consequently did **not** redeploy the site (the live site
+kept serving the prior successful deploy). The race was root-caused, fixed,
+and re-verified stable before pushing again. The retry (`ad6a86b`) deployed
+cleanly and is now confirmed live and independently re-tested against
+production. **Final, deployed, confirmed-live SHA:
+`ad6a86b209762b6f1224d5da435dfde308179368`.**
 
 ---
 
@@ -27,8 +34,10 @@ HEAD, given in the terminal summary at the end of this session.
 | Implementation commit | `f514b9c` — *"WP16: shared Plotly presentation policy + dynamic iframe height sync"* |
 | Merge commit (local `main`, `--no-ff`) | `4292e42` — *"Merge fix/interactive-plot-visuals into main (WP16)"* |
 | First report commit (pre-approval, deploy withheld) | `9154d7e` |
-| Deployed SHA (pushed, live) | `9154d7e27745adbe7c2b0278674c470e05ee0820` — confirmed via the JS/asset bundle served at the live URLs and the GH Pages workflow's own `headSha` |
-| Final report-update commit (this revision, deployment evidence added) | adds deployment evidence to `WPs/reports/WP16_REPORT.md` only — SHA in the terminal summary |
+| Deployment-evidence report commit (pushed; CI failed, did **not** deploy — see §9.1) | `0a025bf` |
+| Test-race-fix commit (pushed; CI succeeded, **deployed**) | `ad6a86b` — *"WP16: fix a genuine test race in the new geometry specs"* |
+| **Deployed, confirmed-live SHA** | **`ad6a86b209762b6f1224d5da435dfde308179368`** — confirmed via the GH Pages workflow's own `headSha` and re-verified with a fresh Playwright run against `https://yoavmp.github.io` |
+| Final report-update commit (this revision) | adds §9.1 (the CI failure/fix) and this final SHA — SHA in the terminal summary |
 | `origin/main` before this WP | `92cf7e0` |
 | `origin/main` now | identical to local `main` HEAD |
 
@@ -276,6 +285,59 @@ or binary data were touched.
 
 ## 9. Deployment — **complete**
 
+### 9.1 A real CI failure along the way, root-caused and fixed
+
+The first push (`9154d7e`, report/documentation only — zero application
+code) deployed successfully (run `34778058145`, §9.2). A second push
+(`0a025bf`, also report-only — a live screenshot and updated deployment
+evidence, still zero application code) triggered run `34829127825`, which
+**failed** at the "End-to-end test the built Chapter 1 page" step:
+
+```
+1) chapter02-visual-policy.spec.ts:35:5 › … @ 390px narrow/mobile › x-axis title stays fully inside the plot's box …
+   Expected: >= 12
+   Received:    -6
+```
+
+Because a step failed, `Publish website` never ran — the live site
+correctly kept serving the prior successful deploy (`9154d7e`) rather than
+a half-updated one. No user-facing regression occurred at any point.
+
+**Root cause** (not a rendering bug — a race condition in the *test itself*,
+introduced by this WP's own new spec files): `data-widget-ready="true"` is
+set synchronously the instant a component's `mount()` returns, but
+`mount()` starts each panel's `draw()` unawaited (`void panelA.draw()`) —
+and the `Plotly.react()` call inside `draw()`, which determines the plot's
+*actual* rendered height, resolves asynchronously after that. A test that
+reads geometry immediately after `data-widget-ready` can therefore observe
+the DOM *before* Plotly has finished rendering — at that moment the
+`.widget-compare-panel .widget-plot` div is still sitting at its CSS
+`min-height: 300px` placeholder, not its true ~322px rendered height (border
+included). The 22px shortfall this implies (16px expected clearance − 22px
+= −6px) matches the observed failure almost exactly. A fast, idle laptop
+rarely exposes this window; a shared, loaded CI runner does — which is
+exactly why it passed in every local run (including several repeated runs)
+and in the first CI deploy, and only surfaced on this second CI run.
+
+**Fix** (`ad6a86b`, test-only, zero application-code changes): both new
+spec files now wait for each plot's own `data-render-count` attribute
+(already set by every component after its `Plotly.react()` call resolves,
+and already the exact signal the pre-existing `e2e-book/chapter02.spec.ts`
+uses) before reading any geometry, background, or Plotly runtime state.
+The "control change" test had the identical gap one step later
+(`data-feature-count` is likewise set before the redraw's `Plotly.react()`
+resolves) and was fixed the same way. Verified stable across 3 repeated
+local runs of both affected files before pushing, then confirmed green in
+CI (run `34832347096`, full log below) and re-verified with a fresh
+Playwright run directly against the live production site post-deploy
+(§9.3) — including the exact 390px case that had failed.
+
+This was caught, diagnosed, and fixed entirely within this WP; it never
+reached students, and the final deployed build is unaffected (the fix
+touched only the two new Playwright spec files, not any component or CSS).
+
+### 9.2 First successful deploy (documentation-only push, `9154d7e`)
+
 Yoav gave explicit approval to push and deploy. Sequence actually run:
 
 ```
@@ -357,6 +419,39 @@ visually identical to the pre-deploy built-book screenshot: white
 comparison cards, clean axis titles fully inside their plots, clear gap
 before the ROI-summary disclosure.
 
+*(This screenshot and the smoke-test run above were against `9154d7e`,*
+*the revision live at that moment. §9.1 covers what happened next; §9.3*
+*re-confirms everything below still holds on the final deployed SHA.)*
+
+### 9.3 Final deploy after the test-race fix (`ad6a86b`) — re-confirmed live
+
+```
+git push origin main                    # 0a025bf..ad6a86b  main -> main
+gh run list --branch main --limit 3      # new run 34832347096 queued immediately
+gh run view 34832347096                  # watched to terminal state
+```
+
+`gh run view 34832347096 --json headSha,conclusion,status` confirms
+`{"conclusion":"success","headSha":"ad6a86b209762b6f1224d5da435dfde308179368","status":"completed"}`,
+`build-and-deploy` succeeded in 3m36s, and — unlike the failed run in §9.1 —
+`Publish website` ran this time. `curl` against
+`chapters/chapter_02/exercise_02.html` still returns HTTP 200 referencing
+the same unchanged `assets/index-2B3eai7_.js` (expected: this fix touched
+only test files, not the application bundle).
+
+Re-ran the full `chapter02-visual-policy.spec.ts` suite directly against
+`https://yoavmp.github.io` (temporary config, removed after use, same
+pattern as §9.2):
+
+```
+npx playwright test --config playwright.live.config.ts   # 12 / 12 passed, 11.6s
+```
+
+All 12 tests passed at all three widths — critically including the exact
+"x-axis title … @ 390px narrow/mobile" case that failed in CI (§9.1),
+now confirmed passing against the actual live production deployment, not
+just in CI.
+
 ---
 
 ## 10. Live URLs — verified against this deployment
@@ -418,4 +513,20 @@ comparison with real clearance before the ROI-summary disclosure.
    `WPs/reports/wp16_screenshots/` as visual evidence (10 pre-deploy + 1
    live-production) — no prior WP report committed images; flagging the
    convention change in case you'd rather these live outside git history.
-4. No WP17 was started.
+4. **A CI run failed and did not deploy** (§9.1) — caused by a genuine race
+   condition in this WP's own new Playwright specs (not in the application
+   code, and never live), root-caused and fixed in a follow-up commit that
+   deployed cleanly. Net effect on the repository: 3 pushes to `main`
+   instead of 1 for this WP, and the GH Actions history for `main` shows
+   one `failure` entry (run `34829127825`) sitting between two `success`
+   entries. Mentioning explicitly since a red run in the Actions tab is
+   worth knowing about even though it's already resolved and the live site
+   was never affected.
+5. **An unrelated file, `WPs/WP22_Targeted_Live_Evidence_Validation.md`,
+   appeared in the working tree** partway through this session, describing
+   a completely different project (an "exam_generator"/"questions-db" exam
+   system with paid LLM API calls). I did not create it, did not act on any
+   of its instructions, and did not commit it — it remains untracked. Worth
+   checking where it came from; it may be a misplaced file from an
+   unrelated session or repository.
+6. No WP17 was started.

@@ -98,15 +98,53 @@ additional changes.
 b205985 checkpoint: begin WP16 interactive plot visual repair
 f514b9c WP16: shared Plotly presentation policy + dynamic iframe height sync
 4292e42 Merge fix/interactive-plot-visuals into main (WP16)                    [on main, --no-ff]
-9154d7e WP16 report: shared Plotly policy, iframe resize sync, deploy withheld [pushed, deployed]
+9154d7e WP16 report: shared Plotly policy, iframe resize sync, deploy withheld [pushed, DEPLOYED -- run 34778058145, success]
+0a025bf WP16 report: add deployment and live-production verification evidence [pushed, CI FAILED -- run 34829127825, see below]
+ad6a86b WP16: fix a genuine test race in the new geometry specs               [pushed, DEPLOYED -- run 34832347096, success]
 ```
 
 Tag `wp16-start` → `92cf7e0152338faf07e5a5e1da6614d9f8645441` (annotated,
 unsigned).
 
-`9154d7e` was pushed to `origin/main` and deployed by GitHub Actions run
-`34778058145` (`build-and-deploy`, success, 3m30s,
-`headSha=9154d7e27745adbe7c2b0278674c470e05ee0820`). See
-`WPs/reports/WP16_REPORT.md` §9 for the full live-production verification
-(34/34 Playwright tests against `https://yoavmp.github.io`, plus a direct
-screenshot of the deployed page).
+## Deploy history
+
+- `9154d7e` deployed by run `34778058145` (`build-and-deploy`, success,
+  3m30s, `headSha=9154d7e27745adbe7c2b0278674c470e05ee0820`).
+- `0a025bf` (report/screenshot only — zero application-code changes)
+  triggered run `34829127825`, which **failed** at the built-book
+  Playwright step: `chapter02-visual-policy.spec.ts`'s 390px "x-axis title"
+  test measured clearance `-6` instead of `>=12`. Root cause: a race
+  condition in the *test* (introduced by this WP's own new spec files) —
+  geometry was read right after `data-widget-ready`, which does not
+  guarantee the async `Plotly.react()` call inside each panel's `draw()`
+  has resolved; a loaded CI runner can expose a window where the plot div
+  is still at its CSS `min-height` placeholder rather than its true
+  rendered height. `Publish website` did not run for this commit — the
+  live site correctly kept serving `9154d7e` throughout. See
+  `WPs/reports/WP16_REPORT.md` §9.1 for the full account.
+- `ad6a86b` — test-only fix (both new spec files now wait for each plot's
+  `data-render-count` before reading geometry/state; same fix applied to
+  the "control change" test's post-redraw read) — deployed by run
+  `34832347096` (`build-and-deploy`, success, 3m36s,
+  `headSha=ad6a86b209762b6f1224d5da435dfde308179368`). **This is the final
+  deployed revision.**
+
+See `WPs/reports/WP16_REPORT.md` §9 for the full live-production
+verification: 34/34 Playwright tests against `https://yoavmp.github.io`
+after the first deploy, plus a further 12/12 re-run (including the exact
+previously-failing 390px case) against the final deployed revision.
+
+## Modified files (test-race fix, `0a025bf..ad6a86b`)
+
+- `interactive/e2e-book/chapter02-visual-policy.spec.ts` — added
+  `waitForBothPanelsRendered()`, called after every `data-widget-ready`
+  check; the "control change" test additionally waits for
+  `data-render-count` to bump (not just `data-feature-count`) before
+  reading post-redraw state.
+- `interactive/e2e/plot-visual-policy.spec.ts` — added `waitForRendered()`,
+  called after every `data-widget-ready` check before reading geometry or
+  `_fullLayout` state.
+
+No application code (components, `plotly-policy.ts`, CSS, `main.ts`,
+`resize-report.ts`, `activity-resize.js`) changed in this fix — test files
+only.
