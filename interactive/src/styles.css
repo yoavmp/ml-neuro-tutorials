@@ -264,7 +264,15 @@ input[type="radio"] {
 .widget-plot {
   width: 100%;
   min-height: 320px;
-  margin-bottom: 16px;
+  /* WP16: the 12px minimum clearance this buffers against is measured to the
+     next element's own rendered top (e.g. a following <details><summary>),
+     whose exact position includes the browser's native disclosure-marker
+     box -- observed ~6px shorter on Linux/Chromium (CI) than on macOS for
+     reasons outside this stylesheet's control, and constant across viewport
+     widths (390px and 1920px both measured the same shortfall), so it is a
+     platform rendering difference, not a text-wrap/automargin one. 28px
+     keeps real clearance comfortably above 12px even with that variance. */
+  margin-bottom: 28px;
   border: 1px solid var(--border);
   border-radius: 8px;
 }
