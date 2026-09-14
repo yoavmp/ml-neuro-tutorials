@@ -43,6 +43,16 @@ async function bbox(page: Page, testId: string) {
   return box!;
 }
 
+// `data-widget-ready="true"` is set synchronously once `mount()` returns, but
+// the first `draw()` call -- and the `Plotly.react()` inside it that actually
+// determines the chart's rendered geometry and populates `_fullLayout` -- runs
+// unawaited after that. Wait for the plot's own `data-render-count` (set
+// after `Plotly.react()` resolves) before reading geometry or runtime layout
+// state, so this never races the real render on a loaded machine.
+async function waitForRendered(page: Page, testId: string): Promise<void> {
+  await expect(page.locator(`[data-testid="${testId}"]`)).toHaveAttribute("data-render-count", /[1-9]/);
+}
+
 const CHARTS = [
   { activity: "eda-histogram", query: "../configs/eda_histogram.json", plotTestId: "histogram-plot" },
   { activity: "eda-retention", query: "../configs/eda_retention.json", plotTestId: "retention-plot" },
@@ -70,6 +80,7 @@ test.describe("shared Plotly presentation policy", () => {
 
       await page.goto(appUrl(query));
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+      await waitForRendered(page, plotTestId);
 
       const box = await bbox(page, plotTestId);
       expect(box.width).toBeGreaterThan(0);
@@ -94,6 +105,7 @@ test.describe("shared Plotly presentation policy", () => {
   }) => {
     await page.goto(appUrl("../configs/regression_compare.json"));
     await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    await waitForRendered(page, "regression-A-plot");
 
     const plot = page.locator('[data-testid="regression-A-plot"]');
     const rangeBefore = await plot.evaluate((el) => (el as any)._fullLayout.xaxis.range.slice());
@@ -128,6 +140,7 @@ test.describe("shared Plotly presentation policy", () => {
     }) => {
       await page.goto(appUrl(query));
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+      await waitForRendered(page, plotTestId);
 
       const [panelBg, pageBg] = await page.evaluate(
         ([plotSel]) => {
@@ -144,6 +157,7 @@ test.describe("shared Plotly presentation policy", () => {
   test("regression-compare: hover still surfaces a tooltip despite the interaction lock", async ({ page }) => {
     await page.goto(appUrl("../configs/regression_compare.json"));
     await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    await waitForRendered(page, "regression-A-plot");
 
     const plot = page.locator('[data-testid="regression-A-plot"]');
     const point = plot.locator("g.points path.point").first();

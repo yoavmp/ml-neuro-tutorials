@@ -30,6 +30,28 @@ async function activityFrame(page: Page): Promise<Frame> {
   return frame!;
 }
 
+// `data-widget-ready="true"` is set synchronously once `mount()` returns, but
+// each panel's `draw()` -- and the `Plotly.react()` inside it that actually
+// determines the plot's final rendered height -- runs unawaited ("fire and
+// forget") after that. Measuring geometry right after `data-widget-ready`
+// races the real Plotly render: on a fast/idle machine the race is rarely
+// visible, but a loaded CI runner can measure the pre-render DOM (still at
+// its CSS `min-height`, not the actual figure height), which is exactly the
+// kind of false "clearance" reading this suite exists to prevent. Wait for
+// both panels' own `data-render-count` (set after `Plotly.react()` resolves,
+// same signal `e2e-book/chapter02.spec.ts` already asserts) before measuring
+// anything.
+async function waitForBothPanelsRendered(frame: Frame): Promise<void> {
+  await expect(frame.locator('[data-testid="regression-A-plot"]')).toHaveAttribute(
+    "data-render-count",
+    /[1-9]/,
+  );
+  await expect(frame.locator('[data-testid="regression-B-plot"]')).toHaveAttribute(
+    "data-render-count",
+    /[1-9]/,
+  );
+}
+
 for (const { name, width, height } of VIEWPORTS) {
   test.describe(`Chapter 2 built page — Exercise 2 plot geometry @ ${name}`, () => {
     test("x-axis title stays fully inside the plot's box, with a clear gap above the ROI-summary disclosure", async ({
@@ -39,6 +61,7 @@ for (const { name, width, height } of VIEWPORTS) {
       await page.goto(CHAPTER_URL);
       const frame = await activityFrame(page);
       await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+      await waitForBothPanelsRendered(frame);
 
       const plotBox = await frame.locator('[data-testid="regression-A-plot"]').boundingBox();
       const roiSummaryBox = await frame.locator('[data-testid="regression-A-roi-summary"]').boundingBox();
@@ -75,6 +98,7 @@ for (const { name, width, height } of VIEWPORTS) {
       await page.goto(CHAPTER_URL);
       const frame = await activityFrame(page);
       await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+      await waitForBothPanelsRendered(frame);
 
       const colors = await frame.evaluate(() => {
         const panelA = document.querySelector('[data-testid="regression-panel-A"]')!;
@@ -96,6 +120,7 @@ for (const { name, width, height } of VIEWPORTS) {
       await page.goto(CHAPTER_URL);
       const frame = await activityFrame(page);
       await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+      await waitForBothPanelsRendered(frame);
 
       const pageOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -133,6 +158,7 @@ for (const { name, width, height } of VIEWPORTS) {
       await page.goto(CHAPTER_URL);
       const frame = await activityFrame(page);
       await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+      await waitForBothPanelsRendered(frame);
 
       const before = await frame.evaluate(() => {
         const panel = document.querySelector('[data-testid="regression-panel-A"]')!;
@@ -144,11 +170,24 @@ for (const { name, width, height } of VIEWPORTS) {
         };
       });
 
+      // data-feature-count is set before the redraw's own Plotly.react() call
+      // resolves, so wait for the render-count to actually bump too -- same
+      // reasoning as waitForBothPanelsRendered above -- before measuring the
+      // "after" geometry.
+      const renderCountBefore = await frame
+        .locator('[data-testid="regression-A-plot"]')
+        .getAttribute("data-render-count");
       await frame.locator('[data-testid="regression-A-bundle"]').selectOption("all-eligible");
       await expect(frame.locator('[data-testid="regression-panel-A"]')).toHaveAttribute(
         "data-feature-count",
         "360",
       );
+      await expect(async () => {
+        const current = await frame
+          .locator('[data-testid="regression-A-plot"]')
+          .getAttribute("data-render-count");
+        expect(current).not.toBe(renderCountBefore);
+      }).toPass({ timeout: 3000 });
 
       const after = await frame.evaluate(() => {
         const panel = document.querySelector('[data-testid="regression-panel-A"]')!;
