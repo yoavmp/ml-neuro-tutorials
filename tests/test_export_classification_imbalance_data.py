@@ -1,8 +1,9 @@
 """Offline tests for scripts/export_classification_imbalance_data.py and its
-committed artifact (WP17 §5, §9). Includes a synthetic one-class test
-partition to prove `_eval_split` reports AUC as explicitly undefined (None)
-rather than crashing or substituting a number, since the committed real-data
-artifact never actually hits that edge case (WP17_REPORT.md documents why).
+committed artifact (WP18 sec 4, sec 9). WP17's unstratified comparison side
+is gone: every entry now carries one stratified split's metrics directly
+(accuracy, majority baseline, AUC, balanced accuracy, sensitivity,
+specificity), all using the SAME C selected honestly once on the canonical
+Section 3 split.
 
 Run:
     .venv/bin/python -m unittest discover -s tests -p 'test_export_classification_imbalance_data.py'
@@ -48,12 +49,26 @@ class CommittedArtifact(unittest.TestCase):
         self.assertEqual(self.artifact["majorityClass"], "control")
         self.assertEqual(self.artifact["minorityClass"], "autism")
 
+    def test_no_stratified_unstratified_split_anymore(self):
+        for e in self.artifact["entries"]:
+            self.assertNotIn("stratified", e)
+            self.assertNotIn("unstratified", e)
+            for field in (
+                "accuracy", "majorityBaselineAccuracy", "auc", "balancedAccuracy",
+                "sensitivity", "specificity", "confusionMatrix",
+                "nTrainMajority", "nTrainMinority", "nTestMajority", "nTestMinority",
+            ):
+                self.assertIn(field, e)
+
+    def test_same_selected_c_used_throughout(self):
+        self.assertIn("selectedC", self.artifact)
+        self.assertIn(f"C={self.artifact['selectedC']!r}", self.artifact["model"])
+
     def test_stratified_counts_approximate_the_ratio(self):
         for e in self.artifact["entries"]:
             ratio = next(r for r in self.artifact["ratios"] if r["key"] == e["ratioKey"])
-            s = e["stratified"]
-            n_train = s["nTrainMajority"] + s["nTrainMinority"]
-            observed_majority_frac = s["nTrainMajority"] / n_train
+            n_train = e["nTrainMajority"] + e["nTrainMinority"]
+            observed_majority_frac = e["nTrainMajority"] / n_train
             # integer rounding on small counts (e.g. 95:5 with n_train=300)
             self.assertAlmostEqual(observed_majority_frac, ratio["majorityPct"], delta=0.03)
 
@@ -68,13 +83,30 @@ class CommittedArtifact(unittest.TestCase):
         for e in entries_95_5:
             self.assertEqual(e["cohort"]["nMinority"], 20)
 
+    def test_95_5_auc_is_always_defined_never_undefined(self):
+        # WP18 sec 4: no one-class test partition / undefined-AUC case remains
+        # in this activity's data (N=400 makes 95:5's ~5-participant stratified
+        # test minority always non-empty).
+        for e in self.artifact["entries"]:
+            self.assertIsInstance(e["auc"], (int, float))
+            self.assertGreaterEqual(e["auc"], 0.0)
+            self.assertLessEqual(e["auc"], 1.0)
+
     def test_majority_baseline_accuracy_reflects_the_majority_class(self):
         for e in self.artifact["entries"]:
-            for kind in ("stratified", "unstratified"):
-                side = e[kind]
-                n_test = side["nTestMajority"] + side["nTestMinority"]
-                expected = max(side["nTestMajority"], side["nTestMinority"]) / n_test
-                self.assertAlmostEqual(side["majorityBaselineAccuracy"], expected, places=6)
+            n_test = e["nTestMajority"] + e["nTestMinority"]
+            expected = max(e["nTestMajority"], e["nTestMinority"]) / n_test
+            self.assertAlmostEqual(e["majorityBaselineAccuracy"], expected, places=6)
+
+    def test_balanced_accuracy_is_mean_of_sensitivity_and_specificity(self):
+        for e in self.artifact["entries"]:
+            expected = round((e["sensitivity"] + e["specificity"]) / 2, 6)
+            self.assertAlmostEqual(e["balancedAccuracy"], expected, places=6)
+
+    def test_95_5_majority_baseline_is_95_percent(self):
+        for e in self.artifact["entries"]:
+            if e["ratioKey"] == "95:5":
+                self.assertAlmostEqual(e["majorityBaselineAccuracy"], 0.95, delta=0.02)
 
 
 class ResampleCohort(unittest.TestCase):
@@ -105,33 +137,29 @@ class ResampleCohort(unittest.TestCase):
             ecid._resample_cohort(X, y, ratio, cohort_size=40, seed=1)
 
 
-class EvalSplitUndefinedAuc(unittest.TestCase):
-    """The one-class test partition must report AUC as explicitly undefined
-    (None), never a substituted number, and never raise."""
-
-    def test_one_class_test_partition_reports_auc_none(self):
-        rng = np.random.default_rng(0)
-        X_train = rng.normal(size=(40, 3))
-        y_train = np.array([0] * 20 + [1] * 20)
-        X_test = rng.normal(size=(6, 3))
-        y_test = np.zeros(6, dtype=int)  # only the majority class in the test partition
-
-        result = ecid._eval_split(X_train, y_train, X_test, y_test)
-        self.assertIsNone(result["auc"])
-        self.assertEqual(result["nTestMinority"], 0)
-        self.assertEqual(result["majorityBaselineAccuracy"], 1.0)
-
-    def test_two_class_test_partition_reports_a_real_auc(self):
+class EvalSplit(unittest.TestCase):
+    def test_two_class_test_partition_reports_a_real_auc_and_balanced_accuracy(self):
         rng = np.random.default_rng(0)
         X_train = rng.normal(size=(40, 3))
         y_train = np.array([0] * 20 + [1] * 20)
         X_test = rng.normal(size=(10, 3))
         y_test = np.array([0] * 5 + [1] * 5)
 
-        result = ecid._eval_split(X_train, y_train, X_test, y_test)
-        self.assertIsNotNone(result["auc"])
+        result = ecid._eval_split(X_train, y_train, X_test, y_test, C=1.0)
         self.assertGreaterEqual(result["auc"], 0.0)
         self.assertLessEqual(result["auc"], 1.0)
+        expected_balanced = round((result["sensitivity"] + result["specificity"]) / 2, 6)
+        self.assertAlmostEqual(result["balancedAccuracy"], expected_balanced, places=6)
+
+    def test_one_class_test_partition_raises(self):
+        rng = np.random.default_rng(0)
+        X_train = rng.normal(size=(40, 3))
+        y_train = np.array([0] * 20 + [1] * 20)
+        X_test = rng.normal(size=(6, 3))
+        y_test = np.zeros(6, dtype=int)  # only the majority class in the test partition
+
+        with self.assertRaises(RuntimeError):
+            ecid._eval_split(X_train, y_train, X_test, y_test, C=1.0)
 
 
 if __name__ == "__main__":

@@ -179,7 +179,18 @@
       "stratify": "y",
       "note": "Same test_size/random_state as protocol.holdout_split, but stratify is the diagnosis label y itself (group recoded to autism=1/control=0), not a covariate -- Exercise 4 is the first place `group` is the target rather than a stratification variable for a different outcome. This does NOT reproduce Exercise 2/3's 753/251 row split: the split target changed, so the partition is different even though test_size and random_state match."
     },
-    "model": "sklearn Pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000)); the scaler is fitted on training rows only. C is a fixed, ordinary regularization setting, not tuned on the test set. No feature/seed/model selection was performed to improve the reported test result.",
+    "model": "sklearn Pipeline(StandardScaler(), LogisticRegression(C=0.01, max_iter=5000)); the scaler is fitted on training rows only. C is selected honestly by GridSearchCV over a predetermined logarithmic grid, scored by ROC AUC, on the outer-training partition only -- never on the test set.",
+    "cv_for_c_selection": {
+        "kind": "StratifiedKFold",
+        "n_splits": 5,
+        "shuffle": true,
+        "random_state": 42,
+        "scoring": "roc_auc",
+        "grid": [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0],
+        "note": "GridSearchCV(refit=True) over Pipeline(StandardScaler(), LogisticRegression()) on the outer-TRAINING partition only (753 rows); refits the winning C on the complete outer-training partition. The outer test set is evaluated exactly once, after C is already locked."
+    },
+    "selected_C": 0.01,
+    "selected_C_rationale": "WP18 audit (scripts/classification_model_audit.py --run): 5-fold stratified CV on the outer-training partition only, canonical all-eligible x CT recipe (p=360); C=0.01 maximises mean CV ROC AUC (0.678) over the logarithmic grid. Locked held-out test accuracy=0.566, AUC=0.593, sensitivity=0.483, specificity=0.637 -- a modest improvement over WP17's untuned C=1.0 (test accuracy=0.546, AUC=0.569), reported honestly either way per WP18 sec 2.4.",
     "audit_script": "scripts/classification_model_audit.py",
     "audit_result": "scripts/classification_model_audit_result.json",
     "threshold_activity": {
@@ -205,7 +216,7 @@
       "cohort_resample_seed_base": 20000,
       "cohort_resample_note": "For each ratio, the majority/minority participants are drawn once, without replacement, using random_state = cohort_resample_seed_base + ratio_index (0-5, in the ratios list order above) -- fixed per ratio, independent of the split seeds below, so every split seed for a given ratio compares the exact same cohort.",
       "split_seeds": [0, 1, 2, 3, 4],
-      "split_seeds_note": "Both the stratified and the unstratified train_test_split(test_size=0.25, random_state=seed[, stratify=y]) reuse the same seed for a given comparison, so the only difference between the two sides is the presence of stratify=y."
+      "split_seeds_note": "A predetermined selector for split-to-split variability only: each seed drives one stratified train_test_split(test_size=0.25, random_state=seed, stratify=y) of the same fixed per-ratio cohort, using the C selected honestly in classification.selected_C throughout. Stratification is an implementation detail here, not a separate comparison (WP18 sec 4)."
     }
   },
   "bundles": {

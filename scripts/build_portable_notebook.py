@@ -545,11 +545,12 @@ _CH4_THRESHOLD_IFRAME_REPLACEMENT = (
 )
 
 _CH4_IMBALANCE_IFRAME_REPLACEMENT = (
-    "### Explore class imbalance and stratified splitting on the course website\n"
+    "### Explore class imbalance on the course website\n"
     "\n"
     "The interactive activity lets you choose a class ratio and a\n"
-    "predetermined split seed and compares a stratified vs. an unstratified\n"
-    "train/test split on the same resampled cohort of real participants.\n"
+    "predetermined split seed and compares the model's own test accuracy\n"
+    "against the majority-class baseline accuracy on the same resampled cohort\n"
+    "of real participants.\n"
     "\n"
     "> **Interactive version on the course website.** It is embedded in the\n"
     "> published Exercise 4 page:\n"
@@ -572,7 +573,7 @@ CHAPTER_04 = NotebookSpec(
         "Interactive decision-threshold exploration for classifying autism vs. control from brain structure": (
             _CH4_THRESHOLD_IFRAME_REPLACEMENT
         ),
-        "Interactive class-imbalance and stratified-splitting exploration for classifying autism vs. control from brain structure": (
+        "Interactive class-imbalance exploration for classifying autism vs. control from brain structure": (
             _CH4_IMBALANCE_IFRAME_REPLACEMENT
         ),
     },

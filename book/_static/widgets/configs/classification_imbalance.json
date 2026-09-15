@@ -1,14 +1,13 @@
 {
   "schemaVersion": 1,
   "type": "classification-imbalance",
-  "title": "Class imbalance and stratified splitting, interactively",
-  "description": "Course activity for Exercise 4: choose a class ratio and a predetermined split seed, then compare a stratified vs. an unstratified train/test split on the same resampled cohort of real ABIDE participants -- full-cohort and train/test class counts, confusion matrix, accuracy, AUC, and a majority-class baseline for each.",
+  "title": "Class imbalance and misleading accuracy, interactively",
+  "description": "Course activity for Exercise 4: choose a class ratio and a predetermined split seed, then compare the logistic-regression model's test accuracy against the majority-class baseline accuracy on the same resampled cohort of real ABIDE participants -- plus AUC, balanced accuracy, sensitivity, and specificity.",
   "data": "../data/abide_classification_imbalance.json",
-  "instructions": "Choose a class ratio (control is always the majority class here) and one of five predetermined split seeds. Both panels use the exact same resampled cohort and the exact same model -- only whether the split preserved class proportions differs between them.",
-  "stratificationNote": "Stratification preserves the resampled cohort's class proportions in both the training and test partitions; it does not create new minority-class observations, does not guarantee good sensitivity for the minority class, and does not change what the model's fitting objective optimizes for. At severe imbalance (95:5), compare each panel's accuracy against its own majority-class baseline: a classifier that predicts the majority class for everyone can still score a high accuracy while detecting no minority-class participants at all. Because each split is one stochastic draw, treat differences between the five seeds as examples of split-to-split stability, not proof that stratification must always score higher.",
+  "instructions": "Choose a class ratio (control is always the majority class here) and one of five predetermined split seeds. The chart compares the model's own test accuracy against what always-predict-control would score on the exact same test participants.",
+  "imbalanceNote": "As class imbalance increases, predicting only the majority class (control) produces increasingly high accuracy on its own -- without the model having learned anything about autism. A high accuracy can therefore coexist with a classifier that fails completely to identify autistic participants. Comparing accuracy against the majority-class baseline for the same test partition is what exposes this; the confusion matrix, sensitivity, specificity, balanced accuracy, and AUC reveal information that accuracy alone conceals. No single metric is universally sufficient -- which measures matter most depends on the scientific or clinical question. This activity uses a stratified split internally so the displayed test partition represents the selected ratio; that is an implementation detail, not the lesson here.",
   "reflectionPrompts": [
-    "At 95:5, compare accuracy to the majority-class baseline accuracy for both panels across all five seeds. How often does the model actually beat always-predict-control?",
-    "At 95:5, look at the unstratified panel's test-set minority count across the five seeds. How much does it vary, and what does that variation alone tell you about why an unstratified split is less reliable to evaluate?",
-    "Move from 50:50 down to 95:5. Does the STRATIFIED panel's train/test class proportion ever stop tracking the target ratio closely? Does the UNSTRATIFIED panel's?"
+    "Before moving to 95:5, predict the majority-class baseline accuracy. Then check: how close is the model's own accuracy to that baseline?",
+    "At 95:5, which of the displayed measures (AUC, balanced accuracy, sensitivity, specificity) most clearly reveals whether the model is actually detecting autistic participants?"
   ]
 }

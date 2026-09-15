@@ -1,27 +1,31 @@
 #!/usr/bin/env python3
-"""Deterministically export the Exercise 4 class-imbalance / stratified-split
-interactive (WP17 sec 5).
+"""Deterministically export the Exercise 4 class-imbalance interactive
+(WP18 sec 4).
 
 The browser activity ``classification-imbalance`` lets a student pick a class
 ratio (control:autism, control always the majority class) and one of five
-predetermined split seeds, then compares a stratified vs. an unstratified
-``train_test_split`` side by side on the SAME resampled cohort: full-cohort
-and train/test class counts, confusion matrix, accuracy, AUC (or explicitly
-"undefined" when a test partition has only one class), and a majority-class
-baseline accuracy.
+predetermined split seeds, then compares the logistic-regression model's
+test accuracy against the majority-class baseline accuracy for that same
+resampled cohort: full-cohort and train/test class counts, confusion matrix,
+accuracy, majority baseline accuracy, AUC, balanced accuracy, sensitivity,
+and specificity. The split is stratified internally so the displayed test
+partition represents the selected ratio -- that is an implementation detail,
+not the comparison the activity teaches (WP18 sec 4: no unstratified side,
+no undefined-AUC case).
 
 For each ratio (``book/config/abide_modeling.json``
 ``classification.imbalance_activity``), a fixed cohort of
 ``imbalance_activity.cohort_size`` real participants is drawn ONCE (without
 replacement, deterministic per-ratio seed), so every split seed for that
-ratio compares the exact same participants -- only the split strategy and
-its randomness vary. Every model uses Exercise 4's own recipe/model spec
-(``all-eligible x CT``, ``Pipeline(StandardScaler(), LogisticRegression(C=1.0,
-max_iter=5000))``).
+ratio compares the exact same participants -- only the split's randomness
+varies. Every model uses Exercise 4's own recipe and the SAME C selected
+honestly once on the canonical Section 3 split
+(``classification_model_audit.select_canonical_c``) -- never re-tuned per
+ratio or seed (WP18 sec 4.4).
 
 Output: ``book/_static/widgets/data/abide_classification_imbalance.json``.
-Ships only aggregated counts and metrics per (ratio, seed, split-kind) --
-no brain features, no participant identifiers, no raw probabilities.
+Ships only aggregated counts and metrics per (ratio, seed) -- no brain
+features, no participant identifiers, no raw probabilities.
 
 Modes (exactly one required):
 
@@ -42,10 +46,15 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from abide_modeling_data import MANIFEST, REPO_ROOT, load_modeling_frame  # noqa: E402
-from classification_model_audit import _feature_columns, _pipeline, _xy  # noqa: E402
+from classification_model_audit import (  # noqa: E402
+    _feature_columns,
+    _pipeline,
+    _xy,
+    select_canonical_c,
+)
 
 ARTIFACT_PATH = REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_classification_imbalance.json"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def _resample_cohort(X: Any, y: Any, ratio: dict[str, Any], cohort_size: int, seed: int):
@@ -70,26 +79,28 @@ def _resample_cohort(X: Any, y: Any, ratio: dict[str, Any], cohort_size: int, se
     return X[chosen], y[chosen], n_majority, n_minority
 
 
-def _eval_split(X_train, y_train, X_test, y_test) -> dict[str, Any]:
+def _eval_split(X_train, y_train, X_test, y_test, C: float) -> dict[str, Any]:
     import numpy as np
     from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
 
     n_test_pos = int(np.sum(y_test == 1))
     n_test_neg = int(np.sum(y_test == 0))
-    model = _pipeline()
+    if n_test_pos == 0 or n_test_neg == 0:
+        raise RuntimeError("one-class test partition: cohort_size/ratio/seed produced an unusable split")
+
+    model = _pipeline(C)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
     tn, fp, fn, tp = int(cm[0, 0]), int(cm[0, 1]), int(cm[1, 0]), int(cm[1, 1])
     accuracy = float(accuracy_score(y_test, y_pred))
+    sensitivity = round(tp / (tp + fn), 6) if (tp + fn) > 0 else float("nan")
+    specificity = round(tn / (tn + fp), 6) if (tn + fp) > 0 else float("nan")
+    balanced_accuracy = round((sensitivity + specificity) / 2, 6)
 
-    auc: float | None
-    if n_test_pos == 0 or n_test_neg == 0:
-        auc = None
-    else:
-        positive_index = list(model.classes_).index(1)
-        proba = model.predict_proba(X_test)[:, positive_index]
-        auc = round(float(roc_auc_score(y_test, proba)), 6)
+    positive_index = list(model.classes_).index(1)
+    proba = model.predict_proba(X_test)[:, positive_index]
+    auc = round(float(roc_auc_score(y_test, proba)), 6)
 
     majority_baseline_accuracy = round(max(n_test_pos, n_test_neg) / len(y_test), 6)
 
@@ -100,8 +111,11 @@ def _eval_split(X_train, y_train, X_test, y_test) -> dict[str, Any]:
         "nTestMinority": n_test_pos,
         "confusionMatrix": {"tn": tn, "fp": fp, "fn": fn, "tp": tp},
         "accuracy": round(accuracy, 6),
-        "auc": auc,
         "majorityBaselineAccuracy": majority_baseline_accuracy,
+        "auc": auc,
+        "balancedAccuracy": balanced_accuracy,
+        "sensitivity": sensitivity,
+        "specificity": specificity,
     }
 
 
@@ -114,6 +128,8 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
     cols = _feature_columns(frame)
     X, y, _subjects = _xy(frame, cols)
 
+    c_star = select_canonical_c(frame)
+
     cohort_size = imb["cohort_size"]
     seed_base = imb["cohort_resample_seed_base"]
     split_seeds = imb["split_seeds"]
@@ -124,23 +140,17 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
         X_cohort, y_cohort, n_majority, n_minority = _resample_cohort(X, y, ratio, cohort_size, cohort_seed)
 
         for seed in split_seeds:
-            X_tr_s, X_te_s, y_tr_s, y_te_s = train_test_split(
+            X_tr, X_te, y_tr, y_te = train_test_split(
                 X_cohort, y_cohort, test_size=0.25, random_state=seed, stratify=y_cohort
             )
-            stratified = _eval_split(X_tr_s, y_tr_s, X_te_s, y_te_s)
-
-            X_tr_u, X_te_u, y_tr_u, y_te_u = train_test_split(
-                X_cohort, y_cohort, test_size=0.25, random_state=seed
-            )
-            unstratified = _eval_split(X_tr_u, y_tr_u, X_te_u, y_te_u)
+            metrics = _eval_split(X_tr, y_tr, X_te, y_te, c_star)
 
             entries.append(
                 {
                     "ratioKey": ratio["key"],
                     "seed": seed,
                     "cohort": {"n": cohort_size, "nMajority": n_majority, "nMinority": n_minority},
-                    "stratified": stratified,
-                    "unstratified": unstratified,
+                    **metrics,
                 }
             )
 
@@ -157,7 +167,8 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
         "cohortSize": cohort_size,
         "ratios": imb["ratios"],
         "splitSeeds": split_seeds,
-        "model": cls["model"],
+        "selectedC": c_star,
+        "model": f"Pipeline(StandardScaler(), LogisticRegression(C={c_star!r}, max_iter=5000)) -- C selected honestly once on the Section 3 canonical split, fixed throughout this activity",
         "entries": entries,
     }
 
@@ -183,6 +194,12 @@ def validate_artifact(artifact: Any, manifest: dict[str, Any] | None = None) -> 
     if not isinstance(entries, list) or not entries:
         return problems + ["entries must be a non-empty array"]
 
+    required_fields = {
+        "nTrainMajority", "nTrainMinority", "nTestMajority", "nTestMinority",
+        "confusionMatrix", "accuracy", "majorityBaselineAccuracy", "auc",
+        "balancedAccuracy", "sensitivity", "specificity",
+    }
+
     seen = set()
     for e in entries:
         key = (e.get("ratioKey"), e.get("seed"))
@@ -199,33 +216,43 @@ def validate_artifact(artifact: Any, manifest: dict[str, Any] | None = None) -> 
         if cohort.get("nMajority", 0) + cohort.get("nMinority", 0) != cohort.get("n"):
             problems.append(f"entry {key}: cohort majority+minority does not sum to n")
 
-        for kind in ("stratified", "unstratified"):
-            side = e.get(kind, {})
-            cm = side.get("confusionMatrix", {})
-            if set(cm) != {"tn", "fp", "fn", "tp"}:
-                problems.append(f"entry {key} [{kind}]: confusionMatrix must have exactly tn/fp/fn/tp")
-                continue
-            n_test = cm["tn"] + cm["fp"] + cm["fn"] + cm["tp"]
-            if n_test != side.get("nTestMajority", -1) + side.get("nTestMinority", -1):
-                problems.append(f"entry {key} [{kind}]: confusion matrix total disagrees with nTestMajority+nTestMinority")
-            recomputed_acc = (cm["tn"] + cm["tp"]) / n_test if n_test else None
-            if recomputed_acc is not None and abs(recomputed_acc - side.get("accuracy", -1)) > 1e-6:
-                problems.append(f"entry {key} [{kind}]: accuracy does not match its own confusion matrix")
-            n_test_pos = side.get("nTestMinority")
-            n_test_neg = side.get("nTestMajority")
-            auc = side.get("auc")
-            if n_test_pos == 0 or n_test_neg == 0:
-                if auc is not None:
-                    problems.append(f"entry {key} [{kind}]: auc must be null (undefined) for a one-class test partition")
-            else:
-                if not isinstance(auc, (int, float)) or not (0.0 <= auc <= 1.0):
-                    problems.append(f"entry {key} [{kind}]: auc must be a number in [0, 1] when both classes are present")
-            expected_baseline = round(max(n_test_pos, n_test_neg) / n_test, 6) if n_test else None
-            if expected_baseline is not None and abs(side.get("majorityBaselineAccuracy", -1) - expected_baseline) > 1e-6:
-                problems.append(f"entry {key} [{kind}]: majorityBaselineAccuracy disagrees with the recomputed value")
+        missing = required_fields - set(e)
+        if missing:
+            problems.append(f"entry {key}: missing field(s) {sorted(missing)}")
+            continue
+
+        cm = e["confusionMatrix"]
+        if set(cm) != {"tn", "fp", "fn", "tp"}:
+            problems.append(f"entry {key}: confusionMatrix must have exactly tn/fp/fn/tp")
+            continue
+        n_test = cm["tn"] + cm["fp"] + cm["fn"] + cm["tp"]
+        if n_test != e["nTestMajority"] + e["nTestMinority"]:
+            problems.append(f"entry {key}: confusion matrix total disagrees with nTestMajority+nTestMinority")
+        recomputed_acc = (cm["tn"] + cm["tp"]) / n_test if n_test else None
+        if recomputed_acc is not None and abs(recomputed_acc - e["accuracy"]) > 1e-6:
+            problems.append(f"entry {key}: accuracy does not match its own confusion matrix")
+
+        n_test_pos, n_test_neg = e["nTestMinority"], e["nTestMajority"]
+        if n_test_pos == 0 or n_test_neg == 0:
+            problems.append(f"entry {key}: one-class test partition must not occur in this activity")
+        auc = e["auc"]
+        if not isinstance(auc, (int, float)) or not (0.0 <= auc <= 1.0):
+            problems.append(f"entry {key}: auc must be a number in [0, 1]")
+
+        expected_baseline = round(max(n_test_pos, n_test_neg) / n_test, 6) if n_test else None
+        if expected_baseline is not None and abs(e["majorityBaselineAccuracy"] - expected_baseline) > 1e-6:
+            problems.append(f"entry {key}: majorityBaselineAccuracy disagrees with the recomputed value")
+
+        sens, spec, bal = e["sensitivity"], e["specificity"], e["balancedAccuracy"]
+        expected_bal = round((sens + spec) / 2, 6)
+        if abs(bal - expected_bal) > 1e-6:
+            problems.append(f"entry {key}: balancedAccuracy does not match (sensitivity+specificity)/2")
 
     if seen != {(r, s) for r in expected_ratio_keys for s in expected_seeds}:
         problems.append("entries do not cover every (ratio, seed) combination exactly once")
+
+    if artifact.get("selectedC") not in manifest["classification"]["cv_for_c_selection"]["grid"]:
+        problems.append("selectedC is not in the manifest's cv_for_c_selection grid")
 
     identifier_token = ("id", "sub", "subject", "site", "participant")
     for key in artifact.keys():
@@ -246,14 +273,11 @@ def _summary(artifact: dict[str, Any]) -> str:
     lines = [
         f"activity    : {artifact['activity']}",
         f"cohortSize  : {artifact['cohortSize']}",
+        f"selectedC   : {artifact['selectedC']}",
         f"ratios      : {[r['key'] for r in artifact['ratios']]}",
         f"seeds       : {artifact['splitSeeds']}",
         f"entries     : {len(artifact['entries'])}",
     ]
-    undefined_auc = sum(
-        1 for e in artifact["entries"] for kind in ("stratified", "unstratified") if e[kind]["auc"] is None
-    )
-    lines.append(f"undefined-AUC cells (one-class test partition): {undefined_auc}")
     return "\n".join(lines)
 
 

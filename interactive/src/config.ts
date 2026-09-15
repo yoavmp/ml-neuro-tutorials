@@ -282,7 +282,7 @@ const classificationImbalanceConfig = z
     ...baseFields,
     type: z.literal("classification-imbalance"),
     instructions: z.string().min(1, "config.instructions must be a non-empty string"),
-    stratificationNote: z.string().min(1, "config.stratificationNote must be a non-empty string"),
+    imbalanceNote: z.string().min(1, "config.imbalanceNote must be a non-empty string"),
     reflectionPrompts: z.array(z.string().min(1)).optional(),
   })
   .strict();
