@@ -1,46 +1,41 @@
 #!/usr/bin/env python3
-"""Reproducible KNN model audit for Exercise 3 (WP13 section 1).
+"""Reproducible KNN model audit for Exercise 3 (WP19: fixed worked-example k).
 
-Goal: decide -- empirically, before writing the notebook -- which feature
-recipe gives the clearest standardized KNN-regression teaching example for
-``age``, and what ``k`` a training-only selection procedure picks for it. The
-outer test set (Exercise 2's own locked split) is never touched by this
-selection; it is evaluated exactly once per candidate, purely to report the
-one number the notebook quotes.
+Goal: verify -- empirically, before/after writing the notebook -- the locked
+held-out performance of the standardized KNN-regression worked example at the
+course-design-predeclared ``K_EXAMPLE = 20``, and confirm that the canonical
+feature recipe is a reasonable choice compared with two smaller predeclared
+anatomical bundles evaluated at the exact same fixed k.
 
-Design rules (WP13 section 1):
+WP19 removed the early cross-validation / formal parameter-selection lesson
+from Exercise 3. This script no longer searches candidate ``k`` values or
+selects one by cross-validation: every candidate below is evaluated at the
+single fixed ``K_EXAMPLE = 20``, exactly as the notebook's worked example
+does. There is no hidden search that happens to return 20.
 
-* every model is ``Pipeline(StandardScaler(), KNeighborsRegressor(...))`` so
-  scaling is learned from training data / training folds only;
-* ``k`` is chosen by a 5-fold ``KFold(shuffle=True, random_state=0)`` --
-  Exercise 2's own documented cross-validation protocol
-  (``book/config/abide_modeling.json`` ``protocol.cross_validation``) -- on the
-  OUTER-TRAINING partition only. The k grid spans 1 through the largest k
-  valid inside that cross-validation (a fold's own training size), evaluated
-  at a representative, log-spaced set of points rather than every integer (a
-  full even grid is used later in the notebook's own development curve,
-  section 4.5, which is a separate, from-scratch computation);
-* the special endpoint "k equals every participant in the fitting set" is
-  evaluated too, as a diagnostic never used for selection: fit once on the
-  full outer-training partition (753 rows) with ``k = n_train`` and predict
-  the untouched outer test set once. At that k, every prediction is the
-  training-partition mean (verified structurally, not just numerically);
+Design rules (WP19):
+
+* every model is ``Pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=K_EXAMPLE))``
+  so scaling is learned from training data only;
+* ``K_EXAMPLE = 20`` is fixed by course design, not chosen by any selection
+  procedure inside this script;
 * the outer test set (Exercise 2's ``train_test_split(test_size=0.25,
-  random_state=42, stratify=group)``) is evaluated exactly once per candidate,
-  after k is already locked by the training-only procedure above.
+  random_state=42, stratify=group)``) is evaluated exactly once per
+  candidate;
+* the special endpoint "k equals every participant in the fitting set" is
+  still evaluated as a diagnostic: fit once on the full outer-training
+  partition (753 rows) with ``k = n_train`` and predict the untouched outer
+  test set once. At that k, every prediction is the training-partition mean
+  (verified structurally, not just numerically).
 
-Predeclared feature spaces (WP13 section 1):
+Predeclared feature spaces (WP13 section 1, unchanged by WP19):
 
 1. the exact Exercise 2 canonical recipe -- ``all-eligible`` bilateral cortical
-   thickness, p = 360;
+   thickness, p = 360 (this is what the notebook uses);
 2. two already-predeclared, smaller anatomical bundles from
    ``book/config/abide_modeling.json`` (``frontoparietal`` p = 78,
-   ``occipital`` p = 46) to see whether lower dimensionality changes standardized
-   KNN's behaviour (the curse-of-dimensionality question the WP asks about).
-
-No feature was chosen by looking at its association with ``age``; all three
-recipes were already reviewed bundles/the canonical recipe before this audit
-ran.
+   ``occipital`` p = 46), evaluated at the same fixed k = 20 for comparison
+   only -- not for selecting a feature space by search.
 
 Usage::
 
@@ -73,8 +68,7 @@ from abide_modeling_data import (  # noqa: E402
 RESULT_PATH = REPO_ROOT / "scripts" / "knn_model_audit_result.json"
 
 TARGET = "age"
-OUTER_CV_SEED = 0
-N_SPLITS = 5
+K_EXAMPLE = 20
 
 FEATURE_SPACES: list[dict[str, Any]] = [
     {"name": "all-eligible x CT (Exercise 2 canonical)", "bundle": "all-eligible", "measures": ["CT"]},
@@ -109,60 +103,7 @@ def _outer_split(frame: Any, cols: list[str]):
     return X_train, X_test, y_train, y_test
 
 
-def _k_grid(k_max: int) -> list[int]:
-    """A representative, log-spaced set of k in [1, k_max], always including the
-    endpoints and a handful of small-k values where KNN changes fastest."""
-    import numpy as np
-
-    small = [k for k in (1, 2, 3, 4, 5, 7, 10, 15, 20, 30, 40) if k <= k_max]
-    log_part = sorted(
-        {int(round(v)) for v in np.geomspace(max(small[-1], 1), k_max, num=16) if 1 <= v <= k_max}
-    )
-    grid = sorted(set(small) | set(log_part) | {k_max})
-    return grid
-
-
-def _cv_select_k(X_train: Any, y_train: Any, k_max: int) -> dict[str, Any]:
-    """5-fold CV (Exercise 2's own protocol) on the training partition only.
-    Returns the full per-k curve and the selected k (argmax mean CV R^2, ties
-    broken toward the smaller / more parsimonious k)."""
-    import numpy as np
-    from sklearn.metrics import mean_squared_error, r2_score
-    from sklearn.model_selection import KFold
-    from sklearn.neighbors import KNeighborsRegressor
-    from sklearn.pipeline import make_pipeline
-    from sklearn.preprocessing import StandardScaler
-
-    cv = KFold(n_splits=N_SPLITS, shuffle=True, random_state=OUTER_CV_SEED)
-    grid = _k_grid(k_max)
-
-    curve = []
-    for k in grid:
-        fold_r2, fold_mse = [], []
-        for tr_idx, va_idx in cv.split(X_train):
-            pipe = make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=k))
-            pipe.fit(X_train[tr_idx], y_train[tr_idx])
-            pred = pipe.predict(X_train[va_idx])
-            fold_r2.append(float(r2_score(y_train[va_idx], pred)))
-            fold_mse.append(float(mean_squared_error(y_train[va_idx], pred)))
-        curve.append(
-            {
-                "k": k,
-                "cv_r2_mean": round(float(np.mean(fold_r2)), 6),
-                "cv_r2_std": round(float(np.std(fold_r2)), 6),
-                "cv_mse_mean": round(float(np.mean(fold_mse)), 4),
-            }
-        )
-
-    best = max(curve, key=lambda row: row["cv_r2_mean"])
-    # tie-break toward the smallest k within floating-point noise of the best
-    tied = [row for row in curve if abs(row["cv_r2_mean"] - best["cv_r2_mean"]) < 1e-9]
-    selected = min(tied, key=lambda row: row["k"])
-    return {"grid": grid, "curve": curve, "selected_k": selected["k"], "selected": selected}
-
-
 def _locked_test_eval(X_train, y_train, X_test, y_test, k: int) -> dict[str, Any]:
-    import numpy as np
     from sklearn.metrics import mean_squared_error, r2_score
     from sklearn.neighbors import KNeighborsRegressor
     from sklearn.pipeline import make_pipeline
@@ -222,13 +163,13 @@ def run_audit() -> dict[str, Any]:
         },
         "protocol": {
             "outer_holdout_split": MANIFEST["protocol"]["holdout_split"],
-            "cv_for_k_selection": f"KFold(n_splits={N_SPLITS}, shuffle=True, random_state={OUTER_CV_SEED})",
+            "k_example": K_EXAMPLE,
             "note": (
-                "k is selected by 5-fold CV on the outer-TRAINING partition only "
-                "(the same CV protocol Exercise 2 documents). The outer test set is "
-                "evaluated exactly once per candidate, after k is already locked, and "
-                "is never used to select k, the feature space, scaling, the distance "
-                "metric, or weighting."
+                "WP19: k = 20 is fixed by course design for the notebook's worked "
+                "example, not selected by cross-validation or any other search. "
+                "Every candidate feature space below is evaluated at this same "
+                "fixed k, for comparison only. The outer test set is evaluated "
+                "exactly once per candidate."
             ),
         },
         "candidates": [],
@@ -240,12 +181,8 @@ def run_audit() -> dict[str, Any]:
         X_train, X_test, y_train, y_test = _outer_split(frame, cols)
         n_train, n_test = len(y_train), len(y_test)
 
-        fold_train_n = int(round(n_train * (N_SPLITS - 1) / N_SPLITS))
-        selection = _cv_select_k(X_train, y_train, k_max=fold_train_n)
-        k_star = selection["selected_k"]
-        locked = _locked_test_eval(X_train, y_train, X_test, y_test, k_star)
+        locked = _locked_test_eval(X_train, y_train, X_test, y_test, K_EXAMPLE)
         endpoint = _fitting_set_endpoint(X_train, y_train, X_test, y_test)
-        k1 = next(row for row in selection["curve"] if row["k"] == 1)
 
         results["candidates"].append(
             {
@@ -256,15 +193,7 @@ def run_audit() -> dict[str, Any]:
                 "usable_n": int(n_train + n_test),
                 "n_train": n_train,
                 "n_test": n_test,
-                "folds": N_SPLITS,
-                "k_grid_max_valid_in_cv": fold_train_n,
-                "k_grid": selection["grid"],
-                "cv_curve": selection["curve"],
-                "selected_k": k_star,
-                "selected_k_cv_r2": selection["selected"]["cv_r2_mean"],
-                "selected_k_cv_mse": selection["selected"]["cv_mse_mean"],
-                "k1_cv_r2": k1["cv_r2_mean"],
-                "k1_cv_mse": k1["cv_mse_mean"],
+                "k_example": K_EXAMPLE,
                 "locked_test_eval": locked,
                 "fitting_set_endpoint": endpoint,
             }
@@ -308,17 +237,17 @@ def validate(results: dict[str, Any]) -> list[str]:
         problems.append("target must be 'age'")
     if results.get("source", {}).get("pinnedCommit") != MANIFEST["source"]["pinned_commit"]:
         problems.append("source.pinnedCommit does not match the manifest")
+    if results.get("protocol", {}).get("k_example") != K_EXAMPLE:
+        problems.append(f"protocol.k_example must be {K_EXAMPLE}")
     names = {c["feature_space"] for c in results.get("candidates", [])}
     expected = {s["name"] for s in FEATURE_SPACES}
     if names != expected:
         problems.append(f"candidates cover {names}, expected {expected}")
     for c in results.get("candidates", []):
-        if c["k_grid"][0] != 1:
-            problems.append(f"{c['feature_space']}: k_grid must start at 1")
-        if c["k_grid"][-1] != c["k_grid_max_valid_in_cv"]:
-            problems.append(f"{c['feature_space']}: k_grid must end at the largest CV-valid k")
-        if c["selected_k"] not in c["k_grid"]:
-            problems.append(f"{c['feature_space']}: selected_k not in the evaluated grid")
+        if c["k_example"] != K_EXAMPLE:
+            problems.append(f"{c['feature_space']}: k_example must be {K_EXAMPLE}")
+        if c["locked_test_eval"]["k"] != K_EXAMPLE:
+            problems.append(f"{c['feature_space']}: locked_test_eval.k must be {K_EXAMPLE}")
         ep = c["fitting_set_endpoint"]
         if ep["k"] != c["n_train"]:
             problems.append(f"{c['feature_space']}: fitting_set_endpoint k must equal n_train")
@@ -330,17 +259,13 @@ def validate(results: dict[str, Any]) -> list[str]:
 def _print_table(results: dict[str, Any]) -> None:
     print()
     print(f"=== KNN audit for target={results['target']} (runtime {results.get('runtime_seconds', '?')}s) ===")
-    hdr = (
-        f"{'feature space':38s} {'p':>4s} {'n_tr':>5s} {'n_te':>5s} {'k_max':>6s} "
-        f"{'k*':>5s} {'cvR2':>8s} {'testR2':>8s} {'k=1 cvR2':>9s} {'k=n_fit testR2':>15s}"
-    )
+    hdr = f"{'feature space':38s} {'p':>4s} {'n_tr':>5s} {'n_te':>5s} {'k':>4s} {'testR2':>8s} {'k=n_fit testR2':>15s}"
     print(hdr)
     print("-" * len(hdr))
     for c in results["candidates"]:
         print(
             f"{c['feature_space']:38.38s} {c['p']:4d} {c['n_train']:5d} {c['n_test']:5d} "
-            f"{c['k_grid_max_valid_in_cv']:6d} {c['selected_k']:5d} {c['selected_k_cv_r2']:+8.4f} "
-            f"{c['locked_test_eval']['test_r2']:+8.4f} {c['k1_cv_r2']:+9.4f} "
+            f"{c['k_example']:4d} {c['locked_test_eval']['test_r2']:+8.4f} "
             f"{c['fitting_set_endpoint']['test_r2']:+15.4f}"
         )
 

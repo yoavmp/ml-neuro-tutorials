@@ -51,7 +51,7 @@ test.describe("Chapter 3 built page — embedded KNN k-exploration", () => {
     expect(obsoleteResp, "no request for the obsolete large JSON asset").toBeUndefined();
 
     const slider = frame.locator('[data-testid="knn-k-slider"]');
-    await expect(slider).toHaveValue("17"); // validation-optimal default
+    await expect(slider).toHaveValue("20"); // worked-example default
     await expect(frame.locator('[data-testid="knn-scatter-plot"]')).toHaveAttribute(
       "data-render-count",
       /[1-9]/,
@@ -62,7 +62,7 @@ test.describe("Chapter 3 built page — embedded KNN k-exploration", () => {
     );
 
     const metrics = await frame.locator('[data-testid="knn-metrics"]').innerText();
-    expect(metrics).toMatch(/k = 17/);
+    expect(metrics).toMatch(/k = 20/);
 
     // a real control change: k=1 -> perfect fitting R2, different metrics text
     const beforeMetrics = metrics;
@@ -110,7 +110,7 @@ test.describe("Chapter 3 built page — embedded KNN k-exploration", () => {
     await page.locator(IFRAME_SELECTOR).scrollIntoViewIfNeeded();
     frame = await activityFrame(page);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await expect(frame.locator('[data-testid="knn-k-slider"]')).toHaveValue("17");
+    await expect(frame.locator('[data-testid="knn-k-slider"]')).toHaveValue("20");
   });
 
   test("embedded activity is usable at a narrow viewport", async ({ page }) => {
@@ -142,7 +142,7 @@ async function abcFrame(page: import("@playwright/test").Page): Promise<Frame> {
 }
 
 test.describe("Chapter 3 built page — embedded honest-vs-invalid KNN activity", () => {
-  test("iframe loads, config+data are 200, all three panels render with the audit-selected default k", async ({
+  test("iframe loads, config+data are 200, all three panels render with the worked-example default k", async ({
     page,
   }) => {
     const responses: { url: string; status: number }[] = [];
@@ -165,7 +165,7 @@ test.describe("Chapter 3 built page — embedded honest-vs-invalid KNN activity"
     expect(binaryResp?.status, "binary HTTP status").toBe(200);
     expect(obsoleteResp, "no request for the obsolete large JSON asset").toBeUndefined();
 
-    await expect(frame.locator('[data-testid="knn-abc-k-slider"]')).toHaveValue("15");
+    await expect(frame.locator('[data-testid="knn-abc-k-slider"]')).toHaveValue("20");
     for (const panel of ["a", "b", "c"]) {
       await expect(frame.locator(`[data-testid="knn-abc-panel-${panel}-plot"]`)).toHaveAttribute(
         "data-render-count",

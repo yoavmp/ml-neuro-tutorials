@@ -218,7 +218,7 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> tuple[
             "nTest": n_test,
             "kMax": k_max,
         },
-        "selectedKFromAudit": knn_cfg["selected_k"],
+        "workedExampleK": knn_cfg["worked_example_k"],
         "binary": {
             "path": BINARY_PATH.name,
             "byteLength": len(blob),
@@ -325,9 +325,9 @@ def validate_artifact(manifest_json: Any, blob: bytes, manifest: dict[str, Any] 
     if c_rows.shape[0] == len(observed_test) and not np.allclose(c_rows[:, 0], observed_test, atol=1e-3):
         problems.append("neighborTargetsC[:, 0] (k=1) must equal observedTest -- each test row is its own nearest neighbour")
 
-    selected_k = manifest_json.get("selectedKFromAudit")
-    if not isinstance(selected_k, int) or not (1 <= selected_k <= (k_max or 0)):
-        problems.append("selectedKFromAudit must be within [1, kMax]")
+    worked_example_k = manifest_json.get("workedExampleK")
+    if not isinstance(worked_example_k, int) or not (1 <= worked_example_k <= (k_max or 0)):
+        problems.append("workedExampleK must be within [1, kMax]")
 
     return problems
 
@@ -344,7 +344,7 @@ def _summary(manifest_json: dict[str, Any]) -> str:
         f"feature recipe : {manifest_json['featureRecipe']['bundle']} x "
         f"{'+'.join(manifest_json['featureRecipe']['measures'])} (p={manifest_json['featureRecipe']['featureCount']})\n"
         f"n_train        : {s['nTrain']}   n_test : {s['nTest']}   k_max (shared) : {s['kMax']}\n"
-        f"default (audit-selected) k : {manifest_json['selectedKFromAudit']}\n"
+        f"default (worked-example) k : {manifest_json['workedExampleK']}\n"
         f"binary payload : {b['byteLength']} bytes  sha256={b['sha256']}"
     )
 

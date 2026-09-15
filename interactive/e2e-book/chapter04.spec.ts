@@ -43,7 +43,7 @@ test.describe("Chapter 4 built page — embedded decision-threshold activity", (
 
     const metrics = await frame.locator('[data-testid="cls-metrics"]').innerText();
     expect(metrics).toMatch(/threshold = 0\.50/);
-    expect(metrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.593/);
+    expect(metrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.569/);
   });
 
   test("moving the threshold changes the confusion matrix and metrics, but never the AUC", async ({ page }) => {
@@ -62,7 +62,7 @@ test.describe("Chapter 4 built page — embedded decision-threshold activity", (
     const afterTp = await frame.locator('[data-testid="cls-cm-tp"]').innerText();
     expect(afterMetrics).not.toEqual(beforeMetrics);
     expect(afterTp).not.toEqual(beforeTp);
-    expect(afterMetrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.593/);
+    expect(afterMetrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.569/);
 
     // reset control restores the default
     await frame.locator('[data-testid="cls-threshold-reset"]').click();

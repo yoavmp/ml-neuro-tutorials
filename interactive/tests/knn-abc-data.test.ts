@@ -39,7 +39,7 @@ async function buildManifestAndServe(
     target: { name: "age", label: "Age at scan", unit: "years" },
     featureRecipe: { bundle: "all-eligible", measures: ["CT"], featureCount: 360 },
     split: { nTrain: 3, nTest: 2, kMax: 2 },
-    selectedKFromAudit: 1,
+    workedExampleK: 1,
     binary: { path: BINARY_NAME, byteLength: packed.buffer.byteLength, sha256: await sha256Hex(packed.buffer) },
     sections: packed.sections,
     ...overrides,
@@ -124,8 +124,8 @@ describe("parseKnnAbcData", () => {
     if (!r.ok) expect(r.error).toMatch(/out of bounds/);
   });
 
-  it("rejects selectedKFromAudit out of range", async () => {
-    const manifest = await buildManifestAndServe({ selectedKFromAudit: 99 });
+  it("rejects workedExampleK out of range", async () => {
+    const manifest = await buildManifestAndServe({ workedExampleK: 99 });
     const r = await parseKnnAbcData(manifest, DATA_URL);
     expect(r.ok).toBe(false);
   });
@@ -165,7 +165,7 @@ describe("parseKnnAbcData", () => {
       for (let i = 0; i < bFirst.length; i += 1) expect(bFirst[i]).toBeCloseTo(r.data.observedTrain[i]!, 2);
       const cFirst = r.data.neighborTargetsC.map((row) => row[0]);
       for (let i = 0; i < cFirst.length; i += 1) expect(cFirst[i]).toBeCloseTo(r.data.observedTest[i]!, 2);
-      expect(r.data.selectedKFromAudit).toBe(15);
+      expect(r.data.workedExampleK).toBe(20);
     }
   });
 });

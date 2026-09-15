@@ -6,70 +6,6 @@
     "n_total": 1004,
     "n_train": 753
   },
-  "cv_selection": {
-    "curve": [
-      {
-        "C": 0.0001,
-        "mean_cv_auc": 0.613452,
-        "std_cv_auc": 0.046692
-      },
-      {
-        "C": 0.001,
-        "mean_cv_auc": 0.660888,
-        "std_cv_auc": 0.014322
-      },
-      {
-        "C": 0.01,
-        "mean_cv_auc": 0.677666,
-        "std_cv_auc": 0.008937
-      },
-      {
-        "C": 0.1,
-        "mean_cv_auc": 0.644867,
-        "std_cv_auc": 0.005242
-      },
-      {
-        "C": 1.0,
-        "mean_cv_auc": 0.606166,
-        "std_cv_auc": 0.019252
-      },
-      {
-        "C": 10.0,
-        "mean_cv_auc": 0.594829,
-        "std_cv_auc": 0.019416
-      },
-      {
-        "C": 100.0,
-        "mean_cv_auc": 0.594703,
-        "std_cv_auc": 0.016574
-      },
-      {
-        "C": 1000.0,
-        "mean_cv_auc": 0.610336,
-        "std_cv_auc": 0.010009
-      },
-      {
-        "C": 10000.0,
-        "mean_cv_auc": 0.610094,
-        "std_cv_auc": 0.013468
-      }
-    ],
-    "folds": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
-    "grid": [
-      0.0001,
-      0.001,
-      0.01,
-      0.1,
-      1.0,
-      10.0,
-      100.0,
-      1000.0,
-      10000.0
-    ],
-    "scoring": "roc_auc",
-    "selected_C": 0.01,
-    "selected_mean_cv_auc": 0.677666
-  },
   "feature_recipe": {
     "bundle": "all-eligible",
     "feature_count": 360,
@@ -79,17 +15,17 @@
   },
   "generated_by": "scripts/classification_model_audit.py --run",
   "locked_test_eval": {
-    "accuracy": 0.565737,
-    "auc": 0.592976,
+    "accuracy": 0.545817,
+    "auc": 0.569221,
     "confusion_matrix": {
-      "fn": 60,
-      "fp": 49,
-      "tn": 86,
-      "tp": 56
+      "fn": 54,
+      "fp": 60,
+      "tn": 75,
+      "tp": 62
     },
     "n_test": 251,
-    "sensitivity": 0.482759,
-    "specificity": 0.637037,
+    "sensitivity": 0.534483,
+    "specificity": 0.555556,
     "test_negative_count": 135,
     "test_positive_count": 116
   },
@@ -101,13 +37,13 @@
       "stratify": "y",
       "test_size": 0.25
     },
-    "model": "Pipeline(StandardScaler(), LogisticRegression(C=0.01, max_iter=5000))",
-    "note": "C is selected honestly: GridSearchCV over a predetermined logarithmic grid (np.logspace(-4, 4, 9)), scored by ROC AUC, with StratifiedKFold(n_splits=5, shuffle=True, random_state=42) on the outer-TRAINING partition only. The outer test set is evaluated exactly once, after C is already locked, and is never used to select C, the feature space, scaling, or the scoring rule."
+    "model": "Pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000))",
+    "note": "WP19: C = 1.0 is fixed by course design for the notebook's worked example, not selected by cross-validation or any other search. The outer test set is evaluated exactly once, with this fixed C."
   },
   "reproducibility_check": {
     "refit_metrics_identical": true
   },
-  "runtime_seconds": 6.49,
+  "runtime_seconds": 3.91,
   "source": {
     "brainTableSha256": "ad0db42f85c77cbb8b4e023df288d34b29f1a63870a0cf1955c5b3b0d357579e",
     "pinnedCommit": "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"

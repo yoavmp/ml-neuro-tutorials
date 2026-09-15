@@ -64,7 +64,7 @@ const schema = z
     cohortSize: z.number().int().positive(),
     ratios: z.array(ratioSchema).min(1),
     splitSeeds: z.array(z.number().int()).min(1),
-    selectedC: z.number().positive(),
+    modelC: z.number().positive(),
     model: z.string().min(1),
     entries: z.array(entrySchema).min(1),
   })

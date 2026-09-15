@@ -62,8 +62,8 @@ class CommittedArtifact(unittest.TestCase):
         self.assertEqual(m["sections"]["neighborIndexB"]["shape"], [753, 251])
         self.assertEqual(m["sections"]["neighborIndexC"]["shape"], [251, 251])
 
-    def test_default_k_is_the_audit_selected_k(self):
-        self.assertEqual(self.manifest["selectedKFromAudit"], 15)
+    def test_default_k_is_the_worked_example_k(self):
+        self.assertEqual(self.manifest["workedExampleK"], 20)
 
     def test_contains_no_participant_identifier(self):
         blob_text = json.dumps(self.manifest)

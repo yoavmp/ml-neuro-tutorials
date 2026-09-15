@@ -1,15 +1,16 @@
 """Offline assertions for book/chapters/chapter_03/exercise_03.ipynb (Exercise 3).
 
 Standard-library ``unittest``; no network. Checks structure, the leakage guard
-and locked-split reuse in the notebook code, that the executable
-cross-validation cell reproduces the committed audit's selected k, that the
-invalid/demo models stay isolated, and that classification is only ever
-mentioned as a forward-looking pointer.
+and locked-split reuse in the notebook code, that the worked example uses a
+fixed, predeclared k = 20 (WP19: no cross-validation or formal parameter
+selection in this early lesson), that the invalid/demo models stay isolated,
+and that classification is only ever mentioned as a forward-looking pointer.
 
-WP14 corrected the canonical feature recipe from 358 to 360 cortical parcels,
-replaced the internal-audit-script comment with executable training-only
-cross-validation, and replaced the static Section 3 A/B/C table + k=1 demo
-with one interactive activity. This file supersedes the WP13 version.
+WP14 corrected the canonical feature recipe from 358 to 360 cortical parcels
+and replaced the static Section 3 A/B/C table + k=1 demo with one interactive
+activity. WP19 removed the training-only cross-validation k-selection lesson
+and fixed k = 20 by course design instead. This file supersedes the WP13/WP14
+versions.
 
 Run:
     .venv/bin/python -m unittest discover -s tests -p 'test_exercise_03_notebook.py'
@@ -49,7 +50,7 @@ class Notebook(unittest.TestCase):
         nbformat.validate(self.nb)
         ids = [c["id"] for c in self.cells]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertTrue(all(i.startswith(("wp13-", "wp14-")) for i in ids), ids)
+        self.assertTrue(all(i.startswith(("wp13-", "wp14-", "wp19-")) for i in ids), ids)
 
     def test_h1_title(self):
         self.assertEqual(
@@ -124,8 +125,8 @@ class Notebook(unittest.TestCase):
         self.assertLessEqual(self.md.lower().count("classification"), 3)
 
     def test_uses_k_not_n_for_neighbour_count(self):
-        self.assertIn("K_SELECTED = int(cv_results", self.code)
-        self.assertIn("n_neighbors=K_SELECTED", self.code)
+        self.assertIn("K_EXAMPLE = 20", self.code)
+        self.assertIn("n_neighbors=K_EXAMPLE", self.code)
         low = " ".join(self.md.lower().split())
         self.assertIn("the number of neighbours", low)
 
@@ -156,19 +157,18 @@ class Notebook(unittest.TestCase):
         self.assertIn('assert all(c.startswith("fsCT_") for c in FEATURES)', self.code)
         self.assertIn('"age" not in FEATURES', self.code)
 
-    def test_k_arises_from_executable_training_only_cv_not_a_hardcoded_number(self):
-        # WP14 §4.3: the notebook's chosen k must come from executable code.
-        cv_cell = self.by_id["wp14-211"]
-        src = _src(cv_cell)
-        self.assertIn("cross_val_score", src)
-        self.assertIn("KFold(n_splits=5, shuffle=True, random_state=0)", src)
-        self.assertIn("X_train, y_train", src)
-        self.assertNotIn("X_test", src)
-        self.assertNotIn("y_test", src)
-        self.assertIn('idxmax()', src)
-        # never a bare literal "K_SELECTED = 15" anywhere in the notebook
-        self.assertNotIn("K_SELECTED = 15", self.code)
-        self.assertIn("selected k = 15", self.all_output)
+    def test_k_is_fixed_by_course_design_not_a_search(self):
+        # WP19 §4.2/§4.4: k = 20 is predeclared, not selected by cross-validation
+        # or any other search over candidate values.
+        self.assertIn("K_EXAMPLE = 20", self.code)
+        self.assertNotIn("cross_val_score", self.code)
+        self.assertNotIn("GridSearchCV", self.code)
+        self.assertNotIn("KFold", self.code)
+        self.assertNotIn("CANDIDATE_KS", self.code)
+        self.assertNotIn("K_SELECTED", self.code)
+        low_md = self.md.lower()
+        for needle in ("cross-validation", "cross validation", "5-fold"):
+            self.assertNotIn(needle, low_md)
 
     def test_executable_cv_reproduces_the_committed_audit_selected_k(self):
         canonical = next(
@@ -176,8 +176,8 @@ class Notebook(unittest.TestCase):
             for c in AUDIT_RESULT["candidates"]
             if c["bundle"] == "all-eligible" and c["measures"] == ["CT"]
         )
-        self.assertEqual(canonical["selected_k"], 15)
-        self.assertIn("selected k = 15", self.all_output)
+        self.assertEqual(canonical["k_example"], 20)
+        self.assertIn("k = 20", self.all_output)
 
     def test_scaling_is_fit_inside_the_pipeline_only(self):
         for line in self.code.splitlines():
@@ -280,9 +280,10 @@ class Notebook(unittest.TestCase):
     def test_executed_outputs_are_present_and_teach_the_point(self):
         out = self.all_output
         self.assertIn("age available for 1004 of 1004", out)
-        self.assertIn("held-out R^2 = 0.649", out)
+        self.assertIn("k = 20", out)
+        self.assertIn("held-out R^2 = 0.664", out)
         self.assertIn("N_fit = 564   N_val = 189", out)
-        self.assertIn("validation-optimal", out)
+        self.assertIn("lowest validation error", out)
         self.assertIn("Exercise 2 linear regression   held-out R^2 = 0.469", out)
 
     def test_no_execution_errors_or_stderr_committed(self):

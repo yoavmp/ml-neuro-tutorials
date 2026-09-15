@@ -58,7 +58,7 @@ const knnExploreManifestSchema = binaryManifestBaseSchema.extend({
     .object({ A: z.number().finite(), B: z.number().finite(), C: z.number().finite() })
     .strict(),
   validationOptimalK: z.number().int().positive(),
-  selectedKFromAudit: z.number().int().positive(),
+  workedExampleK: z.number().int().positive(),
 });
 
 export interface KnnExploreTrainingSample {
@@ -75,7 +75,7 @@ export interface KnnExploreData {
   split: { nOuterTrain: number; nFit: number; nValidation: number };
   fitTargetMean: number;
   validationOptimalK: number;
-  selectedKFromAudit: number;
+  workedExampleK: number;
   observedValidation: number[];
   observedFitting: number[];
   neighborTargetsByProximity: number[][];
@@ -147,10 +147,10 @@ function validateReconstructed(data: KnnExploreData): string | null {
   if (
     data.validationOptimalK < 1 ||
     data.validationOptimalK > nFit ||
-    data.selectedKFromAudit < 1 ||
-    data.selectedKFromAudit > nFit
+    data.workedExampleK < 1 ||
+    data.workedExampleK > nFit
   ) {
-    return "validationOptimalK and selectedKFromAudit must be within [1, n_fit]";
+    return "validationOptimalK and workedExampleK must be within [1, n_fit]";
   }
   return null;
 }
@@ -192,7 +192,7 @@ export async function parseKnnExploreData(raw: unknown, dataUrl: URL): Promise<D
       split: manifest.split,
       fitTargetMean: manifest.fitTargetMean,
       validationOptimalK: manifest.validationOptimalK,
-      selectedKFromAudit: manifest.selectedKFromAudit,
+      workedExampleK: manifest.workedExampleK,
       observedValidation: Array.from(sections.observedValidation as Float32Array),
       observedFitting: Array.from(observedFittingArr),
       neighborTargetsByProximity,

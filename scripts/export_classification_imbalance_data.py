@@ -18,10 +18,9 @@ For each ratio (``book/config/abide_modeling.json``
 ``imbalance_activity.cohort_size`` real participants is drawn ONCE (without
 replacement, deterministic per-ratio seed), so every split seed for that
 ratio compares the exact same participants -- only the split's randomness
-varies. Every model uses Exercise 4's own recipe and the SAME C selected
-honestly once on the canonical Section 3 split
-(``classification_model_audit.select_canonical_c``) -- never re-tuned per
-ratio or seed (WP18 sec 4.4).
+varies. Every model uses Exercise 4's own recipe and the SAME fixed C
+(``classification_model_audit.C_EXAMPLE``, WP19) -- never re-tuned per
+ratio or seed.
 
 Output: ``book/_static/widgets/data/abide_classification_imbalance.json``.
 Ships only aggregated counts and metrics per (ratio, seed) -- no brain
@@ -167,8 +166,8 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
         "cohortSize": cohort_size,
         "ratios": imb["ratios"],
         "splitSeeds": split_seeds,
-        "selectedC": c_star,
-        "model": f"Pipeline(StandardScaler(), LogisticRegression(C={c_star!r}, max_iter=5000)) -- C selected honestly once on the Section 3 canonical split, fixed throughout this activity",
+        "modelC": c_star,
+        "model": f"Pipeline(StandardScaler(), LogisticRegression(C={c_star!r}, max_iter=5000)) -- C fixed by course design (WP19), fixed throughout this activity",
         "entries": entries,
     }
 
@@ -251,8 +250,8 @@ def validate_artifact(artifact: Any, manifest: dict[str, Any] | None = None) -> 
     if seen != {(r, s) for r in expected_ratio_keys for s in expected_seeds}:
         problems.append("entries do not cover every (ratio, seed) combination exactly once")
 
-    if artifact.get("selectedC") not in manifest["classification"]["cv_for_c_selection"]["grid"]:
-        problems.append("selectedC is not in the manifest's cv_for_c_selection grid")
+    if artifact.get("modelC") != manifest["classification"]["worked_example_C"]:
+        problems.append("modelC does not match the manifest's classification.worked_example_C")
 
     identifier_token = ("id", "sub", "subject", "site", "participant")
     for key in artifact.keys():
@@ -273,7 +272,7 @@ def _summary(artifact: dict[str, Any]) -> str:
     lines = [
         f"activity    : {artifact['activity']}",
         f"cohortSize  : {artifact['cohortSize']}",
-        f"selectedC   : {artifact['selectedC']}",
+        f"modelC      : {artifact['modelC']}",
         f"ratios      : {[r['key'] for r in artifact['ratios']]}",
         f"seeds       : {artifact['splitSeeds']}",
         f"entries     : {len(artifact['entries'])}",
