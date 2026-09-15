@@ -18,7 +18,7 @@ function appUrl(prefix: string, query = ""): string {
 
 for (const { name, prefix } of BASES) {
   test.describe(`knn-explore @ ${name}`, () => {
-    test("loads with the validation-optimal default k, real metrics, and both plots rendered", async ({
+    test("loads with the k=20 worked-example default, real metrics, and both plots rendered", async ({
       page,
     }) => {
       const failed: string[] = [];
@@ -32,11 +32,11 @@ for (const { name, prefix } of BASES) {
       const slider = page.locator('[data-testid="knn-k-slider"]');
       await expect(slider).toHaveAttribute("min", "1");
       await expect(slider).toHaveAttribute("max", String(N_FIT));
-      await expect(slider).toHaveValue("17"); // validation-optimal k, from the committed data
-      await expect(page.locator('[data-testid="knn-k-value"]')).toHaveText("17");
+      await expect(slider).toHaveValue("20"); // worked-example k, from the committed data
+      await expect(page.locator('[data-testid="knn-k-value"]')).toHaveText("20");
 
       const metrics = await page.locator('[data-testid="knn-metrics"]').textContent();
-      expect(metrics).toMatch(/k = 17/);
+      expect(metrics).toMatch(/k = 20/);
       expect(metrics).toMatch(/validation R2 = 0\.\d+/);
 
       await expect(page.locator('[data-testid="knn-scatter-plot"]')).toHaveAttribute(
@@ -120,7 +120,7 @@ for (const { name, prefix } of BASES) {
 
       await page.reload();
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-      await expect(page.locator('[data-testid="knn-k-slider"]')).toHaveValue("17");
+      await expect(page.locator('[data-testid="knn-k-slider"]')).toHaveValue("20");
     });
 
     test("numeric input is synchronized with the slider in both directions", async ({ page }) => {
@@ -129,7 +129,7 @@ for (const { name, prefix } of BASES) {
 
       const slider = page.locator('[data-testid="knn-k-slider"]');
       const number = page.locator('[data-testid="knn-k-number"]');
-      await expect(number).toHaveValue("17");
+      await expect(number).toHaveValue("20");
 
       await slider.fill("50");
       await expect(number).toHaveValue("50");
@@ -147,8 +147,8 @@ for (const { name, prefix } of BASES) {
       const number = page.locator('[data-testid="knn-k-number"]');
       await number.fill(String(N_FIT + 500));
       await number.dispatchEvent("change");
-      await expect(number).toHaveValue("17");
-      await expect(page.locator('[data-testid="knn-k-value"]')).toHaveText("17");
+      await expect(number).toHaveValue("20");
+      await expect(page.locator('[data-testid="knn-k-value"]')).toHaveText("20");
     });
 
     test("switching training-sample tabs updates the scatter without changing the validation set", async ({

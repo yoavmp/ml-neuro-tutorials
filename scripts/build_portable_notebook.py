@@ -426,7 +426,7 @@ _CH3_ABC_IFRAME_REPLACEMENT = (
 _CH3_ABC_FOLLOWUP_CODE = (
     "# Static three-panel equivalent of the honest-vs-invalid activity above.\n"
     "# Change k_demo (from 1 to min(n_train, n_test)) and rerun this cell.\n"
-    "k_demo = K_SELECTED\n"
+    "k_demo = K_EXAMPLE\n"
     "\n"
     "\n"
     "def _fit_predict(X_fit_raw, y_fit_arr, X_query_raw, k):\n"

@@ -56,7 +56,7 @@ async function buildManifestAndServe(
     fitTargetMean: 20,
     trainingSampleMeans: { A: 20, B: 21, C: 19 },
     validationOptimalK: 2,
-    selectedKFromAudit: 2,
+    workedExampleK: 2,
     binary: { path: BINARY_NAME, byteLength: packed.buffer.byteLength, sha256: await sha256Hex(packed.buffer) },
     sections: packed.sections,
     ...overrides,
@@ -155,7 +155,7 @@ describe("parseKnnExploreData", () => {
       fitTargetMean: 20,
       trainingSampleMeans: { A: 20, B: 21, C: 19 },
       validationOptimalK: 2,
-      selectedKFromAudit: 2,
+      workedExampleK: 2,
       binary: { path: BINARY_NAME, byteLength: packed.buffer.byteLength, sha256: await sha256Hex(packed.buffer) },
       sections: rest,
     };
@@ -221,7 +221,7 @@ describe("parseKnnExploreData", () => {
       expect(r.data.curve.fitR2[563]).toBeCloseTo(0, 2);
       expect(r.data.validationOptimalK).toBeGreaterThanOrEqual(1);
       expect(r.data.validationOptimalK).toBeLessThanOrEqual(564);
-      const selected = r.data.selectedKFromAudit;
+      const selected = r.data.workedExampleK;
       expect(r.data.curve.valR2[selected - 1]).toBeGreaterThan(0);
     }
   });

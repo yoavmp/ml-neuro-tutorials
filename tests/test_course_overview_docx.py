@@ -38,9 +38,19 @@ EXPECTED_SUBJECT_KEYWORDS = (
 EXPECTED_COVERAGE_PHRASES = (
     "head(), tail(), and sample()",
     "honest held-out",
+    "preselected k = 20",
+    "fixed C = 1.0",
+    "TN, FP, FN, TP",
+)
+
+# WP19: early lessons (Exercises 1-4) must not teach cross-validation or
+# formal hyperparameter selection; the overview document must not claim it.
+PROHIBITED_COVERAGE_PHRASES = (
+    "cross-validation",
+    "cross validation",
     "choosing k honestly",
     "choosing C honestly",
-    "TN, FP, FN, TP",
+    "GridSearchCV",
 )
 
 
@@ -90,6 +100,23 @@ class CourseOverviewDocx(unittest.TestCase):
         covered = " ".join(table.rows[i].cells[2].text for i in range(1, len(table.rows)))
         for phrase in EXPECTED_COVERAGE_PHRASES:
             self.assertIn(phrase, covered)
+
+    def test_no_early_cross_validation_or_tuning_claim(self):
+        table = self.doc.tables[0]
+        covered = " ".join(table.rows[i].cells[2].text for i in range(1, len(table.rows)))
+        for phrase in PROHIBITED_COVERAGE_PHRASES:
+            self.assertNotIn(phrase, covered)
+
+    def test_rows_are_marked_cant_split(self):
+        # WP19: fixes the WP18 layout defect where the Exercise 4 row split
+        # awkwardly across a nearly empty second page.
+        from docx.oxml.ns import qn
+
+        table = self.doc.tables[0]
+        for row in table.rows:
+            trPr = row._tr.find(qn("w:trPr"))
+            self.assertIsNotNone(trPr, "row is missing trPr")
+            self.assertIsNotNone(trPr.find(qn("w:cantSplit")), "row is missing w:cantSplit")
 
     def test_document_title_metadata_is_set(self):
         self.assertTrue(self.doc.core_properties.title)

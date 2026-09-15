@@ -150,7 +150,6 @@
       "measures": ["CT"],
       "note": "Identical to protocol.canonical_recipe (p=360), reused so Exercise 3's KNN result is directly comparable to Exercise 2's OLS result: same participants, split, target, and feature set."
     },
-    "cv_for_k_selection": {"kind": "KFold", "n_splits": 5, "shuffle": true, "random_state": 0, "note": "Selects k on the outer-TRAINING partition only (753 rows); Exercise 2's own documented cross-validation protocol, reused verbatim."},
     "dev_split": {
       "test_size": 0.25,
       "random_state": 7,
@@ -159,8 +158,8 @@
     },
     "audit_script": "scripts/knn_model_audit.py",
     "audit_result": "scripts/knn_model_audit_result.json",
-    "selected_k": 15,
-    "selected_k_rationale": "WP14 audit (scripts/knn_model_audit.py --run, rerun after the 360-parcel correction): 5-fold CV on the outer-training partition only, canonical all-eligible x CT recipe (p=360); k=15 maximises mean CV R2 (+0.599) over a log-spaced grid spanning 1..602 (the largest k valid inside that CV). Locked held-out test R2=+0.649 (MSE 32.75), evaluated exactly once after k was already fixed -- higher than the two smaller predeclared bundles tested (frontoparietal p=78: k*=82, test R2=+0.477; occipital p=46: k*=20, test R2=+0.425) and higher than Exercise 2's OLS result (R2=+0.469) on the identical participants/split/target/features. No curse-of-dimensionality problem was observed for standardized KNN on this canonical recipe, so the canonical feature set is retained (not a smaller bundle) both for the cleanest result and so the Exercise 2 comparison is apples-to-apples. Selected k is unchanged from the pre-correction p=358 audit (also 15); the R2/MSE values shifted slightly with the corrected feature set.",
+    "worked_example_k": 20,
+    "worked_example_k_rationale": "WP19: k=20 is fixed by course design before the held-out result is computed, not selected by cross-validation -- early lessons no longer teach formal parameter selection. scripts/knn_model_audit.py --run confirms this recipe's locked held-out test R2=+0.664 (MSE 31.4) at k=20, evaluated exactly once -- higher than the two smaller predeclared bundles evaluated at the same fixed k (frontoparietal p=78: test R2=+0.465; occipital p=46: test R2=+0.425) and higher than Exercise 2's OLS result (R2=+0.469) on the identical participants/split/target/features. No curse-of-dimensionality problem is observed for standardized KNN on this canonical recipe, so the canonical feature set is retained (not a smaller bundle).",
     "export_data_script": "scripts/export_knn_explore_data.py",
     "export_data_artifact": "book/_static/widgets/data/abide_knn_explore_manifest.json + book/_static/widgets/data/abide_knn_explore.bin"
   },
@@ -179,18 +178,9 @@
       "stratify": "y",
       "note": "Same test_size/random_state as protocol.holdout_split, but stratify is the diagnosis label y itself (group recoded to autism=1/control=0), not a covariate -- Exercise 4 is the first place `group` is the target rather than a stratification variable for a different outcome. This does NOT reproduce Exercise 2/3's 753/251 row split: the split target changed, so the partition is different even though test_size and random_state match."
     },
-    "model": "sklearn Pipeline(StandardScaler(), LogisticRegression(C=0.01, max_iter=5000)); the scaler is fitted on training rows only. C is selected honestly by GridSearchCV over a predetermined logarithmic grid, scored by ROC AUC, on the outer-training partition only -- never on the test set.",
-    "cv_for_c_selection": {
-        "kind": "StratifiedKFold",
-        "n_splits": 5,
-        "shuffle": true,
-        "random_state": 42,
-        "scoring": "roc_auc",
-        "grid": [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0],
-        "note": "GridSearchCV(refit=True) over Pipeline(StandardScaler(), LogisticRegression()) on the outer-TRAINING partition only (753 rows); refits the winning C on the complete outer-training partition. The outer test set is evaluated exactly once, after C is already locked."
-    },
-    "selected_C": 0.01,
-    "selected_C_rationale": "WP18 audit (scripts/classification_model_audit.py --run): 5-fold stratified CV on the outer-training partition only, canonical all-eligible x CT recipe (p=360); C=0.01 maximises mean CV ROC AUC (0.678) over the logarithmic grid. Locked held-out test accuracy=0.566, AUC=0.593, sensitivity=0.483, specificity=0.637 -- a modest improvement over WP17's untuned C=1.0 (test accuracy=0.546, AUC=0.569), reported honestly either way per WP18 sec 2.4.",
+    "model": "sklearn Pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000)); the scaler is fitted on training rows only. C is fixed by course design (WP19) before the held-out result is computed, not selected by cross-validation.",
+    "worked_example_C": 1.0,
+    "worked_example_C_rationale": "WP19: C=1.0 is fixed by course design -- early lessons no longer teach formal parameter selection. scripts/classification_model_audit.py --run confirms this recipe's locked held-out test accuracy=0.546, AUC=0.569, sensitivity=0.534, specificity=0.556, confusion matrix TN=75 FP=60 FN=54 TP=62, reproducing WP17's original untuned-C=1.0 result.",
     "audit_script": "scripts/classification_model_audit.py",
     "audit_result": "scripts/classification_model_audit_result.json",
     "threshold_activity": {
@@ -216,7 +206,7 @@
       "cohort_resample_seed_base": 20000,
       "cohort_resample_note": "For each ratio, the majority/minority participants are drawn once, without replacement, using random_state = cohort_resample_seed_base + ratio_index (0-5, in the ratios list order above) -- fixed per ratio, independent of the split seeds below, so every split seed for a given ratio compares the exact same cohort.",
       "split_seeds": [0, 1, 2, 3, 4],
-      "split_seeds_note": "A predetermined selector for split-to-split variability only: each seed drives one stratified train_test_split(test_size=0.25, random_state=seed, stratify=y) of the same fixed per-ratio cohort, using the C selected honestly in classification.selected_C throughout. Stratification is an implementation detail here, not a separate comparison (WP18 sec 4)."
+      "split_seeds_note": "A predetermined selector for split-to-split variability only: each seed drives one stratified train_test_split(test_size=0.25, random_state=seed, stratify=y) of the same fixed per-ratio cohort, using the fixed C in classification.worked_example_C throughout. Stratification is an implementation detail here, not a separate comparison (WP18 sec 4)."
     }
   },
   "bundles": {

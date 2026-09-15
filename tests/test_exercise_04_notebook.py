@@ -55,7 +55,7 @@ class Notebook(unittest.TestCase):
         nbformat.validate(self.nb)
         ids = [c["id"] for c in self.cells]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertTrue(all(i.startswith(("wp17-", "wp18-")) for i in ids), ids)
+        self.assertTrue(all(i.startswith(("wp17-", "wp18-", "wp19-")) for i in ids), ids)
 
     def test_h1_title_is_exact(self):
         self.assertEqual(
@@ -152,27 +152,20 @@ class Notebook(unittest.TestCase):
         self.assertIn("test_size=0.25, random_state=42, stratify=y", self.code)
         self.assertIn("n_train = 753   n_test = 251   n_features = 360", self.all_output)
 
-    def test_c_is_selected_honestly_by_cross_validation(self):
-        # WP18: C is chosen by GridSearchCV over a predetermined logarithmic
-        # grid, scored by ROC AUC, with StratifiedKFold on the training
-        # partition only -- mirroring Exercise 3's honest choice of k.
-        self.assertIn("GridSearchCV", self.code)
-        self.assertIn("StratifiedKFold(n_splits=5, shuffle=True, random_state=42)", self.code)
-        self.assertIn("CANDIDATE_CS = np.logspace(-4, 4, 9)", self.code)
-        self.assertIn('scoring="roc_auc"', self.code)
-        self.assertIn("C_SELECTED = grid_search.best_params_", self.code)
-        self.assertIn("LogisticRegression(C=C_SELECTED, max_iter=5000)", self.code)
-        self.assertNotIn("LogisticRegression(C=1.0", self.code)
-        self.assertIn("selected C = 0.01", self.all_output)
-
-    def test_c_never_touches_the_test_set_and_tuning_is_not_promised_to_help(self):
-        collapsed = " ".join(self.md.split())
-        self.assertIn(
-            "Cross-validation selects the value that performed best within the "
-            "training data. It may improve generalization, but it does not "
-            "guarantee a better score on one particular held-out test set.",
-            collapsed,
-        )
+    def test_c_is_fixed_by_course_design_not_a_search(self):
+        # WP19 §5.1/§5.2: C = 1.0 is predeclared, not selected by
+        # cross-validation or any other search over candidate values.
+        self.assertIn("C_EXAMPLE = 1.0", self.code)
+        self.assertIn("LogisticRegression(C=C_EXAMPLE, max_iter=5000)", self.code)
+        self.assertNotIn("GridSearchCV", self.code)
+        self.assertNotIn("StratifiedKFold", self.code)
+        self.assertNotIn("CANDIDATE_CS", self.code)
+        self.assertNotIn("C_SELECTED", self.code)
+        low_md = self.md.lower()
+        for needle in ("cross-validation", "cross validation", "gridsearchcv"):
+            self.assertNotIn(needle, low_md)
+        self.assertIn("accuracy    = 0.546", self.all_output)
+        self.assertIn("AUC         = 0.569", self.all_output)
 
     def test_scaler_fit_only_on_training_rows(self):
         self.assertIn("scaler.fit_transform(X_train)", self.code)
@@ -188,7 +181,7 @@ class Notebook(unittest.TestCase):
         # HTML diagram) must not appear after the explicit-scaling cell.
         cell = self.by_id["wp17-033"]
         src = _src(cell)
-        self.assertIn("LogisticRegression(C=C_SELECTED, max_iter=5000)", src)
+        self.assertIn("LogisticRegression(C=C_EXAMPLE, max_iter=5000)", src)
         self.assertTrue(src.rstrip().endswith(";"), src[-60:])
         self.assertEqual(cell.get("outputs", []), [])
 
@@ -274,7 +267,7 @@ class Notebook(unittest.TestCase):
         src = _src(cell)
         self.assertIn('class_ratio = "90:10"', src)
         self.assertIn("random_state = 42", src)
-        self.assertIn("LogisticRegression(C=C_SELECTED, max_iter=5000)", src)
+        self.assertIn("LogisticRegression(C=C_EXAMPLE, max_iter=5000)", src)
         self.assertNotIn("ipywidgets", src)
         self.assertNotIn("<iframe", src)
 

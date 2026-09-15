@@ -389,7 +389,7 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> tuple[
             "C": sample_c["fitTargetMean"],
         },
         "validationOptimalK": validation_optimal_k,
-        "selectedKFromAudit": knn_cfg["selected_k"],
+        "workedExampleK": knn_cfg["worked_example_k"],
         "binary": {
             "path": BINARY_PATH.name,
             "byteLength": len(blob),
@@ -555,7 +555,7 @@ def _summary(manifest_json: dict[str, Any]) -> str:
         f"n_outer_train       : {s['nOuterTrain']}   n_fit : {s['nFit']}   n_val : {s['nValidation']}\n"
         f"fitting-set mean    : {manifest_json['fitTargetMean']}\n"
         f"validation-optimal k: {manifest_json['validationOptimalK']}\n"
-        f"audit-selected k    : {manifest_json['selectedKFromAudit']}\n"
+        f"worked-example k    : {manifest_json['workedExampleK']}\n"
         f"binary payload      : {b['byteLength']} bytes  sha256={b['sha256']}"
     )
 

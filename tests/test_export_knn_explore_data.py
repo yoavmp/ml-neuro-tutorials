@@ -89,11 +89,11 @@ class CommittedArtifact(unittest.TestCase):
         best = float(max(val_r2))
         self.assertAlmostEqual(float(val_r2[m["validationOptimalK"] - 1]), best, places=4)
 
-    def test_audit_selected_k_is_a_genuinely_usable_model(self):
+    def test_worked_example_k_is_a_genuinely_usable_model(self):
         m = self.manifest
         logical = ekd._reconstruct_logical(m, self.blob)
-        self.assertEqual(m["selectedKFromAudit"], 15)
-        self.assertGreater(float(logical["curve"]["valR2"][m["selectedKFromAudit"] - 1]), 0)
+        self.assertEqual(m["workedExampleK"], 20)
+        self.assertGreater(float(logical["curve"]["valR2"][m["workedExampleK"] - 1]), 0)
 
     def test_serialization_is_canonical(self):
         on_disk = ekd.MANIFEST_PATH.read_text(encoding="utf-8")
@@ -165,7 +165,7 @@ class CommittedArtifact(unittest.TestCase):
         samples = [logical["trainingSamples"][k]["neighborTargetsByProximity"].tolist() for k in ("A", "B", "C")]
         observed = logical["observedValidation"].tolist()
 
-        for k in (1, m["selectedKFromAudit"], m["split"]["nFit"]):
+        for k in (1, m["workedExampleK"], m["split"]["nFit"]):
             preds = [[sum(row[:k]) / k for row in sample] for sample in samples]  # 3 x n_val
             sds = []
             for i in range(n_val):

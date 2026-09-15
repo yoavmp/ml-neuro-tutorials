@@ -1,6 +1,7 @@
 """Offline tests for scripts/classification_model_audit.py and its committed
-result (WP17 §2, §9: leakage, exact feature count, split disjointness,
-train-only preprocessing, reproducibility, metric consistency).
+result (WP19: fixed worked-example C, no early cross-validation / parameter
+search; leakage, exact feature count, split disjointness, train-only
+preprocessing, reproducibility, metric consistency).
 
 Standard-library ``unittest``; no network. Re-validates the committed audit
 JSON for self-consistency and uses a small synthetic frame (reused from
@@ -62,27 +63,11 @@ class CommittedResult(unittest.TestCase):
         self.assertEqual(hs["random_state"], manifest_hs["random_state"])
         self.assertEqual(hs["stratify"], "y")
 
-    def test_c_is_selected_honestly_by_cross_validation(self):
-        cvsel = self.result["cv_selection"]
-        self.assertEqual(cvsel["grid"], cma.C_GRID)
-        self.assertEqual(cvsel["scoring"], "roc_auc")
-        self.assertIn("StratifiedKFold", cvsel["folds"])
-        self.assertIn("random_state=42", cvsel["folds"])
-        self.assertIn(cvsel["selected_C"], cma.C_GRID)
-        self.assertGreaterEqual(cvsel["selected_mean_cv_auc"], 0.0)
-        self.assertLessEqual(cvsel["selected_mean_cv_auc"], 1.0)
-        best_row = max(cvsel["curve"], key=lambda row: row["mean_cv_auc"])
-        self.assertEqual(best_row["C"], cvsel["selected_C"])
-        self.assertIn(f"C={cvsel['selected_C']!r}", self.result["protocol"]["model"])
-        self.assertIn("never used to select C", self.result["protocol"]["note"])
-
-    def test_cv_curve_has_one_row_per_grid_point_and_matches_grid(self):
-        cvsel = self.result["cv_selection"]
-        self.assertEqual(len(cvsel["curve"]), len(cma.C_GRID))
-        self.assertEqual([row["C"] for row in cvsel["curve"]], cma.C_GRID)
-        for row in cvsel["curve"]:
-            self.assertGreaterEqual(row["mean_cv_auc"], 0.0)
-            self.assertLessEqual(row["mean_cv_auc"], 1.0)
+    def test_c_is_fixed_at_1_0_by_course_design(self):
+        self.assertEqual(cma.C_EXAMPLE, 1.0)
+        self.assertIn(f"C={cma.C_EXAMPLE!r}", self.result["protocol"]["model"])
+        self.assertIn("fixed by course design", self.result["protocol"]["note"])
+        self.assertNotIn("cv_selection", self.result)
 
     def test_confusion_matrix_orientation_and_totals(self):
         ev = self.result["locked_test_eval"]
@@ -209,29 +194,14 @@ class FitEvalIsolation(unittest.TestCase):
         self.assertEqual(cm["tn"] + cm["fp"] + cm["fn"] + cm["tp"], len(y_test))
 
 
-class SelectCIsolation(unittest.TestCase):
-    """_select_c must only ever touch the training partition it is given,
-    never the outer test set, and must select from exactly C_GRID."""
+class SelectCanonicalCIsolation(unittest.TestCase):
+    """WP19: select_canonical_c must return the fixed C_EXAMPLE, not a value
+    derived from any search over the data."""
 
-    def test_selected_c_is_in_the_grid_and_deterministic(self):
+    def test_returns_the_fixed_c_example(self):
+        self.assertEqual(cma.select_canonical_c(), cma.C_EXAMPLE)
         frame = _tiny_frame()
-        cols = [c for c in frame.columns if c.startswith("fsCT_")]
-        X, y, subjects = cma._xy(frame, cols)
-        X_train, _X_test, y_train, _y_test, _, _ = cma._split(X, y, subjects)
-        a = cma._select_c(X_train, y_train)
-        b = cma._select_c(X_train, y_train)
-        self.assertIn(a["selected_C"], cma.C_GRID)
-        self.assertEqual(a["selected_C"], b["selected_C"])
-        self.assertEqual(len(a["curve"]), len(cma.C_GRID))
-
-    def test_select_c_signature_takes_only_the_training_partition(self):
-        # _select_c's signature is (X_train, y_train) -- there is no test-set
-        # parameter for it to touch, so the outer test set is structurally
-        # excluded from C selection by construction.
-        import inspect
-
-        params = list(inspect.signature(cma._select_c).parameters)
-        self.assertEqual(params, ["X_train", "y_train"])
+        self.assertEqual(cma.select_canonical_c(frame), cma.C_EXAMPLE)
 
 
 if __name__ == "__main__":

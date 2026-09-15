@@ -61,8 +61,8 @@ ROWS = [
     (
         "Exercise 3",
         "KNN Regression and the Bias–Variance Trade-off",
-        "KNN regression for age prediction; scaling inside a Pipeline; choosing k "
-        "honestly via training-only 5-fold cross-validation; honest versus invalid "
+        "KNN regression for age prediction; scaling inside a Pipeline; worked model "
+        "uses a preselected k = 20, fixed by course design; honest versus invalid "
         "evaluation (interactive activity); the classic bias–variance tradeoff; "
         "empirical k = 1..N_fit curve; explore-k interactive activity.",
     ),
@@ -70,11 +70,10 @@ ROWS = [
         "Exercise 4",
         "Classification with Logistic Regression",
         "ABIDE autism-versus-control classification (360 ROI predictors); logistic "
-        "regression and the sigmoid function; choosing C honestly via training-only "
-        "cross-validation scored by ROC AUC; confusion matrix labelled with TN, FP, "
-        "FN, TP; accuracy, sensitivity, specificity, ROC/AUC; decision-threshold "
-        "interactive activity; class imbalance and misleading accuracy (interactive "
-        "activity).",
+        "regression and the sigmoid function; worked model uses a fixed C = 1.0, "
+        "fixed by course design; confusion matrix labelled with TN, FP, FN, TP; "
+        "accuracy, sensitivity, specificity, ROC/AUC; decision-threshold interactive "
+        "activity; class imbalance and misleading accuracy (interactive activity).",
     ),
 ]
 
@@ -92,6 +91,21 @@ def _set_col_widths(table, widths_in) -> None:
     for row in table.rows:
         for cell, width in zip(row.cells, widths_in):
             cell.width = Inches(width)
+
+
+def _set_row_cant_split(row) -> None:
+    """Keep this table row's content together, never splitting it across a
+    page boundary (WP19: fixes the WP18 layout defect where the Exercise 4
+    row split awkwardly across a nearly empty second page)."""
+    trPr = row._tr.get_or_add_trPr()
+    cant_split = OxmlElement("w:cantSplit")
+    trPr.append(cant_split)
+
+
+def _tighten_paragraph(paragraph) -> None:
+    fmt = paragraph.paragraph_format
+    fmt.space_before = Pt(0)
+    fmt.space_after = Pt(4)
 
 
 def build() -> None:
@@ -114,6 +128,7 @@ def build() -> None:
 
     title_par = doc.add_paragraph()
     title_par.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    _tighten_paragraph(title_par)
     title_run = title_par.add_run(TITLE)
     title_run.bold = True
     title_run.font.size = Pt(20)
@@ -121,7 +136,8 @@ def build() -> None:
 
     intro_par = doc.add_paragraph(INTRO)
     intro_par.runs[0].font.size = Pt(12)
-    doc.add_paragraph()
+    _tighten_paragraph(intro_par)
+    intro_par.paragraph_format.space_after = Pt(8)
 
     table = doc.add_table(rows=1, cols=3)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -130,20 +146,26 @@ def build() -> None:
     header_cells = table.rows[0].cells
     for cell, text in zip(header_cells, ("Exercise", "Subject", "Covered materials")):
         cell.text = ""
-        run = cell.paragraphs[0].add_run(text)
+        para = cell.paragraphs[0]
+        _tighten_paragraph(para)
+        run = para.add_run(text)
         run.bold = True
         run.font.size = Pt(12)
         run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
         _set_cell_background(cell, HEADER_FILL_HEX)
         cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+    _set_row_cant_split(table.rows[0])
 
     for exercise, subject, covered in ROWS:
-        row_cells = table.add_row().cells
-        for cell, text in zip(row_cells, (exercise, subject, covered)):
+        row = table.add_row()
+        for cell, text in zip(row.cells, (exercise, subject, covered)):
             cell.text = ""
-            run = cell.paragraphs[0].add_run(text)
+            para = cell.paragraphs[0]
+            _tighten_paragraph(para)
+            run = para.add_run(text)
             run.font.size = Pt(12)
             cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        _set_row_cant_split(row)
 
     _set_col_widths(table, (1.0, 2.3, 8.2))
 

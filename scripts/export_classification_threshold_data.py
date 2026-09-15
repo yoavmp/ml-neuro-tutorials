@@ -14,10 +14,11 @@ Exactly Exercise 4's own locked split/recipe/model
 ``Pipeline(StandardScaler(), LogisticRegression(C=<selected>, max_iter=5000))``
 on the canonical ``all-eligible x CT`` recipe (p=360),
 ``train_test_split(test_size=0.25, random_state=42, stratify=y)``. C is the
-same value selected honestly once by cross-validation on the training
-partition (WP18 sec 2; ``classification_model_audit.select_canonical_c``) --
-this script never tunes anything itself, it only reuses that already-locked
-choice so the threshold activity's probabilities come from the final tuned
+same fixed value used throughout the notebook (WP19;
+``classification_model_audit.select_canonical_c`` now returns the fixed
+``C_EXAMPLE``) --
+this script never tunes anything itself, it only reuses that fixed value so
+the threshold activity's probabilities come from the same worked-example
 model.
 
 Output: ``book/_static/widgets/data/abide_classification_threshold.json``.
@@ -94,7 +95,7 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
             "nTest": int(len(y_test)),
         },
         "model": f"Pipeline(StandardScaler(), LogisticRegression(C={c_star!r}, max_iter=5000))",
-        "selectedC": c_star,
+        "modelC": c_star,
         "aucFromAudit": audit_eval["auc"],
         "accuracyAtHalfFromAudit": audit_eval["accuracy"],
         "labels": [int(v) for v in y_test.tolist()],

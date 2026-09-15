@@ -34,7 +34,7 @@ function validPayload() {
       { key: "95:5", majorityPct: 0.95, minorityPct: 0.05 },
     ],
     splitSeeds: [0, 1],
-    selectedC: 0.01,
+    modelC: 1.0,
     model: "Pipeline(StandardScaler(), LogisticRegression(C=0.01, max_iter=5000))",
     entries: [
       entry({ ratioKey: "50:50", seed: 0 }),

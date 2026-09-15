@@ -6,7 +6,7 @@
 // the majority class) and one of five predetermined split seeds; the chart
 // compares the logistic-regression model's test accuracy against the
 // majority-class baseline accuracy for that SAME test partition. Every
-// entry uses the same C selected honestly once in Section 3 -- never
+// entry uses the same fixed C from Section 3 (C = 1.0, WP19) -- never
 // re-tuned per ratio or seed.
 
 import Plotly from "plotly.js-cartesian-dist-min";

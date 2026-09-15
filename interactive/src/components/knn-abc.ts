@@ -40,9 +40,9 @@ function mount(args: MountArgs<KnnAbcConfig, KnnAbcData>): MountHandle {
   container.replaceChildren();
 
   const kMax = data.split.kMax;
-  const defaultK = data.selectedKFromAudit;
+  const defaultK = data.workedExampleK;
   if (defaultK < 1 || defaultK > kMax) {
-    throw new Error(`selectedKFromAudit ${defaultK} is outside [1, ${kMax}]`);
+    throw new Error(`workedExampleK ${defaultK} is outside [1, ${kMax}]`);
   }
 
   const theme = getPlotlyTheme();

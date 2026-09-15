@@ -18,7 +18,7 @@ function appUrl(prefix: string, query = ""): string {
 
 for (const { name, prefix } of BASES) {
   test.describe(`knn-abc @ ${name}`, () => {
-    test("loads with the audit-selected default k and all three panels rendered", async ({ page }) => {
+    test("loads with the k=20 worked-example default and all three panels rendered", async ({ page }) => {
       const failed: string[] = [];
       const sockets: string[] = [];
       page.on("requestfailed", (r) => failed.push(r.url()));
@@ -30,8 +30,8 @@ for (const { name, prefix } of BASES) {
       const slider = page.locator('[data-testid="knn-abc-k-slider"]');
       await expect(slider).toHaveAttribute("min", "1");
       await expect(slider).toHaveAttribute("max", String(K_MAX));
-      await expect(slider).toHaveValue("15"); // audit-selected k, from the committed data
-      await expect(page.locator('[data-testid="knn-abc-k-value"]')).toHaveText("15");
+      await expect(slider).toHaveValue("20"); // worked-example k, from the committed data
+      await expect(page.locator('[data-testid="knn-abc-k-value"]')).toHaveText("20");
 
       for (const panel of ["a", "b", "c"]) {
         await expect(page.locator(`[data-testid="knn-abc-panel-${panel}-plot"]`)).toHaveAttribute(

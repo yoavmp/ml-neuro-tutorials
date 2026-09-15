@@ -51,7 +51,7 @@ const knnAbcManifestSchema = binaryManifestBaseSchema.extend({
       kMax: z.number().int().positive(),
     })
     .passthrough(),
-  selectedKFromAudit: z.number().int().positive(),
+  workedExampleK: z.number().int().positive(),
 });
 
 export interface KnnAbcData {
@@ -61,7 +61,7 @@ export interface KnnAbcData {
   target: { name: string; label: string; unit: string };
   featureRecipe: { bundle: string; measures: string[]; featureCount: number };
   split: { nTrain: number; nTest: number; kMax: number };
-  selectedKFromAudit: number;
+  workedExampleK: number;
   observedTrain: number[];
   observedTest: number[];
   neighborTargetsA: number[][];
@@ -118,8 +118,8 @@ function validateReconstructed(data: KnnAbcData): string | null {
     }
   }
 
-  if (data.selectedKFromAudit < 1 || data.selectedKFromAudit > kMax) {
-    return `selectedKFromAudit must be within [1, ${kMax}]`;
+  if (data.workedExampleK < 1 || data.workedExampleK > kMax) {
+    return `workedExampleK must be within [1, ${kMax}]`;
   }
   return null;
 }
@@ -146,7 +146,7 @@ export async function parseKnnAbcData(raw: unknown, dataUrl: URL): Promise<DataR
       target: manifest.target,
       featureRecipe: manifest.featureRecipe,
       split: manifest.split,
-      selectedKFromAudit: manifest.selectedKFromAudit,
+      workedExampleK: manifest.workedExampleK,
       observedTrain: Array.from(observedTrainArr),
       observedTest: Array.from(observedTestArr),
       neighborTargetsA: toRows(observedTrainArr, sections.neighborIndexA as Uint16Array, nTest, kMax, "neighborTargetsA"),

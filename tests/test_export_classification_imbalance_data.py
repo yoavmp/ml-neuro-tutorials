@@ -2,8 +2,8 @@
 committed artifact (WP18 sec 4, sec 9). WP17's unstratified comparison side
 is gone: every entry now carries one stratified split's metrics directly
 (accuracy, majority baseline, AUC, balanced accuracy, sensitivity,
-specificity), all using the SAME C selected honestly once on the canonical
-Section 3 split.
+specificity), all using the SAME fixed C (WP19: C = 1.0 by course design)
+from the canonical Section 3 split.
 
 Run:
     .venv/bin/python -m unittest discover -s tests -p 'test_export_classification_imbalance_data.py'
@@ -61,8 +61,8 @@ class CommittedArtifact(unittest.TestCase):
                 self.assertIn(field, e)
 
     def test_same_selected_c_used_throughout(self):
-        self.assertIn("selectedC", self.artifact)
-        self.assertIn(f"C={self.artifact['selectedC']!r}", self.artifact["model"])
+        self.assertIn("modelC", self.artifact)
+        self.assertIn(f"C={self.artifact['modelC']!r}", self.artifact["model"])
 
     def test_stratified_counts_approximate_the_ratio(self):
         for e in self.artifact["entries"]:
