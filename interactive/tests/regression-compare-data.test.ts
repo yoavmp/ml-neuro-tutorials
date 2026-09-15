@@ -3,19 +3,18 @@ import { parseRegressionCatalog } from "../src/regression-compare-data";
 import { r2Score, meanSquaredError } from "../src/regression-compare";
 
 function base() {
-  // 6 participants, 2 folds. Model A predictions are exact -> R2 = 1.
-  const observed = [100, 110, 90, 120, 95, 105];
-  const predicted = [...observed];
+  // 6 participants: 4 training, 2 held-out test (WP19: one fixed split, no folds).
+  const observedTest = [90, 120, 95, 105];
+  const predicted = [...observedTest];
   return {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     activity: "regression-compare" as const,
     source: { pinnedCommit: "abc123", brainTableSha256: "aa", phenotypeTableSha256: "bb" },
     target: { name: "FIQ", label: "Full-scale IQ", unit: "IQ points" },
     cohort: { n: 6, requirement: "FIQ present", diagnosisNote: "same sites" },
-    crossValidation: { kind: "KFold" as const, nSplits: 2, shuffle: true, randomState: 0, foldTrainN: 3 },
-    preprocessing: "Pipeline(StandardScaler, LinearRegression)",
-    observed,
-    foldOf: [0, 1, 0, 1, 0, 1],
+    holdoutSplit: { testSize: 0.25, randomState: 42, stratify: "group", nTrain: 2, nTest: 4 },
+    preprocessing: "Pipeline(StandardScaler, LinearRegression) fit on the training participants only",
+    observedTest,
     bundles: {
       frontoparietal: { label: "Frontoparietal", rois: ["46", "PGs"] },
       occipital: { label: "Occipital", rois: ["V1", "V2"] },
@@ -30,8 +29,8 @@ function base() {
         featureCount: 4,
         disabled: false,
         predicted,
-        cvR2: r2Score(observed, predicted),
-        cvMSE: meanSquaredError(observed, predicted),
+        testR2: r2Score(observedTest, predicted),
+        testMSE: meanSquaredError(observedTest, predicted),
       },
       {
         key: "occipital__CT",
@@ -39,7 +38,7 @@ function base() {
         measures: ["CT"],
         featureCount: 4,
         disabled: true,
-        reason: "too many features for this fold",
+        reason: "too many features for this split",
       },
     ],
   };
@@ -55,28 +54,28 @@ describe("parseRegressionCatalog", () => {
     expect(parseRegressionCatalog({ ...base(), activity: "eda-histogram" }).ok).toBe(false);
   });
 
-  it("rejects observed that disagrees with cohort.n", () => {
+  it("rejects observedTest that disagrees with holdoutSplit.nTest", () => {
     const b = base();
-    b.observed = b.observed.slice(0, 5);
+    b.observedTest = b.observedTest.slice(0, 3);
     const r = parseRegressionCatalog(b);
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.error).toMatch(/observed/);
+    if (!r.ok) expect(r.error).toMatch(/observedTest/);
   });
 
-  it("rejects foldOf that does not use every fold index", () => {
+  it("rejects a holdoutSplit whose nTrain + nTest disagrees with cohort.n", () => {
     const b = base();
-    b.foldOf = [0, 0, 0, 0, 0, 0];
+    b.holdoutSplit.nTrain = 1;
     const r = parseRegressionCatalog(b);
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.error).toMatch(/fold index/);
+    if (!r.ok) expect(r.error).toMatch(/holdoutSplit/);
   });
 
-  it("rejects a stored cvR2 that disagrees with the predictions", () => {
+  it("rejects a stored testR2 that disagrees with the predictions", () => {
     const b = base();
-    b.models[0]!.cvR2 = 0.42;
+    b.models[0]!.testR2 = 0.42;
     const r = parseRegressionCatalog(b);
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.error).toMatch(/cvR2/);
+    if (!r.ok) expect(r.error).toMatch(/testR2/);
   });
 
   it("rejects an enabled model whose predictions are misaligned", () => {
@@ -84,12 +83,12 @@ describe("parseRegressionCatalog", () => {
     b.models[0]!.predicted = [1, 2, 3];
     const r = parseRegressionCatalog(b);
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.error).toMatch(/align with observed/);
+    if (!r.ok) expect(r.error).toMatch(/align with observedTest/);
   });
 
   it("rejects a disabled model that still carries predictions", () => {
     const b = base();
-    (b.models[1] as Record<string, unknown>).predicted = [1, 2, 3, 4, 5, 6];
+    (b.models[1] as Record<string, unknown>).predicted = [1, 2, 3, 4];
     const r = parseRegressionCatalog(b);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toMatch(/must not carry predictions/);
@@ -97,7 +96,7 @@ describe("parseRegressionCatalog", () => {
 
   it("rejects an identifier-shaped top-level key", () => {
     const b = base() as Record<string, unknown>;
-    b.SUB_ID = [1, 2, 3, 4, 5, 6];
+    b.SUB_ID = [1, 2, 3, 4];
     const r = parseRegressionCatalog(b);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toMatch(/identifier-shaped/);
@@ -125,26 +124,30 @@ describe("parseRegressionCatalog", () => {
       // 1004, no join / no missingness) -- not `FIQ` (N = 908) any more.
       expect(r.data.target.name).toBe("age");
       expect(r.data.cohort.n).toBe(1004);
-      expect(r.data.observed).toHaveLength(1004);
-      expect(r.data.foldOf).toHaveLength(1004);
-      expect(r.data.crossValidation.nSplits).toBe(5);
+      // WP19: one fixed, reproducible 75/25 train/test split -- no cross-validation.
+      expect(r.data.holdoutSplit.nTrain).toBe(753);
+      expect(r.data.holdoutSplit.nTest).toBe(251);
+      expect(r.data.observedTest).toHaveLength(251);
       expect(r.data.activity).toBe("regression-compare");
       const enabled = r.data.models.filter((m) => !m.disabled);
       expect(enabled.length).toBeGreaterThan(20);
       // Every enabled model's stored metrics recompute from its predictions.
       for (const m of enabled) {
-        expect(Math.abs(r2Score(r.data.observed, m.predicted!) - m.cvR2!)).toBeLessThan(1e-3);
+        expect(Math.abs(r2Score(r.data.observedTest, m.predicted!) - m.testR2!)).toBeLessThan(1e-3);
       }
       // Unlike FIQ (WP11), age is genuinely predictable from cortical structure:
-      // every enabled configuration scores above zero.
-      for (const m of enabled) {
-        expect(m.cvR2!).toBeGreaterThan(0);
-      }
+      // almost every enabled configuration scores above zero on the fixed
+      // held-out split (a couple of the smallest, weakest combinations can
+      // legitimately land at/near zero under a single split's higher variance).
+      const nPositive = enabled.filter((m) => m.testR2! > 0).length;
+      expect(nPositive).toBeGreaterThanOrEqual(Math.round(0.9 * enabled.length));
       // The default panels (frontoparietal vs occipital, both cortical
-      // thickness) still differ, just both positive now.
+      // thickness) still differ, just both positive.
       const fpar = enabled.find((m) => m.key === "frontoparietal__CT")!;
       const occ = enabled.find((m) => m.key === "occipital__CT")!;
-      expect(fpar.cvR2!).toBeLessThan(occ.cvR2!);
+      expect(fpar.testR2!).toBeGreaterThan(0);
+      expect(occ.testR2!).toBeGreaterThan(0);
+      expect(fpar.testR2!).toBeLessThan(occ.testR2!);
     }
   });
 });

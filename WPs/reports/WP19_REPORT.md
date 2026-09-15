@@ -2,10 +2,100 @@
 
 ## Completion status
 
-**Complete.** All required sections executed: inventory, Exercise 3 (KNN)
-and Exercise 4 (classification) revisions, Exercise 1/2 audit, course
-overview DOCX update, tests, final validation gate, local merge to `main`.
-Local-only; nothing pushed or deployed; WP20 not started.
+**Complete, including one corrective continuation.** All required sections
+executed: inventory, Exercise 3 (KNN) and Exercise 4 (classification)
+revisions, Exercise 1/2 audit, course overview DOCX update, tests, final
+validation gate, local merge to `main`. Local-only; nothing pushed or
+deployed; WP20 not started.
+
+## Correction: Exercise 2's hidden cross-validation removed
+
+The original WP19 pass treated Exercise 2's regression-compare (feature-set
+comparison) activity as out of scope, on the judgment that it was a
+legitimate, previously-approved (WP11) evaluation methodology rather than a
+"selection" procedure -- see the superseded "Judgment call" note below. Yoav
+confirmed this was wrong: the activity's hidden 5-fold `KFold` +
+`cross_val_predict` procedure is itself early-course cross-validation and
+had to go, regardless of whether it selects a hyperparameter. This
+correction replaces it with one fixed, reproducible train/test split,
+identical to Exercise 2 Section 2 / Exercise 3's own outer holdout
+(`train_test_split(test_size=0.25, random_state=42, stratify=group)`).
+
+**What changed** (`scripts/export_regression_catalog.py` and everything it
+feeds):
+
+- The catalog builder no longer imports or calls `KFold` / `cross_val_predict`
+  / `cross_val_score` anywhere. It computes one shared `(idx_train, idx_test)`
+  split (753 train / 251 test participants, the same split used by every
+  other exercise for the `age` target) once, and reuses those exact indices
+  for every bundle x measurement-subset combination -- so every comparison
+  still shares the same held-out participants, just via a fixed split
+  instead of aggregated out-of-fold predictions.
+- `StandardScaler` and `LinearRegression` are fit once each, on the training
+  participants only; R² and MSE are computed once, on the held-out test
+  participants only (not recomputed per fold and aggregated).
+- The identifiability threshold (`p >= 0.7 * n`) now uses the training-set
+  size (753) instead of the old per-fold training size (~803); no catalog
+  entry's enabled/disabled status changed as a result (verified: the same
+  single entry, `all-eligible__CT+Area` at p=720, remains the only disabled
+  one).
+- Artifact schema bumped to `schemaVersion: 2`: `crossValidation` and
+  `foldOf` are gone; `holdoutSplit` (`testSize`, `randomState`, `stratify`,
+  `nTrain`, `nTest`) replaces them; top-level `observed` (full cohort, 1004
+  values) is replaced by `observedTest` (251 values, the held-out
+  participants only); each model's `cvR2`/`cvMSE` fields are renamed
+  `testR2`/`testMSE`.
+- `book/config/abide_modeling.json`: `protocol.cross_validation` (the
+  `KFold(n_splits=5, ...)` block) removed outright -- nothing else in the
+  manifest referenced it. `catalog.identifiability_rule` and `catalog.note`
+  reworded to describe the fixed split instead of folds/cross-validation.
+- Frontend (`interactive/src/regression-compare-data.ts`,
+  `regression-compare.ts`, `components/regression-compare.ts`): schema,
+  types, and rendered text updated to the new field names
+  (`holdoutSplit`/`observedTest`/`testR2`/`testMSE`); the unused
+  `ScatterPoint`/`scatterPoints` helper (which carried a per-point `fold`
+  field) was deleted as dead code that no longer has meaning. UI text changed
+  from "cross-validated"/"out-of-fold" to "held-out"; the cohort line now
+  states training and test participant counts separately.
+- `book/_static/widgets/configs/regression_compare.json`: description,
+  instructions, and the selection-bias note reworded to "held-out"/"train/test
+  split" language, and the selection-bias note now explicitly says this
+  activity is "exploratory model comparison, not feature selection or
+  optimization."
+- `scripts/build_portable_notebook.py`: the Exercise 2 portable notebook's
+  iframe-replacement text ("...compares their cross-validated performance...
+  and one fixed set of folds") reworded to "held-out performance... one fixed
+  train/test split."
+- The canonical `exercise_02.ipynb` needed **no further wording changes** --
+  the earlier WP19 pass had already reworded its two passing
+  "cross-validated"/"folds" mentions to neutral language ("one fixed
+  evaluation procedure"), which reads correctly now that the procedure
+  genuinely is a fixed split. No notebook code cell runs this activity's
+  computation directly (it is iframe-only), so no notebook code changed.
+
+**New Exercise 2 catalog metrics (fixed 75/25 holdout split, was 5-fold
+out-of-fold):**
+
+- `all-eligible__CT` (the canonical recipe, same one used throughout the
+  course): held-out R² = **0.469** -- this exactly reproduces Exercise 2's
+  own Section 2 worked-example number on the identical split/recipe/target,
+  confirming the catalog now genuinely shares that split.
+- `frontoparietal__CT` = 0.435, `occipital__CT` = 0.471 (was 0.411/higher
+  under 5-fold; ordering preserved: frontoparietal still scores below
+  occipital).
+- 34 of 35 catalog entries remain enabled (only `all-eligible__CT+Area`,
+  p=720, is disabled, same as before); 32 of those 34 are positive R² on the
+  fixed split. Two of the smallest, weakest entries (`parietal__Area`,
+  `parietal__LGI`, p=42 each) land marginally negative (-0.027) on this one
+  split -- a genuine, expected consequence of a single held-out evaluation
+  having higher variance than an aggregated 5-fold estimate over the whole
+  cohort, not a bug. `tests/test_export_regression_catalog.py` was written
+  to expect "almost all, not literally all" positive, with the exact
+  fraction (≥90%) and the canonical/default-panel entries checked explicitly.
+
+**Superseded: original "Judgment call" section.** The paragraph below,
+from the original WP19 pass, is left in this report for history but no
+longer reflects current policy -- see the correction above.
 
 ## Git state
 
@@ -14,9 +104,12 @@ Local-only; nothing pushed or deployed; WP20 not started.
 - Checkpoint commit (WP document): `ea0b34f`
 - Implementation commit: `ea7c1f7`
 - Merge commit (`--no-ff` into `main`): `30caa85`
-- Final local `main` SHA: `30caa85`
-- `origin/main` unchanged at `c5aa2ca`; local `main` is 11 commits ahead
-  (the 8 pre-existing WP17/WP18 commits plus 3 new WP19 commits)
+- WP19 report commit: `1012d1a`
+- Correction commit (this continuation, committed directly to `main` per the
+  correction instructions -- implementation + updated reports together): see
+  Claude's final response for the exact SHA (not inserted here, per the "do
+  not amend reports to insert their own commit's SHA" convention)
+- `origin/main` unchanged throughout; nothing pushed
 
 ## Inventory of early CV / parameter-selection material found before editing
 
@@ -60,19 +153,27 @@ tests. Findings:
 - **`course_overview/…docx`**: Exercise 3 row said "choosing k honestly via
   training-only 5-fold cross-validation"; Exercise 4 row said "choosing C
   honestly via training-only cross-validation scored by ROC AUC".
-- **Exercise 1/2**: no formal CV/tuning *procedure* is taught, but two
-  passing terminology uses were found: Exercise 1 named "cross-validation"
-  in a forward-looking data-leakage sentence about later ML analyses;
-  Exercise 2 used "cross-validated R²" and "one fixed set of folds" in
-  Section 4's exploratory-model-comparison caveat (this activity
-  genuinely uses `KFold` + `cross_val_predict` under the hood — see
-  Judgment call below).
+- **Exercise 1/2**: no formal CV/tuning *procedure* is taught in the
+  notebook's own wording, but two passing terminology uses were found in
+  Exercise 1/2's text (see below), and -- identified at the time but
+  originally left in place, then corrected per Yoav's instruction (see
+  "Correction" section above) -- Exercise 2's `regression-compare` feature-
+  set-comparison activity genuinely ran `KFold(n_splits=5, ...)` +
+  `cross_val_predict` under the hood in `scripts/export_regression_catalog.py`,
+  invisible in the notebook's own text but real analysis. Exercise 1 named
+  "cross-validation" in a forward-looking data-leakage sentence about later
+  ML analyses; Exercise 2 used "cross-validated R²" and "one fixed set of
+  folds" in Section 4's exploratory-model-comparison caveat.
 - **Tests**: `tests/test_knn_model_audit.py`, `tests/test_exercise_03_notebook.py`
   asserted the CV-selection mechanism and k=15/17; `tests/test_classification_model_audit.py`,
   `tests/test_exercise_04_notebook.py` asserted GridSearchCV/C=0.01; Playwright
   e2e specs asserted default k=17/15 and AUC=0.593.
 
-## Judgment call: Exercise 2's regression-compare activity
+## Judgment call: Exercise 2's regression-compare activity [SUPERSEDED — see "Correction" above]
+
+This section is the original, incorrect reasoning, kept verbatim for the
+record. Yoav corrected it: the hidden CV procedure itself had to go. Do not
+rely on this section for current behavior.
 
 Exercise 2's "Comparing feature sets" activity (`export_regression_catalog.py`)
 genuinely performs 5-fold `KFold` + `cross_val_predict` as its **evaluation
@@ -149,8 +250,10 @@ narrower interpretation is correct.
 
 ## Exercises 1 and 2 — audit result
 
-Changes were necessary (§6). Neither exercise's analyses, outputs,
-interactives, or model results were modified.
+Changes were necessary (§6), and — per the correction — Exercise 2's model
+results for the regression-compare activity **were** modified (recomputed
+under the fixed split; see "Correction" above). Exercise 1's, and Exercise
+2's own Section 2 worked-example, analyses/outputs were not modified.
 
 - **Exercise 1**: one sentence in the missing-data section named
   "cross-validation" as a forward reference while explaining preprocessing
@@ -158,8 +261,12 @@ interactives, or model results were modified.
   preserving the leakage lesson without naming the postponed method.
 - **Exercise 2**: two passing mentions of "cross-validated R²"/"fixed set of
   folds" in Section 4's exploratory-model-comparison caveat and one
-  questions-cell reference were reworded to avoid the term (see Judgment
-  call above). No other Exercise 1/2 content changed.
+  questions-cell reference were reworded in the original WP19 pass, and now
+  read correctly given the fixed-split correction. The regression-compare
+  activity's underlying 5-fold `KFold`/`cross_val_predict` evaluation was
+  removed and replaced with one fixed train/test split (see "Correction"
+  above) — this is a genuine change to the activity's model results, not
+  just wording. No other Exercise 1/2 content changed.
 
 ## Interactive exploration vs. parameter selection
 
@@ -228,17 +335,32 @@ All run from the repo root unless noted.
 16. `cd interactive && npx playwright test knn-explore.spec.ts knn-abc.spec.ts classification-threshold.spec.ts classification-imbalance.spec.ts --workers=1` — **70/70 pass**
 17. `cd interactive && npx playwright test --config playwright.book.config.ts chapter03.spec.ts chapter04.spec.ts --workers=1` — first run: **3 failures** (stale hardcoded expectations: `chapter03.spec.ts` line 65 still expected `k = 17`; `chapter04.spec.ts` lines 46/65 still expected `AUC = 0.593` from WP18's C=0.01). Fixed in one pass (updated the three literals to `k = 20` / `AUC = 0.569`) and reran the same two spec files once — **13/13 pass**. This is the one permitted isolated rerun; no second fix was needed.
 
+### Correction continuation — focused re-run only (per the correction's explicit scope)
+
+18. `python3 -m unittest discover -s tests -p 'test_export_regression_catalog.py' -v` — first run: **1 failure** (`test_every_bundle_predicts_age_above_chance` assumed universal positivity, which the old aggregated 5-fold estimate happened to have but the new single-split estimate legitimately does not for 2 of 34 enabled entries). Rewrote the assertion to require ≥90% positive plus explicit checks on the canonical/default entries (this is the one permitted rerun for this failure) — **17/17 pass** after.
+19. `python3 -m unittest discover -s tests -p 'test_exercise_02_notebook.py' -v` — 30/30 pass, unchanged (this notebook has no inline code for the iframe-only regression-compare activity).
+20. `python3 -m unittest discover -s tests -p 'test_build_portable_notebook.py' -v` (after regenerating the chapter_02 portable notebook) — 25/25 pass.
+21. `python3 -m unittest discover -s tests -p 'test_wp19_content_audit.py' -v` (updated: added `regression_compare.json` to the widget-config scan, added a generated-data-artifact scan, added an Exercise-2-exporter implementation check that the *code* — not the module docstring's historical explanation — contains no `KFold`/`cross_val_predict`) — **14/14 pass**.
+22. Frontend: `cd interactive && npx tsc --noEmit` — clean; `npx vitest run regression-compare` — **20/20 pass** (2 files).
+23. `cd interactive && npm run build` — succeeds (same pre-existing chunk-size warning).
+24. `source .venv/bin/activate && jupyter-book build book` — succeeds, same 2 pre-existing warnings; Exercise 2's own notebook cache was reused (unchanged code), only its regenerated widget config/data copied.
+
+No unrelated full suites were repeated for this correction, per its explicit scope.
+
 ## Deviations and items for Yoav's attention
 
-1. **Judgment call on Exercise 2** (see above) — I did not rearchitect the
-   regression-compare activity's genuine KFold-based evaluation
-   methodology, only reworded two passing mentions of the term. Please
-   confirm this matches your intent.
+1. **Judgment call on Exercise 2 — corrected.** The original pass left the
+   regression-compare activity's hidden `KFold`/`cross_val_predict`
+   evaluation in place; Yoav confirmed this was wrong and it has now been
+   replaced with a fixed train/test split (see "Correction" above). No
+   further action needed on this item.
 2. **DOCX visual rendering unavailable** — please open the file locally to
-   confirm the one-page landscape layout.
+   confirm the one-page landscape layout. (Unchanged by this correction —
+   the DOCX was not touched.)
 3. Historical WP13/WP14/WP17/WP18 documents and reports were left untouched
    (not rewritten) per §2.
-4. The WP16 architect report remained untracked and untouched throughout.
+4. The WP16 architect report remained untracked and untouched throughout,
+   including through this correction.
 
 ## Local build commands and URLs (Exercises 3 and 4)
 

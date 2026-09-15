@@ -112,7 +112,6 @@
   },
   "protocol": {
     "holdout_split": {"test_size": 0.25, "random_state": 42, "stratify": "group"},
-    "cross_validation": {"kind": "KFold", "n_splits": 5, "shuffle": true, "random_state": 0},
     "preprocessing": "sklearn Pipeline(StandardScaler(), LinearRegression()); the scaler is fitted on training rows / training folds only. No imputation is needed - the brain features have no missing values and rows missing the target are dropped before splitting.",
     "generalisation_target": "Held-out participants drawn from the same 17 ABIDE-II sites. A random participant split does NOT estimate generalisation to unseen scanners or sites.",
     "canonical_recipe": {"bundle": "all-eligible", "measures": ["CT"], "note": "Bilateral cortical thickness across every one of the 360 HCP-MMP1 cortical parcels (WP14 audit: all 360 raw columns per measure, confirmed genuine -- see atlas.hemisphere_specific_labels). Age-related cortical thinning is a whole-cortex phenomenon (Bethlehem et al. 2022; Storsve et al. 2014), not one a small literature-specified regional bundle would represent fairly, so the canonical recipe uses the full eligible ROI set for one measure rather than a hand-picked subset. p=360 stays well under n_train (~803 at the full holdout split, ~726 at 5-fold), so ordinary least squares is well posed."},
@@ -140,8 +139,8 @@
     "target": "age",
     "measurement_subsets": [["CT"], ["Area"], ["Vol"], ["LGI"], ["CT", "Area"]],
     "bundles": ["frontoparietal", "frontal", "parietal", "temporal", "occipital", "sensorimotor", "all-eligible"],
-    "identifiability_rule": "An entry is offered only if its feature count p is below 0.7 * (fold training n). all-eligible x [CT,Area] (p=720) and any entry with p >= that bound is disabled with a visible reason rather than fitted with a pseudo-inverse.",
-    "note": "The interactive feature-set comparison activity offers ordinary least squares only, never regularised models; that restriction is about this activity being unregularised OLS, not about p vs n in general (WP12 6.3) - the separate regularisation-preview computation (protocol.regularisation_preview) is where ridge / lasso are used, on the full p=1432 space, computed directly in the notebook rather than exposed as extra activity controls. Trying many entries here is still exploratory model comparison; the cross-validation score of the best-looking entry is not an unbiased estimate of its performance."
+    "identifiability_rule": "An entry is offered only if its feature count p is below 0.7 * (training n, from protocol.holdout_split). all-eligible x [CT,Area] (p=720) and any entry with p >= that bound is disabled with a visible reason rather than fitted with a pseudo-inverse.",
+    "note": "The interactive feature-set comparison activity offers ordinary least squares only, never regularised models; that restriction is about this activity being unregularised OLS, not about p vs n in general (WP12 6.3) - the separate regularisation-preview computation (protocol.regularisation_preview) is where ridge / lasso are used, on the full p=1432 space, computed directly in the notebook rather than exposed as extra activity controls. Trying many entries here is still exploratory model comparison; the held-out score of the best-looking entry is not an unbiased estimate of its performance (WP19: every entry is scored once on the same fixed protocol.holdout_split test participants, not by cross-validation)."
   },
   "knn": {
     "target": "age",

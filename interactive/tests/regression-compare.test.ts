@@ -3,7 +3,6 @@ import {
   catalogKey,
   meanSquaredError,
   r2Score,
-  scatterPoints,
   sharedAxisRange,
 } from "../src/regression-compare";
 
@@ -39,20 +38,6 @@ describe("meanSquaredError", () => {
 
   it("throws on length mismatch", () => {
     expect(() => meanSquaredError([1, 2, 3], [1, 2])).toThrow();
-  });
-});
-
-describe("scatterPoints", () => {
-  it("zips the three arrays in row order", () => {
-    const pts = scatterPoints([1, 2], [1.1, 1.9], [0, 3]);
-    expect(pts).toEqual([
-      { observed: 1, predicted: 1.1, fold: 0 },
-      { observed: 2, predicted: 1.9, fold: 3 },
-    ]);
-  });
-
-  it("throws when the arrays disagree in length", () => {
-    expect(() => scatterPoints([1, 2], [1], [0, 1])).toThrow();
   });
 });
 

@@ -57,7 +57,7 @@ test.describe("Chapter 2 built page — embedded feature-set comparison", () => 
     );
 
     const metricsA = await frame.locator('[data-testid="regression-A-metrics"]').innerText();
-    expect(metricsA).toMatch(/Out-of-sample R2 = 0\.\d+/);
+    expect(metricsA).toMatch(/Held-out R2 = 0\.\d+/);
 
     // a real control change: switch Model A to "All eligible ROIs" -> feature
     // count and R^2 both change (not just a label)

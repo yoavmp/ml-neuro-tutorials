@@ -3,24 +3,28 @@
 
 The browser activity ``regression-compare`` (book/_static/widgets/) lets a
 student pick a measurement subset x anatomical ROI bundle for two models and
-compares their out-of-sample performance side by side. Re-implementing
+compares their held-out performance side by side. Re-implementing
 scikit-learn in JavaScript would be fragile, so this script pre-computes a
 finite, audited catalog of model results offline and the browser only switches
 between them.
 
 Output: ``book/_static/widgets/data/abide_regression_models.json``.
 
-Every catalog entry uses the **same** eligible participant cohort (FIQ present
-after requiring usable brain data, n=908) and the **same** deterministic 5-fold
-split (``KFold(n_splits=5, shuffle=True, random_state=0)``), so the observed
-target vector and the per-row fold assignment are stored once and shared. Each
-model entry stores only its out-of-fold predictions and the metrics recomputed
-from them. Preprocessing (``StandardScaler``) is fitted inside each fold via a
-``Pipeline``. No participant identifiers, no raw brain features, no training
-scores.
+WP19 correction: this activity previously scored every entry with a hidden
+5-fold ``KFold`` / ``cross_val_predict`` procedure. Early lessons no longer
+teach or use cross-validation, so every catalog entry now uses the **same**
+fixed, reproducible train/test split (``protocol.holdout_split`` --
+identical to Exercise 2's own Section 2 worked example and Exercise 3):
+``train_test_split(test_size=0.25, random_state=42, stratify=group)`` on the
+same eligible cohort (age present after requiring usable brain data, n=1004).
+Every entry shares the exact same 753 training / 251 test participants, so
+the observed test-target vector is stored once and each model carries only
+its held-out test-set predictions. Preprocessing (``StandardScaler``) is
+fitted on the training participants only, inside a ``Pipeline``. No
+participant identifiers, no raw brain features, no training scores.
 
 Recipes come from ``book/config/abide_modeling.json`` (``catalog`` block).
-An entry whose feature count reaches ``0.7 * fold-training-n`` is emitted as
+An entry whose feature count reaches ``0.7 * n_train`` is emitted as
 ``disabled`` with a reason instead of being fitted.
 
 Modes (exactly one required):
@@ -56,7 +60,7 @@ from abide_modeling_data import (  # noqa: E402
 )
 
 ARTIFACT_PATH = REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_regression_models.json"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 PRED_DECIMALS = 4
 TARGET = MANIFEST["catalog"]["target"]
 IDENTIFIABILITY_FRACTION = 0.7
@@ -68,16 +72,6 @@ def _pipeline():
     from sklearn.preprocessing import StandardScaler
 
     return make_pipeline(StandardScaler(), LinearRegression())
-
-
-def _fold_assignment(n: int, cv) -> list[int]:
-    fold_of = [-1] * n
-    for fold_index, (_, test_idx) in enumerate(cv.split(range(n))):
-        for i in test_idx:
-            fold_of[i] = fold_index
-    if any(f < 0 for f in fold_of):
-        raise RuntimeError("fold assignment left a row unassigned")
-    return fold_of
 
 
 def _metrics(observed: "Any", predicted: "Any") -> tuple[float, float]:
@@ -92,28 +86,42 @@ def _metrics(observed: "Any", predicted: "Any") -> tuple[float, float]:
     return r2, mse
 
 
+def _split_indices(n: int, groups: "Any", manifest: dict[str, Any]) -> tuple["Any", "Any"]:
+    """The one fixed, reproducible train/test split (WP19): identical to
+    Exercise 2 Section 2 / Exercise 3's own outer holdout split. Returns
+    (idx_train, idx_test) -- the same participant indices are reused for
+    every bundle x measure combination below."""
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+
+    hs = manifest["protocol"]["holdout_split"]
+    idx = np.arange(n)
+    idx_train, idx_test = train_test_split(
+        idx, test_size=hs["test_size"], random_state=hs["random_state"], stratify=groups
+    )
+    return idx_train, idx_test
+
+
 def build_catalog(frame: "Any", manifest: dict[str, Any] | None = None) -> dict[str, Any]:
     import numpy as np
-    from sklearn.model_selection import KFold, cross_val_predict
 
     manifest = manifest or MANIFEST
     cat = manifest["catalog"]
-    cv_cfg = manifest["protocol"]["cross_validation"]
-    if cv_cfg["kind"] != "KFold":
-        raise ValueError(f"unsupported cross_validation kind {cv_cfg['kind']!r}")
-    cv = KFold(n_splits=cv_cfg["n_splits"], shuffle=cv_cfg["shuffle"], random_state=cv_cfg["random_state"])
+    hs = manifest["protocol"]["holdout_split"]
 
     present = frame[TARGET].notna().to_numpy()
-    y = frame.loc[present, TARGET].to_numpy(dtype="float64")
-    n = int(len(y))
-    # The target need not be integer-valued (age is fractional years; FIQ is an
-    # integer standard score). Round to the same precision as the stored
-    # predictions rather than forcing round-to-nearest-int, which would distort
-    # a continuous target like age.
-    observed = [round(float(v), PRED_DECIMALS) for v in y]
-    fold_of = _fold_assignment(n, cv)
-    fold_train_n = n - max(fold_of.count(f) for f in range(cv_cfg["n_splits"]))
-    p_bound = IDENTIFIABILITY_FRACTION * fold_train_n
+    y_full = frame.loc[present, TARGET].to_numpy(dtype="float64")
+    groups_full = frame.loc[present, "group"].to_numpy()
+    n = int(len(y_full))
+
+    idx_train, idx_test = _split_indices(n, groups_full, manifest)
+    n_train, n_test = int(len(idx_train)), int(len(idx_test))
+    overlap = set(idx_train.tolist()) & set(idx_test.tolist())
+    if overlap:
+        raise RuntimeError("train/test participant overlap in the shared holdout split")
+
+    observed_test = [round(float(v), PRED_DECIMALS) for v in y_full[idx_test]]
+    p_bound = IDENTIFIABILITY_FRACTION * n_train
 
     subsets = [list(s) for s in cat["measurement_subsets"]]
     models: list[dict[str, Any]] = []
@@ -131,20 +139,24 @@ def build_catalog(frame: "Any", manifest: dict[str, Any] | None = None) -> dict[
             if p >= p_bound:
                 entry["disabled"] = True
                 entry["reason"] = (
-                    f"{p} features vs {fold_train_n} training rows per fold: ordinary least "
+                    f"{p} features vs {n_train} training rows: ordinary least "
                     f"squares is not numerically defensible here (no regularisation in this activity)."
                 )
                 models.append(entry)
                 continue
-            X, y_chk, _ = feature_matrix(frame, bundle, measures, TARGET, manifest=manifest)
-            if not np.allclose(y_chk, y):
+            X_full, y_chk, _ = feature_matrix(frame, bundle, measures, TARGET, manifest=manifest)
+            if not np.allclose(y_chk, y_full):
                 raise RuntimeError(f"{key}: cohort mismatch with the shared target vector")
-            pred = cross_val_predict(_pipeline(), X, y, cv=cv)
-            r2, mse = _metrics(y, pred)
+            X_train, X_test = X_full[idx_train], X_full[idx_test]
+            y_train = y_full[idx_train]
+            pipe = _pipeline()
+            pipe.fit(X_train, y_train)
+            pred_test = pipe.predict(X_test)
+            r2, mse = _metrics(y_full[idx_test], pred_test)
             entry["disabled"] = False
-            entry["predicted"] = [round(float(v), PRED_DECIMALS) for v in pred]
-            entry["cvR2"] = round(r2, 6)
-            entry["cvMSE"] = round(mse, 4)
+            entry["predicted"] = [round(float(v), PRED_DECIMALS) for v in pred_test]
+            entry["testR2"] = round(r2, 6)
+            entry["testMSE"] = round(mse, 4)
             models.append(entry)
 
     active = [m for m in models if not m["disabled"]]
@@ -170,16 +182,15 @@ def build_catalog(frame: "Any", manifest: dict[str, Any] | None = None) -> dict[
             "requirement": f"{TARGET} recorded after requiring complete brain data",
             "diagnosisNote": "held-out participants from the same 17 ABIDE-II sites; not unseen scanners",
         },
-        "crossValidation": {
-            "kind": "KFold",
-            "nSplits": cv_cfg["n_splits"],
-            "shuffle": cv_cfg["shuffle"],
-            "randomState": cv_cfg["random_state"],
-            "foldTrainN": fold_train_n,
+        "holdoutSplit": {
+            "testSize": hs["test_size"],
+            "randomState": hs["random_state"],
+            "stratify": hs["stratify"],
+            "nTrain": n_train,
+            "nTest": n_test,
         },
-        "preprocessing": "Pipeline(StandardScaler, LinearRegression) fitted inside each fold",
-        "observed": observed,
-        "foldOf": fold_of,
+        "preprocessing": "Pipeline(StandardScaler, LinearRegression) fit on the training participants only",
+        "observedTest": observed_test,
         "bundles": {
             b: {
                 "label": (
@@ -225,26 +236,22 @@ def validate_catalog(artifact: Any, manifest: dict[str, Any] | None = None) -> l
     if src.get("phenotypeTableSha256") != manifest["source"]["phenotype_table"]["sha256"]:
         problems.append("source.phenotypeTableSha256 does not match the manifest")
 
-    observed = artifact.get("observed")
-    fold_of = artifact.get("foldOf")
+    observed = artifact.get("observedTest")
+    hs = artifact.get("holdoutSplit", {})
     n = artifact.get("cohort", {}).get("n")
+    n_train = hs.get("nTrain")
+    n_test = hs.get("nTest")
     if not isinstance(observed, list) or not observed:
-        problems.append("observed must be a non-empty array")
+        problems.append("observedTest must be a non-empty array")
         return problems
-    if n != len(observed):
-        problems.append(f"cohort.n {n} != len(observed) {len(observed)}")
-    if not isinstance(fold_of, list) or len(fold_of) != len(observed):
-        problems.append("foldOf must align with observed")
-        return problems
-    n_splits = artifact.get("crossValidation", {}).get("nSplits")
-    if sorted(set(fold_of)) != list(range(n_splits or 0)):
-        problems.append(f"foldOf must use every fold index 0..{(n_splits or 0) - 1}")
+    if n_test != len(observed):
+        problems.append(f"holdoutSplit.nTest {n_test} != len(observedTest) {len(observed)}")
+    if not isinstance(n_train, int) or not isinstance(n_test, int) or n_train + n_test != n:
+        problems.append(f"holdoutSplit.nTrain + nTest must equal cohort.n ({n})")
     if any(isinstance(v, bool) or not isinstance(v, (int, float)) for v in observed):
-        problems.append("observed must be numeric (int or float) target values")
+        problems.append("observedTest must be numeric (int or float) target values")
 
     identifier_token = ("id", "sub", "subject", "site", "participant")
-    for key in ("observed", "foldOf"):
-        pass
     for extra_key in artifact.keys():
         if extra_key.lower() in identifier_token:
             problems.append(f"artifact has an identifier-shaped key: {extra_key!r}")
@@ -273,13 +280,13 @@ def validate_catalog(artifact: Any, manifest: dict[str, Any] | None = None) -> l
         enabled += 1
         pred = m.get("predicted")
         if not isinstance(pred, list) or len(pred) != len(observed):
-            problems.append(f"model {key!r} predicted must align with observed")
+            problems.append(f"model {key!r} predicted must align with observedTest")
             continue
         r2, mse = _metrics(observed, pred)
-        if abs(r2 - m.get("cvR2", 1e9)) > 1e-4:
-            problems.append(f"model {key!r} cvR2 {m.get('cvR2')} != recomputed {r2:.6f}")
-        if abs(mse - m.get("cvMSE", 1e9)) > 1e-2:
-            problems.append(f"model {key!r} cvMSE {m.get('cvMSE')} != recomputed {mse:.4f}")
+        if abs(r2 - m.get("testR2", 1e9)) > 1e-4:
+            problems.append(f"model {key!r} testR2 {m.get('testR2')} != recomputed {r2:.6f}")
+        if abs(mse - m.get("testMSE", 1e9)) > 1e-2:
+            problems.append(f"model {key!r} testMSE {m.get('testMSE')} != recomputed {mse:.4f}")
         if m.get("featureCount") != len(_expected_cols(m, manifest)):
             problems.append(f"model {key!r} featureCount disagrees with its bundle x measures")
 
@@ -303,11 +310,12 @@ def serialize(artifact: dict[str, Any]) -> str:
 
 
 def _summary(artifact: dict[str, Any]) -> str:
+    hs = artifact["holdoutSplit"]
     lines = [
         f"activity      : {artifact['activity']}",
         f"cohort.n      : {artifact['cohort']['n']}",
-        f"folds         : {artifact['crossValidation']['nSplits']} "
-        f"(train n/fold {artifact['crossValidation']['foldTrainN']})",
+        f"holdout split : n_train={hs['nTrain']} n_test={hs['nTest']} "
+        f"(test_size={hs['testSize']}, seed={hs['randomState']})",
         f"models        : {len(artifact['models'])} "
         f"({sum(1 for m in artifact['models'] if not m['disabled'])} enabled)",
     ]
@@ -316,7 +324,7 @@ def _summary(artifact: dict[str, Any]) -> str:
             lines.append(f"  {m['key']:34s} p={m['featureCount']:4d}  DISABLED")
         else:
             lines.append(
-                f"  {m['key']:34s} p={m['featureCount']:4d}  cvR2={m['cvR2']:+.3f}  cvMSE={m['cvMSE']:.1f}"
+                f"  {m['key']:34s} p={m['featureCount']:4d}  testR2={m['testR2']:+.3f}  testMSE={m['testMSE']:.1f}"
             )
     return "\n".join(lines)
 

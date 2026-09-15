@@ -1,13 +1,7 @@
 // Pure, unit-tested helpers for the Exercise II model-comparison activity.
 // No DOM, no Plotly. The component (components/regression-compare.ts) turns the
-// selected catalog entry into a scatter of observed vs out-of-fold predicted
+// selected catalog entry into a scatter of observed vs held-out predicted
 // values; these functions do the arithmetic and the lookups.
-
-export interface ScatterPoint {
-  observed: number;
-  predicted: number;
-  fold: number;
-}
 
 /** Coefficient of determination R^2 = 1 - SS_res / SS_tot. Not clamped:
  *  a value below 0 is legitimate and means "worse than predicting the mean". */
@@ -34,18 +28,6 @@ export function meanSquaredError(observed: readonly number[], predicted: readonl
   let sum = 0;
   for (let i = 0; i < observed.length; i += 1) sum += (observed[i]! - predicted[i]!) ** 2;
   return sum / observed.length;
-}
-
-/** Zip observed / predicted / fold into scatter points, in cohort row order. */
-export function scatterPoints(
-  observed: readonly number[],
-  predicted: readonly number[],
-  foldOf: readonly number[],
-): ScatterPoint[] {
-  if (observed.length !== predicted.length || observed.length !== foldOf.length) {
-    throw new Error("scatterPoints: all three arrays must be the same length");
-  }
-  return observed.map((o, i) => ({ observed: o, predicted: predicted[i]!, fold: foldOf[i]! }));
 }
 
 /** Inclusive [min, max] over both arrays, padded by `padFrac` of the range, so

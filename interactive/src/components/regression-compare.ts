@@ -3,12 +3,15 @@
 // Two independent panels (Model A, Model B). Each picks a measurement subset and
 // an anatomical ROI bundle; the component looks the resulting recipe up in the
 // pre-computed catalog (scripts/export_regression_catalog.py) and draws observed
-// vs out-of-fold predicted FIQ with a perfect-prediction diagonal, plus the
-// cross-validated R2 / MSE, the participant count, and the feature count. Both
+// vs held-out predicted age with a perfect-prediction diagonal, plus the
+// held-out R2 / MSE, the participant count, and the feature count. Both
 // panels share identical axis limits so the comparison is visually fair. Every
-// catalog entry uses the same cohort and the same deterministic folds, so a
-// control change is a genuine re-computation, not a relabelling. No Python
-// kernel, no CDN, no training scores.
+// catalog entry uses the same cohort and the same fixed, reproducible
+// train/test split (WP19: no cross-validation), so a control change is a
+// genuine re-computation, not a relabelling. This activity is exploration of
+// how predetermined feature sets affect results, not feature selection or
+// optimization -- no configuration here is chosen as "the" final model. No
+// Python kernel, no CDN, no training scores.
 
 import Plotly from "plotly.js-cartesian-dist-min";
 import type { MountArgs, MountHandle, WidgetComponent } from "./types";
@@ -61,7 +64,7 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
   const diagColor = theme.dark ? "#d98b5f" : "#b5622f";
 
   // Shared axis range: observed plus every enabled model's predictions.
-  const allValues: number[] = [...data.observed];
+  const allValues: number[] = [...data.observedTest];
   for (const m of data.models) if (!m.disabled && m.predicted) allValues.push(...m.predicted);
   const axisRange = sharedAxisRange(allValues, 0.05);
 
@@ -92,9 +95,9 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
   cohortLine.className = "widget-stats";
   cohortLine.setAttribute("data-testid", "regression-cohort");
   cohortLine.textContent =
-    `Every configuration is scored on the same ${data.cohort.n} participants ` +
-    `(${data.cohort.requirement}) with the same ${data.crossValidation.nSplits} folds ` +
-    `(${data.crossValidation.randomState === 0 ? "seed 0" : `seed ${data.crossValidation.randomState}`}). ` +
+    `Every configuration is fit on the same ${data.holdoutSplit.nTrain} training participants ` +
+    `and scored once on the same ${data.holdoutSplit.nTest} held-out test participants ` +
+    `(${data.cohort.requirement}, ${data.holdoutSplit.randomState === 0 ? "seed 0" : `seed ${data.holdoutSplit.randomState}`}). ` +
     `${data.cohort.diagnosisNote}.`;
   container.appendChild(cohortLine);
 
@@ -247,12 +250,12 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
       disabledMsg.hidden = true;
       plot.hidden = false;
 
-      const r2 = r2Score(data.observed, model.predicted);
-      const mse = meanSquaredError(data.observed, model.predicted);
+      const r2 = r2Score(data.observedTest, model.predicted);
+      const mse = meanSquaredError(data.observedTest, model.predicted);
       const rmse = Math.sqrt(mse);
       metrics.textContent =
-        `Out-of-sample R2 = ${r2.toFixed(3)}  ·  CV MSE = ${mse.toFixed(1)} ` +
-        `(RMSE ${rmse.toFixed(1)} ${data.target.unit})  ·  n = ${data.cohort.n}  ·  ` +
+        `Held-out R2 = ${r2.toFixed(3)}  ·  held-out MSE = ${mse.toFixed(1)} ` +
+        `(RMSE ${rmse.toFixed(1)} ${data.target.unit})  ·  n = ${data.holdoutSplit.nTest}  ·  ` +
         `${model.featureCount} features` +
         (r2 < 0 ? "  ·  below 0: worse than predicting the mean" : "");
       panel.dataset.r2 = r2.toFixed(4);
@@ -261,7 +264,7 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
       const scatter = {
         type: "scattergl" as const,
         mode: "markers" as const,
-        x: data.observed,
+        x: data.observedTest,
         y: model.predicted,
         marker: { color: markerColor, size: 6 },
         hovertemplate:
@@ -284,7 +287,7 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
           range: [...axisRange],
         },
         yaxis: {
-          title: { text: `Predicted ${data.target.label} (out of fold)` },
+          title: { text: `Predicted ${data.target.label} (held-out)` },
           range: [...axisRange],
           scaleanchor: "x" as const,
           scaleratio: 1,

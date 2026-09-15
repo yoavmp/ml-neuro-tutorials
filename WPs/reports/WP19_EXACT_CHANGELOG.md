@@ -1,14 +1,119 @@
 # WP19 Exact Changelog
 
-## Commits (branch `revise/remove-early-cross-validation`, merged to `main`)
+## Commits (branch `revise/remove-early-cross-validation`, merged to `main`, plus one direct-to-`main` correction)
 
 | Commit | Message |
 |---|---|
 | `ea0b34f` | WP19: add WP document (checkpoint before implementation) |
 | `ea7c1f7` | WP19: remove early cross-validation and parameter tuning from Exercises 1-4 |
 | `30caa85` | Merge revise/remove-early-cross-validation into main (WP19) |
+| `1012d1a` | WP19 report: document fixed k=20/C=1.0, removed CV lessons, tests, local-only validation |
+| *(this correction)* | WP19 correction: remove Exercise 2's hidden 5-fold KFold/cross_val_predict evaluation — see Claude's final response for the exact SHA |
 
 Starting checkpoint tag: `wp19-start` → `03ac5cf`.
+
+## Correction commit — files created
+
+- (none)
+
+## Correction commit — files modified
+
+- `scripts/export_regression_catalog.py` — rewritten: removed `KFold` /
+  `cross_val_predict` / `_fold_assignment`; added `_split_indices` (one
+  fixed `train_test_split` on `protocol.holdout_split`, shared across every
+  bundle x measure combination); `build_catalog` now fits
+  `StandardScaler`+`LinearRegression` once per entry on the training rows
+  and scores once on the held-out test rows; `SCHEMA_VERSION` 1 → 2; output
+  fields renamed (`observed`→`observedTest`, `crossValidation`→
+  `holdoutSplit`, `cvR2`→`testR2`, `cvMSE`→`testMSE`; `foldOf` removed);
+  `validate_catalog` updated to match; disabled-reason text and identifiability
+  threshold now reference `n_train` instead of `fold_train_n`.
+- `book/_static/widgets/data/abide_regression_models.json` — regenerated
+  (`--refresh`); new schema; `all-eligible__CT` testR2 = 0.469 (matches
+  Exercise 2's own Section 2 worked example exactly).
+- `book/config/abide_modeling.json` — removed `protocol.cross_validation`;
+  reworded `catalog.identifiability_rule` and `catalog.note` to describe the
+  fixed holdout split instead of folds/cross-validation.
+- `book/downloads/chapter_02/exercise_02_portable.ipynb` — regenerated
+  (`build_portable_notebook.py --write`) after the generator's iframe-
+  replacement text was reworded.
+- `interactive/src/regression-compare-data.ts` — schema rewritten:
+  `holdoutSplit` replaces `crossValidation`; `observedTest` replaces
+  `observed`; model fields `testR2`/`testMSE` replace `cvR2`/`cvMSE`;
+  `schemaVersion` literal 1 → 2; validation logic updated to match.
+- `interactive/src/regression-compare.ts` — removed the unused
+  `ScatterPoint` interface and `scatterPoints` function (carried a `fold`
+  field with no remaining meaning); doc comment reworded ("out-of-fold" →
+  "held-out").
+- `interactive/src/components/regression-compare.ts` — module doc comment
+  reworded (adds the "exploration, not feature selection or optimization"
+  framing); cohort-line and per-panel metrics text now report
+  `holdoutSplit.nTrain`/`nTest` instead of fold count/seed; all
+  `data.observed` references renamed to `data.observedTest`; y-axis title
+  "(out of fold)" → "(held-out)"; metrics label "Out-of-sample R2"/"CV MSE"
+  → "Held-out R2"/"held-out MSE".
+- `book/_static/widgets/configs/regression_compare.json` — `description`,
+  `instructions`, and `selectionBiasNote` reworded from
+  "cross-validated"/"out-of-fold"/"folds" to "held-out"/"train/test split"
+  language; `selectionBiasNote` now explicitly frames the activity as
+  exploration, not feature selection or optimization.
+- `scripts/build_portable_notebook.py` — `_CH2_IFRAME_REPLACEMENT` text
+  reworded ("cross-validated performance... one fixed set of folds" →
+  "held-out performance... one fixed train/test split").
+- `tests/test_export_regression_catalog.py` — rewritten: removed
+  `CvSelectionIsolation`-style fold checks; added
+  `test_schema_version_is_2`, `test_no_cross_validation_artifacts_remain`,
+  `test_canonical_recipe_matches_exercise_2s_own_worked_example`,
+  `test_same_split_reused_across_every_bundle`,
+  `test_scaler_and_model_fit_only_on_training_rows`; renamed
+  `test_every_bundle_predicts_age_above_chance` →
+  `test_most_bundles_predict_age_above_chance` (≥90% positive, not literally
+  all — a single fixed split has higher variance than the old aggregated
+  5-fold estimate for the 2 smallest/weakest entries).
+- `tests/test_wp19_content_audit.py` — added `regression_compare.json` to
+  `WIDGET_CONFIG_PATHS`; added `GENERATED_ARTIFACT_PATHS` (all 5 widget data
+  artifacts) and `GeneratedArtifactContentAudit`; added
+  `EXERCISE_2_EXPORTER_PATH` and `Exercise2ExporterImplementationAudit`
+  (checks the executable code, not the module docstring, for `KFold`/
+  `cross_val_predict`); extended `PROHIBITED_PATTERNS` with
+  `cross_val_predict`, broadened `\bkfold\(` to `\bkfold\b`, and added bare
+  `\bfold(s|ing)?\b`.
+- `interactive/tests/regression-compare.test.ts` — removed the
+  `scatterPoints` import and its `describe` block.
+- `interactive/tests/regression-compare-data.test.ts` — fixture and every
+  assertion rewritten for the new schema (`holdoutSplit`/`observedTest`/
+  `testR2`/`testMSE`); committed-artifact test updated to check
+  `nTrain`=753/`nTest`=251 and the ≥90%-positive threshold instead of 100%.
+- `interactive/e2e/regression-compare.spec.ts` — metrics-text match
+  `/Out-of-sample R2 = 0\.\d+/` → `/Held-out R2 = 0\.\d+/`.
+- `interactive/e2e-book/chapter02.spec.ts` — same metrics-text match update.
+
+## Correction commit — files unchanged (audited, no conflict found)
+
+- `book/chapters/chapter_02/exercise_02.ipynb` — no code cell runs the
+  regression-compare computation directly (iframe-only); the wording already
+  reworded in the original WP19 pass ("one fixed evaluation procedure") now
+  reads correctly and needed no further edits.
+- `tests/test_exercise_02_notebook.py` — no assertions reference the
+  catalog's internal schema; 30/30 still pass unchanged.
+- `scripts/regression_model_audit.py` and
+  `scripts/regression_model_audit_result.json` — the separate, developer-only
+  FIQ/ridge/lasso regularization-preview audit (WP12); not part of Exercise
+  2's student-facing content (ridge/lasso are not in the notebook) and not
+  named in the correction's scope; left untouched.
+
+## Files deleted
+
+None.
+
+## Files renamed
+
+None (field renames within JSON/TS objects are listed above as
+modifications, not file renames).
+
+---
+
+## Original WP19 pass (superseded in part by the correction above)
 
 ## Files created
 
@@ -159,10 +264,13 @@ Starting checkpoint tag: `wp19-start` → `03ac5cf`.
 
 - `book/chapters/chapter_01/exercise_01.ipynb` analyses/outputs/interactives
   (only the one wording fix above).
-- `book/chapters/chapter_02/exercise_02.ipynb` analyses/outputs/interactives,
-  including the `regression-compare` KFold-based evaluation pipeline
-  (`scripts/export_regression_catalog.py`, `interactive/src/regression-compare*.ts`) —
-  left untouched as a judgment call (see WP19_REPORT.md).
+- `book/chapters/chapter_02/exercise_02.ipynb` analyses/outputs/interactives
+  in this original pass, including the `regression-compare` KFold-based
+  evaluation pipeline (`scripts/export_regression_catalog.py`,
+  `interactive/src/regression-compare*.ts`), left untouched here as a
+  judgment call — **superseded by the correction above**: that pipeline's
+  hidden cross-validation was removed and its model results were recomputed
+  under a fixed train/test split.
 - All WP01–WP18 WP documents and reports (historical records, not rewritten).
 - `WPs/reports/WP16_ARCHITECT_REPORT.md` (pre-existing, whitelisted,
   untouched, still untracked).

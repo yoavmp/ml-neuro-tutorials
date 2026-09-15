@@ -54,7 +54,7 @@ for (const { name, prefix } of BASES) {
       // metrics: age IS predictable here — held-out R^2 is positive and the
       // panel exposes the exact value (no "worse than the mean" suffix).
       const aMetrics = await page.locator('[data-testid="regression-A-metrics"]').innerText();
-      expect(aMetrics).toMatch(/Out-of-sample R2 = 0\.\d+/);
+      expect(aMetrics).toMatch(/Held-out R2 = 0\.\d+/);
       expect(aMetrics).not.toContain("worse than predicting the mean");
       const aR2 = Number(await panelA.getAttribute("data-r2"));
       expect(aR2).toBeGreaterThan(0);
