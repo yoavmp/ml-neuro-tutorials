@@ -18,6 +18,10 @@ Notebooks and their expected strings:
   KNN workflow at that k prints its R-squared; the from-scratch empirical
   k=1..N_fit curve runs and verifies the k=N_fit endpoint; the static
   honest-vs-invalid k_demo cell runs.
+* ``chapter_04/exercise_04_portable.ipynb`` -- the same brain table, diagnosis
+  (`group`) as target; the honest logistic-regression workflow runs and prints
+  its confusion matrix, accuracy, and AUC; the editable threshold and
+  class-imbalance/stratified-split demo cells run.
 
 Needs network access (the notebooks download pinned public CSVs). Used by CI and
 runnable locally:
@@ -65,6 +69,17 @@ SMOKE = {
             "held-out R^2 = 0.649",
             "N_fit = 564   N_val = 189",
             "every validation prediction equals the fitting-set mean",
+        ),
+    },
+    "chapter_04": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
+        "expect": (
+            "463 autism (group=1), 541 control (group=2)",
+            "n_train = 753   n_test = 251   n_features = 360",
+            "accuracy    = 0.546",
+            "AUC         = 0.569",
+            "AUC is unchanged by the threshold: 0.569",
+            "cohort: 400 participants (380 control, 20 autism)",
         ),
     },
 }

@@ -30,7 +30,8 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,all}`` (default ``all``) scopes both modes.
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,all}`` (default
+``all``) scopes both modes.
 The bare ``--write`` / ``--check`` invocations keep working and now cover every
 registered notebook.
 
@@ -62,6 +63,9 @@ PUBLISHED_PAGE_CH2 = (
 )
 PUBLISHED_PAGE_CH3 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html"
+)
+PUBLISHED_PAGE_CH4 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -487,7 +491,102 @@ CHAPTER_03 = NotebookSpec(
     colab_title="Exercise 3: KNN and the Bias-Variance Tradeoff",
 )
 
-NOTEBOOKS = {CHAPTER_01.key: CHAPTER_01, CHAPTER_02.key: CHAPTER_02, CHAPTER_03.key: CHAPTER_03}
+_CH4_BANNER = (
+    "# Exercise 4: Classification with Logistic Regression - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 4 classification\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the\n"
+    "canonical course notebook by `scripts/build_portable_notebook.py`. It is\n"
+    "meant for running or editing the code in Google Colab or in a local\n"
+    "VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the decision-threshold and class-imbalance\n"
+    "activities embedded and running in the browser -- is the published\n"
+    "course page:\n"
+    "<" + PUBLISHED_PAGE_CH4 + ">\n"
+    "\n"
+    "In this notebook the two embedded activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the ordinary,\n"
+    "editable equivalents of both activities -- is kept and runnable.\n"
+    "Questions marked *Think first* are followed, where one exists, by a\n"
+    "collapsible *Check your reasoning* block; open questions are left\n"
+    "without one fixed answer."
+)
+
+_CH4_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH4_THRESHOLD_IFRAME_REPLACEMENT = (
+    "### Explore the decision threshold on the course website\n"
+    "\n"
+    "The interactive activity lets you drag a slider across the decision\n"
+    "threshold and watch the confusion matrix, accuracy, sensitivity,\n"
+    "specificity, and the marked point on the ROC curve update from the\n"
+    "exact same fixed test-set predicted probabilities -- the model is never\n"
+    "refit.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 4 page:\n"
+    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell runs the same threshold exploration directly -- edit `threshold`\n"
+    "> and rerun it."
+)
+
+_CH4_IMBALANCE_IFRAME_REPLACEMENT = (
+    "### Explore class imbalance and stratified splitting on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a class ratio and a\n"
+    "predetermined split seed and compares a stratified vs. an unstratified\n"
+    "train/test split on the same resampled cohort of real participants.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 4 page:\n"
+    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell runs the same comparison directly -- edit `class_ratio` and\n"
+    "> `random_state` and rerun it."
+)
+
+CHAPTER_04 = NotebookSpec(
+    key="chapter_04",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH4,
+    banner_source=_CH4_BANNER,
+    setup_source=_CH4_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive decision-threshold exploration for classifying autism vs. control from brain structure": (
+            _CH4_THRESHOLD_IFRAME_REPLACEMENT
+        ),
+        "Interactive class-imbalance and stratified-splitting exploration for classifying autism vs. control from brain structure": (
+            _CH4_IMBALANCE_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 4: Classification with Logistic Regression",
+)
+
+NOTEBOOKS = {
+    CHAPTER_01.key: CHAPTER_01,
+    CHAPTER_02.key: CHAPTER_02,
+    CHAPTER_03.key: CHAPTER_03,
+    CHAPTER_04.key: CHAPTER_04,
+}
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).
 CANONICAL = CHAPTER_01.canonical

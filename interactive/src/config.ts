@@ -266,6 +266,27 @@ const knnAbcConfig = z
   })
   .strict();
 
+const classificationThresholdConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("classification-threshold"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    thresholdNote: z.string().min(1, "config.thresholdNote must be a non-empty string"),
+    rocChanceLabel: z.string().min(1, "config.rocChanceLabel must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const classificationImbalanceConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("classification-imbalance"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    stratificationNote: z.string().min(1, "config.stratificationNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -279,6 +300,8 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   regressionCompareConfig,
   knnExploreConfig,
   knnAbcConfig,
+  classificationThresholdConfig,
+  classificationImbalanceConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -290,6 +313,8 @@ export type TableInspectionConfig = z.infer<typeof tableInspectionConfig>;
 export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
 export type KnnExploreConfig = z.infer<typeof knnExploreConfig>;
 export type KnnAbcConfig = z.infer<typeof knnAbcConfig>;
+export type ClassificationThresholdConfig = z.infer<typeof classificationThresholdConfig>;
+export type ClassificationImbalanceConfig = z.infer<typeof classificationImbalanceConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

@@ -164,6 +164,50 @@
     "export_data_script": "scripts/export_knn_explore_data.py",
     "export_data_artifact": "book/_static/widgets/data/abide_knn_explore_manifest.json + book/_static/widgets/data/abide_knn_explore.bin"
   },
+  "classification": {
+    "target": "group",
+    "positive_class": {"code": 1, "label": "autism"},
+    "negative_class": {"code": 2, "label": "control"},
+    "canonical_recipe": {
+      "bundle": "all-eligible",
+      "measures": ["CT"],
+      "note": "Identical to protocol.canonical_recipe (p=360) and knn.canonical_recipe: the same 360 bilateral cortical-thickness parcels used throughout Exercises 2-3, so Exercise 4 needs no new feature-selection discussion."
+    },
+    "holdout_split": {
+      "test_size": 0.25,
+      "random_state": 42,
+      "stratify": "y",
+      "note": "Same test_size/random_state as protocol.holdout_split, but stratify is the diagnosis label y itself (group recoded to autism=1/control=0), not a covariate -- Exercise 4 is the first place `group` is the target rather than a stratification variable for a different outcome. This does NOT reproduce Exercise 2/3's 753/251 row split: the split target changed, so the partition is different even though test_size and random_state match."
+    },
+    "model": "sklearn Pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000)); the scaler is fitted on training rows only. C is a fixed, ordinary regularization setting, not tuned on the test set. No feature/seed/model selection was performed to improve the reported test result.",
+    "audit_script": "scripts/classification_model_audit.py",
+    "audit_result": "scripts/classification_model_audit_result.json",
+    "threshold_activity": {
+      "export_data_script": "scripts/export_classification_threshold_data.py",
+      "export_data_artifact": "book/_static/widgets/data/abide_classification_threshold.json",
+      "note": "Ships only the fixed honest test-set predicted probabilities and true labels (251 values each); the browser recomputes confusion matrix / accuracy / sensitivity / specificity / ROC / AUC at any chosen threshold from those two arrays -- it never refits the model."
+    },
+    "imbalance_activity": {
+      "export_data_script": "scripts/export_classification_imbalance_data.py",
+      "export_data_artifact": "book/_static/widgets/data/abide_classification_imbalance.json",
+      "cohort_size": 400,
+      "cohort_size_rationale": "WP17 sec 5: a fixed total N is drawn (without replacement, real participants) for every ratio so the demonstration only ever varies class balance and split strategy, never sample size. N=400 keeps every ratio's larger class within the available pool at 95:5 (380 of 541 available control participants) and every ratio's smaller class within the available pool at 50:50 (200 of 463 available autism participants), while making 95:5 meaningfully sparse: 20 minority (autism) participants total, about 15 in a stratified 75% train partition and about 5 in a stratified 25% test partition -- few enough to make the imbalance concrete, not so few that a stratified test partition becomes structurally impossible.",
+      "ratios": [
+        {"key": "50:50", "majorityPct": 0.50, "minorityPct": 0.50},
+        {"key": "60:40", "majorityPct": 0.60, "minorityPct": 0.40},
+        {"key": "70:30", "majorityPct": 0.70, "minorityPct": 0.30},
+        {"key": "80:20", "majorityPct": 0.80, "minorityPct": 0.20},
+        {"key": "90:10", "majorityPct": 0.90, "minorityPct": 0.10},
+        {"key": "95:5", "majorityPct": 0.95, "minorityPct": 0.05}
+      ],
+      "majority_class": "control",
+      "minority_class": "autism",
+      "cohort_resample_seed_base": 20000,
+      "cohort_resample_note": "For each ratio, the majority/minority participants are drawn once, without replacement, using random_state = cohort_resample_seed_base + ratio_index (0-5, in the ratios list order above) -- fixed per ratio, independent of the split seeds below, so every split seed for a given ratio compares the exact same cohort.",
+      "split_seeds": [0, 1, 2, 3, 4],
+      "split_seeds_note": "Both the stratified and the unstratified train_test_split(test_size=0.25, random_state=seed[, stratify=y]) reuse the same seed for a given comparison, so the only difference between the two sides is the presence of stratify=y."
+    }
+  },
   "bundles": {
     "frontoparietal": {
       "label": "Frontoparietal (P-FIT)",
