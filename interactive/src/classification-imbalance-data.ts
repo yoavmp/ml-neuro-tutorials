@@ -1,9 +1,11 @@
-// Loader for the Exercise 4 class-imbalance / stratified-split interactive
-// artifact (book/_static/widgets/data/abide_classification_imbalance.json,
+// Loader for the Exercise 4 class-imbalance interactive artifact
+// (book/_static/widgets/data/abide_classification_imbalance.json,
 // produced by scripts/export_classification_imbalance_data.py). Ships only
-// aggregated counts and metrics per (ratio, seed, split-kind) -- no brain
-// features, no participant identifiers, no raw probabilities. DOM / Plotly
-// free so it can be unit tested independently of the rendering component.
+// aggregated counts and metrics per (ratio, seed) -- no brain features, no
+// participant identifiers, no raw probabilities. Every entry is ONE
+// stratified split (WP18 sec 4: no unstratified side, no undefined-AUC
+// case). DOM / Plotly free so it can be unit tested independently of the
+// rendering component.
 
 import { z } from "zod";
 import type { DataResult } from "./components/types";
@@ -17,19 +19,6 @@ const confusionSchema = z
   })
   .strict();
 
-const sideSchema = z
-  .object({
-    nTrainMajority: z.number().int().nonnegative(),
-    nTrainMinority: z.number().int().nonnegative(),
-    nTestMajority: z.number().int().nonnegative(),
-    nTestMinority: z.number().int().nonnegative(),
-    confusionMatrix: confusionSchema,
-    accuracy: z.number().min(0).max(1),
-    auc: z.number().min(0).max(1).nullable(),
-    majorityBaselineAccuracy: z.number().min(0).max(1),
-  })
-  .passthrough();
-
 const entrySchema = z
   .object({
     ratioKey: z.string().min(1),
@@ -41,8 +30,17 @@ const entrySchema = z
         nMinority: z.number().int().positive(),
       })
       .passthrough(),
-    stratified: sideSchema,
-    unstratified: sideSchema,
+    nTrainMajority: z.number().int().nonnegative(),
+    nTrainMinority: z.number().int().nonnegative(),
+    nTestMajority: z.number().int().nonnegative(),
+    nTestMinority: z.number().int().nonnegative(),
+    confusionMatrix: confusionSchema,
+    accuracy: z.number().min(0).max(1),
+    majorityBaselineAccuracy: z.number().min(0).max(1),
+    auc: z.number().min(0).max(1),
+    balancedAccuracy: z.number().min(0).max(1),
+    sensitivity: z.number().min(0).max(1),
+    specificity: z.number().min(0).max(1),
   })
   .passthrough();
 
@@ -56,7 +54,7 @@ const ratioSchema = z
 
 const schema = z
   .object({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     activity: z.literal("classification-imbalance"),
     source: z
       .object({ pinnedCommit: z.string().min(1), brainTableSha256: z.string().min(1) })
@@ -66,6 +64,7 @@ const schema = z
     cohortSize: z.number().int().positive(),
     ratios: z.array(ratioSchema).min(1),
     splitSeeds: z.array(z.number().int()).min(1),
+    selectedC: z.number().positive(),
     model: z.string().min(1),
     entries: z.array(entrySchema).min(1),
   })
@@ -73,7 +72,6 @@ const schema = z
 
 export type ClassificationImbalanceData = z.infer<typeof schema>;
 export type ClassificationImbalanceEntry = z.infer<typeof entrySchema>;
-export type ClassificationImbalanceSide = z.infer<typeof sideSchema>;
 
 export function parseClassificationImbalanceData(raw: unknown): DataResult<ClassificationImbalanceData> {
   const parsed = schema.safeParse(raw);

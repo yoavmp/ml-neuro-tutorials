@@ -1,35 +1,24 @@
-// Production activity: Exercise 4's class-imbalance / stratified-split
-// interactive (WP17 sec 5). Every ratio/seed combination's counts and
+// Production activity: Exercise 4's class-imbalance / misleading-accuracy
+// interactive (WP18 sec 4). Every ratio/seed combination's counts and
 // metrics are precomputed offline (scripts/export_classification_imbalance_data.py)
 // from real resampled ABIDE participants -- the browser only selects and
 // displays, it never refits. Controls select a class ratio (control always
-// the majority class) and one of five predetermined split seeds, then show
-// a stratified vs. an unstratified train_test_split side by side on the
-// SAME resampled cohort.
+// the majority class) and one of five predetermined split seeds; the chart
+// compares the logistic-regression model's test accuracy against the
+// majority-class baseline accuracy for that SAME test partition. Every
+// entry uses the same C selected honestly once in Section 3 -- never
+// re-tuned per ratio or seed.
 
+import Plotly from "plotly.js-cartesian-dist-min";
 import type { MountArgs, MountHandle, WidgetComponent } from "./types";
 import type { ClassificationImbalanceConfig } from "../config";
 import {
   findEntry,
   type ClassificationImbalanceData,
-  type ClassificationImbalanceSide,
+  type ClassificationImbalanceEntry,
 } from "../classification-imbalance-data";
 import { parseClassificationImbalanceData } from "../classification-imbalance-data";
-
-interface Panel {
-  readonly key: "stratified" | "unstratified";
-  readonly label: string;
-  readonly testid: string;
-}
-
-const PANELS: Panel[] = [
-  { key: "stratified", label: "Stratified split (train_test_split(..., stratify=y))", testid: "cls-imb-stratified" },
-  { key: "unstratified", label: "Unstratified split (train_test_split without stratify)", testid: "cls-imb-unstratified" },
-];
-
-function formatAuc(auc: number | null): string {
-  return auc === null ? "undefined: both classes are required" : auc.toFixed(3);
-}
+import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
 
 function mount(
   args: MountArgs<ClassificationImbalanceConfig, ClassificationImbalanceData>,
@@ -37,8 +26,13 @@ function mount(
   const { container, config, data } = args;
   container.replaceChildren();
 
+  const theme = getPlotlyTheme();
+  const modelColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
+  const baselineColor = theme.dark ? "#d9a441" : "#b5760a";
+
   let currentRatio = data.ratios[0]!.key;
   let currentSeed = data.splitSeeds[0]!;
+  let destroyed = false;
 
   const heading = document.createElement("h1");
   heading.className = "widget-title";
@@ -96,53 +90,26 @@ function mount(
   controls.append(ratioGroup, seedGroup);
   container.appendChild(controls);
 
-  const stratNote = document.createElement("p");
-  stratNote.className = "widget-note";
-  stratNote.textContent = config.stratificationNote;
-  container.appendChild(stratNote);
+  const imbalanceNote = document.createElement("p");
+  imbalanceNote.className = "widget-note";
+  imbalanceNote.textContent = config.imbalanceNote;
+  container.appendChild(imbalanceNote);
 
-  const grid = document.createElement("div");
-  grid.className = "widget-compare-grid";
-  container.appendChild(grid);
+  const plot = document.createElement("div");
+  plot.className = "widget-plot";
+  plot.setAttribute("data-testid", "cls-imb-plot");
+  plot.dataset.renderCount = "0";
+  container.appendChild(plot);
 
-  const panelEls: Record<Panel["key"], { splitLine: HTMLParagraphElement; table: HTMLTableElement; metricsLine: HTMLParagraphElement; baselineLine: HTMLParagraphElement }> =
-    {} as Record<Panel["key"], { splitLine: HTMLParagraphElement; table: HTMLTableElement; metricsLine: HTMLParagraphElement; baselineLine: HTMLParagraphElement }>;
+  const metricsLine = document.createElement("p");
+  metricsLine.className = "widget-stats";
+  metricsLine.setAttribute("data-testid", "cls-imb-metrics");
+  container.appendChild(metricsLine);
 
-  for (const panel of PANELS) {
-    const card = document.createElement("div");
-    card.className = "widget-compare-panel";
-    const h = document.createElement("h2");
-    h.className = "widget-subhead";
-    h.textContent = panel.label;
-
-    const splitLine = document.createElement("p");
-    splitLine.className = "widget-stats";
-    splitLine.setAttribute("data-testid", `${panel.testid}-split-counts`);
-
-    const table = document.createElement("table");
-    table.className = "widget-confusion-matrix";
-    table.setAttribute("data-testid", `${panel.testid}-confusion-matrix`);
-    table.innerHTML = `
-      <thead>
-        <tr><th scope="col"></th><th scope="col">predicted ${data.majorityClass}</th><th scope="col">predicted ${data.minorityClass}</th></tr>
-      </thead>
-      <tbody>
-        <tr><th scope="row">actual ${data.majorityClass}</th><td data-testid="${panel.testid}-cm-tn"></td><td data-testid="${panel.testid}-cm-fp"></td></tr>
-        <tr><th scope="row">actual ${data.minorityClass}</th><td data-testid="${panel.testid}-cm-fn"></td><td data-testid="${panel.testid}-cm-tp"></td></tr>
-      </tbody>`;
-
-    const metricsLine = document.createElement("p");
-    metricsLine.className = "widget-stats";
-    metricsLine.setAttribute("data-testid", `${panel.testid}-metrics`);
-
-    const baselineLine = document.createElement("p");
-    baselineLine.className = "widget-note";
-    baselineLine.setAttribute("data-testid", `${panel.testid}-baseline`);
-
-    card.append(h, splitLine, table, metricsLine, baselineLine);
-    grid.appendChild(card);
-    panelEls[panel.key] = { splitLine, table, metricsLine, baselineLine };
-  }
+  const countsLine = document.createElement("p");
+  countsLine.className = "widget-note";
+  countsLine.setAttribute("data-testid", "cls-imb-counts");
+  container.appendChild(countsLine);
 
   if (config.reflectionPrompts && config.reflectionPrompts.length > 0) {
     const h = document.createElement("h2");
@@ -158,24 +125,29 @@ function mount(
     container.append(h, list);
   }
 
-  function fillPanel(key: Panel["key"], side: ClassificationImbalanceSide): void {
-    const els = panelEls[key];
-    const nTrain = side.nTrainMajority + side.nTrainMinority;
-    const nTest = side.nTestMajority + side.nTestMinority;
-    els.splitLine.textContent =
-      `train: ${nTrain} (${side.nTrainMajority} ${data.majorityClass} / ${side.nTrainMinority} ${data.minorityClass})  ·  ` +
-      `test: ${nTest} (${side.nTestMajority} ${data.majorityClass} / ${side.nTestMinority} ${data.minorityClass})`;
-
-    const cm = side.confusionMatrix;
-    els.table.querySelector(`[data-testid$="-cm-tn"]`)!.textContent = String(cm.tn);
-    els.table.querySelector(`[data-testid$="-cm-fp"]`)!.textContent = String(cm.fp);
-    els.table.querySelector(`[data-testid$="-cm-fn"]`)!.textContent = String(cm.fn);
-    els.table.querySelector(`[data-testid$="-cm-tp"]`)!.textContent = String(cm.tp);
-
-    els.metricsLine.textContent = `accuracy = ${side.accuracy.toFixed(3)}  ·  AUC = ${formatAuc(side.auc)}`;
-    els.baselineLine.textContent =
-      `Majority-class ("always predict ${data.majorityClass}") baseline accuracy on this test set: ` +
-      `${(side.majorityBaselineAccuracy * 100).toFixed(1)}%.`;
+  async function drawPlot(entry: ClassificationImbalanceEntry): Promise<void> {
+    if (destroyed) return;
+    const trace = {
+      type: "bar" as const,
+      x: ["Logistic regression", "Majority-class baseline"],
+      y: [entry.accuracy, entry.majorityBaselineAccuracy],
+      marker: { color: [modelColor, baselineColor] },
+      text: [entry.accuracy, entry.majorityBaselineAccuracy].map((v) => `${(v * 100).toFixed(1)}%`),
+      textposition: "outside" as const,
+      hovertemplate: "%{x}<br>%{y:.1%}<extra></extra>",
+    };
+    const layout = buildPlotLayout(theme, {
+      height: 340,
+      margin: { t: 28 },
+      title: { text: `Test accuracy at class ratio ${currentRatio}`, font: { size: 13 } },
+      yaxis: { title: { text: "Test accuracy" }, range: [0, 1.12], tickformat: ".0%" },
+    });
+    await Plotly.react(plot, [trace], layout, PLOT_CONFIG);
+    if (destroyed) return;
+    plot.dataset.modelAccuracy = entry.accuracy.toFixed(4);
+    plot.dataset.baselineAccuracy = entry.majorityBaselineAccuracy.toFixed(4);
+    const n = Number(plot.dataset.renderCount ?? "0") + 1;
+    plot.dataset.renderCount = String(n);
   }
 
   function draw(): void {
@@ -185,10 +157,19 @@ function mount(
       `Full cohort for ${currentRatio}: ${entry.cohort.n} participants ` +
       `(${entry.cohort.nMajority} ${data.majorityClass}, ${entry.cohort.nMinority} ${data.minorityClass}; ` +
       `target ratio ${(ratioMeta.majorityPct * 100).toFixed(0)}:${(ratioMeta.minorityPct * 100).toFixed(0)}), seed ${currentSeed}.`;
-    fillPanel("stratified", entry.stratified);
-    fillPanel("unstratified", entry.unstratified);
+
+    metricsLine.textContent =
+      `AUC = ${entry.auc.toFixed(3)}  ·  balanced accuracy = ${entry.balancedAccuracy.toFixed(3)}  ·  ` +
+      `sensitivity = ${entry.sensitivity.toFixed(3)}  ·  specificity = ${entry.specificity.toFixed(3)}`;
+
+    const nTest = entry.nTestMajority + entry.nTestMinority;
+    countsLine.textContent =
+      `Test set: ${nTest} participants (${entry.nTestMajority} ${data.majorityClass}, ` +
+      `${entry.nTestMinority} ${data.minorityClass}).`;
+
     container.dataset.currentRatio = currentRatio;
     container.dataset.currentSeed = String(currentSeed);
+    void drawPlot(entry);
   }
 
   ratioSelect.addEventListener("change", () => {
@@ -204,7 +185,8 @@ function mount(
 
   return {
     destroy() {
-      // no Plotly instances to purge -- confusion matrices are plain tables.
+      destroyed = true;
+      Plotly.purge(plot);
     },
   };
 }

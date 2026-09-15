@@ -11,9 +11,14 @@ matrix depends on the threshold, never the AUC.
 
 Exactly Exercise 4's own locked split/recipe/model
 (``book/config/abide_modeling.json`` ``classification``):
-``Pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000))`` on
-the canonical ``all-eligible x CT`` recipe (p=360),
-``train_test_split(test_size=0.25, random_state=42, stratify=y)``.
+``Pipeline(StandardScaler(), LogisticRegression(C=<selected>, max_iter=5000))``
+on the canonical ``all-eligible x CT`` recipe (p=360),
+``train_test_split(test_size=0.25, random_state=42, stratify=y)``. C is the
+same value selected honestly once by cross-validation on the training
+partition (WP18 sec 2; ``classification_model_audit.select_canonical_c``) --
+this script never tunes anything itself, it only reuses that already-locked
+choice so the threshold activity's probabilities come from the final tuned
+model.
 
 Output: ``book/_static/widgets/data/abide_classification_threshold.json``.
 Ships only the 251 test-set true labels (0/1) and predicted probabilities
@@ -44,6 +49,7 @@ from classification_model_audit import (  # noqa: E402
     _pipeline,
     _split,
     _xy,
+    select_canonical_c,
 )
 
 ARTIFACT_PATH = REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_classification_threshold.json"
@@ -58,12 +64,13 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
     X, y, subjects = _xy(frame, cols)
     X_train, X_test, y_train, y_test, subj_train, subj_test = _split(X, y, subjects)
 
-    model = _pipeline()
+    c_star = select_canonical_c(frame)
+    model = _pipeline(c_star)
     model.fit(X_train, y_train)
     positive_index = list(model.classes_).index(1)
     proba = model.predict_proba(X_test)[:, positive_index]
 
-    audit_eval = _fit_eval(X_train, y_train, X_test, y_test)
+    audit_eval = _fit_eval(X_train, y_train, X_test, y_test, c_star)
 
     src = manifest["source"]
     return {
@@ -86,7 +93,8 @@ def build_artifact(frame: Any, manifest: dict[str, Any] | None = None) -> dict[s
             "nTrain": int(len(y_train)),
             "nTest": int(len(y_test)),
         },
-        "model": cls["model"],
+        "model": f"Pipeline(StandardScaler(), LogisticRegression(C={c_star!r}, max_iter=5000))",
+        "selectedC": c_star,
         "aucFromAudit": audit_eval["auc"],
         "accuracyAtHalfFromAudit": audit_eval["accuracy"],
         "labels": [int(v) for v in y_test.tolist()],

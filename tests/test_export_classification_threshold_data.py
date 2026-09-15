@@ -53,6 +53,11 @@ class CommittedArtifact(unittest.TestCase):
         recomputed = roc_auc_score(self.artifact["labels"], self.artifact["probabilities"])
         self.assertAlmostEqual(recomputed, self.artifact["aucFromAudit"], places=3)
 
+    def test_selected_c_is_cited_and_not_the_old_untuned_default(self):
+        # WP18: C is selected honestly by cross-validation, not fixed at 1.0.
+        self.assertIn("selectedC", self.artifact)
+        self.assertIn(f"C={self.artifact['selectedC']!r}", self.artifact["model"])
+
 
 class ConfusionAtHelper(unittest.TestCase):
     def test_confusion_at_threshold_matches_hand_worked_example(self):

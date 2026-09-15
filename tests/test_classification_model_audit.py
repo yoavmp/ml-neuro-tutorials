@@ -62,8 +62,27 @@ class CommittedResult(unittest.TestCase):
         self.assertEqual(hs["random_state"], manifest_hs["random_state"])
         self.assertEqual(hs["stratify"], "y")
 
-    def test_c_is_fixed_at_1_and_not_tuned(self):
-        self.assertIn("C=1.0", self.result["protocol"]["model"])
+    def test_c_is_selected_honestly_by_cross_validation(self):
+        cvsel = self.result["cv_selection"]
+        self.assertEqual(cvsel["grid"], cma.C_GRID)
+        self.assertEqual(cvsel["scoring"], "roc_auc")
+        self.assertIn("StratifiedKFold", cvsel["folds"])
+        self.assertIn("random_state=42", cvsel["folds"])
+        self.assertIn(cvsel["selected_C"], cma.C_GRID)
+        self.assertGreaterEqual(cvsel["selected_mean_cv_auc"], 0.0)
+        self.assertLessEqual(cvsel["selected_mean_cv_auc"], 1.0)
+        best_row = max(cvsel["curve"], key=lambda row: row["mean_cv_auc"])
+        self.assertEqual(best_row["C"], cvsel["selected_C"])
+        self.assertIn(f"C={cvsel['selected_C']!r}", self.result["protocol"]["model"])
+        self.assertIn("never used to select C", self.result["protocol"]["note"])
+
+    def test_cv_curve_has_one_row_per_grid_point_and_matches_grid(self):
+        cvsel = self.result["cv_selection"]
+        self.assertEqual(len(cvsel["curve"]), len(cma.C_GRID))
+        self.assertEqual([row["C"] for row in cvsel["curve"]], cma.C_GRID)
+        for row in cvsel["curve"]:
+            self.assertGreaterEqual(row["mean_cv_auc"], 0.0)
+            self.assertLessEqual(row["mean_cv_auc"], 1.0)
 
     def test_confusion_matrix_orientation_and_totals(self):
         ev = self.result["locked_test_eval"]
@@ -167,7 +186,7 @@ class FitEvalIsolation(unittest.TestCase):
             return real_fit(self, X_arg, y_arg, *a, **kw)
 
         with mock.patch.object(LogisticRegression, "fit", spy_fit):
-            cma._fit_eval(X_train, y_train, X_test, y_test)
+            cma._fit_eval(X_train, y_train, X_test, y_test, C=1.0)
 
         self.assertEqual(seen_fit_sizes, [len(y_train)])
 
@@ -176,8 +195,8 @@ class FitEvalIsolation(unittest.TestCase):
         cols = [c for c in frame.columns if c.startswith("fsCT_")]
         X, y, subjects = cma._xy(frame, cols)
         X_train, X_test, y_train, y_test, _, _ = cma._split(X, y, subjects)
-        a = cma._fit_eval(X_train, y_train, X_test, y_test)
-        b = cma._fit_eval(X_train, y_train, X_test, y_test)
+        a = cma._fit_eval(X_train, y_train, X_test, y_test, C=1.0)
+        b = cma._fit_eval(X_train, y_train, X_test, y_test, C=1.0)
         self.assertEqual(a, b)
 
     def test_confusion_matrix_cells_sum_to_n_test(self):
@@ -185,9 +204,34 @@ class FitEvalIsolation(unittest.TestCase):
         cols = [c for c in frame.columns if c.startswith("fsCT_")]
         X, y, subjects = cma._xy(frame, cols)
         X_train, X_test, y_train, y_test, _, _ = cma._split(X, y, subjects)
-        ev = cma._fit_eval(X_train, y_train, X_test, y_test)
+        ev = cma._fit_eval(X_train, y_train, X_test, y_test, C=1.0)
         cm = ev["confusion_matrix"]
         self.assertEqual(cm["tn"] + cm["fp"] + cm["fn"] + cm["tp"], len(y_test))
+
+
+class SelectCIsolation(unittest.TestCase):
+    """_select_c must only ever touch the training partition it is given,
+    never the outer test set, and must select from exactly C_GRID."""
+
+    def test_selected_c_is_in_the_grid_and_deterministic(self):
+        frame = _tiny_frame()
+        cols = [c for c in frame.columns if c.startswith("fsCT_")]
+        X, y, subjects = cma._xy(frame, cols)
+        X_train, _X_test, y_train, _y_test, _, _ = cma._split(X, y, subjects)
+        a = cma._select_c(X_train, y_train)
+        b = cma._select_c(X_train, y_train)
+        self.assertIn(a["selected_C"], cma.C_GRID)
+        self.assertEqual(a["selected_C"], b["selected_C"])
+        self.assertEqual(len(a["curve"]), len(cma.C_GRID))
+
+    def test_select_c_signature_takes_only_the_training_partition(self):
+        # _select_c's signature is (X_train, y_train) -- there is no test-set
+        # parameter for it to touch, so the outer test set is structurally
+        # excluded from C selection by construction.
+        import inspect
+
+        params = list(inspect.signature(cma._select_c).parameters)
+        self.assertEqual(params, ["X_train", "y_train"])
 
 
 if __name__ == "__main__":

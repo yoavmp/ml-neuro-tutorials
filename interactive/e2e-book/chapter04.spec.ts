@@ -8,7 +8,7 @@ const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html";
 const THRESHOLD_IFRAME_SELECTOR =
   'iframe[title="Interactive decision-threshold exploration for classifying autism vs. control from brain structure"]';
 const IMBALANCE_IFRAME_SELECTOR =
-  'iframe[title="Interactive class-imbalance and stratified-splitting exploration for classifying autism vs. control from brain structure"]';
+  'iframe[title="Interactive class-imbalance exploration for classifying autism vs. control from brain structure"]';
 
 async function frameFor(page: import("@playwright/test").Page, selector: string): Promise<Frame> {
   const handle = await page.locator(selector).elementHandle();
@@ -43,7 +43,7 @@ test.describe("Chapter 4 built page — embedded decision-threshold activity", (
 
     const metrics = await frame.locator('[data-testid="cls-metrics"]').innerText();
     expect(metrics).toMatch(/threshold = 0\.50/);
-    expect(metrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.569/);
+    expect(metrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.593/);
   });
 
   test("moving the threshold changes the confusion matrix and metrics, but never the AUC", async ({ page }) => {
@@ -62,7 +62,7 @@ test.describe("Chapter 4 built page — embedded decision-threshold activity", (
     const afterTp = await frame.locator('[data-testid="cls-cm-tp"]').innerText();
     expect(afterMetrics).not.toEqual(beforeMetrics);
     expect(afterTp).not.toEqual(beforeTp);
-    expect(afterMetrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.569/);
+    expect(afterMetrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.593/);
 
     // reset control restores the default
     await frame.locator('[data-testid="cls-threshold-reset"]').click();
@@ -84,7 +84,7 @@ test.describe("Chapter 4 built page — embedded decision-threshold activity", (
 });
 
 test.describe("Chapter 4 built page — embedded class-imbalance activity", () => {
-  test("iframe loads, config+data are 200, both split panels render at 95:5", async ({ page }) => {
+  test("iframe loads, config+data are 200, the accuracy-comparison chart renders at 95:5", async ({ page }) => {
     const responses: { url: string; status: number }[] = [];
     page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
 
@@ -106,8 +106,7 @@ test.describe("Chapter 4 built page — embedded class-imbalance activity", () =
     expect(cohort).toMatch(/400 participants/);
     expect(cohort).toMatch(/20 autism/);
 
-    const baseline = await frame.locator('[data-testid="cls-imb-stratified-baseline"]').innerText();
-    expect(baseline).toMatch(/95\.0%/);
+    await expect(frame.locator('[data-testid="cls-imb-plot"]')).toHaveAttribute("data-baseline-accuracy", "0.9500");
   });
 
   test("changing the ratio and seed selects real precomputed data, not just labels", async ({ page }) => {
@@ -116,13 +115,13 @@ test.describe("Chapter 4 built page — embedded class-imbalance activity", () =
     const frame = await frameFor(page, IMBALANCE_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
 
-    const before = await frame.locator('[data-testid="cls-imb-stratified-split-counts"]').innerText();
+    const before = await frame.locator('[data-testid="cls-imb-counts"]').innerText();
     await frame.locator('[data-testid="cls-imb-ratio-select"]').selectOption("95:5");
-    const afterRatio = await frame.locator('[data-testid="cls-imb-stratified-split-counts"]').innerText();
+    const afterRatio = await frame.locator('[data-testid="cls-imb-counts"]').innerText();
     expect(afterRatio).not.toEqual(before);
 
     await frame.locator('[data-testid="cls-imb-seed-select"]').selectOption("1");
-    const afterSeed = await frame.locator('[data-testid="cls-imb-unstratified-split-counts"]').innerText();
+    const afterSeed = await frame.locator('[data-testid="cls-imb-metrics"]').innerText();
     expect(afterSeed.length).toBeGreaterThan(0);
   });
 
@@ -132,7 +131,7 @@ test.describe("Chapter 4 built page — embedded class-imbalance activity", () =
     await page.locator(IMBALANCE_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
     const frame = await frameFor(page, IMBALANCE_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await expect(frame.locator('[data-testid="cls-imb-stratified-confusion-matrix"]')).toBeVisible();
+    await expect(frame.locator('[data-testid="cls-imb-plot"]')).toBeVisible();
     const overflow = await frame.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

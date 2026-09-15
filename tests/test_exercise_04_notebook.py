@@ -55,7 +55,7 @@ class Notebook(unittest.TestCase):
         nbformat.validate(self.nb)
         ids = [c["id"] for c in self.cells]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertTrue(all(i.startswith("wp17-") for i in ids), ids)
+        self.assertTrue(all(i.startswith(("wp17-", "wp18-")) for i in ids), ids)
 
     def test_h1_title_is_exact(self):
         self.assertEqual(
@@ -112,7 +112,7 @@ class Notebook(unittest.TestCase):
             "## 3. One honest logistic-regression model",
             "## 4. Classification outcomes and metrics",
             "## 5. Interactive activity: choosing a decision threshold",
-            "## 6. Interactive activity: class imbalance and stratified splitting",
+            "## 6. Interactive activity: class imbalance and misleading accuracy",
         )
         for head in headings:
             self.assertIn(head, self.md)
@@ -152,11 +152,27 @@ class Notebook(unittest.TestCase):
         self.assertIn("test_size=0.25, random_state=42, stratify=y", self.code)
         self.assertIn("n_train = 753   n_test = 251   n_features = 360", self.all_output)
 
-    def test_model_spec_is_fixed_c_and_not_tuned(self):
-        self.assertIn("LogisticRegression(C=1.0, max_iter=5000)", self.code)
-        # never tuned via GridSearchCV / cross_val_score over C
-        self.assertNotIn("GridSearchCV", self.code)
-        self.assertNotIn("LogisticRegressionCV", self.code)
+    def test_c_is_selected_honestly_by_cross_validation(self):
+        # WP18: C is chosen by GridSearchCV over a predetermined logarithmic
+        # grid, scored by ROC AUC, with StratifiedKFold on the training
+        # partition only -- mirroring Exercise 3's honest choice of k.
+        self.assertIn("GridSearchCV", self.code)
+        self.assertIn("StratifiedKFold(n_splits=5, shuffle=True, random_state=42)", self.code)
+        self.assertIn("CANDIDATE_CS = np.logspace(-4, 4, 9)", self.code)
+        self.assertIn('scoring="roc_auc"', self.code)
+        self.assertIn("C_SELECTED = grid_search.best_params_", self.code)
+        self.assertIn("LogisticRegression(C=C_SELECTED, max_iter=5000)", self.code)
+        self.assertNotIn("LogisticRegression(C=1.0", self.code)
+        self.assertIn("selected C = 0.01", self.all_output)
+
+    def test_c_never_touches_the_test_set_and_tuning_is_not_promised_to_help(self):
+        collapsed = " ".join(self.md.split())
+        self.assertIn(
+            "Cross-validation selects the value that performed best within the "
+            "training data. It may improve generalization, but it does not "
+            "guarantee a better score on one particular held-out test set.",
+            collapsed,
+        )
 
     def test_scaler_fit_only_on_training_rows(self):
         self.assertIn("scaler.fit_transform(X_train)", self.code)
@@ -166,6 +182,23 @@ class Notebook(unittest.TestCase):
 
     def test_explicit_and_pipeline_versions_agree(self):
         self.assertIn("assert np.array_equal(y_pred, explicit_model.predict(X_test_scaled))", self.code)
+
+    def test_explicit_scaling_cell_ends_with_semicolon_and_has_no_rich_estimator_output(self):
+        # WP18 sec 2.3: the bare-estimator repr (scikit-learn's gray expandable
+        # HTML diagram) must not appear after the explicit-scaling cell.
+        cell = self.by_id["wp17-033"]
+        src = _src(cell)
+        self.assertIn("LogisticRegression(C=C_SELECTED, max_iter=5000)", src)
+        self.assertTrue(src.rstrip().endswith(";"), src[-60:])
+        self.assertEqual(cell.get("outputs", []), [])
+
+    def test_no_estimator_html_repr_anywhere_in_the_notebook(self):
+        for cell in self.cells:
+            for out in cell.get("outputs", []):
+                html = out.get("data", {}).get("text/html", "")
+                html = "".join(html) if isinstance(html, list) else html
+                self.assertNotIn("sk-top-container", html)
+                self.assertNotIn("sk-estimator", html)
 
     def test_only_one_brief_reminder_about_held_out_metrics(self):
         # WP17 §3.4: one brief reminder, not a repeat of the earlier
@@ -189,6 +222,18 @@ class Notebook(unittest.TestCase):
         self.assertIn(f"AUC         = {ev['auc']:.3f}", self.all_output)
         self.assertIn(f"sensitivity = {ev['sensitivity']:.3f}", self.all_output)
         self.assertIn(f"specificity = {ev['specificity']:.3f}", self.all_output)
+
+    def test_confusion_matrix_cells_are_labelled_with_their_abbreviation(self):
+        # WP18 sec 3: TN/FP/FN/TP must appear directly beside their values.
+        cm = AUDIT_RESULT["locked_test_eval"]["confusion_matrix"]
+        for label, key in (("TN", "tn"), ("FP", "fp"), ("FN", "fn"), ("TP", "tp")):
+            self.assertIn(f"{label} = {cm[key]}", self.all_output)
+        cell = self.by_id["wp17-041"]
+        src = _src(cell)
+        self.assertIn('f"TN = {tn}"', src)
+        self.assertIn('f"FP = {fp}"', src)
+        self.assertIn('f"FN = {fn}"', src)
+        self.assertIn('f"TP = {tp}"', src)
 
     def test_predict_proba_think_first_present(self):
         self.assertIn("predict_proba()", self.md)
@@ -220,29 +265,34 @@ class Notebook(unittest.TestCase):
         matching = [c for c in iframe_cells if "configs/classification_imbalance.json" in _src(c)]
         self.assertEqual(len(matching), 1)
         self.assertIn(
-            'title="Interactive class-imbalance and stratified-splitting exploration for classifying autism vs. control from brain structure"',
+            'title="Interactive class-imbalance exploration for classifying autism vs. control from brain structure"',
             _src(matching[0]),
         )
 
     def test_imbalance_portable_code_cell_has_editable_ratio_and_seed(self):
         cell = self.by_id["wp17-063"]
         src = _src(cell)
-        self.assertIn("class_ratio = (0.95, 0.05)", src)
-        self.assertIn("random_state = 0", src)
+        self.assertIn('class_ratio = "90:10"', src)
+        self.assertIn("random_state = 42", src)
+        self.assertIn("LogisticRegression(C=C_SELECTED, max_iter=5000)", src)
         self.assertNotIn("ipywidgets", src)
         self.assertNotIn("<iframe", src)
 
     def test_imbalance_cohort_size_and_output_present(self):
-        self.assertIn("cohort: 400 participants (380 control, 20 autism)", self.all_output)
+        self.assertIn("cohort: 400 participants (360 control, 40 autism)", self.all_output)
 
-    def test_stratification_terminology_never_calls_a_classifier_stratified(self):
-        # The notebook explicitly states the rule ("Neither side is called a
-        # 'stratified model'") -- that mention is the rule itself, not a
-        # violation of it. Check no other, affirmative use exists.
-        low_collapsed = " ".join(self.md.lower().split())
-        self.assertIn('neither side is called a "stratified model"', low_collapsed)
-        self.assertEqual(self.md.lower().count("stratified model"), 1)
-        self.assertNotIn("stratified classifier", self.md.lower())
+    def test_no_stratified_vs_unstratified_comparison_remains(self):
+        # WP18 sec 4: the stratified-vs-unstratified comparison, paired split
+        # panels, split-kind language, and "what does stratification solve"
+        # framing are all removed. One concise implementation-detail sentence
+        # about the internal stratified split is explicitly still allowed.
+        low = self.md.lower()
+        self.assertNotIn("unstratified", low)
+        self.assertNotIn("stratified split (", low)
+        self.assertNotIn("stratified model", low)
+        self.assertNotIn("what does stratification solve", low)
+        self.assertNotIn("what problem does stratification solve", low)
+        self.assertIn("stratified train/test split internally", low)
 
     def test_95_5_baseline_think_first_present(self):
         self.assertIn("95%", self.md)
@@ -270,7 +320,6 @@ class Notebook(unittest.TestCase):
         low = self.md.lower() + self.code.lower()
         for needle in (
             "smote",
-            "gridsearchcv",
             "precision-recall",
             "precision_recall",
             "coefficient map",
