@@ -1,0 +1,53 @@
+{
+  "cohort": {
+    "n_negative_total": 541,
+    "n_positive_total": 463,
+    "n_test": 251,
+    "n_total": 1004,
+    "n_train": 753
+  },
+  "feature_recipe": {
+    "bundle": "all-eligible",
+    "feature_count": 360,
+    "measures": [
+      "CT"
+    ]
+  },
+  "generated_by": "scripts/classification_model_audit.py --run",
+  "locked_test_eval": {
+    "accuracy": 0.545817,
+    "auc": 0.569221,
+    "confusion_matrix": {
+      "fn": 54,
+      "fp": 60,
+      "tn": 75,
+      "tp": 62
+    },
+    "n_test": 251,
+    "sensitivity": 0.534483,
+    "specificity": 0.555556,
+    "test_negative_count": 135,
+    "test_positive_count": 116
+  },
+  "negative_class": "control",
+  "positive_class": "autism",
+  "protocol": {
+    "holdout_split": {
+      "random_state": 42,
+      "stratify": "y",
+      "test_size": 0.25
+    },
+    "model": "Pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000))",
+    "note": "C is a fixed, ordinary regularization setting chosen before inspecting test performance; it is never tuned on the test set. No feature, seed, or model selection was performed to improve this result."
+  },
+  "reproducibility_check": {
+    "refit_metrics_identical": true
+  },
+  "runtime_seconds": 8.04,
+  "source": {
+    "brainTableSha256": "ad0db42f85c77cbb8b4e023df288d34b29f1a63870a0cf1955c5b3b0d357579e",
+    "pinnedCommit": "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"
+  },
+  "target": "group (recoded: autism=1, control=0)",
+  "train_test_disjoint": true
+}

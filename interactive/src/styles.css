@@ -428,3 +428,30 @@ input[type="radio"] {
 .widget-compare-panel .widget-controls {
   gap: 12px;
 }
+
+/* WP17: confusion matrices (Exercise 4) are plain accessible HTML tables,
+   not Plotly, so they render identically and losslessly at any width. */
+.widget-confusion-matrix {
+  border-collapse: collapse;
+  margin: 6px 0 10px;
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+}
+
+.widget-confusion-matrix th,
+.widget-confusion-matrix td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: center;
+}
+
+.widget-confusion-matrix thead th {
+  background: var(--surface-alt);
+  font-weight: 600;
+}
+
+.widget-confusion-matrix tbody th {
+  background: var(--surface-alt);
+  font-weight: 600;
+  text-align: left;
+}

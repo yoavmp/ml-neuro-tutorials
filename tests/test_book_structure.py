@@ -45,7 +45,7 @@ class Toc(unittest.TestCase):
             chapters[1]["sections"][0]["file"], "chapters/chapter_01/exercise_01"
         )
 
-    def test_exercises_two_and_three_follow_exercise_one_in_order(self):
+    def test_exercises_two_through_four_follow_exercise_one_in_order(self):
         sections = self.toc["chapters"][1]["sections"]
         files = [s["file"] for s in sections]
         self.assertEqual(
@@ -54,9 +54,10 @@ class Toc(unittest.TestCase):
                 "chapters/chapter_01/exercise_01",
                 "chapters/chapter_02/exercise_02",
                 "chapters/chapter_03/exercise_03",
+                "chapters/chapter_04/exercise_04",
             ],
         )
-        for chapter in ("chapter_02", "chapter_03"):
+        for chapter in ("chapter_02", "chapter_03", "chapter_04"):
             self.assertTrue((BOOK / "chapters" / chapter / f"exercise_0{chapter[-1]}.ipynb").exists())
 
 

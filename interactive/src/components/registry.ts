@@ -11,6 +11,8 @@ import { tableInspectionComponent } from "./table-inspection";
 import { regressionCompareComponent } from "./regression-compare";
 import { knnExploreComponent } from "./knn-explore";
 import { knnAbcComponent } from "./knn-abc";
+import { classificationThresholdComponent } from "./classification-threshold";
+import { classificationImbalanceComponent } from "./classification-imbalance";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -21,3 +23,5 @@ registry.register(tableInspectionComponent);
 registry.register(regressionCompareComponent);
 registry.register(knnExploreComponent);
 registry.register(knnAbcComponent);
+registry.register(classificationThresholdComponent);
+registry.register(classificationImbalanceComponent);

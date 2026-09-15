@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "type": "classification-imbalance",
+  "title": "Class imbalance and stratified splitting, interactively",
+  "description": "Course activity for Exercise 4: choose a class ratio and a predetermined split seed, then compare a stratified vs. an unstratified train/test split on the same resampled cohort of real ABIDE participants -- full-cohort and train/test class counts, confusion matrix, accuracy, AUC, and a majority-class baseline for each.",
+  "data": "../data/abide_classification_imbalance.json",
+  "instructions": "Choose a class ratio (control is always the majority class here) and one of five predetermined split seeds. Both panels use the exact same resampled cohort and the exact same model -- only whether the split preserved class proportions differs between them.",
+  "stratificationNote": "Stratification preserves the resampled cohort's class proportions in both the training and test partitions; it does not create new minority-class observations, does not guarantee good sensitivity for the minority class, and does not change what the model's fitting objective optimizes for. At severe imbalance (95:5), compare each panel's accuracy against its own majority-class baseline: a classifier that predicts the majority class for everyone can still score a high accuracy while detecting no minority-class participants at all. Because each split is one stochastic draw, treat differences between the five seeds as examples of split-to-split stability, not proof that stratification must always score higher.",
+  "reflectionPrompts": [
+    "At 95:5, compare accuracy to the majority-class baseline accuracy for both panels across all five seeds. How often does the model actually beat always-predict-control?",
+    "At 95:5, look at the unstratified panel's test-set minority count across the five seeds. How much does it vary, and what does that variation alone tell you about why an unstratified split is less reliable to evaluate?",
+    "Move from 50:50 down to 95:5. Does the STRATIFIED panel's train/test class proportion ever stop tracking the target ratio closely? Does the UNSTRATIFIED panel's?"
+  ]
+}
