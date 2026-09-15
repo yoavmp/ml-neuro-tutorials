@@ -13,16 +13,14 @@ Notebooks and their expected strings:
 * ``chapter_02/exercise_02_portable.ipynb`` -- the merged modelling table loads
   with `age` available for all 1004 participants; the held-out linear-regression
   workflow runs and prints its R-squared; the learning curve prints n/p.
-* ``chapter_03/exercise_03_portable.ipynb`` -- the same modelling table; the
-  executable training-only cross-validation cell selects k=15 and the held-out
-  KNN workflow at that k prints its R-squared; the from-scratch empirical
-  k=1..N_fit curve runs and verifies the k=N_fit endpoint; the static
-  honest-vs-invalid k_demo cell runs.
+* ``chapter_03/exercise_03_portable.ipynb`` -- the same data table; the
+  fixed-k=20 KNN workflow runs and prints its held-out R-squared; the
+  from-scratch empirical k=1..N_fit curve runs and verifies the k=N_fit
+  endpoint; the static honest-vs-invalid k_demo cell runs.
 * ``chapter_04/exercise_04_portable.ipynb`` -- the same brain table, diagnosis
-  (`group`) as target; the training-only cross-validation cell selects C, and
-  the honest logistic-regression workflow runs and prints its confusion
-  matrix, accuracy, and AUC; the editable threshold and class-imbalance demo
-  cells run.
+  (`group`) as target; the fixed-C=1.0 honest logistic-regression workflow
+  runs and prints its confusion matrix, accuracy, and AUC; the editable
+  threshold and class-imbalance demo cells run.
 
 Needs network access (the notebooks download pinned public CSVs). Used by CI and
 runnable locally:
@@ -65,9 +63,8 @@ SMOKE = {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
         "expect": (
             "age available for 1004 of 1004",
-            "selected k = 15",
-            "k = 15",
-            "held-out R^2 = 0.649",
+            "k = 20",
+            "held-out R^2 = 0.664",
             "N_fit = 564   N_val = 189",
             "every validation prediction equals the fitting-set mean",
         ),
@@ -77,10 +74,9 @@ SMOKE = {
         "expect": (
             "463 autism (group=1), 541 control (group=2)",
             "n_train = 753   n_test = 251   n_features = 360",
-            "selected C = 0.01",
-            "accuracy    = 0.566",
-            "AUC         = 0.593",
-            "AUC is unchanged by the threshold: 0.593",
+            "accuracy    = 0.546",
+            "AUC         = 0.569",
+            "AUC is unchanged by the threshold: 0.569",
             "cohort: 400 participants (360 control, 40 autism)",
         ),
     },

@@ -298,7 +298,9 @@ class NotebookStreamlining(unittest.TestCase):
                 "visible",
             )
             vis[key] += 1
-        self.assertEqual(vis, {"visible": 9, "hide-input": 7, "hide-cell": 2, "hide-output": 1})
+        # WP20: Exercise 1 keeps its own first/only loading example visible
+        # (cells 4 and 6 dropped their hide-cell tag).
+        self.assertEqual(vis, {"visible": 11, "hide-input": 7, "hide-cell": 0, "hide-output": 1})
 
     def test_valid_and_unique_ids_only_hide_tags(self):
         nbformat.validate(self.nb)

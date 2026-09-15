@@ -129,7 +129,7 @@ class Notebook(unittest.TestCase):
 
     def test_five_numbered_sections_present_in_order(self):
         headings = (
-            "## 1. The modelling table",
+            "## 1. Our data table",
             "## 2. One honest linear-regression workflow",
             "## 3. Three ways to score the same model",
             "## 4. Comparing feature sets",

@@ -99,7 +99,7 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
     `participants (both drawn from Exercise 2's own ${data.split.nOuterTrain}-participant training ` +
     `partition; the outer test set is untouched by this activity). Feature recipe: ` +
     `${data.featureRecipe.featureCount} standardized cortical-thickness features, the same as ` +
-    `Exercise 2's canonical recipe.`;
+    `Exercise 2's own recipe.`;
   container.appendChild(cohortLine);
 
   // --- controls: slider + synchronized numeric input (WP14 §4.5) --------

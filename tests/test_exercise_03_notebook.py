@@ -103,7 +103,7 @@ class Notebook(unittest.TestCase):
 
     def test_six_numbered_sections_present_in_order(self):
         headings = (
-            "## 1. The modelling table",
+            "## 1. Our data table",
             "## 2. One standard KNN regression workflow",
             "## 3. Honest evaluation versus invalid alternatives",
             "## 4. The classic bias–variance tradeoff",
