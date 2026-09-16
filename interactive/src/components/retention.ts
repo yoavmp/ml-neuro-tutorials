@@ -15,6 +15,7 @@ import {
   type AbideRetentionData,
 } from "../retention-data";
 import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
+import { getActiveTheme, subscribeToThemeChanges } from "../theme";
 
 const DEFAULT_LOW_RETENTION_PCT = 50;
 
@@ -152,10 +153,7 @@ function mount(args: MountArgs<EdaRetentionConfig, AbideRetentionData>): MountHa
     container.append(promptsHeading, list);
   }
 
-  const theme = getPlotlyTheme();
-  const okColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
-  const warnColor = theme.dark ? "#d9a441" : "#b5760a";
-  const lineColor = theme.dark ? "#d98b8b" : "#a12f2f";
+  let theme = getPlotlyTheme(getActiveTheme());
 
   let destroyed = false;
 
@@ -217,6 +215,9 @@ function mount(args: MountArgs<EdaRetentionConfig, AbideRetentionData>): MountHa
     plot.dataset.noSelection = String(result.noSelection);
     plot.dataset.lowRetention = String(low);
 
+    const okColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
+    const warnColor = theme.dark ? "#d9a441" : "#b5760a";
+    const lineColor = theme.dark ? "#d98b8b" : "#a12f2f";
     const barColor = low ? warnColor : okColor;
     const trace = {
       type: "bar" as const,
@@ -291,6 +292,11 @@ function mount(args: MountArgs<EdaRetentionConfig, AbideRetentionData>): MountHa
     void draw();
   });
 
+  const unsubscribeTheme = subscribeToThemeChanges((next) => {
+    theme = getPlotlyTheme(next);
+    void draw();
+  });
+
   // Initial state = the suggested core set.
   setSelection(suggested);
   void draw();
@@ -298,6 +304,7 @@ function mount(args: MountArgs<EdaRetentionConfig, AbideRetentionData>): MountHa
   return {
     destroy() {
       destroyed = true;
+      unsubscribeTheme();
       Plotly.purge(plot);
     },
   };

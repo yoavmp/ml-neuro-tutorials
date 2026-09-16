@@ -24,6 +24,7 @@ import {
 } from "../knn-explore";
 import { parseKnnExploreData, type KnnExploreData } from "../knn-explore-data";
 import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
+import { getActiveTheme, subscribeToThemeChanges } from "../theme";
 
 const SAMPLE_LABELS = ["A", "B", "C"] as const;
 type SampleLabel = (typeof SAMPLE_LABELS)[number];
@@ -47,12 +48,7 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
     throw new Error(`config.defaultK resolved to ${defaultK}, outside [1, ${nFit}]`);
   }
 
-  const theme = getPlotlyTheme();
-  const markerColor = theme.dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
-  const diagColor = theme.dark ? "#d98b5f" : "#b5622f";
-  const fitCurveColor = theme.dark ? "#8fb8da" : "#2a6f9e";
-  const valCurveColor = theme.dark ? "#f0915c" : "#b5622f";
-  const markerLineColor = theme.dark ? "#e2c48f" : "#8f5a1a";
+  let theme = getPlotlyTheme(getActiveTheme());
 
   const scatterAxisRange = sharedAxisRange([...data.observedValidation, ...data.observedFitting], 0.05);
   const sampleMatrices: Record<SampleLabel, readonly (readonly number[])[]> = {
@@ -268,7 +264,7 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
       mode: "markers" as const,
       x: data.observedValidation,
       y: predicted,
-      marker: { color: markerColor, size: 6 },
+      marker: { color: theme.markerPrimary, size: 6 },
       hovertemplate: `observed ${data.target.label} %{x}<br>predicted %{y:.1f}<extra></extra>`,
       name: "validation participants",
       showlegend: false,
@@ -278,7 +274,7 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
       mode: "lines" as const,
       x: scatterAxisRange,
       y: scatterAxisRange,
-      line: { color: diagColor, width: 2, dash: "dash" as const },
+      line: { color: theme.diagonalLine, width: 2, dash: "dash" as const },
       hoverinfo: "skip" as const,
       name: "Perfect prediction (observed = predicted)",
       showlegend: true,
@@ -306,6 +302,9 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
 
   async function drawCurve(): Promise<void> {
     if (destroyed) return;
+    const fitCurveColor = theme.dark ? "#8fb8da" : "#2a6f9e";
+    const valCurveColor = theme.dark ? "#f0915c" : "#b5622f";
+    const markerLineColor = theme.dark ? "#e2c48f" : "#8f5a1a";
     const kAxis = data.curve.k;
     const fitTrace = {
       type: "scatter" as const,
@@ -411,8 +410,8 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
       mode: "markers+lines" as const,
       x: binMeanObs,
       y: binMeanPred,
-      marker: { color: markerColor, size: 9 },
-      line: { color: markerColor, width: 1.5 },
+      marker: { color: theme.markerPrimary, size: 9 },
+      line: { color: theme.markerPrimary, width: 1.5 },
       name: "binned ensemble-mean prediction",
       showlegend: true,
     };
@@ -421,7 +420,7 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
       mode: "lines" as const,
       x: scatterAxisRange,
       y: scatterAxisRange,
-      line: { color: diagColor, width: 2, dash: "dash" as const },
+      line: { color: theme.diagonalLine, width: 2, dash: "dash" as const },
       hoverinfo: "skip" as const,
       name: "Perfect prediction (observed = predicted)",
       showlegend: true,
@@ -491,11 +490,17 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
     setK(raw);
   });
 
+  const unsubscribeTheme = subscribeToThemeChanges((next) => {
+    theme = getPlotlyTheme(next);
+    void draw();
+  });
+
   void draw();
 
   return {
     destroy() {
       destroyed = true;
+      unsubscribeTheme();
       Plotly.purge(scatterPlot);
       Plotly.purge(curvePlot);
       Plotly.purge(biasPlot);

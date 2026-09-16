@@ -24,6 +24,7 @@ import {
 } from "../classification-metrics";
 import { parseClassificationThresholdData, type ClassificationThresholdData } from "../classification-threshold-data";
 import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
+import { getActiveTheme, subscribeToThemeChanges } from "../theme";
 
 const DEFAULT_THRESHOLD = 0.5;
 const MIN_THRESHOLD = 0.05;
@@ -42,10 +43,7 @@ function mount(
   const { container, config, data } = args;
   container.replaceChildren();
 
-  const theme = getPlotlyTheme();
-  const rocColor = theme.dark ? "#8fb8da" : "#2a6f9e";
-  const chanceColor = theme.dark ? "#b0b0b0" : "#888888";
-  const markerColor = theme.dark ? "#f0915c" : "#b5622f";
+  let theme = getPlotlyTheme(getActiveTheme());
 
   const points = rocCurve(data.labels, data.probabilities);
   const auc = aucTrapezoidal(points);
@@ -175,6 +173,9 @@ function mount(
 
   async function drawRoc(): Promise<void> {
     if (destroyed) return;
+    const rocColor = theme.dark ? "#8fb8da" : "#2a6f9e";
+    const chanceColor = theme.dark ? "#b0b0b0" : "#888888";
+    const markerColor = theme.dark ? "#f0915c" : "#b5622f";
     const point = rocPointAtThreshold(data.labels, data.probabilities, threshold);
     const rocTrace = {
       type: "scatter" as const,
@@ -264,11 +265,17 @@ function mount(
 
   resetBtn.addEventListener("click", () => setThreshold(DEFAULT_THRESHOLD));
 
+  const unsubscribeTheme = subscribeToThemeChanges((next) => {
+    theme = getPlotlyTheme(next);
+    draw();
+  });
+
   draw();
 
   return {
     destroy() {
       destroyed = true;
+      unsubscribeTheme();
       Plotly.purge(rocPlot);
     },
   };

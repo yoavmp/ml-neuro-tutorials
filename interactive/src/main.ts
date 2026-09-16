@@ -15,6 +15,20 @@ import { resolveConfigUrl, resolveDataUrl } from "./urls";
 import { registry } from "./components/registry";
 import type { MountHandle } from "./components/types";
 import { startHeightReporting } from "./resize-report";
+import { getActiveTheme, subscribeToThemeChanges } from "./theme";
+
+// WP22: mirror the resolved theme onto this document's own root so
+// styles.css's `[data-theme]` rules (page/card background, borders, text)
+// track the parent Jupyter Book's light/dark toggle, not just this iframe's
+// own `prefers-color-scheme`. Started before `boot()` so the very first
+// paint already matches; kept in sync for the life of the page. Individual
+// Plotly-bearing components make their own `subscribeToThemeChanges` call to
+// redraw their own figures -- this one only drives the CSS custom
+// properties, which every component's markup already reads.
+document.documentElement.dataset.theme = getActiveTheme();
+subscribeToThemeChanges((theme) => {
+  document.documentElement.dataset.theme = theme;
+});
 
 const root = document.getElementById("app");
 

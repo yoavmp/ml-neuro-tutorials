@@ -28,6 +28,7 @@ import {
   type RegressionModelEntry,
 } from "../regression-compare-data";
 import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
+import { getActiveTheme, subscribeToThemeChanges } from "../theme";
 
 interface PanelState {
   measuresKey: string;
@@ -59,9 +60,7 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
     throw new Error(`The catalog is missing: ${[...new Set(missing)].join(", ")}.`);
   }
 
-  const theme = getPlotlyTheme();
-  const markerColor = theme.dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
-  const diagColor = theme.dark ? "#d98b5f" : "#b5622f";
+  let theme = getPlotlyTheme(getActiveTheme());
 
   // Shared axis range: observed plus every enabled model's predictions.
   const allValues: number[] = [...data.observedTest];
@@ -266,7 +265,7 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
         mode: "markers" as const,
         x: data.observedTest,
         y: model.predicted,
-        marker: { color: markerColor, size: 6 },
+        marker: { color: theme.markerPrimary, size: 6 },
         hovertemplate:
           `observed ${data.target.label} %{x}<br>predicted %{y:.1f}<extra></extra>`,
         name: "participants",
@@ -276,7 +275,7 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
         mode: "lines" as const,
         x: axisRange,
         y: axisRange,
-        line: { color: diagColor, width: 2, dash: "dash" as const },
+        line: { color: theme.diagonalLine, width: 2, dash: "dash" as const },
         hoverinfo: "skip" as const,
         name: "perfect prediction",
       };
@@ -315,12 +314,19 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
   });
   panelsWrap.append(panelA.panel, panelB.panel);
 
+  const unsubscribeTheme = subscribeToThemeChanges((next) => {
+    theme = getPlotlyTheme(next);
+    void panelA.draw();
+    void panelB.draw();
+  });
+
   void panelA.draw();
   void panelB.draw();
 
   return {
     destroy() {
       destroyed = true;
+      unsubscribeTheme();
       for (const p of [panelA, panelB]) {
         const node = p.panel.querySelector<HTMLElement>(".widget-plot");
         if (node) Plotly.purge(node);

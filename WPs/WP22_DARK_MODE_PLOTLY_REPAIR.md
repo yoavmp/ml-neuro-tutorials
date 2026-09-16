@@ -3,7 +3,7 @@
 - **Date:** 2026-09-16
 - **Starting commit SHA:** `0a28301ceee3c4a3a8891158a73ac0754b4b6150`
 - **Intended working branch:** `fix/published-dark-mode-plots`
-- **Status:** IN PROGRESS
+- **Status:** COMPLETED
 - **Scope note:** This WP is local-only. It does not authorize pushing to any
   remote or deploying (no GitHub Actions trigger, no gh-pages publish). All
   work stays on the local working branch until a human explicitly requests
@@ -247,7 +247,71 @@ Finish with a short recap for Yoav. Do not start WP23.
 
 ## Post-implementation links
 
-*(Filled in at completion — see status field above.)*
+- Report: [`reports/WP22_REPORT.md`](reports/WP22_REPORT.md)
+- Exact changelog: [`reports/WP22_EXACT_CHANGELOG.md`](reports/WP22_EXACT_CHANGELOG.md)
 
-- Report: `reports/WP22_REPORT.md`
-- Exact changelog: `reports/WP22_EXACT_CHANGELOG.md`
+---
+
+## Cross-chapter verification addendum
+
+**Status: COMPLETED.**
+
+The original implementation's automated built-book coverage
+(`e2e-book/chapter01-dark-mode.spec.ts`) exercised only Exercise 1
+(histogram, correlation scatter). The fix itself was already applied
+identically to every Plotly-bearing component (§2/§3 of the original report),
+but one of the screenshots behind this WP showed the Exercise 3 KNN A/B/C
+activity specifically, and that activity — along with every other exercise's
+activities — had no automated built-book regression guard. This addendum adds
+one: `e2e-book/wp22-cross-chapter-dark-mode.spec.ts`.
+
+Covers, all against the **built** Jupyter Book over real HTTP with the OS/
+browser color scheme forced to light (so "dark" can only come from the
+book's own toggle):
+
+- **Exercise 2**: `regression-compare` — both panels (A and B).
+- **Exercise 3**: `knn-abc` — **all three panels** (A/valid, B/resubstitution,
+  C/invalid-leakage), matching the original bug screenshot; `knn-explore`'s
+  observed-vs-predicted scatter.
+- **Exercise 4**: `classification-threshold`'s ROC plot;
+  `classification-imbalance`'s accuracy-comparison bar chart.
+
+Each checked figure is asserted, through the real iframe: no runtime error
+message; the iframe's own root reports the dark theme; the widget card
+background is the dark palette; Plotly's `paper_bgcolor`/`plot_bgcolor` stay
+transparent (the by-design mechanism, per the main report §4); gridline and
+axis-tick-text colors are the dark palette; every principal data mark
+(`_fullData[i].marker.color`/`.line.color` — read directly off Plotly's
+resolved trace data rather than computed SVG style, since
+`regression-compare`/`knn-abc`/`knn-explore`'s scatter panels render via the
+`scattergl` WebGL trace type, which has no per-point SVG element to inspect)
+is present, non-black, and matches the exact expected dark hex/rgba value;
+every `.draglayer rect` stays transparent with no visible stroke. The three
+KNN A/B/C panels are additionally asserted to carry identical styling
+(background, gridlines, tick color, marker-color set) to each other.
+
+Initial-dark-load only for Exercises 2–4, per this addendum's scope — the
+full light→dark→reload→light cycle stays concentrated in the Exercise 1 spec,
+which already proved that transition mechanism works; Exercises 2–4 share the
+exact same `theme.ts`/`plotly-policy.ts` code path, so re-proving the
+transition itself on every page would add runtime without adding coverage of
+anything not already covered.
+
+**Result: 3/3 passed** (regression-compare, knn-abc + knn-explore,
+classification-threshold + classification-imbalance), runtime 5.4s.
+
+**One bounded correction was required**: the spec's own expected string for
+Plotly's transparent paper/plot background was `"rgba(0,0,0,0)"` (no spaces —
+matching the literal string `plotly-policy.ts` passes into `buildPlotLayout`),
+but Plotly's own `_fullLayout` normalizes it to `"rgba(0, 0, 0, 0)"` (with
+spaces) internally. This was a formatting mismatch in the new test's own
+expectation, not a product defect — confirmed by all three test failures
+being the identical assertion at the identical point, with every other
+assertion (theme sync, palette colors, data-mark colors, drag-layer
+transparency) already passing on the first run. Fixed once; the single
+allowed rerun passed 3/3.
+
+See [`reports/WP22_REPORT.md`](reports/WP22_REPORT.md) (§"Cross-chapter
+verification addendum") for full detail and
+[`reports/WP22_EXACT_CHANGELOG.md`](reports/WP22_EXACT_CHANGELOG.md) for the
+exact file added.

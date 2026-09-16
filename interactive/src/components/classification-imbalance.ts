@@ -19,6 +19,7 @@ import {
 } from "../classification-imbalance-data";
 import { parseClassificationImbalanceData } from "../classification-imbalance-data";
 import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
+import { getActiveTheme, subscribeToThemeChanges } from "../theme";
 
 function mount(
   args: MountArgs<ClassificationImbalanceConfig, ClassificationImbalanceData>,
@@ -26,9 +27,7 @@ function mount(
   const { container, config, data } = args;
   container.replaceChildren();
 
-  const theme = getPlotlyTheme();
-  const modelColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
-  const baselineColor = theme.dark ? "#d9a441" : "#b5760a";
+  let theme = getPlotlyTheme(getActiveTheme());
 
   let currentRatio = data.ratios[0]!.key;
   let currentSeed = data.splitSeeds[0]!;
@@ -127,6 +126,8 @@ function mount(
 
   async function drawPlot(entry: ClassificationImbalanceEntry): Promise<void> {
     if (destroyed) return;
+    const modelColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
+    const baselineColor = theme.dark ? "#d9a441" : "#b5760a";
     const trace = {
       type: "bar" as const,
       x: ["Logistic regression", "Majority-class baseline"],
@@ -134,12 +135,16 @@ function mount(
       marker: { color: [modelColor, baselineColor] },
       text: [entry.accuracy, entry.majorityBaselineAccuracy].map((v) => `${(v * 100).toFixed(1)}%`),
       textposition: "outside" as const,
+      // WP22: bar "outside" text does not reliably inherit `layout.font` in
+      // every Plotly version -- pin it explicitly rather than let it fall
+      // back to Plotly's own default (near-black, invisible on a dark card).
+      textfont: { color: theme.axisColor },
       hovertemplate: "%{x}<br>%{y:.1%}<extra></extra>",
     };
     const layout = buildPlotLayout(theme, {
       height: 340,
       margin: { t: 28 },
-      title: { text: `Test accuracy at class ratio ${currentRatio}`, font: { size: 13 } },
+      title: { text: `Test accuracy at class ratio ${currentRatio}`, font: { size: 13, color: theme.axisColor } },
       yaxis: { title: { text: "Test accuracy" }, range: [0, 1.12], tickformat: ".0%" },
     });
     await Plotly.react(plot, [trace], layout, PLOT_CONFIG);
@@ -181,11 +186,17 @@ function mount(
     draw();
   });
 
+  const unsubscribeTheme = subscribeToThemeChanges((next) => {
+    theme = getPlotlyTheme(next);
+    draw();
+  });
+
   draw();
 
   return {
     destroy() {
       destroyed = true;
+      unsubscribeTheme();
       Plotly.purge(plot);
     },
   };
