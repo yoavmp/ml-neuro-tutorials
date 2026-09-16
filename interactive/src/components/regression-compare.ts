@@ -104,12 +104,6 @@ function mount(args: MountArgs<RegressionCompareConfig, RegressionCatalog>): Mou
   panelsWrap.className = "widget-compare-grid";
   container.appendChild(panelsWrap);
 
-  const selectionNote = document.createElement("p");
-  selectionNote.className = "widget-empty";
-  selectionNote.setAttribute("data-testid", "regression-selection-bias");
-  selectionNote.textContent = config.selectionBiasNote;
-  container.appendChild(selectionNote);
-
   if (config.reflectionPrompts && config.reflectionPrompts.length > 0) {
     const h = document.createElement("h2");
     h.className = "widget-subhead";

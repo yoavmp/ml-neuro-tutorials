@@ -1,22 +1,17 @@
 // Production activity: ABIDE-II feature correlation explorer.
 //
-// Labelled X-variable, Y-variable, method (Pearson / Spearman) and grouping
-// (None / Diagnostic group / Sex) controls drive a Plotly scatter of the
-// pairwise-complete observations. Every coefficient and count comes from the
-// pure, unit-tested `computeCorrelation` (src/correlation.ts). No Python kernel,
-// no CDN, no participant-level detail — hover shows the two plotted values only,
-// and no trend line is drawn (a single line would misrepresent Spearman and
-// grouped views).
+// Labelled X-variable, Y-variable and grouping (None / Diagnostic group /
+// Sex) controls drive a Plotly scatter of the pairwise-complete
+// observations, with the Pearson correlation coefficient. Every coefficient
+// and count comes from the pure, unit-tested `computeCorrelation`
+// (src/correlation.ts). No Python kernel, no CDN, no participant-level
+// detail — hover shows the two plotted values only, and no trend line is
+// drawn (a single line would misrepresent a grouped view).
 
 import Plotly from "plotly.js-cartesian-dist-min";
 import type { MountArgs, MountHandle, WidgetComponent } from "./types";
 import type { EdaCorrelationConfig } from "../config";
-import {
-  computeCorrelation,
-  type CorrelationMethod,
-  type GroupingInput,
-  type NumCell,
-} from "../correlation";
+import { computeCorrelation, type GroupingInput, type NumCell } from "../correlation";
 import {
   parseAbideCorrelationData,
   numericColumn,
@@ -107,15 +102,6 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
     varOptions,
     config.defaultY,
   );
-  const { group: methodGroup, select: methodSelect } = makeSelect(
-    "correlation-method",
-    "Method:",
-    [
-      { value: "pearson", text: "Pearson (linear)" },
-      { value: "spearman", text: "Spearman (rank-based)" },
-    ],
-    config.defaultMethod,
-  );
   const groupOptions = [
     { value: "none", text: "No grouping" },
     ...config.groupings.map((g) => ({ value: g.key, text: g.label })),
@@ -126,7 +112,7 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
     groupOptions,
     "none",
   );
-  controls.append(xGroup, yGroup, methodGroup, groupGroup);
+  controls.append(xGroup, yGroup, groupGroup);
   container.appendChild(controls);
 
   // --- readouts ---
@@ -191,22 +177,18 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
     if (destroyed) return;
     const xName = xSelect.value;
     const yName = ySelect.value;
-    const method = methodSelect.value as CorrelationMethod;
     const groupKey = groupSelect.value;
     const xLabel = labelOf.get(xName) ?? xName;
     const yLabel = labelOf.get(yName) ?? yName;
 
     plot.dataset.activeX = xName;
     plot.dataset.activeY = yName;
-    plot.dataset.activeMethod = method;
     plot.dataset.activeGroup = groupKey;
-
-    const methodName = method === "pearson" ? "Pearson" : "Spearman";
 
     if (xName === yName) {
       sameVar.hidden = false;
       groupsHeading.hidden = true;
-      stats.textContent = `${methodName} correlation: not defined (X and Y are the same variable).`;
+      stats.textContent = "Pearson correlation: not defined (X and Y are the same variable).";
       missingLine.textContent = "";
       plot.dataset.sameVariable = "true";
       plot.dataset.n = "0";
@@ -228,16 +210,16 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
       throw new Error(`Column data for "${xName}" or "${yName}" is unavailable.`);
     }
     const grouping = groupingInput(groupKey);
-    const result = computeCorrelation(xCol, yCol, method, grouping);
+    const result = computeCorrelation(xCol, yCol, grouping);
 
     // --- text readouts ---
     if (result.overall.r === null) {
       stats.textContent =
-        `${methodName} correlation: not defined — ${result.overall.reason} ` +
+        `Pearson correlation: not defined — ${result.overall.reason} ` +
         `(n = ${result.overall.n.toLocaleString()} pairwise-complete).`;
     } else {
       stats.textContent =
-        `${methodName} correlation r = ${fmtR(result.overall.r)} · ` +
+        `Pearson correlation r = ${fmtR(result.overall.r)} · ` +
         `n = ${result.overall.n.toLocaleString()} pairwise-complete participants ` +
         `(of ${result.missing.total.toLocaleString()}).`;
     }
@@ -326,7 +308,7 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
     plot.dataset.renderCount = String(next);
   }
 
-  for (const select of [xSelect, ySelect, methodSelect, groupSelect]) {
+  for (const select of [xSelect, ySelect, groupSelect]) {
     select.addEventListener("change", () => void draw());
   }
 

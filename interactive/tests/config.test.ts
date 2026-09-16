@@ -325,7 +325,7 @@ const validCorrelation = {
   schemaVersion: CONFIG_SCHEMA_VERSION,
   type: "eda-correlation",
   title: "ABIDE-II feature correlation explorer",
-  instructions: "Pick two numeric variables and a method.",
+  instructions: "Pick two numeric variables.",
   data: "../data/abide_retention.json",
   variables: [
     { name: "FIQ", label: "Full-scale IQ" },
@@ -334,7 +334,6 @@ const validCorrelation = {
   ],
   defaultX: "FIQ",
   defaultY: "SRS_TOTAL_RAW",
-  defaultMethod: "pearson",
   groupings: [
     {
       key: "diagnosis",
@@ -395,11 +394,6 @@ describe("parseActivityConfig — eda-correlation", () => {
     const r = parseActivityConfig({ ...validCorrelation, defaultY: "FIQ" });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toMatch(/must be different/);
-  });
-
-  it("rejects an unknown defaultMethod", () => {
-    const r = parseActivityConfig({ ...validCorrelation, defaultMethod: "kendall" });
-    expect(r.ok).toBe(false);
   });
 
   it("rejects a grouping field that is also a selectable variable", () => {
@@ -593,7 +587,6 @@ const validRegressionCompare = {
   defaultA: { measures: ["CT"], bundle: "frontoparietal" },
   defaultB: { measures: ["CT"], bundle: "occipital" },
   literatureNote: "P-FIT motivates the frontoparietal bundle.",
-  selectionBiasNote: "Exploratory comparison is not a final estimate.",
 };
 
 describe("parseActivityConfig — regression-compare", () => {

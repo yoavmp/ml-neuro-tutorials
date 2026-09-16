@@ -300,7 +300,10 @@ class NotebookStreamlining(unittest.TestCase):
             vis[key] += 1
         # WP20: Exercise 1 keeps its own first/only loading example visible
         # (cells 4 and 6 dropped their hide-cell tag).
-        self.assertEqual(vis, {"visible": 11, "hide-input": 7, "hide-cell": 0, "hide-output": 1})
+        # WP24 §7: the histogram-reproduction cell, explicitly redundant with
+        # the interactive histogram activity, moved from hide-input to
+        # hide-cell (input and output both collapse by default).
+        self.assertEqual(vis, {"visible": 11, "hide-input": 6, "hide-cell": 1, "hide-output": 1})
 
     def test_valid_and_unique_ids_only_hide_tags(self):
         nbformat.validate(self.nb)
@@ -319,7 +322,9 @@ class NotebookStreamlining(unittest.TestCase):
 
     def test_histogram_example_cell_preserved(self):
         hist = self.by_id["e6f7a8b9c0d1"]
-        self.assertIn("hide-input", hist["metadata"].get("tags", []))
+        # WP24 §7: hide-cell now, not hide-input -- this cell reproduces the
+        # interactive histogram activity and is collapsed by default.
+        self.assertIn("hide-cell", hist["metadata"].get("tags", []))
         self.assertIn('x="AGE_AT_SCAN"', hist["source"])
         self.assertIn("bins=25", hist["source"])
 
@@ -344,7 +349,7 @@ class NotebookStreamlining(unittest.TestCase):
         # the histogram, group comparison and correlation lesson stay.
         self.assertIn("e6f7a8b9c0d1", self.by_id)  # age histogram example
         self.assertIn("9b478759eff3", self.by_id)  # Pearson matrix
-        self.assertIn("### Pearson and Spearman correlations", self.md)
+        self.assertIn("### Pearson correlation between numerical variables", self.md)
 
 
 def _output_text(cell) -> str:

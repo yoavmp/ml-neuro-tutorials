@@ -301,10 +301,10 @@ IFRAME_REPLACEMENTS = {
     "Interactive ABIDE-II feature correlation explorer": (
         "### Explore correlations yourself\n"
         "\n"
-        "The interactive explorer lets you choose an X and a Y variable, switch\n"
-        "between Pearson and Spearman, colour the points by diagnostic group or\n"
-        "sex, and read off the coefficient, the pairwise-complete `n`, and how\n"
-        "many participants were dropped for a missing value.\n"
+        "The interactive explorer lets you choose an X and a Y variable, colour\n"
+        "the points by diagnostic group or sex, and read off the Pearson\n"
+        "correlation coefficient, the pairwise-complete `n`, and how many\n"
+        "participants were dropped for a missing value.\n"
         "\n"
         "> **Interactive version on the course website.** It is embedded in the\n"
         "> published Chapter 1 page:\n"
@@ -557,7 +557,12 @@ _CH4_IMBALANCE_IFRAME_REPLACEMENT = (
     "> <" + PUBLISHED_PAGE_CH4 + ">\n"
     "> This portable notebook links to it instead of embedding it. The next\n"
     "> cell runs the same comparison directly -- edit `class_ratio` and\n"
-    "> `random_state` and rerun it."
+    "> `random_state` and rerun it.\n"
+    "\n"
+    "**Think about this as you try a few ratios:** as imbalance increases, the\n"
+    "model's raw accuracy rises too. Is the model actually performing better\n"
+    "than at 50:50, or worse? What might you wrongly conclude if you only saw\n"
+    "its accuracy, without the baseline for comparison?"
 )
 
 CHAPTER_04 = NotebookSpec(

@@ -89,11 +89,6 @@ function mount(
   controls.append(ratioGroup, seedGroup);
   container.appendChild(controls);
 
-  const imbalanceNote = document.createElement("p");
-  imbalanceNote.className = "widget-note";
-  imbalanceNote.textContent = config.imbalanceNote;
-  container.appendChild(imbalanceNote);
-
   const plot = document.createElement("div");
   plot.className = "widget-plot";
   plot.setAttribute("data-testid", "cls-imb-plot");
