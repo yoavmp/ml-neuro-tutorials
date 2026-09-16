@@ -1,15 +1,22 @@
 # WP20 Report — Student-facing editorial pass for Exercises 1–4
 
-## Completion status: **SUCCESS** (full scope of the bounded contract, with judgment-call deviations noted in §11)
+## Completion status: **SUCCESS**, corrected — see §13 "Correction pass" below
+
+The original pass (§1–§12 below) fixed every previously-flagged phrase but did not complete
+the exhaustive read-every-student-visible-string audit its own §2/§6 called for, and so was
+**not** actually the full success its own top line claimed. A follow-up correction pass (§13)
+performed that exhaustive audit and fixed what it found. Treat §13 as authoritative for
+completion status; §1–§12 are kept as the original pass's record.
 
 - Start tag: `wp20-start` at `8fb89a1f876c0e44008627d7cc562530167b4305` (local `main`, 13 commits ahead of `origin/main`, WP17–WP19 complete)
-- Branch: `edit/student-facing-notebook-language`
+- Branch (original pass): `edit/student-facing-notebook-language`
 - Checkpoint commit (WP document): `b804a6d`
-- Implementation commit: `6b1243d` — "WP20: student-facing editorial pass for Exercises 1-4"
+- Implementation commit (original pass): `6b1243d` — "WP20: student-facing editorial pass for Exercises 1-4"
 - Merge commit (into local `main`, `--no-ff`): `9f9178cd0f27d5fd0ce8c5f42e0de5d09105cba1`
-- Final local `main` SHA: `9f9178cd0f27d5fd0ce8c5f42e0de5d09105cba1`
-- Merge was conflict-free; only a brief post-merge smoke check was performed (full `pytest tests/` — 417 passed).
-- Local `main` is now 16 commits ahead of `origin/main`. Nothing was pushed or deployed.
+- Report commit (original pass): `68aef75`
+- Correction-pass commit (direct to local `main`, no branch/merge — see §13): `ff24635`
+- Final local `main` SHA after the correction pass: see §13.
+- Local `main` is now 18 commits ahead of `origin/main` as of the correction pass. Nothing was pushed or deployed.
 
 ---
 
@@ -273,3 +280,252 @@ broad suite was rerun more than the stated focused + one final pass.
 - Final working tree: clean except the pre-existing, explicitly whitelisted
   `WPs/reports/WP16_ARCHITECT_REPORT.md` (untouched, unmodified, unstaged) — confirmed by
   `git status --short --branch`.
+
+---
+
+## 13. Correction pass (2026-09-16)
+
+### Why this pass exists
+
+The original pass above fixed every phrase §6.1 of the WP explicitly listed as an example, but
+never performed the exhaustive read of *every* student-visible string that §2 and §6 actually
+required. A follow-up session read every markdown cell, code comment, admonition, printed
+message, table label, plot label, and interactive string in all four canonical notebooks, their
+portable versions, and the nine widget config files, and fixed what that reading found. This
+section documents that pass. Reported separately from §1–§12 rather than edited into them, so
+the original pass's own record stays intact.
+
+### Starting state
+
+- `git status --short --branch` at the start: `## main...origin/main [ahead 17]`, only
+  `?? WPs/reports/WP16_ARCHITECT_REPORT.md` untracked. No uncommitted changes existed, so no
+  `checkpoint: before WP20 correction` commit was needed.
+- Starting `HEAD`: `68aef75ec46190cd6e76a119e67a76392dd6b25c` (the original pass's report commit).
+- Correction made directly on local `main` (no new branch/merge), per the correction-pass
+  instructions.
+
+### Every student-facing heading or substantial phrase changed
+
+**Exercise 1** (`book/chapters/chapter_01/exercise_01.ipynb`):
+- `### Common approaches to missing data` → `### Ways to handle missing data` (cell 39, the
+  general three-way taxonomy — table content unchanged).
+- `### Common approach:` → `### Our approach in this exercise` (cell 52, the notebook's own
+  concluding decision — body unchanged).
+
+**Exercise 2** (`exercise_02.ipynb`):
+- Opening list items 2–3 reworded to drop "honest"/"invalid": "build one linear-regression
+  workflow…" and "compare that held-out score with the *training* score and with a score
+  computed by fitting on the test data itself, to see correct and misleading ways to evaluate a
+  model" (was "build one **honest** linear-regression workflow…compare that **honest** score…
+  deliberately **invalid** fit-on-the-test-set score").
+- `## 2. One honest linear-regression workflow` → `## 2. Building one linear-regression
+  workflow`.
+- "the observed-vs-predicted plot is the **honest** picture" → "…shows this **directly**".
+- Table cell "cannot also give an **honest** score" → "cannot also give a **valid** score".
+- "needed for an **honest** final claim" → "needed for a **trustworthy** final claim".
+- "the **honest**, typical shape" → "the typical shape".
+- Summary bullet "An **honest** performance estimate fits on training data…" → "A performance
+  estimate that fits on training data and scores on data the model has never seen **avoids this
+  inflation**."
+
+**Exercise 3** (`exercise_03.ipynb`):
+- Opening list items 3 and 5 reworded: "interactively compare **correct and misleading ways to
+  evaluate a model**, across every `k`" (was "…compare **honest evaluation** with resubstitution
+  and…a deliberately **invalid leakage score**…"); "see how training and validation error change
+  across every `k`, computed directly from this dataset" (was "compute an **empirical curve**…
+  in a **development fitting set**").
+- `## 3. Honest evaluation versus invalid alternatives` → `## 3. Correct and misleading ways to
+  evaluate a model` (main section heading — the explicit, named rename this correction pass was
+  asked for).
+- Table cell "cannot also give an **honest** score" → "…a **valid** score" (same fix as Ex2).
+- iframe title `Interactive honest-vs-invalid KNN evaluation for predicting age from brain
+  structure` → `Interactive comparison of correct and misleading KNN evaluation for predicting
+  age from brain structure`.
+- "observable, **honestly-labelled** analogues" → "observable, **clearly-labelled** analogues".
+- `## 5. From k = 1 to every participant: an empirical curve` → `## 5. How performance changes
+  across every k`; the section now defines `N_fit` ("number of fitting participants") and
+  `N_val` ("number of validation participants") in plain language before using either symbol,
+  and the printed summary line spells both out instead of printing bare symbols.
+- "is the notebook's one **honest** number" → "is the notebook's **one number that counts**".
+- Summary bullets: "the same **honest** workflow structure" → "the same workflow structure";
+  "An **empirical fitting/validation curve**…" → "A curve computed from real fitting and
+  validation data…".
+
+**Exercise 4** (`exercise_04.ipynb`):
+- Opening framing sentence: "…predicting autism diagnosis from the same brain measurements, and
+  **evaluating it honestly**" → "…**tested on participants it has not seen**".
+- Opening list item 3: "build and evaluate one **honest** logistic-regression classifier" →
+  "build one logistic-regression classifier and test it on participants it has not seen".
+- Opening list item 6 — the specific, named required fix: "use a browser activity to see what
+  class imbalance does to accuracy, and what a **stratified train/test split does -- and does
+  not -- fix about it**" → "**see why accuracy can be misleading when one diagnosis group is
+  much larger than the other**" (the exact suggested wording). No other place in Exercise 4
+  frames stratification as a lesson objective; it remains, correctly, only as a brief
+  implementation note in cell 28's activity-context prose and in code comments.
+- Prerequisites line: "…and **honest held-out evaluation**…" → "…and **testing a model on
+  held-out participants**…comparison of **correct and misleading evaluation methods**, including
+  resubstitution…" (the word "resubstitution" was restored after the first test run, see
+  "Tests" below — the notebook's own test suite expects exactly one forward-reference to it here).
+- Section 1 body prose: "the same 1004-participant **modelling table**" → "…**data table**" (a
+  leftover from the original pass, which renamed the term everywhere else in this notebook but
+  missed this one sentence).
+- `## 3. One honest logistic-regression model` → `## 3. One logistic-regression model`.
+- Code comment "# The **honest** test-set confusion matrix…" → "# The test-set confusion
+  matrix…".
+- "reported **honestly** rather than dressed up" → "reported **plainly** rather than dressed up".
+- Summary bullets: "the same **honest** workflow structure" → "the same workflow structure";
+  "**Honest evaluation** uses participants excluded from fitting…" → "**Testing on participants
+  excluded from fitting** -- not on the training data -- is what every metric in this notebook
+  does…".
+
+**Interactive widget configs / components:**
+- `book/_static/widgets/configs/knn_abc.json` `title`: "Honest vs invalid evaluation,
+  interactively" → "Correct vs misleading evaluation, interactively" (this is the text
+  rendered as the activity's on-page `<h1>`).
+- `book/_static/widgets/configs/knn_explore.json` reflection prompt: "…for an **honest** final
+  estimate?" → "…for a **trustworthy** final estimate?".
+- `book/_static/widgets/configs/regression_compare.json` `selectionBiasNote`: "An **honest**
+  final estimate needs…" → "A **trustworthy** final estimate needs…".
+- `interactive/src/components/classification-threshold.ts` rendered cohort line: "these are the
+  exact **honest** held-out predicted probabilities" → "…the exact held-out predicted
+  probabilities" (the only genuinely rendered "honest" string found across all component source
+  files; every other hit was a Zod validation error message or a code comment, neither visible
+  to a student under normal use, and left untouched per the correction-pass instruction not to
+  rewrite internal/developer text).
+- `scripts/build_portable_notebook.py`: the portable-notebook generator's own iframe-title
+  lookup keys and its student-facing replacement prose ("### Try the honest-vs-invalid
+  comparison yourself…", "# Static three-panel equivalent of the honest-vs-invalid activity
+  above.") updated to match the renamed activity — these are text the portable notebook itself
+  shows to a student who downloads it, not developer-only code.
+
+**Explicitly reviewed and left unchanged** (judgment call, consistent with §3.4's own
+instruction not to remove a necessary, already-explained technical term): the A/B/C panel labels
+"A. Valid" / "B. Resubstitution" / "C. Invalid (leakage)" in both the notebook's own comparison
+table and the `knn-abc.ts` component — each is a short label paired with an explanatory subtitle
+("fit on training rows, evaluate test rows", etc.), not the vague unexplained pairing the
+correction targeted. "Honest"/"invalid" occurrences inside Zod error strings
+(`Invalid <thing> data: …`) and TypeScript code comments were left untouched: these only ever
+appear on a malformed build artifact or in source a student never sees, matching the
+correction-pass instruction to leave internal implementation/developer text alone.
+
+### Files changed
+
+Committed in `ff24635238ecf526957ca94ebe6b646c9822afc0` ("WP20 correction: exhaustive
+student-facing wording audit for Exercises 1-4"):
+
+- `book/chapters/chapter_01/exercise_01.ipynb`, `chapter_02/exercise_02.ipynb`,
+  `chapter_03/exercise_03.ipynb`, `chapter_04/exercise_04.ipynb` (text edits, then re-executed
+  in place with `jupyter nbconvert --to notebook --execute --inplace` so stored outputs match
+  the edited print text)
+- `book/downloads/chapter_01/exercise_01_portable.ipynb` … `chapter_04/exercise_04_portable.ipynb`
+  (regenerated from the re-executed canonical notebooks)
+- `book/_static/widgets/configs/knn_abc.json`, `knn_explore.json`, `regression_compare.json`
+- `interactive/src/components/classification-threshold.ts`
+- `interactive/e2e-book/chapter03.spec.ts` (iframe-title selector updated to match the rename)
+- `scripts/build_portable_notebook.py` (iframe-title keys + student-facing replacement prose)
+- `scripts/smoke_portable_notebook.py` (two expected-output strings updated to match the
+  re-executed chapter_03 notebook's new "data table:"/"fitting participants (N_fit) = …" text)
+- `tests/test_exercise_02_notebook.py`, `test_exercise_03_notebook.py`,
+  `test_exercise_04_notebook.py` (heading/iframe-title/output-string assertions updated)
+- `tests/test_notebook_opening_structure.py` (new file, see below)
+
+Exact per-line changes are in `WPs/reports/WP20_EXACT_CHANGELOG.md` §"Correction pass".
+
+### Structural/content tests added
+
+New file `tests/test_notebook_opening_structure.py` (16 tests, structural/count-based rather
+than exact-wording, per the instruction not to create brittle tests):
+
+- `OpeningStructureTests`: exactly one `## What this notebook covers` heading per notebook; the
+  "This is Exercise X of…" sentence sits inside that section (not above it); the opening
+  numbered list's item count matches the notebook's own `## N.` section count, for all four
+  notebooks.
+- `RepeatedLoadingCellTests`: Exercise 1's cells 4 and 6 carry no hide tag (visible); Exercises
+  2–4's cell 4 carries `hide-input` and never `hide-cell`; that cell's stored output contains
+  `"data table:"` (i.e. is not stale).
+- `DeprecatedPhraseTests`: none of "Honest evaluation versus invalid alternatives", "Honest vs
+  invalid evaluation", "honest-vs-invalid", "One honest linear-regression workflow", "One honest
+  logistic-regression model", or the old stratification-as-objective phrase appear anywhere in
+  the four canonical notebooks, the four portable notebooks, or any of the nine widget config
+  JSON files (case-insensitive).
+
+Portable-notebook synchronization is already covered by the existing
+`tests/test_build_portable_notebook.py::test_check_passes_on_committed_file`, which this pass
+relied on rather than duplicating.
+
+### Test and build results
+
+- Focused pass (`test_notebook_opening_structure.py` + all four `test_exercise_0N_notebook.py`
+  + `test_notebook_corrections.py` + `test_wp19_content_audit.py` + `test_book_structure.py`
+  + `test_build_portable_notebook.py` + `test_table_inspection_columns.py`): **1 failure on the
+  first run**, fixed with one bounded correction, **177 passed** on rerun.
+  - Failure: `test_exercise_04_notebook.py::test_only_one_brief_reminder_about_held_out_metrics`
+    expected exactly one mention of "resubstitution" in Exercise 4's markdown; the rewritten
+    Prerequisites line had dropped it entirely. Fixed by adding ", including resubstitution" to
+    the same sentence. Reran only that one test — passed.
+- Full repository suite (`pytest tests/`, run once as a broader check, not part of the repeated
+  focused loop): **426 passed**.
+- Portable-notebook regeneration: `scripts/build_portable_notebook.py --write --notebook all`
+  then `--check --notebook all` — all four up to date. The generator itself needed a one-line
+  fix first (its iframe-title lookup dictionary still keyed on the old "honest-vs-invalid"
+  title and raised `Unknown activity iframe title` until updated) — fixed once, then the
+  regeneration succeeded.
+- Portable-notebook smoke execution (`scripts/smoke_portable_notebook.py`, all four, each run
+  once): chapter_01, chapter_02, and chapter_04 passed immediately. chapter_03 failed once
+  against a stale expected string (`"N_fit = 564   N_val = 189"`, the old print format before
+  this pass's plain-language rewording); fixed the expected string in the smoke-test file to
+  match the new "fitting participants (N_fit) = 564   validation participants (N_val) = 189"
+  text, reran once — passed. All four: `OK … portable notebook executed cleanly … key values
+  matched`.
+- Frontend focused checks: `npm run typecheck` (clean) and `npx vitest run tests/config.test.ts
+  tests/classification-threshold-data.test.ts tests/knn-abc-data.test.ts` (92 passed) — the
+  files touching what changed. The complete frontend suite, Playwright, and a deployment test
+  were **not** run, per the correction-pass instruction, since no focused failure indicated a
+  need to.
+- One Jupyter Book build (`jupyter-book build book --path-output book`): succeeded, all four
+  notebooks re-executed cleanly, 2 pre-existing warnings (missing `logo.png`, `README.md` not
+  in a toctree) unrelated to this pass.
+- Built-HTML inspection (all four exercises, once): confirmed by direct inspection of the
+  generated HTML (not Playwright) that for every exercise the `<h1>` title precedes the green
+  "Run or download this notebook" admonition, which precedes the `What this notebook covers`
+  section; that Exercises 2–4's repeated loading cell renders as `<details>…</details>`
+  containing only the code, followed immediately by a `data table: 1004 participants x 1446
+  columns` output block outside that `<details>`; that Exercise 1's loading code has no
+  `<details>` wrapper at all; that the renamed headings ("Our data table", "Building one
+  linear-regression workflow", "Correct and misleading ways to evaluate a model", "How
+  performance changes across every k", "One logistic-regression model", "Ways to handle missing
+  data", "Our approach in this exercise") and the renamed Exercise 3 iframe title all appear
+  verbatim in the built pages; and that a case-insensitive grep for the deprecated phrases
+  across all four built HTML files returns nothing.
+
+### Requirements not completed / deviations
+
+- The fixed design decision (green block immediately below the title) required no change: it
+  was already the case in all four notebooks, confirmed both structurally and in the built
+  HTML.
+- Panel labels "A. Valid" / "B. Resubstitution" / "C. Invalid (leakage)" were deliberately kept
+  (see "Explicitly reviewed and left unchanged" above) — flagging in case Yoav wants these
+  renamed too despite each carrying its own plain-language subtitle.
+- This pass's own audit, like the original pass's, was a full read of every cell and every
+  config file rather than a keyword-grep-only pass, but is still one person's editorial judgment
+  about what counts as "unclear to a beginner" — a second independent read would likely find a
+  few more candidates at the margin (e.g. whether "resubstitution" itself, used across three
+  notebooks and always explained at first use, should also be simplified). None were changed
+  beyond what is listed above, to keep this a bounded, reviewable correction rather than a third
+  open-ended pass.
+
+### Checkpoint / final SHAs
+
+- Starting `HEAD` (before this correction pass): `68aef75ec46190cd6e76a119e67a76392dd6b25c`
+- No `checkpoint: before WP20 correction` commit was created (working tree had no uncommitted
+  changes to checkpoint).
+- Correction-pass commit: `ff24635238ecf526957ca94ebe6b646c9822afc0`
+- Final local `main` SHA: see Claude's final chat response (not duplicated here, per the WP's
+  own instruction not to amend a report merely to insert its own commit SHA).
+
+### Confirmations
+
+- Word course overview and its generator: **not touched**.
+- Nothing pushed or deployed; no GitHub Actions run or monitored.
+- WP21 was **not** started.
+- `WPs/reports/WP16_ARCHITECT_REPORT.md` remains untracked and untouched.

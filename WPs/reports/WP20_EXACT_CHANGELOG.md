@@ -49,3 +49,62 @@ No file was renamed or deleted in this WP.
 - `course_overview/Machine_Learning_for_Neuroscience_Notebook_Overview.docx` and its generator —
   explicitly out of scope per the WP.
 - `WPs/reports/WP16_ARCHITECT_REPORT.md` — whitelisted pre-existing untracked file, untouched.
+
+---
+
+## Correction pass (2026-09-16)
+
+The claim above ("all nine configs… reviewed in full, no… unexplained jargon found") did not
+hold up: `knn_abc.json`, `knn_explore.json`, and `regression_compare.json` each still carried a
+genuine "honest"/"invalid" student-facing string, found on the exhaustive re-read this
+correction pass performed. See `WPs/reports/WP20_REPORT.md` §13 for the full narrative,
+per-notebook wording table, and test/build results.
+
+### Commit
+
+`ff24635238ecf526957ca94ebe6b646c9822afc0` — "WP20 correction: exhaustive student-facing
+wording audit for Exercises 1-4", committed directly to local `main` (starting `HEAD`
+`68aef75ec46190cd6e76a119e67a76392dd6b25c`; no branch/merge, per the correction-pass
+instructions; no checkpoint commit needed since the working tree had no uncommitted changes at
+the start).
+
+### Files created
+
+- `tests/test_notebook_opening_structure.py`
+
+### Files modified
+
+| File | Change |
+|---|---|
+| `book/chapters/chapter_01/exercise_01.ipynb` | Cell 39 heading `### Common approaches to missing data` → `### Ways to handle missing data`; cell 52 heading `### Common approach:` → `### Our approach in this exercise`. Re-executed in place (no output text changed, but kept in sync with the other three). |
+| `book/chapters/chapter_02/exercise_02.ipynb` | Opening list items 2–3 reworded (drop "honest"/"invalid"); `## 2. One honest linear-regression workflow` → `## 2. Building one linear-regression workflow`; five more "honest"/"invalid" phrases reworded in body prose, a table cell, and the summary (see WP20_REPORT.md §13 for each). Re-executed in place — the stored output for cell 4 was stale ("modelling table:" instead of "data table:") from before the original pass's print-string rename; now refreshed. |
+| `book/chapters/chapter_03/exercise_03.ipynb` | Opening list items 3 and 5 reworded; `## 3. Honest evaluation versus invalid alternatives` → `## 3. Correct and misleading ways to evaluate a model`; iframe title renamed; `## 5. From k = 1 to every participant: an empirical curve` → `## 5. How performance changes across every k`, with `N_fit`/`N_val` now defined in plain language before use; printed summary line reworded from bare symbols to plain language; four more "honest"/"empirical curve" phrases reworded. Re-executed in place — cell 4's stored output was stale ("modelling table:") and cell 22's print text changed. |
+| `book/chapters/chapter_04/exercise_04.ipynb` | Opening framing sentence, list items 3 and 6 (item 6 is the specific required stratification-framing fix), and the Prerequisites line reworded; Section 1 body "modelling table" → "data table" (a leftover the original pass missed); `## 3. One honest logistic-regression model` → `## 3. One logistic-regression model`; a code comment and two summary bullets reworded. Re-executed in place (no output *values* changed, only comment/prose text, but kept in sync). |
+| `book/downloads/chapter_01/exercise_01_portable.ipynb` … `chapter_04/exercise_04_portable.ipynb` | Regenerated via `scripts/build_portable_notebook.py --write` from the re-executed canonical notebooks. |
+| `book/_static/widgets/configs/knn_abc.json` | `title`: "Honest vs invalid evaluation, interactively" → "Correct vs misleading evaluation, interactively". |
+| `book/_static/widgets/configs/knn_explore.json` | One reflection prompt: "an honest final estimate" → "a trustworthy final estimate". |
+| `book/_static/widgets/configs/regression_compare.json` | `selectionBiasNote`: "An honest final estimate…" → "A trustworthy final estimate…". |
+| `interactive/src/components/classification-threshold.ts` | Rendered cohort-line text: dropped "honest" before "held-out predicted probabilities". |
+| `interactive/e2e-book/chapter03.spec.ts` | `ABC_IFRAME_SELECTOR` updated to the renamed iframe title. |
+| `scripts/build_portable_notebook.py` | Iframe-title dictionary keys (3 occurrences) and two student-facing portable-notebook prose strings ("Try the honest-vs-invalid comparison…", the matching code comment) updated to match the Exercise 3 rename. |
+| `scripts/smoke_portable_notebook.py` | Two expected-output strings updated: chapter_03's `N_fit = 564   N_val = 189` → `fitting participants (N_fit) = 564   validation participants (N_val) = 189`. |
+| `tests/test_exercise_02_notebook.py` | Heading string updated to `"## 2. Building one linear-regression workflow"`. |
+| `tests/test_exercise_03_notebook.py` | Two heading strings updated; iframe-title assertion updated; `N_fit`/`N_val` output-string assertion updated. |
+| `tests/test_exercise_04_notebook.py` | Heading string updated to `"## 3. One logistic-regression model"`. |
+
+No file was renamed or deleted in this correction pass.
+
+### Files explicitly reviewed and left unchanged
+
+- `A. Valid` / `B. Resubstitution` / `C. Invalid (leakage)` panel labels in the Exercise 2/3
+  comparison tables and in `interactive/src/components/knn-abc.ts` — each carries its own
+  plain-language subtitle; judged not to be the vague "invalid alternatives" pairing the
+  correction targeted (see WP20_REPORT.md §13 for the reasoning).
+- `book/_static/widgets/configs/classification_threshold.json`'s `description` field (contains
+  "honest" but is never rendered by any component — confirmed by `grep`) and all `Invalid <x>
+  data: …` Zod validation-error strings across `interactive/src/*.ts` — these are internal
+  build/config validation messages a student never sees under normal use, not the material this
+  correction pass's audit scope covers.
+- `interactive/tests/config.test.ts`'s `validKnnAbc` fixture (`title: "Honest vs invalid
+  evaluation, interactively"`) — an arbitrary schema-validation test fixture, not asserted
+  against real production content.
