@@ -2,10 +2,10 @@
 
 **Date:** 2026-09-16
 
-**Starting feature-branch SHA:** `e5d6ad7fedf519636a2ae047c42de389f16a2966`
-**Starting `main` SHA (expected, per task instructions):** `0a28301ceee3c4a3a8891158a73ac0754b4b6150`
-**Starting `main` SHA (actual, observed):** `4f9bc7014625ed0a50df938f393b957a25c04037`
-**Starting `origin/main` SHA (observed after `git fetch origin main`):** `0a28301ceee3c4a3a8891158a73ac0754b4b6150`
+**Starting feature-branch SHA (before the WP23 specification commit):** `e5d6ad7fedf519636a2ae047c42de389f16a2966`
+**Feature-branch tip containing the WP23 specification:** `af3e9ea00102b3f46852b13e1709acf445e33d6f`
+**Starting `origin/main` SHA:** `0a28301ceee3c4a3a8891158a73ac0754b4b6150`
+**Starting local `main` SHA:** `4f9bc7014625ed0a50df938f393b957a25c04037`
 
 **Working branch:** `fix/published-dark-mode-plots`
 
@@ -31,14 +31,28 @@ This WP authorizes exactly:
   * `WPs/reports/WP16_ARCHITECT_REPORT.md`
   * `WPs/reports/WP21_DEPLOYMENT_REPORT.md`
 
-## Pre-merge discrepancy noted at authoring time
+## Corrected starting-state determination
 
-At the time this specification was written, local `main` was observed to be **one commit ahead** of the expected/authoritative SHA given in the WP23 task instructions (`0a28301...`). The extra commit is:
+At authoring time, local `main` was observed to be one commit ahead of `origin/main`. Rather than an unexpected divergence, this was confirmed to be an authorized WP22 documentation checkpoint:
 
 ```
 4f9bc70 WP22: document dark-mode Plotly repair work package
 ```
 
-This is the same commit object (identical SHA) that also forms part of the `fix/published-dark-mode-plots` branch history — i.e. at some point this commit was made directly on `main` rather than solely on the feature branch. `origin/main`, confirmed via `git fetch origin main`, remains exactly at the expected `0a28301...` — the divergence is local-only and unpushed.
+This commit was made directly on local `main` (documentation only — the 253-line WP22 specification file, no implementation code) and is also a shared ancestor of `fix/published-dark-mode-plots`, since the feature branch was cut from `main` at that point. `origin/main` remained at the earlier deployed SHA (`0a28301...`), unaffected, since the checkpoint commit was never pushed.
 
-Per WP23 §2 ("Pre-merge verification"), this qualifies as "either branch differs unexpectedly," which requires halting before merge/push and reporting rather than resolving automatically (no pull/rebase/reset/stash). This specification is being committed to the feature branch only; the merge/push steps are deferred pending explicit direction on how to reconcile local `main`.
+The corrected, authoritative starting state is:
+
+* `origin/main`: `0a28301ceee3c4a3a8891158a73ac0754b4b6150`
+* local `main`: `4f9bc7014625ed0a50df938f393b957a25c04037`
+* feature branch before the WP23-spec commit: `e5d6ad7fedf519636a2ae047c42de389f16a2966`
+* feature-branch tip containing the WP23 specification: `af3e9ea00102b3f46852b13e1709acf445e33d6f`
+
+Four checks were performed before proceeding to merge, all of which passed:
+
+1. `origin/main` (`0a28301...`) is an ancestor of local `main` — confirmed.
+2. The checkpoint commit `4f9bc70...` is an ancestor of `fix/published-dark-mode-plots` — confirmed.
+3. The only difference between `origin/main` and local `main` is the WP22 specification file (`WPs/WP22_DARK_MODE_PLOTLY_REPAIR.md`, 253 insertions, no other files) — confirmed.
+4. The WP23 specification commit (`af3e9ea...`) contains only its intended file (`WPs/WP23_MERGE_DEPLOY_DARK_MODE_REPAIR.md`) — confirmed.
+
+Because the checkpoint commit was already a shared ancestor of the feature branch (not a divergent, conflicting change), merging `fix/published-dark-mode-plots` into local `main` introduces no duplicate content and is safe to proceed with, per explicit authorization to proceed with option 1 (no reset of local `main`).
