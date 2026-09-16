@@ -15,6 +15,7 @@ import {
   type AbideHistogramData,
 } from "../histogram-data";
 import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
+import { getActiveTheme, subscribeToThemeChanges } from "../theme";
 
 function mount(args: MountArgs<EdaHistogramConfig, AbideHistogramData>): MountHandle {
   const { container, config, data } = args;
@@ -115,8 +116,7 @@ function mount(args: MountArgs<EdaHistogramConfig, AbideHistogramData>): MountHa
     container.append(promptsHeading, list);
   }
 
-  const theme = getPlotlyTheme();
-  const barColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
+  let theme = getPlotlyTheme(getActiveTheme());
 
   let destroyed = false;
 
@@ -156,6 +156,7 @@ function mount(args: MountArgs<EdaHistogramConfig, AbideHistogramData>): MountHa
       .slice(1)
       .map((right, i) => right - result.binEdges[i]!);
 
+    const barColor = theme.dark ? "#5a9bd4" : "#2a6f9e";
     const trace = {
       type: "bar" as const,
       x: result.binCenters,
@@ -190,11 +191,17 @@ function mount(args: MountArgs<EdaHistogramConfig, AbideHistogramData>): MountHa
     binValue.textContent = binInput.value;
   });
 
+  const unsubscribeTheme = subscribeToThemeChanges((next) => {
+    theme = getPlotlyTheme(next);
+    void draw();
+  });
+
   void draw();
 
   return {
     destroy() {
       destroyed = true;
+      unsubscribeTheme();
       Plotly.purge(plot);
     },
   };

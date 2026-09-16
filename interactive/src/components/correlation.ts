@@ -23,6 +23,7 @@ import {
   type AbideCorrelationData,
 } from "../correlation-data";
 import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
+import { getActiveTheme, subscribeToThemeChanges } from "../theme";
 
 // Okabe–Ito: colourblind-safe, and deliberately not a good/bad ramp.
 const GROUP_COLORS = ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#56B4E9", "#D55E00"];
@@ -174,8 +175,7 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
   }
 
   // --- theme ---
-  const theme = getPlotlyTheme();
-  const ungroupedColor = theme.dark ? UNGROUPED_COLOR_DARK : UNGROUPED_COLOR_LIGHT;
+  let theme = getPlotlyTheme(getActiveTheme());
   let destroyed = false;
 
   function groupingInput(key: string): GroupingInput | null {
@@ -261,6 +261,7 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
     }
 
     // --- traces ---
+    const ungroupedColor = theme.dark ? UNGROUPED_COLOR_DARK : UNGROUPED_COLOR_LIGHT;
     const hover = `${xLabel}: %{x}<br>${yLabel}: %{y}`;
     let traces: Record<string, unknown>[];
     if (result.groups && result.points.group) {
@@ -329,11 +330,17 @@ function mount(args: MountArgs<EdaCorrelationConfig, AbideCorrelationData>): Mou
     select.addEventListener("change", () => void draw());
   }
 
+  const unsubscribeTheme = subscribeToThemeChanges((next) => {
+    theme = getPlotlyTheme(next);
+    void draw();
+  });
+
   void draw();
 
   return {
     destroy() {
       destroyed = true;
+      unsubscribeTheme();
       Plotly.purge(plot);
     },
   };

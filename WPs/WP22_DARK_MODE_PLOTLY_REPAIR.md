@@ -3,7 +3,7 @@
 - **Date:** 2026-09-16
 - **Starting commit SHA:** `0a28301ceee3c4a3a8891158a73ac0754b4b6150`
 - **Intended working branch:** `fix/published-dark-mode-plots`
-- **Status:** IN PROGRESS
+- **Status:** COMPLETED
 - **Scope note:** This WP is local-only. It does not authorize pushing to any
   remote or deploying (no GitHub Actions trigger, no gh-pages publish). All
   work stays on the local working branch until a human explicitly requests
@@ -247,7 +247,5 @@ Finish with a short recap for Yoav. Do not start WP23.
 
 ## Post-implementation links
 
-*(Filled in at completion — see status field above.)*
-
-- Report: `reports/WP22_REPORT.md`
-- Exact changelog: `reports/WP22_EXACT_CHANGELOG.md`
+- Report: [`reports/WP22_REPORT.md`](reports/WP22_REPORT.md)
+- Exact changelog: [`reports/WP22_EXACT_CHANGELOG.md`](reports/WP22_EXACT_CHANGELOG.md)

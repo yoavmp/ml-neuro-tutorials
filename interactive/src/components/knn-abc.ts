@@ -20,6 +20,7 @@ import type { KnnAbcConfig } from "../config";
 import { r2Score, meanSquaredError, sharedAxisRange, predictAllForK } from "../knn-explore";
 import { parseKnnAbcData, type KnnAbcData } from "../knn-abc-data";
 import { getPlotlyTheme, buildPlotLayout, PLOT_CONFIG } from "./plotly-policy";
+import { getActiveTheme, subscribeToThemeChanges } from "../theme";
 
 function clampK(value: number, kMax: number): number {
   if (!Number.isFinite(value)) return 1;
@@ -45,9 +46,7 @@ function mount(args: MountArgs<KnnAbcConfig, KnnAbcData>): MountHandle {
     throw new Error(`workedExampleK ${defaultK} is outside [1, ${kMax}]`);
   }
 
-  const theme = getPlotlyTheme();
-  const markerColor = theme.dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)";
-  const diagColor = theme.dark ? "#d98b5f" : "#b5622f";
+  let theme = getPlotlyTheme(getActiveTheme());
 
   const scatterAxisRange = sharedAxisRange([...data.observedTrain, ...data.observedTest], 0.05);
 
@@ -199,7 +198,7 @@ function mount(args: MountArgs<KnnAbcConfig, KnnAbcData>): MountHandle {
       mode: "markers" as const,
       x: panel.observed,
       y: predicted,
-      marker: { color: markerColor, size: 6 },
+      marker: { color: theme.markerPrimary, size: 6 },
       hovertemplate: `observed ${data.target.label} %{x}<br>predicted %{y:.1f}<extra></extra>`,
       name: panel.label,
       showlegend: false,
@@ -209,7 +208,7 @@ function mount(args: MountArgs<KnnAbcConfig, KnnAbcData>): MountHandle {
       mode: "lines" as const,
       x: scatterAxisRange,
       y: scatterAxisRange,
-      line: { color: diagColor, width: 2, dash: "dash" as const },
+      line: { color: theme.diagonalLine, width: 2, dash: "dash" as const },
       hoverinfo: "skip" as const,
       name: "Perfect prediction (observed = predicted)",
       showlegend: true,
@@ -263,11 +262,17 @@ function mount(args: MountArgs<KnnAbcConfig, KnnAbcData>): MountHandle {
     setK(raw);
   });
 
+  const unsubscribeTheme = subscribeToThemeChanges((next) => {
+    theme = getPlotlyTheme(next);
+    void draw();
+  });
+
   void draw();
 
   return {
     destroy() {
       destroyed = true;
+      unsubscribeTheme();
       for (const panel of panels) Plotly.purge(plotDivs[panel.key]!);
     },
   };

@@ -19,8 +19,17 @@
   --warn-fg: #9a3b1a;
 }
 
+/* WP22: `main.ts` mirrors the resolved theme (parent Jupyter Book's own
+   `data-theme`/`data-mode` toggle when embedded, else this document's own
+   attributes, else `prefers-color-scheme`) onto this document's own root as
+   `data-theme` before the first paint and on every later change -- see
+   `src/theme.ts`. The media query below is the pre-JS / no-JS fallback only:
+   it is guarded so an explicit `data-theme="light"` (parent's OS-independent
+   choice) always wins over a dark OS preference, and the explicit
+   `[data-theme="dark"]` rule after it wins over everything once JS has run,
+   including a light OS preference paired with a book reader who chose dark. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --fg: #ece9f5;
     --bg: #1c1a26;
     --muted: #a9a3bd;
@@ -35,6 +44,22 @@
     --warn-bg: #33261d;
     --warn-fg: #f2d2b8;
   }
+}
+
+:root[data-theme="dark"] {
+  --fg: #ece9f5;
+  --bg: #1c1a26;
+  --muted: #a9a3bd;
+  --border: #3a3450;
+  --border-strong: #4a4363;
+  --surface-alt: #24222f;
+  --accent: #f0915c;
+  --accent-ink: #f0915c;
+  --accent-soft: #33261d;
+  --error-bg: #3a1f28;
+  --error-fg: #f2c6d4;
+  --warn-bg: #33261d;
+  --warn-fg: #f2d2b8;
 }
 
 * {
@@ -259,6 +284,20 @@ input[type="radio"] {
 
 .widget-prompts li {
   margin: 4px 0;
+}
+
+/* WP22: computed-style verification against the built book (dragmode:false +
+   fixedrange:true, set by every activity via plotly-policy.ts) already shows
+   every draglayer rect transparent with no stroke, in both themes. This rule
+   pins that explicitly and is scoped only inside a chart's own drag layer --
+   never a global `svg rect` rule, which would repaint histogram bars,
+   heatmap cells, and legend swatches too -- as a guard against a future
+   Plotly upgrade or theme regression silently reintroducing a visible box.
+   `!important` is required: Plotly sets these as plain (non-`!important`)
+   inline styles, which an unmarked stylesheet rule cannot override. */
+.widget-plot .draglayer rect {
+  fill: transparent !important;
+  stroke: none !important;
 }
 
 .widget-plot {

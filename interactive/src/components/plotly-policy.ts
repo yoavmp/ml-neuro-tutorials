@@ -1,4 +1,4 @@
-// One shared Plotly presentation policy for every activity chart (WP16).
+// One shared Plotly presentation policy for every activity chart (WP16, WP22).
 //
 // Every component used to redefine its own `prefersDark`/axis-color logic and
 // hand-roll a `layout` object, which is how the project-wide bugs this module
@@ -8,28 +8,56 @@
 // axis drag/zoom (the lesson's controls are the sliders/selects, not the
 // chart), and a plot card background that didn't match the page.
 //
+// WP22: `getPlotlyTheme` used to call `matchMedia("(prefers-color-scheme:
+// dark)")` itself, once, at mount time -- the OS/browser preference only,
+// read exactly once. The published Jupyter Book's own light/dark toggle
+// (pydata-sphinx-theme) never touches that media query; it resolves the
+// reader's choice onto `document.documentElement.dataset.theme` on the PARENT
+// document instead. `../theme.ts` is now the one place that resolves "what
+// theme is active" (parent attribute, own attribute, then media query) and
+// notifies subscribers when it changes; this module only turns that resolved
+// `Theme` into concrete Plotly colors.
+//
 // `buildPlotLayout` is a deep-enough merge for the nested keys a component
 // legitimately needs to override (`margin`, `xaxis`, `yaxis`, `legend`,
 // `font`) so that overriding e.g. `xaxis.range` cannot silently drop the
 // shared `fixedrange`/`automargin`/`gridcolor` defaults alongside it -- a
 // naive `{ ...base, ...overrides }` would do exactly that.
 import type { Config, Layout } from "plotly.js-cartesian-dist-min";
+import type { Theme } from "../theme";
 
 export interface PlotlyTheme {
   readonly dark: boolean;
   readonly axisColor: string;
   readonly gridColor: string;
+  /** Legend chip background -- WP22: previously left as Plotly's default
+   *  (an opaque near-white), unreadable once the surrounding page went dark. */
+  readonly legendBg: string;
+  readonly legendText: string;
+  /** Default annotation text color; components may still override per-call
+   *  (e.g. a reference-line label that needs to match its line's own hue). */
+  readonly annotationText: string;
+  /** The recurring "observed vs predicted" scatter marker color, identical
+   *  across regression-compare / knn-abc / knn-explore before WP22 -- three
+   *  independent copies of the same ternary. */
+  readonly markerPrimary: string;
+  /** The recurring dashed "perfect prediction" reference-line color, same
+   *  three components. */
+  readonly diagonalLine: string;
 }
 
-export function getPlotlyTheme(): PlotlyTheme {
-  const dark =
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
+/** Turn the resolved app-wide `Theme` into concrete Plotly colors. */
+export function getPlotlyTheme(theme: Theme): PlotlyTheme {
+  const dark = theme === "dark";
   return {
     dark,
     axisColor: dark ? "#c9c9c9" : "#333333",
     gridColor: dark ? "#3a3a3a" : "#e2e2e2",
+    legendBg: dark ? "rgba(36,34,47,0.82)" : "rgba(255,255,255,0.82)",
+    legendText: dark ? "#ece9f5" : "#1b1826",
+    annotationText: dark ? "#ece9f5" : "#1b1826",
+    markerPrimary: dark ? "rgba(120,170,210,0.55)" : "rgba(42,111,158,0.5)",
+    diagonalLine: dark ? "#d98b5f" : "#b5622f",
   };
 }
 
@@ -66,8 +94,6 @@ export interface LayoutOverrides {
 // differs (e.g. a taller bottom margin for rotated site-name tick labels).
 const DEFAULT_MARGIN = { t: 12, r: 12, b: 48, l: 56 };
 
-const DEFAULT_LEGEND = { orientation: "h", y: 1.12 };
-
 export function buildPlotLayout(theme: PlotlyTheme, overrides: LayoutOverrides = {}): Layout {
   const { margin, xaxis, yaxis, legend, font, ...rest } = overrides;
 
@@ -80,7 +106,16 @@ export function buildPlotLayout(theme: PlotlyTheme, overrides: LayoutOverrides =
     fixedrange: true,
     automargin: true,
     gridcolor: theme.gridColor,
+    linecolor: theme.axisColor,
+    tickcolor: theme.axisColor,
     zeroline: false,
+  };
+
+  const defaultLegend = {
+    orientation: "h",
+    y: 1.12,
+    bgcolor: theme.legendBg,
+    font: { color: theme.legendText },
   };
 
   return {
@@ -92,7 +127,7 @@ export function buildPlotLayout(theme: PlotlyTheme, overrides: LayoutOverrides =
     ...rest,
     margin: { ...DEFAULT_MARGIN, ...margin },
     font: { color: theme.axisColor, ...font },
-    legend: { ...DEFAULT_LEGEND, ...legend },
+    legend: { ...defaultLegend, ...legend },
     xaxis: { ...axisDefaults, ...xaxis },
     yaxis: { ...axisDefaults, ...yaxis },
   } as Layout;
