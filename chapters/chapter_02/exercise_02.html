@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=297790ed" />
-    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-DQfe1L5c.css?v=a38e8b12" />
+    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-KKIm8kz5.css?v=303c59b4" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -65,9 +65,9 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_02/exercise_02';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=aa0ac59f"></script>
+    <script src="../../_static/launch-buttons.js?v=07ce6fd0"></script>
     <script src="../../_static/activity-resize.js?v=c26e5b35"></script>
-    <script src="../../_static/widgets/app/assets/index-B93L96BN.js?v=e7aa48df"></script>
+    <script src="../../_static/widgets/app/assets/index-DWY8zV6Y.js?v=56e4150d"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Exercise 3: KNN and the Bias–Variance Tradeoff" href="../chapter_03/exercise_03.html" />
@@ -225,6 +225,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1 — Exploratory data analysis (EDA)</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 2: Regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_03/exercise_03.html">Exercise 3: KNN and the Bias–Variance Tradeoff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Classification with Logistic Regression</a></li>
 </ul>
 </details></li>
 </ul>
@@ -420,8 +421,8 @@
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-modelling-table">1. The modelling table</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-honest-linear-regression-workflow">2. One honest linear-regression workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#our-data-table">1. Our data table</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-one-linear-regression-workflow">2. Building one linear-regression workflow</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#three-ways-to-score-the-same-model">3. Three ways to score the same model</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-feature-sets">4. Comparing feature sets</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-does-sample-size-change">5. What does sample size change?</a></li>
@@ -457,31 +458,26 @@ activity for a link back to this page.</p>
 </div>
 <section id="what-this-notebook-covers">
 <h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
-<p>ABIDE’s own research aim is autism-related group differences: comparing
-autism and control participants on brain structure, and ultimately
-supporting diagnosis and classification. Rich shared datasets like ABIDE can
-also support other scientifically appropriate questions beyond that primary
-aim, as long as the new question is stated honestly and not sold as
-answering the original one. Here the target is <strong>age</strong>, a continuous
-variable, so the task is <strong>regression</strong>: predicting a participant’s age
-from their cortical measurements. This notebook does not address autism
-diagnosis or group differences – that remains ABIDE’s central question, not
-this one.</p>
-<p>This is Exercise 2 of <em>Machine Learning for Neuroscience</em>. Exercise 2 is about
-<strong>regression and the bias-variance tradeoff</strong>. This practice covers the first
-part: <strong>linear regression on real neuroimaging data</strong>. A later practice adds
-k-nearest neighbours and the bias-variance tradeoff itself.</p>
-<p>In this part you will:</p>
+<p>This is Exercise 2 of <em>Machine Learning for Neuroscience</em>. Exercise 2 is
+about <strong>regression and the bias-variance tradeoff</strong>; this practice covers
+the first part, <strong>linear regression on real neuroimaging data</strong>. A later
+practice adds k-nearest neighbours and the bias-variance tradeoff itself.</p>
+<p>ABIDE’s own research aim is autism-related group differences, not age. Here
+the target is <strong>age</strong>, a continuous variable, so the task is
+<strong>regression</strong>: predicting a participant’s age from their cortical
+measurements. This notebook does not address autism diagnosis – that
+remains ABIDE’s central question, not this one.</p>
+<p>In this notebook you will:</p>
 <ol class="arabic simple">
-<li><p>load a wide <em>modelling table</em> – FreeSurfer brain measurements for 1004
-ABIDE-II participants, with <code class="docutils literal notranslate"><span class="pre">age</span></code> as a native column;</p></li>
-<li><p>build one honest linear-regression workflow: split, scale, fit on training
+<li><p>load our ABIDE-II data table – FreeSurfer brain measurements, with
+<code class="docutils literal notranslate"><span class="pre">age</span></code> as a native column;</p></li>
+<li><p>build one linear-regression workflow: split, scale, fit on training
 data, predict held-out data, score it – first with the scaling steps
 written out explicitly, then with the equivalent <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code> pipeline
 shortcut;</p></li>
-<li><p>compare that honest score with the <em>training</em> score and with a deliberately
-<em>invalid</em> fit-on-the-test-set score, to see what “evaluation” can and cannot
-mean;</p></li>
+<li><p>compare that held-out score with the <em>training</em> score and with a score
+computed by fitting on the test data itself, to see correct and
+misleading ways to evaluate a model;</p></li>
 <li><p>use a browser activity to compare feature sets side by side;</p></li>
 <li><p>see what does – and does not – change as the sample gets smaller, all the
 way down to samples smaller than the number of features.</p></li>
@@ -489,8 +485,8 @@ way down to samples smaller than the number of features.</p></li>
 <p><strong>Prerequisites:</strong> the regression lecture; comfort with <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>,
 <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>, and the scikit-learn <code class="docutils literal notranslate"><span class="pre">fit</span></code> / <code class="docutils literal notranslate"><span class="pre">predict</span></code> pattern.</p>
 </section>
-<section id="the-modelling-table">
-<h2>1. The modelling table<a class="headerlink" href="#the-modelling-table" title="Link to this heading">#</a></h2>
+<section id="our-data-table">
+<h2>1. Our data table<a class="headerlink" href="#our-data-table" title="Link to this heading">#</a></h2>
 <p>Each <strong>row is one participant</strong>. The columns fall into three kinds:</p>
 <ul class="simple">
 <li><p><strong>phenotype columns</strong> – possible outcomes and context: <code class="docutils literal notranslate"><span class="pre">age</span></code>, <code class="docutils literal notranslate"><span class="pre">sex</span></code>, and
@@ -504,13 +500,13 @@ the 360 parcels of the HCP-MMP1 (Glasser) atlas;</p></li>
 <p>This exercise’s outcome is <strong><code class="docutils literal notranslate"><span class="pre">age</span></code></strong>: it is a native column of the brain
 table itself – no join to another file is needed, and it has no missing
 values for any of the 1004 participants.</p>
-<p>This is a <em>modelling</em> table: wide, one measurement per column, ready for
-<code class="docutils literal notranslate"><span class="pre">X</span></code> / <code class="docutils literal notranslate"><span class="pre">y</span></code>. It is not the small phenotype-only table from Exercise 1.</p>
-<div class="cell tag_hide-cell docutils container">
+<p>This is a wide table: one measurement per column, ready for <code class="docutils literal notranslate"><span class="pre">X</span></code> / <code class="docutils literal notranslate"><span class="pre">y</span></code>. It is
+not the small phenotype-only table from Exercise 1.</p>
+<div class="cell tag_hide-input docutils container">
 <details class="admonition hide above-input">
 <summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell content</p>
-<p class="expanded admonition-title">Hide code cell content</p>
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
 </summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data loading. In the published book this cell is collapsed; it is plain,</span>
@@ -534,16 +530,16 @@ values for any of the 1004 participants.</p>
 
 <span class="n">BRAIN_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)]</span>
 <span class="n">PHENO_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"age"</span><span class="p">,</span> <span class="s2">"age_resid"</span><span class="p">,</span> <span class="s2">"sex"</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"modelling table: </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>modelling table: 1004 participants x 1446 columns
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data table: </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>data table: 1004 participants x 1446 columns
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -673,8 +669,8 @@ brain column name is <code class="docutils literal notranslate"><span class="pre
 <code class="docutils literal notranslate"><span class="pre">fsCT_L_46_ROI</span></code> is cortical thickness of left area 46.</p>
 </div>
 </details></section>
-<section id="one-honest-linear-regression-workflow">
-<h2>2. One honest linear-regression workflow<a class="headerlink" href="#one-honest-linear-regression-workflow" title="Link to this heading">#</a></h2>
+<section id="building-one-linear-regression-workflow">
+<h2>2. Building one linear-regression workflow<a class="headerlink" href="#building-one-linear-regression-workflow" title="Link to this heading">#</a></h2>
 <p><strong>Target:</strong> <code class="docutils literal notranslate"><span class="pre">age</span></code>, in years. <strong>Features:</strong> every one of the 360 cortical
 atlas parcels for cortical thickness (<code class="docutils literal notranslate"><span class="pre">fsCT</span></code>), bilateral. Age-related
 cortical thinning is a whole-cortex phenomenon (Bethlehem et al. 2022;
@@ -831,8 +827,8 @@ held-out MSE = 49.6  (RMSE 7.0 years)
 <p>A few things to hold onto:</p>
 <ul class="simple">
 <li><p>the fitted model is a hyperplane in 360-dimensional feature space – there is
-nothing useful to <em>draw</em> there. The observed-vs-predicted plot is the honest
-picture: points hugging the diagonal mean the model predicted well;</p></li>
+nothing useful to <em>draw</em> there. The observed-vs-predicted plot shows this
+directly: points hugging the diagonal mean the model predicted well;</p></li>
 <li><p>this is a genuinely <strong>positive held-out R²</strong>: cortical thickness carries real
 information about age in this sample. A positive result is not automatically
 a <em>large</em> one – read the number, not just its sign;</p></li>
@@ -880,7 +876,7 @@ transfer. A leave-one-site-out split would be needed to speak to that.</p>
 <tr class="row-even"><td><p><strong>C. Invalid</strong></p></td>
 <td><p><strong>test rows</strong></p></td>
 <td><p>those same test rows</p></td>
-<td><p>nothing usable – the data used to fit cannot also give an honest score</p></td>
+<td><p>nothing usable – the data used to fit cannot also give a valid score</p></td>
 </tr>
 </tbody>
 </table>
@@ -1044,8 +1040,8 @@ this exercise’s own age literature prefers; the bundles below are used here
 simply as several differently sized, differently located anatomical
 comparisons.</p>
 <p>The activity compares two models at a time on <strong>one fixed cohort and one fixed
-set of folds</strong>, so any difference is a real difference between feature sets. It
-shows out-of-sample scores only – never training scores.</p>
+evaluation procedure</strong>, so any difference is a real difference between feature
+sets. It shows out-of-sample scores only – never training scores.</p>
 <iframe
   title="Interactive feature-set comparison for predicting age from brain structure"
   src="../../_static/widgets/app/index.html?config=../configs/regression_compare.json"
@@ -1068,9 +1064,9 @@ as your final reported number? Why or why not?</p></li>
 </ol>
 </div>
 <p>Trying many configurations is <strong>exploratory model comparison</strong>. If you pick the
-best-looking one and quote its cross-validated R² as “the” performance, that
-number is optimistic – you chose it <em>because</em> it looked good on this data. A
-locked test set or a nested procedure is needed for an honest final claim.</p>
+best-looking one and quote its R² as “the” performance, that number is
+optimistic – you chose it <em>because</em> it looked good on this data. A locked
+test set or a nested procedure is needed for a trustworthy final claim.</p>
 </section>
 <section id="what-does-sample-size-change">
 <h2>5. What does sample size change?<a class="headerlink" href="#what-does-sample-size-change" title="Link to this heading">#</a></h2>
@@ -1090,7 +1086,7 @@ bilateral anatomical bundles (each at most 12 columns) was scored using only
 the training partition, against a rule fixed before any candidate was
 scored – a clear upward trend in the typical held-out result as the training
 size grows, instability that narrows materially, and a final result strong
-enough to be worth plotting. This bundle was the first predeclared candidate
+enough to be worth plotting. This bundle was the first candidate
 whose training-only result cleared that rule, not the smallest p or the
 best-looking curve; the other candidates that were scored, including ones not
 used here, are reported alongside this notebook.</p>
@@ -1128,7 +1124,7 @@ one lucky or unlucky draw.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_train = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train_ss</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_test = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_test_ss</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_features (p) = </span><span class="si">{</span><span class="n">X_ss</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_train_ss</span><span class="p">)]</span>   <span class="c1"># predeclared; always well above p (10)</span>
+<span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_train_ss</span><span class="p">)]</span>   <span class="c1"># chosen in advance; always well above p (10)</span>
 <span class="n">n_rep</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">lc_med_r2</span><span class="p">,</span> <span class="n">lc_lo_r2</span><span class="p">,</span> <span class="n">lc_hi_r2</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
 <span class="n">lc_med_mse</span><span class="p">,</span> <span class="n">lc_lo_mse</span><span class="p">,</span> <span class="n">lc_hi_mse</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
@@ -1200,7 +1196,7 @@ n_train = 753   n_test = 251   n_features (p) = 10
 <div class="note admonition">
 <p class="admonition-title">What the learning curve shows – and does not</p>
 <p>Median held-out R² climbs steadily as <code class="docutils literal notranslate"><span class="pre">n_train</span></code> grows, and the 10th-90th
-percentile spread narrows sharply alongside it – the honest, typical shape
+percentile spread narrows sharply alongside it – the typical shape
 for a fixed, modest feature set that is never close to <code class="docutils literal notranslate"><span class="pre">n_train</span></code> (every
 plotted size is at least 4x <code class="docutils literal notranslate"><span class="pre">p</span> <span class="pre">=</span> <span class="pre">10</span></code>). This is <strong>not</strong> a claim that more
 data always helps on any single draw: at some neighbouring sizes an unlucky
@@ -1208,17 +1204,16 @@ sample can still score worse than a lucky one at a slightly smaller size –
 read the <em>median trend and the narrowing band</em>, not any one repeat.</p>
 <p>This curve looks nothing like Section 2’s whole-cortex (<code class="docutils literal notranslate"><span class="pre">p</span> <span class="pre">=</span> <span class="pre">360</span></code>) recipe
 would if swept the same way: that recipe’s own sample-size behaviour near
-<code class="docutils literal notranslate"><span class="pre">n_train</span> <span class="pre">=</span> <span class="pre">p</span></code> is a real, separate, more advanced phenomenon (documented in
-the audit behind this notebook, not shown here) that this section’s much
-smaller, fixed feature set exists specifically to avoid, so that training-set
-size alone is easy to see.</p>
+<code class="docutils literal notranslate"><span class="pre">n_train</span> <span class="pre">=</span> <span class="pre">p</span></code> is a real, separate, more advanced phenomenon, beyond the scope
+of this notebook, that this section’s much smaller, fixed feature set exists
+specifically to avoid, so that training-set size alone is easy to see.</p>
 </div>
 </section>
 <section id="in-summary">
 <h2>In summary<a class="headerlink" href="#in-summary" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p>An honest performance estimate fits on training data and scores on data the
-model has never seen. Scoring on the fitting rows – whether they are the
+<li><p>A performance estimate that fits on training data and scores on data the
+model has never seen avoids this inflation. Scoring on the fitting rows – whether they are the
 training set (optimistic) or, worse, the test set (invalid, and here
 literally underdetermined) – inflates the number.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">age</span></code> has a genuinely positive held-out R² from cortical structure alone.</p></li>
@@ -1244,9 +1239,8 @@ one have meant instead?</p></li>
 <li><p>In Section 2, why does the explicit-scaling cell give the exact same R² and
 MSE as the pipeline-shortcut cell? Name one kind of model where that would
 <strong>not</strong> be true.</p></li>
-<li><p>Two feature sets in Section 4 give different cross-validated R². List three
-reasons other than “one set is biologically better” that could explain the
-gap.</p></li>
+<li><p>Two feature sets in Section 4 give different R². List three reasons other
+than “one set is biologically better” that could explain the gap.</p></li>
 <li><p>Section 5 uses a much smaller feature set than Sections 1-4. Name one thing
 in the plot, other than the median line itself, that tells you the rising
 trend is real and not one lucky run.</p></li>
@@ -1325,8 +1319,8 @@ point just because one run’s score happened to look good?</p></li>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-modelling-table">1. The modelling table</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-honest-linear-regression-workflow">2. One honest linear-regression workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#our-data-table">1. Our data table</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-one-linear-regression-workflow">2. Building one linear-regression workflow</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#three-ways-to-score-the-same-model">3. Three ways to score the same model</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-feature-sets">4. Comparing feature sets</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-does-sample-size-change">5. What does sample size change?</a></li>

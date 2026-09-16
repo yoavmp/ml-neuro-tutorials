@@ -38,6 +38,8 @@
       "book/downloads/chapter_02/exercise_02_portable.ipynb",
     "chapters/chapter_03/exercise_03.html":
       "book/downloads/chapter_03/exercise_03_portable.ipynb",
+    "chapters/chapter_04/exercise_04.html":
+      "book/downloads/chapter_04/exercise_04_portable.ipynb",
   };
 
   function portableFor(pathname) {

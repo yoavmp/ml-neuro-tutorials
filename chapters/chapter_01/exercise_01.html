@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=297790ed" />
-    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-DQfe1L5c.css?v=a38e8b12" />
+    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-KKIm8kz5.css?v=303c59b4" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -67,9 +67,9 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_01/exercise_01';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=aa0ac59f"></script>
+    <script src="../../_static/launch-buttons.js?v=07ce6fd0"></script>
     <script src="../../_static/activity-resize.js?v=c26e5b35"></script>
-    <script src="../../_static/widgets/app/assets/index-B93L96BN.js?v=e7aa48df"></script>
+    <script src="../../_static/widgets/app/assets/index-DWY8zV6Y.js?v=56e4150d"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Exercise 2: Regression" href="../chapter_02/exercise_02.html" />
@@ -227,6 +227,7 @@
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 1 — Exploratory data analysis (EDA)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_02/exercise_02.html">Exercise 2: Regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_03/exercise_03.html">Exercise 3: KNN and the Bias–Variance Tradeoff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Classification with Logistic Regression</a></li>
 </ul>
 </details></li>
 </ul>
@@ -439,13 +440,13 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#design-a-complete-case-dataset">Design a complete-case dataset</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#complete-case-retention-explorer">Complete-case retention explorer</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#your-decision">Your decision</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approaches-to-missing-data">Common approaches to missing data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ways-to-handle-missing-data">Ways to handle missing data</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-incomplete-observations">Removing incomplete observations</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imputing-a-numerical-variable">Imputing a numerical variable</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approach">Common approach:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#our-approach-in-this-exercise">Our approach in this exercise</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributions-and-feature-correlations">5. Distributions and feature correlations</a><ul class="nav section-nav flex-column">
@@ -469,12 +470,6 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="exercise-1-exploratory-data-analysis-eda">
 <h1>Exercise 1 — Exploratory data analysis (EDA)<a class="headerlink" href="#exercise-1-exploratory-data-analysis-eda" title="Link to this heading">#</a></h1>
-<p>This exercise applies <strong>exploratory data analysis (EDA)</strong> to the phenotypic
-table of the Autism Brain Imaging Data Exchange II (ABIDE-II). We inspect the
-table’s structure, convert coded variables to categories, quantify and reason
-about missing data, describe and compare distributions, and read correlations
-together with the sample size behind each number. The aim is not a predictive
-model but a defensible understanding of the data before any modelling begins.</p>
 <div class="how-to-use admonition">
 <p class="admonition-title">Run or download this notebook</p>
 <p>This page is fully readable as it is, and the interactive activities work
@@ -490,6 +485,10 @@ embedded activities for links back to this page.</p>
 </div>
 <section id="what-this-notebook-covers">
 <h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
+<p>This is Exercise 1 of <em>Machine Learning for Neuroscience</em>. We apply
+<strong>exploratory data analysis (EDA)</strong> to real ABIDE-II data, so that the
+dataset is understood clearly before any modelling begins.</p>
+<p>In this notebook, you will:</p>
 <ol class="arabic simple">
 <li><p><strong>Importing and data loading</strong> — a small curated slice of the ABIDE-II
 phenotypic table.</p></li>
@@ -510,12 +509,7 @@ read from a pinned public URL, so the first run needs internet access.</p>
 </section>
 <section id="importing-and-data-loading">
 <h2>1. Importing and data loading<a class="headerlink" href="#importing-and-data-loading" title="Link to this heading">#</a></h2>
-<div class="cell tag_hide-cell docutils container">
-<details class="admonition hide above-input">
-<summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell content</p>
-<p class="expanded admonition-title">Hide code cell content</p>
-</summary>
+<div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -526,7 +520,6 @@ read from a pinned public URL, so the first run needs internet access.</p>
 </pre></div>
 </div>
 </div>
-</details>
 </div>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -535,12 +528,7 @@ read from a pinned public URL, so the first run needs internet access.</p>
 <p class="sd-card-text">For this exercise we use a deliberately small curated slice: 13 columns covering identifiers, core demographics, diagnosis, a few cognitive scores, and a couple of autism-assessment totals. The meaning and coding of every variable are documented in the official <a class="reference external" href="https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf">ABIDE-II Phenotypic Data Legend</a>.</p>
 <p class="sd-card-text">Some variables are recorded for nearly every participant; others were collected only at particular sites or for particular participant groups.</p>
 </div>
-</details><div class="cell tag_hide-cell docutils container">
-<details class="admonition hide above-input">
-<summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell content</p>
-<p class="expanded admonition-title">Hide code cell content</p>
-</summary>
+</details><div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -552,8 +540,8 @@ read from a pinned public URL, so the first run needs internet access.</p>
     <span class="s2">"tu-machine-learning-yarkoni/data/abide2_phenotypic.csv"</span>
 <span class="p">)</span>
 
-<span class="c1"># Curated column subset for this exercise. The single source of truth is</span>
-<span class="c1"># book/config/eda_phenotype_columns.json; the portable notebook embeds a copy.</span>
+<span class="c1"># Curated column subset for this exercise. The 13 columns used throughout</span>
+<span class="c1"># this notebook are listed below.</span>
 <span class="n">CURATED_COLUMNS</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span>
     <span class="n">Path</span><span class="p">(</span><span class="s2">"../../config/eda_phenotype_columns.json"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
 <span class="p">)</span>
@@ -572,7 +560,6 @@ read from a pinned public URL, so the first run needs internet access.</p>
 </pre></div>
 </div>
 </div>
-</details>
 </div>
 </section>
 <section id="data-inspection">
@@ -1736,8 +1723,8 @@ In pandas, missing values are usually represented as <code class="docutils liter
 </div></div></div>
 </div>
 </section>
-<section id="common-approaches-to-missing-data">
-<h3>Common approaches to missing data<a class="headerlink" href="#common-approaches-to-missing-data" title="Link to this heading">#</a></h3>
+<section id="ways-to-handle-missing-data">
+<h3>Ways to handle missing data<a class="headerlink" href="#ways-to-handle-missing-data" title="Link to this heading">#</a></h3>
 <p>There is no single correct method for handling every missing value. What matters most is <em>why</em> the values are missing and what the analysis needs to do.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
@@ -2034,8 +2021,8 @@ Name: count, dtype: int64
 <p class="sd-card-text">If site composition also differs between diagnostic groups, the model could appear to predict diagnosis while partly learning where the participant was scanned.</p>
 </div>
 </details></section>
-<section id="common-approach">
-<h3>Common approach:<a class="headerlink" href="#common-approach" title="Link to this heading">#</a></h3>
+<section id="our-approach-in-this-exercise">
+<h3>Our approach in this exercise<a class="headerlink" href="#our-approach-in-this-exercise" title="Link to this heading">#</a></h3>
 <p>For the exploratory analysis (as done here), we will not immediately impute or delete all missing values. Instead, we will:</p>
 <ol class="arabic simple">
 <li><p>preserve the original phenotype table;</p></li>
@@ -2044,7 +2031,7 @@ Name: count, dtype: int64
 <li><p>select variables according to the specific analysis;</p></li>
 <li><p>perform deletion or imputation only when required.</p></li>
 </ol>
-<p><strong>For later machine-learning analyses</strong>, imputation parameters must be estimated using the training data only. Calculating an imputation value from the complete dataset before cross-validation would allow information from the test participants to influence preprocessing and would constitute data leakage.</p>
+<p><strong>For later machine-learning analyses</strong>, imputation parameters must be estimated using the training data only. Calculating an imputation value from the complete dataset before splitting into training and test participants would allow information from the test participants to influence preprocessing and would constitute data leakage.</p>
 </section>
 </section>
 <section id="distributions-and-feature-correlations">
@@ -2589,13 +2576,13 @@ Control                   536   115.0  114.9
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#design-a-complete-case-dataset">Design a complete-case dataset</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#complete-case-retention-explorer">Complete-case retention explorer</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#your-decision">Your decision</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approaches-to-missing-data">Common approaches to missing data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ways-to-handle-missing-data">Ways to handle missing data</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-incomplete-observations">Removing incomplete observations</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imputing-a-numerical-variable">Imputing a numerical variable</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-categories">Handling missing categories</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-approach">Common approach:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#our-approach-in-this-exercise">Our approach in this exercise</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributions-and-feature-correlations">5. Distributions and feature correlations</a><ul class="nav section-nav flex-column">
