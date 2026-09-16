@@ -324,3 +324,121 @@ Actions run was triggered or monitored. All work is local to the
   chapter pages — doing so was judged out of scope for this WP's bounded
   verification budget (§8 of the spec explicitly caps this to "focused"
   gates).
+
+  **Addressed by the cross-chapter verification addendum below.**
+
+---
+
+## Cross-chapter verification addendum
+
+Requested because one of the original bug screenshots showed the Exercise 3
+KNN A/B/C activity specifically, and — as §10 above already flagged — no
+automated built-book spec had checked it, or any Exercise 2/3/4 activity,
+before this addendum. The implementation itself (§2–§4 above) already applied
+identically to every Plotly component; this addendum only extends the
+*automated verification*, per the note in §10.
+
+### Activities checked
+
+All against the **built** Jupyter Book (`book/_build/html`, already current
+for this branch — no rebuild was required) over real HTTP
+(`http://localhost:4174`), OS/browser color scheme forced to `light`
+throughout via `page.emulateMedia`, so the only way "dark" can appear
+anywhere is via the book's own toggle button — the exact mismatch the
+pre-WP22 code could not handle.
+
+| Exercise | Activity | Figures checked |
+|---|---|---|
+| 2 | `regression-compare` | Both panels (`regression-A-plot`, `regression-B-plot`) |
+| 3 | `knn-abc` | **All three panels** — A (valid), B (resubstitution), C (invalid/leakage) |
+| 3 | `knn-explore` | The observed-vs-predicted scatter (`knn-scatter-plot`) |
+| 4 | `classification-threshold` | The ROC plot (`cls-roc-plot`) |
+| 4 | `classification-imbalance` | The accuracy-comparison bar chart (`cls-imb-plot`) |
+
+8 distinct Plotly figures across 5 components, 3 test cases (one per exercise
+page, each doing a single navigation + single dark-toggle click, then
+checking every activity iframe already present on that page).
+
+### Exact assertions, per figure
+
+1. No `[data-testid="widget-error"]` element present in the iframe.
+2. The iframe's own `document.documentElement.getAttribute("data-theme")` is
+   `"dark"` (set by `main.ts`'s theme bridge, §3 of the main report).
+3. `getComputedStyle(document.body).backgroundColor` is `rgb(28, 26, 38)`
+   (`#1c1a26`, the dark `--bg` token).
+4. Plotly's own `_fullLayout.paper_bgcolor` and `.plot_bgcolor` are both
+   `"rgba(0, 0, 0, 0)"` — transparent by design in both themes (§4 of the
+   main report); the dark surface comes from the card underneath.
+5. The first `.gridlayer path`'s computed `stroke` is `rgb(58, 58, 58)`
+   (`#3a3a3a`); the first axis tick text's computed `fill` is
+   `rgb(201, 201, 201)` (`#c9c9c9`).
+6. At least one principal data mark is present and its resolved color — read
+   from Plotly's own `_fullData[i].marker.color`/`.line.color`, not computed
+   SVG style (see "why `_fullData`" below) — is not black
+   (`rgb(0, 0, 0)`/`#000000`/`#000`/`black`), and additionally matches the
+   *exact* expected dark palette value for that trace (e.g.
+   `rgba(120,170,210,0.55)` for every scatter marker sharing
+   `theme.markerPrimary`, `#d98b5f` for every dashed diagonal reference line,
+   `#8fb8da`/`#b0b0b0`/`#f0915c` for the ROC curve/chance line/threshold
+   marker, `#5a9bd4`/`#d9a441` for the imbalance chart's two bars).
+7. Every `.draglayer rect`'s computed `fill` is `rgba(0, 0, 0, 0)` (or
+   `transparent`) and `stroke` is `none` (or `rgba(0, 0, 0, 0)`).
+8. (KNN A/B/C only) All three panels' background, gridline color, tick-text
+   color, and marker-color *set* are asserted equal to each other — a
+   stronger, structural version of "same dark styling" than a visual
+   comparison would give.
+
+### Why `_fullData` instead of computed SVG style
+
+`regression-compare.ts`, `knn-abc.ts`, and `knn-explore.ts`'s scatter panel
+all use Plotly's `scattergl` trace type (confirmed by reading each file's
+`type: "scattergl" as const`), which renders through WebGL — there is no
+per-point `<path class="point">` SVG element whose `fill` a
+`getComputedStyle` check could read, unlike the regular `"scatter"` type used
+by Exercise 1's correlation activity. Reading `marker.color`/`line.color` off
+`_fullData` — Plotly's own fully-resolved trace data, what it actually used
+to draw the figure — works identically for every trace type (`scattergl`,
+`scatter`, `bar`) and is a more direct verification of the same code path
+`plotly-policy.ts` feeds than a rendered-pixel/SVG-attribute check would be.
+
+### Results
+
+**3/3 passed**, runtime 5.4s for the corrected run (all three exercise pages
+together). First run: **3/3 failed**, all three at the identical assertion
+(`paper_bgcolor`/`plot_bgcolor` transparency check) with the identical cause.
+
+### Implementation correction required
+
+One bounded correction, per the spec's bounded-execution rule. The new
+spec's own expected string for Plotly's transparent background was
+`"rgba(0,0,0,0)"` (no spaces — the literal string `plotly-policy.ts` passes
+into `buildPlotLayout`'s `paper_bgcolor`/`plot_bgcolor`), but Plotly
+normalizes it internally to `"rgba(0, 0, 0, 0)"` (with spaces) before storing
+it on `_fullLayout`. This is a formatting mismatch in the new test's own
+expectation, not a product defect: every other assertion in every test
+(theme sync, all five palette-color checks, drag-layer transparency, the
+three-panel structural-equality check) already passed on the first run: only
+this one string literal was wrong, and identically wrong in all three tests
+since they share the same `assertDarkFigure` helper. Fixed by adding the two
+spaces; the single allowed rerun passed 3/3, confirming this was purely a
+test-authoring issue.
+
+No change was made to any implementation file
+(`theme.ts`/`plotly-policy.ts`/any component/`styles.css`/`main.ts`) as part
+of this addendum — the spec in §1 of this addendum ("preserve the current
+implementation... do not redesign the theme mechanism unless these tests
+expose a real defect") was followed: no real defect was exposed.
+
+### Commit / branch state
+
+- Implementation commit SHA (the WP22 core fix, unchanged by this addendum):
+  `6bce45c88268559efb4c8ca95cfaaac71a66bb7c`
+- Addendum commit SHA / final local branch SHA: see the final chat response
+  to Yoav (not duplicated here, to avoid amending this report merely to
+  insert its own commit's SHA — same convention as `WP20_REPORT.md` and the
+  main WP22 report above).
+
+**Nothing was merged, pushed, or deployed.** All work stays local to
+`fix/published-dark-mode-plots`. No GitHub Actions run was triggered or
+monitored. The pre-existing untracked `WPs/reports/WP16_ARCHITECT_REPORT.md`
+and `WPs/reports/WP21_DEPLOYMENT_REPORT.md` were not touched.

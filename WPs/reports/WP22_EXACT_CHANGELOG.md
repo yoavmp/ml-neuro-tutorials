@@ -105,6 +105,23 @@ Base commit: `4f9bc7014625ed0a50df938f393b957a25c04037` (WP22 spec checkpoint)
   read the deduplicated `theme.markerPrimary`/`theme.diagonalLine` from
   `plotly-policy.ts` instead of each re-deriving the identical ternary.
 
+## Cross-chapter verification addendum
+
+- **`interactive/e2e-book/wp22-cross-chapter-dark-mode.spec.ts`** (new, 3 tests)
+  Built-book Playwright spec extending dark-mode coverage beyond Exercise 1
+  (`chapter01-dark-mode.spec.ts`) to one Plotly activity from every other
+  exercise: `regression-compare` (Exercise 2, both panels), `knn-abc`
+  (Exercise 3, all three panels — the activity shown in the original bug
+  screenshot) plus `knn-explore`'s scatter, and `classification-threshold`'s
+  ROC plot plus `classification-imbalance`'s bar chart (Exercise 4). Reads
+  each figure's principal data-mark color directly off Plotly's own
+  `_fullData[i].marker.color`/`.line.color` rather than computed SVG style,
+  since three of these activities' scatter panels use the `scattergl` (WebGL)
+  trace type, which has no per-point SVG element to inspect. See
+  `WP22_REPORT.md` §"Cross-chapter verification addendum" for the full
+  assertion list, results, and the one bounded correction required (a test
+  formatting mismatch, not a product defect).
+
 ## Not changed
 
 Notebook teaching content, datasets, participant splits, model parameters,
