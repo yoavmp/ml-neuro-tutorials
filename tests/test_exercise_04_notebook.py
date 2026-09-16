@@ -109,7 +109,7 @@ class Notebook(unittest.TestCase):
         headings = (
             "## 1. The ABIDE classification data",
             "## 2. From a linear score to a probability",
-            "## 3. One honest logistic-regression model",
+            "## 3. One logistic-regression model",
             "## 4. Classification outcomes and metrics",
             "## 5. Interactive activity: choosing a decision threshold",
             "## 6. Interactive activity: class imbalance and misleading accuracy",

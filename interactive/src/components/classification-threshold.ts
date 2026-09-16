@@ -68,7 +68,7 @@ function mount(
   cohortLine.setAttribute("data-testid", "cls-threshold-cohort");
   cohortLine.textContent =
     `Test set: ${data.split.nTest} participants (${data.positiveClass} = positive class), never refit -- ` +
-    `these are the exact honest held-out predicted probabilities from ${data.model}.`;
+    `these are the exact held-out predicted probabilities from ${data.model}.`;
   container.appendChild(cohortLine);
 
   // --- controls: slider + synchronized numeric input + reset -------------

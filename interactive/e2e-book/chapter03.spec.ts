@@ -131,7 +131,7 @@ test.describe("Chapter 3 built page — embedded KNN k-exploration", () => {
 // built Exercise 3 HTML page, served beneath the simulated GitHub Pages
 // project subpath.
 const ABC_IFRAME_SELECTOR =
-  'iframe[title="Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure"]';
+  'iframe[title="Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure"]';
 
 async function abcFrame(page: import("@playwright/test").Page): Promise<Frame> {
   const handle = await page.locator(ABC_IFRAME_SELECTOR).elementHandle();

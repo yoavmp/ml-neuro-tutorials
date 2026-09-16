@@ -408,7 +408,7 @@ _CH3_IFRAME_REPLACEMENT = (
 )
 
 _CH3_ABC_IFRAME_REPLACEMENT = (
-    "### Try the honest-vs-invalid comparison yourself on the course website\n"
+    "### Try the correct-vs-misleading comparison yourself on the course website\n"
     "\n"
     "The interactive activity lets you drag a slider across every valid k (from\n"
     "1 through the smaller of the training and test sample sizes) and watch all\n"
@@ -424,7 +424,7 @@ _CH3_ABC_IFRAME_REPLACEMENT = (
 )
 
 _CH3_ABC_FOLLOWUP_CODE = (
-    "# Static three-panel equivalent of the honest-vs-invalid activity above.\n"
+    "# Static three-panel equivalent of the correct-vs-misleading activity above.\n"
     "# Change k_demo (from 1 to min(n_train, n_test)) and rerun this cell.\n"
     "k_demo = K_EXAMPLE\n"
     "\n"
@@ -472,17 +472,17 @@ CHAPTER_03 = NotebookSpec(
         "Interactive KNN neighbour-count exploration for predicting age from brain structure": (
             _CH3_IFRAME_REPLACEMENT
         ),
-        "Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure": (
+        "Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure": (
             _CH3_ABC_IFRAME_REPLACEMENT
         ),
     },
     iframe_followup_code={
-        "Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure": (
+        "Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure": (
             _CH3_ABC_FOLLOWUP_CODE
         ),
     },
     iframe_followup_ids={
-        "Interactive honest-vs-invalid KNN evaluation for predicting age from brain structure": (
+        "Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure": (
             "portable-knn-abc-demo"
         ),
     },

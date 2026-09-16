@@ -65,7 +65,7 @@ SMOKE = {
             "age available for 1004 of 1004",
             "k = 20",
             "held-out R^2 = 0.664",
-            "N_fit = 564   N_val = 189",
+            "fitting participants (N_fit) = 564   validation participants (N_val) = 189",
             "every validation prediction equals the fitting-set mean",
         ),
     },

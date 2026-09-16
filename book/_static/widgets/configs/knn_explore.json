@@ -16,7 +16,7 @@
   "reflectionPrompts": [
     "Move k from 1 up to about 20. What happens to the gap between fitting error and validation error, and why does that gap mean something different here than it did for linear regression's train/test gap?",
     "Move k all the way to its maximum. Confirm every predicted point in the scatter plot lands on the same horizontal line. What is that line?",
-    "Find the k with the lowest validation error. Would you trust that exact k as your final reported choice? What would you need to do differently for an honest final estimate?",
+    "Find the k with the lowest validation error. Would you trust that exact k as your final reported choice? What would you need to do differently for a trustworthy final estimate?",
     "At a small k (say k=3), switch between training samples A, B and C. Then do the same at a large k (say k=300). At which k does the scatter plot change more between samples, and what does that tell you about variance?",
     "Watch the binned calibration plot as k grows large. Which end of the age range gets overpredicted, and which gets underpredicted? Why does averaging over more neighbours produce exactly that pattern?"
   ]

@@ -105,9 +105,9 @@ class Notebook(unittest.TestCase):
         headings = (
             "## 1. Our data table",
             "## 2. One standard KNN regression workflow",
-            "## 3. Honest evaluation versus invalid alternatives",
+            "## 3. Correct and misleading ways to evaluate a model",
             "## 4. The classic bias–variance tradeoff",
-            "## 5. From k = 1 to every participant: an empirical curve",
+            "## 5. How performance changes across every k",
             "## 6. Explore k yourself",
         )
         for head in headings:
@@ -203,7 +203,7 @@ class Notebook(unittest.TestCase):
         srcs = [_src(c) for c in iframe_cells]
         self.assertTrue(any("configs/knn_abc.json" in s for s in srcs))
         self.assertTrue(
-            any('title="Interactive honest-vs-invalid KNN evaluation' in s for s in srcs)
+            any('title="Interactive comparison of correct and misleading KNN evaluation' in s for s in srcs)
         )
 
     def test_k1_endpoint_explanation_present_for_the_interactive_activity(self):
@@ -282,7 +282,7 @@ class Notebook(unittest.TestCase):
         self.assertIn("age available for 1004 of 1004", out)
         self.assertIn("k = 20", out)
         self.assertIn("held-out R^2 = 0.664", out)
-        self.assertIn("N_fit = 564   N_val = 189", out)
+        self.assertIn("fitting participants (N_fit) = 564   validation participants (N_val) = 189", out)
         self.assertIn("lowest validation error", out)
         self.assertIn("Exercise 2 linear regression   held-out R^2 = 0.469", out)
 
