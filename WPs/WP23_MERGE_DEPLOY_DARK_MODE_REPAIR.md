@@ -9,7 +9,10 @@
 
 **Working branch:** `fix/published-dark-mode-plots`
 
-**Status:** `RELEASE IN PROGRESS`
+**Status:** `COMPLETED`
+
+**Release SHA (deployed to GitHub Pages):** `4237ce7b3528526066bcda03e6e94545ca29ad14`
+**Documentation SHA (local-only, not pushed):** see `WPs/reports/WP23_REPORT.md` §1 (recorded after this commit is made)
 
 ## Authorized actions
 
@@ -56,3 +59,7 @@ Four checks were performed before proceeding to merge, all of which passed:
 4. The WP23 specification commit (`af3e9ea...`) contains only its intended file (`WPs/WP23_MERGE_DEPLOY_DARK_MODE_REPAIR.md`) — confirmed.
 
 Because the checkpoint commit was already a shared ancestor of the feature branch (not a divergent, conflicting change), merging `fix/published-dark-mode-plots` into local `main` introduces no duplicate content and is safe to proceed with, per explicit authorization to proceed with option 1 (no reset of local `main`).
+
+## Outcome
+
+Full results — merge SHA, push confirmation, GitHub Actions run details, and live dark-mode verification against production — are recorded in `WPs/reports/WP23_REPORT.md` and `WPs/reports/WP23_EXACT_CHANGELOG.md`. Summary: merge, push, and deployment all succeeded; the live site was verified against production with a light-OS-emulated browser and all dark-mode checks passed for Exercises 1–4, including the Exercise 3 KNN A/B/C activity specifically called out in the original bug report.
