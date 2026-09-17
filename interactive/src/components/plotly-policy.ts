@@ -94,6 +94,14 @@ export interface LayoutOverrides {
 // differs (e.g. a taller bottom margin for rotated site-name tick labels).
 const DEFAULT_MARGIN = { t: 12, r: 12, b: 48, l: 56 };
 
+// WP27R: the "Choose k Before Revealing the Test Set" activity grew a third
+// stacked subplot (train / validation / test), each with its own Plotly axis
+// object (`xaxis`/`xaxis2`/`xaxis3`, `yaxis`/`yaxis2`/`yaxis3`) sharing the
+// same axis policy below. Rather than hand-rolling that policy again per
+// extra axis, any override key matching this pattern gets the same
+// `axisDefaults` merge that `xaxis`/`yaxis` already receive.
+const EXTRA_AXIS_KEY_RE = /^[xy]axis\d+$/;
+
 export function buildPlotLayout(theme: PlotlyTheme, overrides: LayoutOverrides = {}): Layout {
   const { margin, xaxis, yaxis, legend, font, ...rest } = overrides;
 
@@ -118,6 +126,14 @@ export function buildPlotLayout(theme: PlotlyTheme, overrides: LayoutOverrides =
     font: { color: theme.legendText },
   };
 
+  const extraAxes: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (EXTRA_AXIS_KEY_RE.test(key)) {
+      extraAxes[key] = { ...axisDefaults, ...(value as AxisOverrides) };
+      delete rest[key];
+    }
+  }
+
   return {
     autosize: true,
     dragmode: false,
@@ -130,5 +146,6 @@ export function buildPlotLayout(theme: PlotlyTheme, overrides: LayoutOverrides =
     legend: { ...defaultLegend, ...legend },
     xaxis: { ...axisDefaults, ...xaxis },
     yaxis: { ...axisDefaults, ...yaxis },
+    ...extraAxes,
   } as Layout;
 }

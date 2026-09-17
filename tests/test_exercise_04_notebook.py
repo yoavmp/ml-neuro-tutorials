@@ -47,6 +47,20 @@ STABILITY_DATA = json.loads(
 LOCK_TEST_TS = (
     REPO_ROOT / "interactive" / "src" / "components" / "validation-lock-test.ts"
 ).read_text(encoding="utf-8")
+LOCK_TEST_CONFIG = json.loads(
+    (REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "validation_lock_test.json").read_text(
+        encoding="utf-8"
+    )
+)
+NESTED_CV_DATA = json.loads(
+    (REPO_ROOT / "book" / "_static" / "widgets" / "data" / "wp27_nested_cv_explorer.json").read_text(
+        encoding="utf-8"
+    )
+)
+CUSTOM_CSS = (REPO_ROOT / "book" / "_static" / "custom.css").read_text(encoding="utf-8")
+
+# WP27R's required hidden-test candidate values (spec section 2).
+WP27R_REQUIRED_LOCK_TEST_KS = {8, 10, 15, 20, 25, 30, 50}
 
 # WP26R's parent commit, the last commit before WP27's own spec commit
 # (28d1e9b) -- see the WP27 spec section 2/29 and the hand-off's starting SHA.
@@ -290,7 +304,7 @@ class Notebook(unittest.TestCase):
     def test_reset_behavior_is_explicit(self):
         self.assertIn('resetBtn.textContent = "Reset Activity";', LOCK_TEST_TS)
         self.assertIn("would not be a valid analysis", LOCK_TEST_TS)
-        self.assertIn("the test set is looked at once", LOCK_TEST_TS)
+        self.assertIn("the test set is examined once", LOCK_TEST_TS)
 
     # -- 21/22. nested CV uses inner+outer loops, scaling within folds -------
 
@@ -316,8 +330,8 @@ class Notebook(unittest.TestCase):
 
     def test_outer_metrics_not_inner_score_presented_as_performance_estimate(self):
         self.assertIn(
-            "The best *inner*\ncross-validation score is not reported as a final performance "
-            "estimate",
+            "The\nbest *inner* cross-validation score is not reported as a final\n"
+            "performance estimate",
             self.md,
         )
         self.assertIn("mean outer-test MSE = {nested['outer_test_mse'].mean()", self.code)
@@ -455,6 +469,169 @@ class SyllabusUnchanged(unittest.TestCase):
 
     def test_syllabus_source_unchanged_since_wp27_base_commit(self):
         diff = _git("diff", f"{WP27_BASE_COMMIT}..HEAD", "--", "book/syllabus.md")
+        self.assertEqual(diff, "", diff)
+
+
+class WP27RGridsAndActivity(unittest.TestCase):
+    """WP27R spec section 9: the densified grids, the revealed third panel,
+    the replaced diagram, and the surrounding prose/config changes."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.nb = nbformat.read(NB_PATH, as_version=4)
+        cls.cells = cls.nb.cells
+        cls.md = "\n\n".join(_src(c) for c in cls.cells if c["cell_type"] == "markdown")
+        cls.code = "\n\n".join(_src(c) for c in cls.cells if c["cell_type"] == "code")
+        cls.all_output = _collect_output(cls.nb)
+        cls.audit = json.loads(
+            (REPO_ROOT / "scripts" / "wp27_validation_audit_result.json").read_text(encoding="utf-8")
+        )
+
+    # -- hidden-test candidate grid ------------------------------------------
+
+    def test_hidden_test_candidate_grid_includes_the_required_dense_values(self):
+        b = self.audit["part_b_train_val_test_tuning"]
+        self.assertTrue(WP27R_REQUIRED_LOCK_TEST_KS.issubset(set(b["candidate_ks"])))
+        self.assertEqual(LOCK_TEST_CONFIG["defaultK"], b["validation_selected_k"])
+
+    def test_no_stale_sparse_12_outside_the_nested_cv_grid(self):
+        b = self.audit["part_b_train_val_test_tuning"]
+        self.assertNotIn(12, b["candidate_ks"])
+        # 12 remains legitimate inside the *different*, denser nested-CV grid.
+        c = self.audit["part_c_nested_cv"]
+        self.assertIn(12, c["candidate_ks"])
+
+    def test_candidate_grid_consistent_across_script_notebook_and_widget_data(self):
+        b = self.audit["part_b_train_val_test_tuning"]
+        self.assertIn(f"CANDIDATE_KS = {b['candidate_ks']}", self.code)
+        data = json.loads(
+            (REPO_ROOT / "book" / "_static" / "widgets" / "data" / "wp27_validation_lock_test.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(data["candidateKs"], b["candidate_ks"])
+
+    # -- three-panel reveal, hidden until locked -----------------------------
+
+    def test_third_panel_trace_is_constructed_only_when_locked(self):
+        # The test trace literally does not exist as an object until `locked`
+        # is true -- no test value can reach a Plotly trace, hover template,
+        # or DOM node before that.
+        self.assertIn("if (locked) {", LOCK_TEST_TS)
+        traces_block = LOCK_TEST_TS.split("const traces: PlotData[] = [trainTrace, valTrace];", 1)[1]
+        traces_block = traces_block.split("const [yMin, yMax]", 1)[0]
+        self.assertIn("if (locked) {", traces_block)
+        self.assertIn("testMseIfLocked", traces_block)
+
+    def test_selected_k_markers_drawn_on_every_panel(self):
+        self.assertIn("markerShapes", LOCK_TEST_TS)
+        self.assertIn("data.trainingSelectedK", LOCK_TEST_TS)
+        self.assertIn("data.validationSelectedK", LOCK_TEST_TS)
+        self.assertIn("chosenK", LOCK_TEST_TS)
+
+    def test_methodology_warning_present_and_teaching_only(self):
+        self.assertIn("validation-lock-test-methodology-warning", LOCK_TEST_TS)
+        self.assertIn("teaching demonstration", LOCK_TEST_TS)
+        self.assertIn("must not change now", LOCK_TEST_TS)
+
+    def test_post_reveal_reflection_prompts_configured_and_distinct_from_pre_lock(self):
+        pre = set(LOCK_TEST_CONFIG["reflectionPrompts"])
+        post = set(LOCK_TEST_CONFIG["postRevealReflectionPrompts"])
+        self.assertTrue(pre.isdisjoint(post))
+        post_text = " ".join(LOCK_TEST_CONFIG["postRevealReflectionPrompts"]).lower()
+        self.assertIn("resemble", post_text)
+        self.assertIn("minimize test mse", post_text)
+        self.assertIn("must you not switch", post_text)
+        self.assertIn("meaning of the test set", post_text)
+
+    def test_notebook_has_a_second_think_first_block_after_the_activity(self):
+        self.assertEqual(self.md.count("```{admonition} Think"), 2)
+        self.assertIn("Think again, after revealing", self.md)
+        think_again = self.md.split("Think again, after revealing", 1)[1].split("```", 1)[0]
+        self.assertIn("resemble", think_again)
+        self.assertIn("not switch to it now", think_again)
+
+    # -- optional Python reproduction, collapsed on the website --------------
+
+    def test_optional_python_section_title_and_blurb(self):
+        self.assertIn(
+            "### Optional: Reproduce the Tuning Activity in Python\n"
+            "\n"
+            "The interactive activity above contains the main lesson. Expand this\n"
+            "optional section if you want to reproduce the analysis in Python.",
+            self.md,
+        )
+
+    def test_optional_reproduction_cells_are_hide_cell_on_the_website(self):
+        idx = next(i for i, c in enumerate(self.cells) if "STUDENT_CHOICE_K = validation_selected_k" in _src(c))
+        fit_val_idx = next(
+            i for i, c in enumerate(self.cells) if "X_fit, X_val, y_fit, y_val = train_test_split" in _src(c)
+        )
+        for i in (fit_val_idx, idx):
+            self.assertIn("hide-cell", self.cells[i]["metadata"].get("tags", []), f"cell {i} not hide-cell")
+
+    def test_optional_section_does_not_hide_the_conceptual_explanation(self):
+        # The "a few things to hold onto" interpretation is a markdown cell
+        # (never collapsible by hide-cell) placed after the optional code.
+        interp_idx = next(i for i, c in enumerate(self.cells) if "A few things to hold onto" in _src(c))
+        self.assertEqual(self.cells[interp_idx]["cell_type"], "markdown")
+
+    # -- nested-CV diagram ----------------------------------------------------
+
+    def test_mermaid_flowchart_removed(self):
+        self.assertNotIn("```mermaid", self.md)
+        self.assertNotIn("```mermaid", self.code)
+
+    def test_native_diagram_present_with_required_operation_labels(self):
+        self.assertIn('class="ml-ncv-diagram"', self.md)
+        self.assertIn("Outer cross-validation", self.md)
+        self.assertIn("Inner cross-validation", self.md)
+        self.assertIn("Choose <code>k</code>", self.md)
+        self.assertIn("Refit the selected <code>k</code> on all outer-training data", self.md)
+        self.assertIn("Evaluate the tuning procedure", self.md)
+        # never a raster screenshot
+        self.assertNotIn("<img", self.md)
+
+    def test_diagram_theme_tokens_defined_for_light_and_dark(self):
+        self.assertIn("--ml-ncv-outer-train", CUSTOM_CSS)
+        self.assertIn("--ml-ncv-outer-test", CUSTOM_CSS)
+        self.assertIn("--ml-ncv-inner-train", CUSTOM_CSS)
+        self.assertIn("--ml-ncv-inner-val", CUSTOM_CSS)
+        dark_block = CUSTOM_CSS.split('html[data-theme="dark"] {', 1)[1].split("\n}\n", 1)[0]
+        self.assertIn("--ml-ncv-outer-train", dark_block)
+        # every colored diagram element has a static fallback for contexts
+        # with no stylesheet at all (portable notebook, GitHub).
+        self.assertIn("var(--ml-ncv-outer-train, #", self.md)
+
+    # -- nested-CV candidate grid ---------------------------------------------
+
+    def test_nested_cv_grid_denser_between_10_and_30(self):
+        c = self.audit["part_c_nested_cv"]
+        in_range = [k for k in c["candidate_ks"] if 10 <= k <= 30]
+        self.assertGreaterEqual(len(in_range), 8, c["candidate_ks"])
+        self.assertIn(f"NESTED_CANDIDATE_KS = {c['candidate_ks']}", self.code)
+        self.assertEqual(NESTED_CV_DATA["candidateKs"], c["candidate_ks"])
+
+    def test_displayed_selected_k_table_matches_regenerated_audit(self):
+        c = self.audit["part_c_nested_cv"]
+        self.assertIn(f"selected k per outer fold: {c['selected_k_per_fold']}", self.all_output)
+        mean_mse_1dp = f"{c['mean_outer_test_mse']:.1f}"
+        self.assertIn(f"mean outer-test MSE = {mean_mse_1dp}", self.all_output)
+
+    def test_prose_reports_the_real_outcome_without_falsifying_it(self):
+        c = self.audit["part_c_nested_cv"]
+        if c["selected_k_varies_across_folds"]:
+            self.assertIn("no longer all agree", self.md)
+            self.assertNotIn("all five outer folds happened to select the same", self.md)
+        else:
+            self.assertIn("happened to select the same", self.md)
+        # the general possibility is still phrased as "can", not "will"
+        self.assertIn("outer folds *can* select different", self.md)
+
+    # -- untouched surfaces -----------------------------------------------
+
+    def test_word_course_overview_script_untouched(self):
+        diff = _git("diff", f"{WP27_BASE_COMMIT}..HEAD", "--", "scripts/build_course_overview_docx.py")
         self.assertEqual(diff, "", diff)
 
 

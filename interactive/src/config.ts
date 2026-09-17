@@ -301,6 +301,9 @@ const validationLockTestConfig = z
     instructions: z.string().min(1, "config.instructions must be a non-empty string"),
     defaultK: z.number().int().positive(),
     reflectionPrompts: z.array(z.string().min(1)).optional(),
+    // WP27R: shown only once the test curve is revealed, distinct from the
+    // pre-lock reflectionPrompts above.
+    postRevealReflectionPrompts: z.array(z.string().min(1)).optional(),
   })
   .strict();
 

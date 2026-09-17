@@ -1,11 +1,12 @@
 import { expect, test, type Frame } from "@playwright/test";
 
 // Proof that all three embedded Exercise 4 activities (WP27: "Validation and
-// Cross-Validation") work on the *final built* Exercise 4 HTML page -- not
-// just the standalone widget page. Replaces the WP25-era placeholder check
-// (Chapter 4 was a not-yet-written page then; WP27 replaced the Markdown
-// placeholder with a real notebook). The dark-mode check for these three
-// activities lives in wp22-cross-chapter-dark-mode.spec.ts.
+// Cross-Validation"; WP27R revised the candidate grids, the lock-test
+// three-panel reveal, and the nested-CV diagram) work on the *final built*
+// Exercise 4 HTML page -- not just the standalone widget page. Replaces the
+// WP25-era placeholder check (Chapter 4 was a not-yet-written page then; WP27
+// replaced the Markdown placeholder with a real notebook). The dark-mode
+// check for these three activities lives in wp22-cross-chapter-dark-mode.spec.ts.
 
 const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html";
 const STABILITY_IFRAME_SELECTOR = 'iframe[src*="config=../configs/validation_stability.json"]';
@@ -38,6 +39,22 @@ test.describe("Chapter 4 built page — title and structure", () => {
 
     // a Colab launch button now exists (Exercise 4 is no longer a placeholder)
     await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(1);
+
+    // WP27R: the old generic Mermaid flowchart is gone; the native
+    // nested-cross-validation split diagram is present with its required
+    // operation labels.
+    expect(bodyText).not.toMatch(/flowchart TD/);
+    await expect(page.locator(".ml-ncv-diagram")).toHaveCount(1);
+    await expect(page.locator(".ml-ncv-diagram")).toContainText("Outer cross-validation");
+    await expect(page.locator(".ml-ncv-diagram")).toContainText("Inner cross-validation");
+    await expect(page.locator(".ml-ncv-diagram")).toContainText("Choose");
+    await expect(page.locator(".ml-ncv-diagram")).toContainText("Refit the selected");
+    await expect(page.locator(".ml-ncv-diagram")).toContainText("Evaluate the tuning procedure");
+
+    // WP27R: the optional Python reproduction of Section 5 is collapsed by
+    // default on the website (project's standard hide-cell toggle).
+    await expect(page.locator(".bd-article h3", { hasText: "Optional: Reproduce the Tuning Activity in Python" })).toHaveCount(1);
+    await expect(page.getByText("Show code cell content").first()).toBeVisible();
   });
 });
 
@@ -101,16 +118,31 @@ test.describe("Chapter 4 built page — embedded validation-lock-test activity",
     expect(configResp?.status, "config HTTP status").toBe(200);
     expect(dataResp?.status, "data HTTP status").toBe(200);
 
-    await expect(frame.locator("#app")).toHaveAttribute("data-chosen-k", "20");
+    await expect(frame.locator("#app")).toHaveAttribute("data-chosen-k", "25");
     await expect(frame.locator("#app")).toHaveAttribute("data-locked", "false");
     await expect(frame.locator('[data-testid="validation-lock-test-reveal"]')).toBeHidden();
+    await expect(frame.locator('[data-testid="validation-lock-test-k-12"]')).toHaveCount(0);
+    for (const k of [8, 10, 15, 20, 25, 30, 50]) {
+      await expect(frame.locator(`[data-testid="validation-lock-test-k-${k}"]`)).toHaveCount(1);
+    }
 
     const selection = await frame.locator('[data-testid="validation-lock-test-selection"]').innerText();
     expect(selection).toMatch(/Training-selected k = \d+/);
     expect(selection).toMatch(/Validation-selected k = \d+/);
+
+    // no test trace exists in the plot before locking
+    const traceCount = await frame.evaluate(() => {
+      const el = document.querySelector('[data-testid="validation-lock-test-plot"]') as
+        | (HTMLElement & { data?: unknown[] })
+        | null;
+      return el?.data?.length ?? -1;
+    });
+    expect(traceCount).toBe(2);
   });
 
-  test("locking reveals the test result once and disables further k changes", async ({ page }) => {
+  test("locking reveals the third test-MSE panel and the methodology warning, and disables further k changes", async ({
+    page,
+  }) => {
     await page.goto(CHAPTER_URL);
     const frame = await frameFor(page, LOCK_TEST_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
@@ -120,6 +152,21 @@ test.describe("Chapter 4 built page — embedded validation-lock-test activity",
     await expect(frame.locator('[data-testid="validation-lock-test-reveal"]')).toBeVisible();
     await expect(frame.locator('[data-testid="validation-lock-test-lock-button"]')).toBeDisabled();
     await expect(frame.locator('[data-testid="validation-lock-test-reset-button"]')).toBeVisible();
+
+    const traceCount = await frame.evaluate(() => {
+      const el = document.querySelector('[data-testid="validation-lock-test-plot"]') as
+        | (HTMLElement & { data?: unknown[] })
+        | null;
+      return el?.data?.length ?? -1;
+    });
+    expect(traceCount).toBe(3);
+
+    const warning = await frame
+      .locator('[data-testid="validation-lock-test-methodology-warning"]')
+      .innerText();
+    expect(warning).toMatch(/teaching demonstration/i);
+
+    await expect(frame.locator('[data-testid="validation-lock-test-post-reveal-reflect"]')).toBeVisible();
   });
 });
 
@@ -169,5 +216,12 @@ test.describe("Chapter 4 built page — narrow-viewport layout", () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(1);
+
+    // WP27R: the native nested-CV diagram scrolls horizontally within its
+    // own box (like the project's wide dataframe tables) rather than
+    // clipping labels or forcing the page itself to scroll.
+    const diagram = page.locator(".ml-ncv-diagram");
+    await diagram.scrollIntoViewIfNeeded();
+    await expect(diagram).toBeVisible();
   });
 });

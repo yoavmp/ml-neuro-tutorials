@@ -100,10 +100,18 @@ MIN_TEST_FOLD_SIZE = 5     # a test/fold partition smaller than this is too nois
 INSTABILITY_R2_RANGE_THRESHOLD = 0.15
 
 # --- Part B: train/validation/test tuning (Section 4-5 / Activity 2) -------
-CANDIDATE_KS: list[int] = [1, 2, 3, 5, 8, 12, 20, 30, 50, 75, 100, 150, 250, 400, 564]
+# WP27R: the original grid (... 8, 12, 20, 30, 50 ...) was too sparse around
+# the value that actually wins on validation data. Densified to include the
+# required 8, 10, 15, 20, 25, 30, 50 (12 dropped -- replaced by the denser
+# 10/15 neighbours); the very small candidates (1, 2, 3, 5) and the larger,
+# still-useful candidates above 50 are unchanged.
+CANDIDATE_KS: list[int] = [1, 2, 3, 5, 8, 10, 15, 20, 25, 30, 50, 75, 100, 150, 250, 400, 564]
 
 # --- Part C: nested cross-validation (Section 6-7 / Activity 3) ------------
-NESTED_CANDIDATE_KS: list[int] = [5, 15, 30, 50, 75]
+# WP27R: the original grid ([5, 15, 30, 50, 75]) jumped from 15 to 30 and
+# flattened every outer fold's selection to k=15. Densified in the 10-30
+# range per the WP27R spec's suggested audit grid.
+NESTED_CANDIDATE_KS: list[int] = [8, 10, 12, 15, 18, 20, 22, 25, 28, 30, 40, 50]
 N_OUTER = 5
 N_INNER = 5
 OUTER_SEED = 100

@@ -230,5 +230,13 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     expect(nestedCvSnap.markerColors, "nested-cv-explorer: selected-k bar uses the dark palette").toContain(
       DIAGONAL_LINE_DARK,
     );
+
+    // WP27R: the native nested-CV split diagram (raw HTML on the page, not
+    // inside a widget iframe) must also pick up the dark palette via its
+    // `--ml-ncv-*` custom properties, not just the Plotly figures.
+    const diagram = page.locator(".ml-ncv-diagram");
+    await expect(diagram).toBeVisible();
+    const outerTrainVar = await diagram.evaluate((el) => getComputedStyle(el).getPropertyValue("--ml-ncv-outer-train"));
+    expect(outerTrainVar.trim()).toBe("#4d6a94");
   });
 });
