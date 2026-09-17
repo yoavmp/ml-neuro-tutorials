@@ -20,6 +20,14 @@ Notebooks and their expected strings:
   (`group`) as target; the fixed-C=1.0 honest logistic-regression workflow
   runs and prints its confusion matrix, accuracy, and AUC; the editable
   threshold and class-imbalance demo cells run.
+* ``chapter_04/exercise_04_portable.ipynb`` -- the same brain table, `age` as
+  target, the same fixed 360-column KNN recipe and outer split as Exercise 2;
+  the fixed-k=20 cross-validation workflow runs and prints its per-fold and
+  mean MSE; the training/validation tuning cell runs and prints the
+  training-selected and validation-selected k; the one-time test-reveal cell
+  runs (its saved output is intentionally absent from the committed portable
+  notebook -- see its banner cell); the nested-cross-validation cell runs and
+  prints its per-fold selected k and mean outer-test MSE.
 
 Needs network access (the notebooks download pinned public CSVs). Used by CI and
 runnable locally:
@@ -71,6 +79,21 @@ SMOKE = {
             "AUC         = 0.569",
             "AUC is unchanged by the threshold: 0.569",
             "cohort: 400 participants (360 control, 40 autism)",
+        ),
+    },
+    "chapter_04": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
+        "expect": (
+            "data table: 1004 participants x 1446 columns",
+            "360 predictors, fixed before this lesson",
+            "n_train = 753   n_test = 251   n_features = 360",
+            "mean MSE = 33.8   (sd 5.4)",
+            "n_fit = 564   n_val = 189",
+            "training-selected k   = 1",
+            "validation-selected k = 20",
+            "validation-selected  k =  20   test MSE = 31.4   test R^2 = 0.664",
+            "mean outer-test MSE = 33.2   (sd 6.9)",
+            "selected k per outer fold: [15, 15, 15, 15, 15]",
         ),
     },
 }

@@ -30,8 +30,8 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,all}`` (default
-``all``) scopes both modes. Exercises 4-12 are placeholder pages with no
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,all}`` (default
+``all``) scopes both modes. Exercises 5-12 are placeholder pages with no
 interactive activity and no portable notebook, so they are not registered here.
 The bare ``--write`` / ``--check`` invocations keep working and now cover every
 registered notebook.
@@ -64,6 +64,9 @@ PUBLISHED_PAGE_CH2 = (
 )
 PUBLISHED_PAGE_CH3 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html"
+)
+PUBLISHED_PAGE_CH4 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -472,10 +475,115 @@ CHAPTER_03 = NotebookSpec(
     colab_title="Exercise 3: Classification and Metrics",
 )
 
+_CH4_BANNER = (
+    "# Exercise 4: Validation and Cross-Validation - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 4 validation and\n"
+    "cross-validation practice from **Machine Learning for Neuroscience**,\n"
+    "generated from the canonical course notebook by\n"
+    "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
+    "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the three embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH4 + ">\n"
+    "\n"
+    "In this notebook the three interactive activities are replaced by links\n"
+    "to that page; every Python analysis cell -- including the ordinary,\n"
+    "editable equivalents of every activity -- is kept and runnable. The cell\n"
+    "that reveals the locked test-set result (Section 5) keeps no saved\n"
+    "output here, even though every other code cell normally would: you must\n"
+    "run it yourself to see the result, exactly as the browser activity asks\n"
+    "you to choose a value of k before revealing its test score."
+)
+
+_CH4_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas` and `scikit-learn`. All\n"
+    "three are already installed on Google Colab, and in a typical\n"
+    "scientific-Python environment, so there is normally nothing to do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH4_STABILITY_IFRAME_REPLACEMENT = (
+    "### Explore split and fold instability on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a sample size, a random seed,\n"
+    "and a number of cross-validation folds, and compares a single-split test\n"
+    "score with cross-validation fold scores for the same fixed KNN model.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 4 page:\n"
+    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell runs one such cross-validation directly."
+)
+
+_CH4_LOCK_TEST_IFRAME_REPLACEMENT = (
+    "### Tune k yourself on the course website\n"
+    "\n"
+    "The interactive activity lets you compare training and validation\n"
+    "performance across candidate values of k, choose a final value, and\n"
+    "reveal the held-out test result once you lock in your choice.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 4 page:\n"
+    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> two cells run the same tuning step, and then the same one-time reveal,\n"
+    "> directly in Python."
+)
+
+_CH4_NESTED_CV_IFRAME_REPLACEMENT = (
+    "### Explore nested cross-validation yourself on the course website\n"
+    "\n"
+    "The interactive activity lets you inspect, outer fold by outer fold, how\n"
+    "the inner cross-validation compared candidate k values and how the\n"
+    "resulting choice then scored on that fold's outer test data.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 4 page:\n"
+    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The\n"
+    "> preceding cells already compute and print the same fold-by-fold\n"
+    "> results as a table."
+)
+
+CHAPTER_04 = NotebookSpec(
+    key="chapter_04",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH4,
+    banner_source=_CH4_BANNER,
+    setup_source=_CH4_SETUP,
+    lesson_packages="numpy pandas scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive single-split and cross-validation stability comparison for predicting age from brain structure": (
+            _CH4_STABILITY_IFRAME_REPLACEMENT
+        ),
+        "Interactive KNN tuning activity: choose k before revealing the test result": (
+            _CH4_LOCK_TEST_IFRAME_REPLACEMENT
+        ),
+        "Interactive nested cross-validation explorer for predicting age from brain structure": (
+            _CH4_NESTED_CV_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 4: Validation and Cross-Validation",
+)
+
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
     CHAPTER_03.key: CHAPTER_03,
+    CHAPTER_04.key: CHAPTER_04,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).
