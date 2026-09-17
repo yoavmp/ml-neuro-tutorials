@@ -63,6 +63,21 @@ const CHARTS = [
     plotTestId: "regression-A-plot",
   },
   { activity: "knn-explore", query: "../configs/knn_explore.json", plotTestId: "knn-scatter-plot" },
+  {
+    activity: "validation-stability",
+    query: "../configs/validation_stability.json",
+    plotTestId: "validation-stability-single-plot",
+  },
+  {
+    activity: "validation-lock-test",
+    query: "../configs/validation_lock_test.json",
+    plotTestId: "validation-lock-test-plot",
+  },
+  {
+    activity: "nested-cv-explorer",
+    query: "../configs/nested_cv_explorer.json",
+    plotTestId: "nested-cv-inner-plot",
+  },
 ];
 
 test.describe("shared Plotly presentation policy", () => {
