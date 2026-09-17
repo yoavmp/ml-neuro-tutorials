@@ -2,11 +2,26 @@
 restructure (Exercise 3's KNN/bias-variance material merged into Exercise 2;
 the old Exercise 4 classification lesson moved wholesale to become the new
 Exercise 3; Exercises 4-12 added as placeholder pages; the pre-WP25 notebook
-structure preserved on archive/pre-syllabus-notebook-structure).
+structure preserved on archive/pre-syllabus-notebook-structure, whose tip is
+the immutable commit ``PRE_SYLLABUS_ARCHIVE_COMMIT`` below).
 
 Standard-library ``unittest``; no network. Uses ``git`` (local, offline) only
-to confirm the archive branch's SHA and the Syllabus page's byte-for-byte
-content against that branch -- no other test in this file touches git.
+to confirm the pre-syllabus commit's content and the Syllabus page's
+byte-for-byte content against that commit -- no other test in this file
+touches git.
+
+WP26R note: these checks address the pre-syllabus content by immutable
+**commit SHA**, never by the ``archive/pre-syllabus-notebook-structure``
+branch name. A CI checkout (``actions/checkout@v4``) does not create other
+branches locally, so a branch-name lookup fails there even though the
+identical commit is reachable as an ancestor of ``main`` once the checkout
+has full history (``fetch-depth: 0``, set in ``.github/workflows/deploy.yml``).
+Confirming that the branch *ref itself* still points at this exact commit,
+with no drift, is a release-time / repository check (performed against
+``origin`` during deployment, e.g. WP26/WP26R's "confirm archive integrity"
+steps) rather than an offline unit test -- verifying a remote branch pointer
+inherently needs network access or a full local clone of that branch, which
+this offline suite intentionally does not require.
 
 Run:
     .venv/bin/python -m unittest discover -s tests -p 'test_wp25_content_audit.py'
@@ -20,11 +35,12 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-ARCHIVE_BRANCH = "archive/pre-syllabus-notebook-structure"
-# The exact WP24 tip this WP25 archive branch and the WP25 branch itself both
-# started from (recorded in WPs/WP25_SYLLABUS_ALIGNED_NOTEBOOK_RESTRUCTURE.md
-# and WPs/reports/WP24_REPORT.md).
-WP24_TIP_SHA = "914841c4c6033f232d96ce33b6dbcc23eda1c766"
+# The exact WP24 tip: the pre-syllabus notebook structure's immutable commit.
+# Also the tip of archive/pre-syllabus-notebook-structure (recorded in
+# WPs/WP25_SYLLABUS_ALIGNED_NOTEBOOK_RESTRUCTURE.md and
+# WPs/reports/WP24_REPORT.md; branch-pointer identity verified at deployment
+# time, not here -- see module docstring).
+PRE_SYLLABUS_ARCHIVE_COMMIT = "914841c4c6033f232d96ce33b6dbcc23eda1c766"
 
 EXERCISE_TITLES = {
     1: "Exercise 1: Exploratory Data Analysis",
@@ -55,38 +71,43 @@ def _git(*args: str) -> str:
     return result.stdout
 
 
-class ArchiveBranchTests(unittest.TestCase):
-    def test_archive_branch_exists_locally(self):
-        branches = _git("branch", "--list", ARCHIVE_BRANCH)
-        self.assertIn(ARCHIVE_BRANCH, branches)
+def _commit_exists(sha: str) -> bool:
+    # Offline: only inspects the local object database populated by whatever
+    # checkout is already present -- never fetches.
+    result = subprocess.run(
+        ["git", "cat-file", "-e", f"{sha}^{{commit}}"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
 
-    def test_archive_branch_points_at_the_exact_wp24_tip(self):
-        sha = _git("rev-parse", ARCHIVE_BRANCH).strip()
-        self.assertEqual(sha, WP24_TIP_SHA)
 
-    def test_archive_branch_has_no_new_commits_beyond_the_wp24_tip(self):
-        # rev-list count from the WP24 tip to the archive branch tip must be 0.
-        count = _git("rev-list", "--count", f"{WP24_TIP_SHA}..{ARCHIVE_BRANCH}").strip()
-        self.assertEqual(count, "0")
+class PreSyllabusArchiveContentTests(unittest.TestCase):
+    def test_pre_syllabus_commit_is_present_in_local_history(self):
+        self.assertTrue(
+            _commit_exists(PRE_SYLLABUS_ARCHIVE_COMMIT),
+            f"{PRE_SYLLABUS_ARCHIVE_COMMIT} is not resolvable in this checkout -- "
+            "needs full history (fetch-depth: 0), not just the tip commit.",
+        )
 
-    def test_archive_branch_preserves_the_old_knn_exercise_3(self):
-        text = _git("show", f"{ARCHIVE_BRANCH}:book/chapters/chapter_03/exercise_03.ipynb")
+    def test_pre_syllabus_commit_preserves_the_old_knn_exercise_3(self):
+        text = _git(
+            "show", f"{PRE_SYLLABUS_ARCHIVE_COMMIT}:book/chapters/chapter_03/exercise_03.ipynb"
+        )
         self.assertIn("Exercise 3: KNN and the Bias", text)
         self.assertIn("knn_abc.json", text)
 
-    def test_archive_branch_preserves_the_old_classification_exercise_4(self):
-        text = _git("show", f"{ARCHIVE_BRANCH}:book/chapters/chapter_04/exercise_04.ipynb")
+    def test_pre_syllabus_commit_preserves_the_old_classification_exercise_4(self):
+        text = _git(
+            "show", f"{PRE_SYLLABUS_ARCHIVE_COMMIT}:book/chapters/chapter_04/exercise_04.ipynb"
+        )
         self.assertIn("Exercise 4: Classification with Logistic Regression", text)
 
 
 class SyllabusPageUnchangedTests(unittest.TestCase):
-    def test_syllabus_source_is_byte_for_byte_unchanged_from_the_wp24_tip(self):
-        before = _git("show", f"{WP24_TIP_SHA}:book/syllabus.md")
-        after = (REPO_ROOT / "book" / "syllabus.md").read_text(encoding="utf-8")
-        self.assertEqual(before, after)
-
-    def test_syllabus_page_was_not_edited_relative_to_the_archive_branch(self):
-        before = _git("show", f"{ARCHIVE_BRANCH}:book/syllabus.md")
+    def test_syllabus_source_is_byte_for_byte_unchanged_from_the_pre_syllabus_commit(self):
+        before = _git("show", f"{PRE_SYLLABUS_ARCHIVE_COMMIT}:book/syllabus.md")
         after = (REPO_ROOT / "book" / "syllabus.md").read_text(encoding="utf-8")
         self.assertEqual(before, after)
 
