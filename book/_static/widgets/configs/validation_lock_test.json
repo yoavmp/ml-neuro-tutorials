@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "type": "validation-lock-test",
+  "title": "Choose k Before Revealing the Test Set",
+  "description": "Course activity for Exercise 4: tune KNN's k using training and validation data only, then lock a final choice and reveal the held-out test result once.",
+  "instructions": "Compare the training-selected and validation-selected values of k below. Choose a final k using only the training and validation lines, then press \"Lock Choice and Reveal Test Result\" to see the test score.",
+  "data": "../data/wp27_validation_lock_test.json",
+  "defaultK": 20,
+  "reflectionPrompts": [
+    "Which value of k performed best on the training set? Which performed best on the validation set?",
+    "Why might the value with the lowest training error fail on new participants?",
+    "Should you change k after seeing the test result?"
+  ]
+}
