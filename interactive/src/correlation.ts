@@ -7,12 +7,10 @@
 // correlation only when BOTH variables are finite on that row. Group-specific
 // results use the same pairwise-complete rule within each group.
 //
-// Neither Pearson nor Spearman here implies causation; that caveat lives in the
+// This coefficient does not imply causation; that caveat lives in the
 // teaching copy, not the maths.
 
 export type NumCell = number | null | undefined;
-
-export type CorrelationMethod = "pearson" | "spearman";
 
 export const REASON_TOO_FEW =
   "Fewer than 3 participants have both variables recorded, so a correlation is not defined.";
@@ -56,7 +54,6 @@ export interface CorrelationPoints {
 }
 
 export interface CorrelationResult {
-  method: CorrelationMethod;
   /** Overall pairwise-complete result across every retained row. */
   overall: CorrelationOutcome;
   missing: MissingBreakdown;
@@ -181,53 +178,19 @@ export function pearson(x: ReadonlyArray<number>, y: ReadonlyArray<number>): num
   return r;
 }
 
-/** Fractional (1-based) ranks with ties resolved to the average rank. */
-export function averageRanks(values: ReadonlyArray<number>): number[] {
-  const order = values.map((_, i) => i).sort((a, b) => values[a]! - values[b]!);
-  const ranks = new Array<number>(values.length);
-  let i = 0;
-  while (i < order.length) {
-    let j = i;
-    while (j + 1 < order.length && values[order[j + 1]!]! === values[order[i]!]!) {
-      j += 1;
-    }
-    const avg = (i + j) / 2 + 1; // positions i..j share this average rank
-    for (let k = i; k <= j; k += 1) ranks[order[k]!] = avg;
-    i = j + 1;
-  }
-  return ranks;
-}
-
-/**
- * Spearman rank correlation: Pearson on the average-rank transforms of each
- * array. Returns null for n < 3 or when either array is constant (no rank
- * variation).
- */
-export function spearman(x: ReadonlyArray<number>, y: ReadonlyArray<number>): number | null {
-  if (x.length !== y.length) {
-    throw new Error(`spearman: length mismatch (${x.length} vs ${y.length}).`);
-  }
-  if (x.length < 3) return null;
-  return pearson(averageRanks(x), averageRanks(y));
-}
-
-function coefficient(
-  x: ReadonlyArray<number>,
-  y: ReadonlyArray<number>,
-  method: CorrelationMethod,
-): CorrelationOutcome {
+function coefficient(x: ReadonlyArray<number>, y: ReadonlyArray<number>): CorrelationOutcome {
   const n = x.length;
   if (n < 3) return { n, r: null, reason: REASON_TOO_FEW };
-  const r = method === "pearson" ? pearson(x, y) : spearman(x, y);
+  const r = pearson(x, y);
   if (r === null) return { n, r: null, reason: REASON_NO_VARIANCE };
   return { n, r, reason: null };
 }
 
 /**
- * Overall + optional group-specific correlation for two numeric columns.
+ * Overall + optional group-specific Pearson correlation for two numeric
+ * columns.
  *
  * @param xCol / yCol aligned numeric columns (`null` / non-finite = missing).
- * @param method "pearson" or "spearman".
  * @param grouping optional; when present, its `codes` must align with the
  *   columns and its `values` fix the group order in the result.
  *
@@ -237,7 +200,6 @@ function coefficient(
 export function computeCorrelation(
   xCol: ReadonlyArray<NumCell>,
   yCol: ReadonlyArray<NumCell>,
-  method: CorrelationMethod,
   grouping?: GroupingInput | null,
 ): CorrelationResult {
   const cols = [
@@ -249,7 +211,7 @@ export function computeCorrelation(
 
   const total = xCol.length;
   const pw = pairwiseComplete(xCol, yCol);
-  const overall = coefficient(pw.x, pw.y, method);
+  const overall = coefficient(pw.x, pw.y);
 
   // Pairwise-complete points, with their group code when grouping is active.
   const pointGroups: number[] = [];
@@ -281,9 +243,9 @@ export function computeCorrelation(
           gy.push(yv);
         }
       }
-      return { key: String(code), code, label, ...coefficient(gx, gy, method) };
+      return { key: String(code), code, label, ...coefficient(gx, gy) };
     });
   }
 
-  return { method, overall, missing: pw.missing, points, groups };
+  return { overall, missing: pw.missing, points, groups };
 }

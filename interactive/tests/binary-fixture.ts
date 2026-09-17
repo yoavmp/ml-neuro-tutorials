@@ -1,7 +1,7 @@
 // Shared test helper: pack typed-array sections into a binary-asset blob the
 // same way scripts/binary_asset.py does (4-byte aligned, little-endian), and
-// mock `fetch` to serve it -- so knn-explore-data / knn-abc-data tests can
-// build small, hand-computed manifests without touching real committed data.
+// mock `fetch` to serve it -- so knn-explore-data tests can build small,
+// hand-computed manifests without touching real committed data.
 import { vi } from "vitest";
 
 export interface FixtureSection {

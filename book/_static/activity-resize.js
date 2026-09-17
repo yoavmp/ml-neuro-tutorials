@@ -3,8 +3,8 @@
  *
  * Root cause: each activity iframe's HTML `height` attribute is a single
  * static number chosen for one viewport width. The activity's own content
- * reflows at other widths -- the Exercise 2 / Exercise 3 A-B-C comparison
- * grids collapse from side-by-side panels to a stacked single column below
+ * reflows at other widths -- comparison grids (e.g. Exercise 2's feature-set
+ * comparison) collapse from side-by-side panels to a stacked single column below
  * about 620px of iframe width, `<details>` disclosures open, controls wrap to
  * more rows -- so a single static number either clips content at some widths
  * or leaves a large blank region at others. The book theme's own responsive

@@ -1,4 +1,4 @@
-// Loader for the Exercise 4 class-imbalance interactive artifact
+// Loader for the Exercise 3 class-imbalance interactive artifact
 // (book/_static/widgets/data/abide_classification_imbalance.json,
 // produced by scripts/export_classification_imbalance_data.py). Ships only
 // aggregated counts and metrics per (ratio, seed) -- no brain features, no

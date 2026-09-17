@@ -7,7 +7,7 @@ renders an activity with a locally bundled copy of Plotly.js.
 > **Status (WP05):** three production activities are live and embedded in
 > Chapter 1 — `eda-histogram` (variable distributions), `eda-retention`
 > (complete-case retention by acquisition site) and `eda-correlation` (feature
-> correlation explorer with Pearson/Spearman and diagnosis/sex grouping). The
+> correlation explorer with Pearson correlation and diagnosis/sex grouping). The
 > developer smoke activity (`runtime-smoke`) remains a fixture. The obsolete
 > `ipywidgets` / JupyterLite / Voici experiment was removed in WP04 once the
 > browser-native replacements passed; the **Open in Colab** launch button is
@@ -30,7 +30,7 @@ renders an activity with a locally bundled copy of Plotly.js.
 |---|---|
 | `npm ci` | Install exact locked dependencies. |
 | `npm run typecheck` | `tsc --noEmit`, strict. |
-| `npm run test:unit` | Vitest unit tests (`tests/*.test.ts`): histogram maths, complete-case retention maths, Pearson/Spearman correlation maths, config + data + URL validation. |
+| `npm run test:unit` | Vitest unit tests (`tests/*.test.ts`): histogram maths, complete-case retention maths, Pearson correlation maths, config + data + URL validation. |
 | `npm test` | typecheck + unit tests. |
 | `npm run build` | typecheck, then `vite build` → `../book/_static/widgets/app/`. |
 | `npm run serve:static` | Serve `book/_static/widgets/` over HTTP on `:4173` for manual checks. |
@@ -143,11 +143,11 @@ first appearance order.
 
 | Piece | Path | Tracked? |
 |---|---|---|
-| Config (title, numeric variables + labels, default X/Y/method, groupings + value labels, prompts) | `book/_static/widgets/configs/eda_correlation.json` | yes |
+| Config (title, numeric variables + labels, default X/Y, groupings + value labels, prompts) | `book/_static/widgets/configs/eda_correlation.json` | yes |
 | Data artifact | **reuses** `book/_static/widgets/data/abide_retention.json` | yes |
-| Pure correlation maths (no DOM/Plotly) — `pairwiseComplete`, `pearson`, `spearman` (average ranks for ties), `computeCorrelation` (overall + per-group) | `interactive/src/correlation.ts` | yes |
+| Pure correlation maths (no DOM/Plotly) — `pairwiseComplete`, `pearson`, `computeCorrelation` (overall + per-group) | `interactive/src/correlation.ts` | yes |
 | Data Zod schema (no DOM/Plotly) — looser than retention's: no `site` block, just alignment + identifier rejection | `interactive/src/correlation-data.ts` | yes |
-| Component (X / Y / method / grouping selects, scatter, per-group traces, no trend line) | `interactive/src/components/correlation.ts` | yes |
+| Component (X / Y / grouping selects, scatter, per-group traces, no trend line) | `interactive/src/components/correlation.ts` | yes |
 
 The activity **reuses `abide_retention.json`** rather than shipping a fourth data
 file: that artifact already carries aligned, identifier-free columns for
@@ -155,7 +155,7 @@ file: that artifact already carries aligned, identifier-free columns for
 `SRS_TOTAL_RAW`, `SCQ_TOTAL` plus the `DX_GROUP` / `SEX` category codes the
 grouping control needs. `scripts/export_widget_data.py` is unchanged.
 
-Students pick two numeric variables, switch Pearson ↔ Spearman, and colour the
+Students pick two numeric variables and colour the
 scatter by diagnostic group or sex. Every coefficient and count comes from
 `computeCorrelation(...)`: the overall coefficient uses the pairwise-complete
 rows (both variables finite); each group coefficient applies the same rule
@@ -164,7 +164,7 @@ within that group; a subset with fewer than 3 pairs or zero variance yields a
 shows the pairwise-complete `n` and the excluded-because-missing count, so two
 coefficients that share a matrix but rest on different participant subsets are
 visibly different. No regression line is drawn — a single straight line would
-misrepresent a rank correlation and a grouped view. Hover shows only the two
+misrepresent a grouped view. Hover shows only the two
 plotted values; there is no `customdata` and no identifier.
 
 ### Category codes (verified against the ABIDE-II Data Legend)
@@ -174,17 +174,17 @@ plotted values; there is no `customdata` and no identifier.
 
 ### Default correlation — regression reference
 
-Default `FIQ` vs `SRS_TOTAL_RAW`, Pearson, no grouping, on the shipped
+Default `FIQ` vs `SRS_TOTAL_RAW`, no grouping, on the shipped
 `abide_retention.json` (independently cross-checked with pandas):
 
-| Selection | Pearson | Spearman | pairwise-complete `n` |
-|---|---|---|---|
-| `FIQ` × `SRS_TOTAL_RAW` (default) | −0.2404 | −0.2358 | 778 (336 excluded) |
-| `FIQ` × `VIQ` (a part–whole composite) | 0.8330 | 0.8304 | 796 |
-| `ADOS_G_TOTAL` × `ADOS_2_TOTAL` (small subset) | 0.8815 | 0.8615 | **81** of 1,114 |
-| `AGE_AT_SCAN` × `FIQ` (no association) | 0.0084 | −0.0136 | 1,015 |
-| `AGE_AT_SCAN` × `ADOS_G_TOTAL` (Pearson≠Spearman) | −0.2290 | −0.3321 | 347 |
-| `FIQ` × `SRS_TOTAL_RAW` by diagnosis | Autism −0.03 (n 372) · Control −0.06 (n 406) | | |
+| Selection | Pearson | pairwise-complete `n` |
+|---|---|---|
+| `FIQ` × `SRS_TOTAL_RAW` (default) | −0.2404 | 778 (336 excluded) |
+| `FIQ` × `VIQ` (a part–whole composite) | 0.8330 | 796 |
+| `ADOS_G_TOTAL` × `ADOS_2_TOTAL` (small subset) | 0.8815 | **81** of 1,114 |
+| `AGE_AT_SCAN` × `FIQ` (no association) | 0.0084 | 1,015 |
+| `AGE_AT_SCAN` × `ADOS_G_TOTAL` | −0.2290 | 347 |
+| `FIQ` × `SRS_TOTAL_RAW` by diagnosis | Autism −0.03 (n 372) · Control −0.06 (n 406) | |
 
 Preview after a build:
 

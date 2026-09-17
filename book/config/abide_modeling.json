@@ -147,13 +147,13 @@
     "canonical_recipe": {
       "bundle": "all-eligible",
       "measures": ["CT"],
-      "note": "Identical to protocol.canonical_recipe (p=360), reused so Exercise 3's KNN result is directly comparable to Exercise 2's OLS result: same participants, split, target, and feature set."
+      "note": "Identical to protocol.canonical_recipe (p=360), reused so this KNN result is directly comparable to Exercise 2's own OLS result: same participants, split, target, and feature set."
     },
     "dev_split": {
       "test_size": 0.25,
       "random_state": 7,
       "stratify": "group",
-      "note": "Further splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189) for the empirical all-k curve (Exercise 3 section 4.5) and the interactive activity (section 4.6). Independent of, and never touching, the outer test set (251 rows) locked by protocol.holdout_split."
+      "note": "Further splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189) for the empirical all-k curve (Exercise 2 section 6) and the interactive activity (section 7). Independent of, and never touching, the outer test set (251 rows) locked by protocol.holdout_split."
     },
     "audit_script": "scripts/knn_model_audit.py",
     "audit_result": "scripts/knn_model_audit_result.json",
@@ -169,13 +169,13 @@
     "canonical_recipe": {
       "bundle": "all-eligible",
       "measures": ["CT"],
-      "note": "Identical to protocol.canonical_recipe (p=360) and knn.canonical_recipe: the same 360 bilateral cortical-thickness parcels used throughout Exercises 2-3, so Exercise 4 needs no new feature-selection discussion."
+      "note": "Identical to protocol.canonical_recipe (p=360) and knn.canonical_recipe: the same 360 bilateral cortical-thickness parcels used throughout Exercise 2, so Exercise 3 needs no new feature-selection discussion."
     },
     "holdout_split": {
       "test_size": 0.25,
       "random_state": 42,
       "stratify": "y",
-      "note": "Same test_size/random_state as protocol.holdout_split, but stratify is the diagnosis label y itself (group recoded to autism=1/control=0), not a covariate -- Exercise 4 is the first place `group` is the target rather than a stratification variable for a different outcome. This does NOT reproduce Exercise 2/3's 753/251 row split: the split target changed, so the partition is different even though test_size and random_state match."
+      "note": "Same test_size/random_state as protocol.holdout_split, but stratify is the diagnosis label y itself (group recoded to autism=1/control=0), not a covariate -- Exercise 3 is the first place `group` is the target rather than a stratification variable for a different outcome. This does NOT reproduce Exercise 2's 753/251 row split: the split target changed, so the partition is different even though test_size and random_state match."
     },
     "model": "sklearn Pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000)); the scaler is fitted on training rows only. C is fixed by course design (WP19) before the held-out result is computed, not selected by cross-validation.",
     "worked_example_C": 1.0,

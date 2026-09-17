@@ -1,6 +1,6 @@
 """Offline tests for scripts/binary_asset.py -- the shared deterministic
-binary-payload packer/decoder used by scripts/export_knn_explore_data.py and
-scripts/export_knn_abc_data.py (WP15 §3).
+binary-payload packer/decoder used by scripts/export_knn_explore_data.py
+(WP15 §3).
 
 Run:
     .venv/bin/python -m unittest discover -s tests -p 'test_binary_asset.py'

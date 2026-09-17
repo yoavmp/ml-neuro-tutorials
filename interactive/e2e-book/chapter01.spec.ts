@@ -346,25 +346,21 @@ test.describe("Chapter 1 built page — embedded correlation explorer", () => {
     // defaults
     await expect(plot).toHaveAttribute("data-active-x", "FIQ");
     await expect(plot).toHaveAttribute("data-active-y", "SRS_TOTAL_RAW");
-    await expect(plot).toHaveAttribute("data-active-method", "pearson");
     await expect(plot).toHaveAttribute("data-n", "778");
     await expect(plot).toHaveAttribute("data-r", "-0.2404");
     const before = await correlationPoints(frame);
     expect(before.traces).toBe(1);
     expect(before.points).toBe(778);
 
-    // switch method -> coefficient changes for a divergent pair
+    // switch variables -> coefficient changes for a different pair
     await frame.locator('[data-testid="correlation-x"]').selectOption("AGE_AT_SCAN");
     await frame.locator('[data-testid="correlation-y"]').selectOption("ADOS_G_TOTAL");
     await expect(plot).toHaveAttribute("data-r", "-0.2290");
-    await frame.locator('[data-testid="correlation-method"]').selectOption("spearman");
-    await expect(plot).toHaveAttribute("data-r", "-0.3321");
     await expect(plot).toHaveAttribute("data-n", "347");
 
     // group -> two partitioned traces + per-group stats
     await frame.locator('[data-testid="correlation-x"]').selectOption("FIQ");
     await frame.locator('[data-testid="correlation-y"]').selectOption("SRS_TOTAL_RAW");
-    await frame.locator('[data-testid="correlation-method"]').selectOption("pearson");
     await frame.locator('[data-testid="correlation-group"]').selectOption("diagnosis");
     await expect(plot).toHaveAttribute("data-group-count", "2");
     const grouped = await correlationPoints(frame);

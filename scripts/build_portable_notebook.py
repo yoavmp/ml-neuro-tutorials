@@ -30,8 +30,9 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,all}`` (default
-``all``) scopes both modes.
+``--notebook {chapter_01,chapter_02,chapter_03,all}`` (default
+``all``) scopes both modes. Exercises 4-12 are placeholder pages with no
+interactive activity and no portable notebook, so they are not registered here.
 The bare ``--write`` / ``--check`` invocations keep working and now cover every
 registered notebook.
 
@@ -63,9 +64,6 @@ PUBLISHED_PAGE_CH2 = (
 )
 PUBLISHED_PAGE_CH3 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html"
-)
-PUBLISHED_PAGE_CH4 = (
-    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -180,7 +178,7 @@ class NotebookSpec:
 
 
 _CH1_BANNER = (
-    "# Exercise 1 - Exploratory data analysis (EDA) - portable notebook\n"
+    "# Exercise 1: Exploratory Data Analysis - portable notebook\n"
     "\n"
     "This is the **portable version** of the Chapter 1 EDA practice from\n"
     "**Machine Learning for Neuroscience**, generated from the canonical\n"
@@ -214,22 +212,24 @@ _CH1_SETUP = (
 )
 
 _CH2_BANNER = (
-    "# Exercise 2: Regression - portable notebook\n"
+    "# Exercise 2: Regression and Bias-Variance Trade-Off - portable notebook\n"
     "\n"
-    "This is the **portable version** of the Exercise 2 regression practice\n"
-    "from **Machine Learning for Neuroscience**, generated from the canonical\n"
-    "course notebook by `scripts/build_portable_notebook.py`. It is meant for\n"
-    "running or editing the code in Google Colab or in a local VS Code /\n"
-    "Jupyter setup.\n"
+    "This is the **portable version** of the Exercise 2 regression and KNN\n"
+    "bias-variance practice from **Machine Learning for Neuroscience**,\n"
+    "generated from the canonical course notebook by\n"
+    "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
+    "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
     "\n"
-    "The richer version -- with the feature-set comparison activity embedded\n"
-    "and running in the browser -- is the published course page:\n"
+    "The richer version -- with the feature-set-comparison and k-exploration\n"
+    "activities embedded and running in the browser -- is the published\n"
+    "course page:\n"
     "<" + PUBLISHED_PAGE_CH2 + ">\n"
     "\n"
-    "In this notebook the interactive activity is replaced by a link to that\n"
-    "page; every Python analysis cell is kept and runnable. Questions marked\n"
-    "*Think first* are followed, where one exists, by a collapsible *Check\n"
-    "your reasoning* block; open questions are left without one fixed answer."
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell is kept and runnable. Questions\n"
+    "marked *Think first* are followed, where one exists, by a collapsible\n"
+    "*Check your reasoning* block; open questions are left without one fixed\n"
+    "answer."
 )
 
 _CH2_SETUP = (
@@ -259,6 +259,23 @@ _CH2_IFRAME_REPLACEMENT = (
     "> <" + PUBLISHED_PAGE_CH2 + ">\n"
     "> This portable notebook links to it instead of embedding it. The\n"
     "> Python sections below still run the same kind of comparison directly."
+)
+
+_CH2_KNN_EXPLORE_IFRAME_REPLACEMENT = (
+    "### Explore k yourself on the course website\n"
+    "\n"
+    "The interactive activity lets you drag a slider across every k from 1\n"
+    "through every participant in the fitting set and watch fitting error,\n"
+    "validation error, and the observed-vs-predicted scatter update from the\n"
+    "actual refitted model at that k.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 2 page:\n"
+    "> <" + PUBLISHED_PAGE_CH2 + ">\n"
+    "> This portable notebook links to it instead of embedding it. Section 6\n"
+    "> above already computes and plots the same k = 1..N_fit exploration as a\n"
+    "> static Matplotlib figure, from the same fitting/validation split -- run\n"
+    "> it and change `FIT_RANDOM_STATE` or the split size to explore further."
 )
 
 # Per-activity replacement for the Chapter 1 `<iframe>` cells, keyed by the
@@ -301,10 +318,10 @@ IFRAME_REPLACEMENTS = {
     "Interactive ABIDE-II feature correlation explorer": (
         "### Explore correlations yourself\n"
         "\n"
-        "The interactive explorer lets you choose an X and a Y variable, switch\n"
-        "between Pearson and Spearman, colour the points by diagnostic group or\n"
-        "sex, and read off the coefficient, the pairwise-complete `n`, and how\n"
-        "many participants were dropped for a missing value.\n"
+        "The interactive explorer lets you choose an X and a Y variable, colour\n"
+        "the points by diagnostic group or sex, and read off the Pearson\n"
+        "correlation coefficient, the pairwise-complete `n`, and how many\n"
+        "participants were dropped for a missing value.\n"
         "\n"
         "> **Interactive version on the course website.** It is embedded in the\n"
         "> published Chapter 1 page:\n"
@@ -349,152 +366,20 @@ CHAPTER_02 = NotebookSpec(
     iframe_replacements={
         "Interactive feature-set comparison for predicting age from brain structure": (
             _CH2_IFRAME_REPLACEMENT
-        )
+        ),
+        "Interactive KNN neighbour-count exploration for predicting age from brain structure": (
+            _CH2_KNN_EXPLORE_IFRAME_REPLACEMENT
+        ),
     },
     preserve_output_ids=frozenset(),
     rewrite_columns=False,
-    colab_title="Exercise 2: Regression",
+    colab_title="Exercise 2: Regression and Bias-Variance Trade-Off",
 )
 
 _CH3_BANNER = (
-    "# Exercise 3: KNN and the Bias–Variance Tradeoff - portable notebook\n"
+    "# Exercise 3: Classification and Metrics - portable notebook\n"
     "\n"
-    "This is the **portable version** of the Exercise 3 KNN practice from\n"
-    "**Machine Learning for Neuroscience**, generated from the canonical\n"
-    "course notebook by `scripts/build_portable_notebook.py`. It is meant for\n"
-    "running or editing the code in Google Colab or in a local VS Code /\n"
-    "Jupyter setup.\n"
-    "\n"
-    "The richer version -- with the k-exploration activity embedded and\n"
-    "running in the browser -- is the published course page:\n"
-    "<" + PUBLISHED_PAGE_CH3 + ">\n"
-    "\n"
-    "In this notebook the interactive activity is replaced by a link to that\n"
-    "page plus a non-interactive Matplotlib version of the same k exploration;\n"
-    "every other Python analysis cell is kept and runnable. Questions marked\n"
-    "*Think first* are followed, where one exists, by a collapsible *Check\n"
-    "your reasoning* block; open questions are left without one fixed answer."
-)
-
-_CH3_SETUP = (
-    "## Setup\n"
-    "\n"
-    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
-    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
-    "typical scientific-Python environment, so there is normally nothing to\n"
-    "do here.\n"
-    "\n"
-    "If one of the imports further down fails, run the next cell once (edit\n"
-    "the version pins if your project needs specific ones), then restart the\n"
-    "kernel and run the notebook from the top. The notebook also downloads two\n"
-    "public data files the first time it runs, so it needs internet access."
-)
-
-_CH3_IFRAME_REPLACEMENT = (
-    "### Explore k yourself on the course website\n"
-    "\n"
-    "The interactive activity lets you drag a slider across every k from 1\n"
-    "through every participant in the fitting set and watch fitting error,\n"
-    "validation error, and the observed-vs-predicted scatter update from the\n"
-    "actual refitted model at that k.\n"
-    "\n"
-    "> **Interactive version on the course website.** It is embedded in the\n"
-    "> published Exercise 3 page:\n"
-    "> <" + PUBLISHED_PAGE_CH3 + ">\n"
-    "> This portable notebook links to it instead of embedding it. Section 5\n"
-    "> above already computes and plots the same k = 1..N_fit exploration as a\n"
-    "> static Matplotlib figure, from the same fitting/validation split -- run\n"
-    "> it and change `FIT_RANDOM_STATE` or the split size to explore further."
-)
-
-_CH3_ABC_IFRAME_REPLACEMENT = (
-    "### Try the correct-vs-misleading comparison yourself on the course website\n"
-    "\n"
-    "The interactive activity lets you drag a slider across every valid k (from\n"
-    "1 through the smaller of the training and test sample sizes) and watch all\n"
-    "three panels -- A (valid), B (resubstitution), C (invalid leakage) --\n"
-    "recompute together.\n"
-    "\n"
-    "> **Interactive version on the course website.** It is embedded in the\n"
-    "> published Exercise 3 page:\n"
-    "> <" + PUBLISHED_PAGE_CH3 + ">\n"
-    "> This portable notebook links to it instead of embedding it. The next\n"
-    "> cell computes the same three panels for one editable `k_demo` value --\n"
-    "> change it and rerun the cell to explore further."
-)
-
-_CH3_ABC_FOLLOWUP_CODE = (
-    "# Static three-panel equivalent of the correct-vs-misleading activity above.\n"
-    "# Change k_demo (from 1 to min(n_train, n_test)) and rerun this cell.\n"
-    "k_demo = K_EXAMPLE\n"
-    "\n"
-    "\n"
-    "def _fit_predict(X_fit_raw, y_fit_arr, X_query_raw, k):\n"
-    "    model = make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=k))\n"
-    "    model.fit(X_fit_raw, y_fit_arr)\n"
-    "    return model.predict(X_query_raw)\n"
-    "\n"
-    "\n"
-    "pred_a = _fit_predict(X_train, y_train, X_test, k_demo)\n"
-    "pred_b = _fit_predict(X_train, y_train, X_train, k_demo)\n"
-    "pred_c = _fit_predict(X_test, y_test, X_test, k_demo)\n"
-    "\n"
-    "panels = [\n"
-    '    ("A. valid\\n(fit train, test test)", y_test, pred_a),\n'
-    '    ("B. resubstitution\\n(fit train, score train)", y_train, pred_b),\n'
-    '    ("C. invalid\\n(fit test, score test)", y_test, pred_c),\n'
-    "]\n"
-    "allv = np.concatenate([y_train, y_test, pred_a, pred_b, pred_c])\n"
-    "lims = [allv.min() - 3, allv.max() + 3]\n"
-    "fig, axes = plt.subplots(1, 3, figsize=(11, 3.9), sharex=True, sharey=True)\n"
-    "for ax, (title, obs, pred) in zip(axes, panels):\n"
-    "    r2 = r2_score(obs, pred)\n"
-    '    ax.plot(lims, lims, "--", color="0.4", lw=1, label="Perfect prediction (observed = predicted)")\n'
-    "    ax.scatter(obs, pred, s=10, alpha=0.4)\n"
-    "    ax.set_xlim(lims); ax.set_ylim(lims); ax.set_aspect(\"equal\")\n"
-    '    ax.set_title(f"{title}\\nk={k_demo}, R$^2$ = {r2:.3f}", fontsize=9)\n'
-    '    ax.set_xlabel("observed age")\n'
-    'axes[0].set_ylabel("predicted age")\n'
-    'axes[0].legend(loc="upper left", fontsize=7)\n'
-    "plt.tight_layout(); plt.show()"
-)
-
-CHAPTER_03 = NotebookSpec(
-    key="chapter_03",
-    canonical=REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
-    portable=REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
-    published_page=PUBLISHED_PAGE_CH3,
-    banner_source=_CH3_BANNER,
-    setup_source=_CH3_SETUP,
-    lesson_packages="numpy pandas matplotlib scikit-learn",
-    drop_admonition_titles=DROP_ADMONITION_TITLES,
-    iframe_replacements={
-        "Interactive KNN neighbour-count exploration for predicting age from brain structure": (
-            _CH3_IFRAME_REPLACEMENT
-        ),
-        "Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure": (
-            _CH3_ABC_IFRAME_REPLACEMENT
-        ),
-    },
-    iframe_followup_code={
-        "Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure": (
-            _CH3_ABC_FOLLOWUP_CODE
-        ),
-    },
-    iframe_followup_ids={
-        "Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure": (
-            "portable-knn-abc-demo"
-        ),
-    },
-    preserve_output_ids=frozenset(),
-    rewrite_columns=False,
-    colab_title="Exercise 3: KNN and the Bias-Variance Tradeoff",
-)
-
-_CH4_BANNER = (
-    "# Exercise 4: Classification with Logistic Regression - portable notebook\n"
-    "\n"
-    "This is the **portable version** of the Exercise 4 classification\n"
+    "This is the **portable version** of the Exercise 3 classification\n"
     "practice from **Machine Learning for Neuroscience**, generated from the\n"
     "canonical course notebook by `scripts/build_portable_notebook.py`. It is\n"
     "meant for running or editing the code in Google Colab or in a local\n"
@@ -503,7 +388,7 @@ _CH4_BANNER = (
     "The richer version -- with the decision-threshold and class-imbalance\n"
     "activities embedded and running in the browser -- is the published\n"
     "course page:\n"
-    "<" + PUBLISHED_PAGE_CH4 + ">\n"
+    "<" + PUBLISHED_PAGE_CH3 + ">\n"
     "\n"
     "In this notebook the two embedded activities are replaced by links to\n"
     "that page; every Python analysis cell -- including the ordinary,\n"
@@ -513,7 +398,7 @@ _CH4_BANNER = (
     "without one fixed answer."
 )
 
-_CH4_SETUP = (
+_CH3_SETUP = (
     "## Setup\n"
     "\n"
     "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
@@ -527,7 +412,7 @@ _CH4_SETUP = (
     "public data file the first time it runs, so it needs internet access."
 )
 
-_CH4_THRESHOLD_IFRAME_REPLACEMENT = (
+_CH3_THRESHOLD_IFRAME_REPLACEMENT = (
     "### Explore the decision threshold on the course website\n"
     "\n"
     "The interactive activity lets you drag a slider across the decision\n"
@@ -537,14 +422,14 @@ _CH4_THRESHOLD_IFRAME_REPLACEMENT = (
     "refit.\n"
     "\n"
     "> **Interactive version on the course website.** It is embedded in the\n"
-    "> published Exercise 4 page:\n"
-    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> published Exercise 3 page:\n"
+    "> <" + PUBLISHED_PAGE_CH3 + ">\n"
     "> This portable notebook links to it instead of embedding it. The next\n"
     "> cell runs the same threshold exploration directly -- edit `threshold`\n"
     "> and rerun it."
 )
 
-_CH4_IMBALANCE_IFRAME_REPLACEMENT = (
+_CH3_IMBALANCE_IFRAME_REPLACEMENT = (
     "### Explore class imbalance on the course website\n"
     "\n"
     "The interactive activity lets you choose a class ratio and a\n"
@@ -553,40 +438,44 @@ _CH4_IMBALANCE_IFRAME_REPLACEMENT = (
     "of real participants.\n"
     "\n"
     "> **Interactive version on the course website.** It is embedded in the\n"
-    "> published Exercise 4 page:\n"
-    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> published Exercise 3 page:\n"
+    "> <" + PUBLISHED_PAGE_CH3 + ">\n"
     "> This portable notebook links to it instead of embedding it. The next\n"
     "> cell runs the same comparison directly -- edit `class_ratio` and\n"
-    "> `random_state` and rerun it."
+    "> `random_state` and rerun it.\n"
+    "\n"
+    "**Think about this as you try a few ratios:** as imbalance increases, the\n"
+    "model's raw accuracy rises too. Is the model actually performing better\n"
+    "than at 50:50, or worse? What might you wrongly conclude if you only saw\n"
+    "its accuracy, without the baseline for comparison?"
 )
 
-CHAPTER_04 = NotebookSpec(
-    key="chapter_04",
-    canonical=REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb",
-    portable=REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
-    published_page=PUBLISHED_PAGE_CH4,
-    banner_source=_CH4_BANNER,
-    setup_source=_CH4_SETUP,
+CHAPTER_03 = NotebookSpec(
+    key="chapter_03",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH3,
+    banner_source=_CH3_BANNER,
+    setup_source=_CH3_SETUP,
     lesson_packages="numpy pandas matplotlib scikit-learn",
     drop_admonition_titles=DROP_ADMONITION_TITLES,
     iframe_replacements={
         "Interactive decision-threshold exploration for classifying autism vs. control from brain structure": (
-            _CH4_THRESHOLD_IFRAME_REPLACEMENT
+            _CH3_THRESHOLD_IFRAME_REPLACEMENT
         ),
         "Interactive class-imbalance exploration for classifying autism vs. control from brain structure": (
-            _CH4_IMBALANCE_IFRAME_REPLACEMENT
+            _CH3_IMBALANCE_IFRAME_REPLACEMENT
         ),
     },
     preserve_output_ids=frozenset(),
     rewrite_columns=False,
-    colab_title="Exercise 4: Classification with Logistic Regression",
+    colab_title="Exercise 3: Classification and Metrics",
 )
 
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
     CHAPTER_03.key: CHAPTER_03,
-    CHAPTER_04.key: CHAPTER_04,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministically export the Exercise 4 class-imbalance interactive
+"""Deterministically export the Exercise 3 class-imbalance interactive
 (WP18 sec 4).
 
 The browser activity ``classification-imbalance`` lets a student pick a class
@@ -18,7 +18,7 @@ For each ratio (``book/config/abide_modeling.json``
 ``imbalance_activity.cohort_size`` real participants is drawn ONCE (without
 replacement, deterministic per-ratio seed), so every split seed for that
 ratio compares the exact same participants -- only the split's randomness
-varies. Every model uses Exercise 4's own recipe and the SAME fixed C
+varies. Every model uses Exercise 3's own recipe and the SAME fixed C
 (``classification_model_audit.C_EXAMPLE``, WP19) -- never re-tuned per
 ratio or seed.
 

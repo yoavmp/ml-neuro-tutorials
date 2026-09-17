@@ -1,4 +1,4 @@
-// Loader for the Exercise 4 decision-threshold interactive artifact
+// Loader for the Exercise 3 decision-threshold interactive artifact
 // (book/_static/widgets/data/abide_classification_threshold.json, produced
 // by scripts/export_classification_threshold_data.py). DOM / Plotly free so
 // it can be unit tested independently of the rendering component. Small

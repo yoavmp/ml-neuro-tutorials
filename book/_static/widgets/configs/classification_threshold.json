@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "type": "classification-threshold",
   "title": "Choosing a decision threshold, interactively",
-  "description": "Course activity for Exercise 4: move the probability threshold and watch the confusion matrix, accuracy, sensitivity, and specificity recompute from Exercise 4's own fixed, honest test-set predicted probabilities. The fitted model is never refit -- only the labels the threshold assigns change.",
+  "description": "Course activity for Exercise 3: move the probability threshold and watch the confusion matrix, accuracy, sensitivity, and specificity recompute from this notebook's own fixed, honest test-set predicted probabilities. The fitted model is never refit -- only the labels the threshold assigns change.",
   "data": "../data/abide_classification_threshold.json",
   "instructions": "Drag the slider, use the arrow keys, or type an exact value in the number box to move the decision threshold. Every number below recomputes from the same fixed test-set predicted probabilities -- the model itself is never refit.",
   "thresholdNote": "Moving the threshold changes which participants are predicted autistic and therefore changes the confusion matrix, accuracy, sensitivity, and specificity -- but it does not change the fitted model or its predicted probabilities, and it does not change the ROC curve or AUC, which summarize the model's ranking ability across every possible threshold at once.",

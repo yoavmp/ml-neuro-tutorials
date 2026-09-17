@@ -145,7 +145,6 @@ const edaCorrelationConfig = z
       .min(2, "config.variables must list at least two numeric variables"),
     defaultX: z.string().min(1, "config.defaultX must be a non-empty string"),
     defaultY: z.string().min(1, "config.defaultY must be a non-empty string"),
-    defaultMethod: z.enum(["pearson", "spearman"]),
     // Real groupings only (diagnosis, sex, …); the component always offers a
     // "None" option itself, so this list must not be empty of meaning but may
     // be an empty array if only ungrouped exploration is wanted.
@@ -231,7 +230,6 @@ const regressionCompareConfig = z
     defaultA: regressionModelChoice,
     defaultB: regressionModelChoice,
     literatureNote: z.string().min(1, "config.literatureNote must be a non-empty string"),
-    selectionBiasNote: z.string().min(1, "config.selectionBiasNote must be a non-empty string"),
     reflectionPrompts: z.array(z.string().min(1)).optional(),
   })
   .strict();
@@ -256,16 +254,6 @@ const knnExploreConfig = z
   })
   .strict();
 
-const knnAbcConfig = z
-  .object({
-    ...baseFields,
-    type: z.literal("knn-abc"),
-    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
-    k1Note: z.string().min(1, "config.k1Note must be a non-empty string"),
-    reflectionPrompts: z.array(z.string().min(1)).optional(),
-  })
-  .strict();
-
 const classificationThresholdConfig = z
   .object({
     ...baseFields,
@@ -282,7 +270,6 @@ const classificationImbalanceConfig = z
     ...baseFields,
     type: z.literal("classification-imbalance"),
     instructions: z.string().min(1, "config.instructions must be a non-empty string"),
-    imbalanceNote: z.string().min(1, "config.imbalanceNote must be a non-empty string"),
     reflectionPrompts: z.array(z.string().min(1)).optional(),
   })
   .strict();
@@ -299,7 +286,6 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   tableInspectionConfig,
   regressionCompareConfig,
   knnExploreConfig,
-  knnAbcConfig,
   classificationThresholdConfig,
   classificationImbalanceConfig,
 ]);
@@ -312,7 +298,6 @@ export type EdaCorrelationConfig = z.infer<typeof edaCorrelationConfig>;
 export type TableInspectionConfig = z.infer<typeof tableInspectionConfig>;
 export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
 export type KnnExploreConfig = z.infer<typeof knnExploreConfig>;
-export type KnnAbcConfig = z.infer<typeof knnAbcConfig>;
 export type ClassificationThresholdConfig = z.infer<typeof classificationThresholdConfig>;
 export type ClassificationImbalanceConfig = z.infer<typeof classificationImbalanceConfig>;
 

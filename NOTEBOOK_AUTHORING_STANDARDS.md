@@ -96,7 +96,32 @@ In this notebook, you will:
 - Do not describe exploratory comparisons as causal evidence or final model optimization.
 - Regenerate portable notebooks and stored outputs after any canonical-notebook edit.
 
-## 7. Before you start a notebook-editing WP
+## 7. Concision and duplication (WP24)
+
+- Prefer plain language over technical jargon when the jargon is not itself the
+  lesson (e.g. "fill in missing values" rather than "impute") — introduce the
+  technical term only where §1 above requires it.
+- Never repeat the same warning, caution, or explanation both inside an
+  interactive activity's own config text and in the surrounding notebook
+  markdown. Keep exactly one occurrence, placed where the student needs it —
+  usually after they have used the activity, not only inside it.
+- Keep interactive instructions and control labels brief and action-oriented;
+  cut a long caution to one sentence wherever the meaning survives.
+- A website notebook may collapse a Python cell with the `hide-cell` tag when
+  it only reproduces part of an interactive figure the student already used,
+  with no unique result, worked example, or later-needed code. Never apply
+  this to a first demonstration of a method, a unique result, or code later
+  cells depend on.
+- The portable/Colab notebook must keep such a reproduction cell's code and
+  saved output fully visible and runnable regardless of the website's tag —
+  confirm this on every regeneration, since the portable notebook has no
+  interactive widget to point back to.
+- Internal implementation notes (how a feature set, threshold, or fixed value
+  was actually chosen; references to an audit script, WP, or report) must
+  never reach student-facing material verbatim — describe the outcome and, if
+  relevant, the general method in plain language instead.
+
+## 8. Before you start a notebook-editing WP
 
 1. Read this file.
 2. Inspect the current cell-tag convention with a rendered build — don't assume.

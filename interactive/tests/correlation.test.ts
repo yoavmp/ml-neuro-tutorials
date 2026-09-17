@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   assertAligned,
-  averageRanks,
   computeCorrelation,
   pairwiseComplete,
   pearson,
-  spearman,
   REASON_TOO_FEW,
   REASON_NO_VARIANCE,
   type NumCell,
@@ -58,40 +56,6 @@ describe("pearson", () => {
   });
 });
 
-describe("averageRanks", () => {
-  it("assigns the average rank to ties (matches scipy rankdata)", () => {
-    expect(averageRanks([1, 1, 2, 2, 3, 3, 4, 5])).toEqual([
-      1.5, 1.5, 3.5, 3.5, 5.5, 5.5, 7, 8,
-    ]);
-    expect(averageRanks([10, 9, 8, 8, 7, 6, 3, 1])).toEqual([
-      8, 7, 5.5, 5.5, 4, 3, 2, 1,
-    ]);
-  });
-});
-
-describe("spearman", () => {
-  it("is 1 for any strictly increasing (monotonic) relation, even non-linear", () => {
-    expect(spearman([1, 2, 3, 4, 5], [1, 4, 9, 16, 25])).toBeCloseTo(1, 12);
-  });
-
-  it("matches scipy with ties (rho = -0.98787834…)", () => {
-    const a = [1, 1, 2, 2, 3, 3, 4, 5];
-    const b = [10, 9, 8, 8, 7, 6, 3, 1];
-    expect(spearman(a, b)).toBeCloseTo(-0.9878783399072131, 12);
-  });
-
-  it("differs from Pearson on a curved monotone relation", () => {
-    const x = [1, 2, 3, 4, 5];
-    const y = [1, 4, 9, 16, 25];
-    expect(pearson(x, y)).toBeCloseTo(0.981104910251593, 9);
-    expect(spearman(x, y)).toBeCloseTo(1, 9);
-  });
-
-  it("returns null for a constant array", () => {
-    expect(spearman([2, 2, 2, 2], [1, 2, 3, 4])).toBeNull();
-  });
-});
-
 describe("assertAligned", () => {
   it("passes for equal lengths and throws for a mismatch", () => {
     expect(() =>
@@ -115,8 +79,7 @@ describe("computeCorrelation", () => {
   const grp: NumCell[] = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2];
 
   it("returns the overall coefficient, missing breakdown and points when ungrouped", () => {
-    const r = computeCorrelation(x, y, "pearson");
-    expect(r.method).toBe("pearson");
+    const r = computeCorrelation(x, y);
     expect(r.overall.r).toBeCloseTo(0.93939, 4);
     expect(r.overall.n).toBe(10);
     expect(r.groups).toBeNull();
@@ -126,7 +89,7 @@ describe("computeCorrelation", () => {
   });
 
   it("computes deterministic group results in the config value order", () => {
-    const r = computeCorrelation(x, y, "pearson", {
+    const r = computeCorrelation(x, y, {
       field: "GRP",
       codes: grp,
       values: [
@@ -143,7 +106,7 @@ describe("computeCorrelation", () => {
 
   it("reports a reason instead of throwing for a too-small group", () => {
     const codes: NumCell[] = [1, 1, 2, 2, 2, 2, 2, 2, 2, 2];
-    const r = computeCorrelation(x, y, "pearson", {
+    const r = computeCorrelation(x, y, {
       field: "GRP",
       codes,
       values: [
@@ -157,13 +120,13 @@ describe("computeCorrelation", () => {
 
   it("reports a zero-variance reason for a constant column", () => {
     const flat: NumCell[] = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3];
-    const r = computeCorrelation(flat, y, "pearson");
+    const r = computeCorrelation(flat, y);
     expect(r.overall).toMatchObject({ r: null, reason: REASON_NO_VARIANCE });
   });
 
   it("excludes non-finite rows from n and from the plotted points", () => {
     const xn: NumCell[] = [1, 2, null, 4, 5, 6, 7, 8, 9, 10];
-    const r = computeCorrelation(xn, y, "spearman");
+    const r = computeCorrelation(xn, y);
     expect(r.overall.n).toBe(9);
     expect(r.points.x).toHaveLength(9);
     expect(r.missing.either).toBe(1);
@@ -171,7 +134,7 @@ describe("computeCorrelation", () => {
 
   it("throws when the grouping column is misaligned", () => {
     expect(() =>
-      computeCorrelation(x, y, "pearson", {
+      computeCorrelation(x, y, {
         field: "GRP",
         codes: [1, 2, 3],
         values: [{ code: 1, label: "One" }],
@@ -197,44 +160,38 @@ describe("computeCorrelation — against the committed abide_retention.json", ()
     return { art, num };
   }
 
-  it("FIQ ~ SRS_TOTAL_RAW: Pearson -0.2404, Spearman -0.2358, n = 778 (cross-checked with pandas)", async () => {
+  it("FIQ ~ SRS_TOTAL_RAW: Pearson -0.2404, n = 778 (cross-checked with pandas)", async () => {
     const { num } = await loadColumns();
-    const p = computeCorrelation(num("FIQ"), num("SRS_TOTAL_RAW"), "pearson");
-    const s = computeCorrelation(num("FIQ"), num("SRS_TOTAL_RAW"), "spearman");
+    const p = computeCorrelation(num("FIQ"), num("SRS_TOTAL_RAW"));
     expect(p.overall.n).toBe(778);
     expect(p.overall.r).toBeCloseTo(-0.240447, 5);
-    expect(s.overall.r).toBeCloseTo(-0.235794, 5);
     expect(p.missing).toMatchObject({ total: 1114, x: 99, y: 329, either: 336 });
   });
 
   it("FIQ ~ VIQ (a part–whole composite): Pearson 0.8330, n = 796", async () => {
     const { num } = await loadColumns();
-    const r = computeCorrelation(num("FIQ"), num("VIQ"), "pearson");
+    const r = computeCorrelation(num("FIQ"), num("VIQ"));
     expect(r.overall.n).toBe(796);
     expect(r.overall.r).toBeCloseTo(0.832969, 5);
   });
 
   it("ADOS-G ~ ADI-R social total: modest Pearson 0.1749 on only n = 152 of 1114", async () => {
     const { num } = await loadColumns();
-    const r = computeCorrelation(
-      num("ADOS_G_TOTAL"),
-      num("ADI_R_SOCIAL_TOTAL_A"),
-      "pearson",
-    );
+    const r = computeCorrelation(num("ADOS_G_TOTAL"), num("ADI_R_SOCIAL_TOTAL_A"));
     expect(r.overall.n).toBe(152);
     expect(r.overall.r).toBeCloseTo(0.17494, 5);
   });
 
   it("AGE_AT_SCAN ~ FIQ: essentially no association (Pearson 0.0084) on n = 1015", async () => {
     const { num } = await loadColumns();
-    const r = computeCorrelation(num("AGE_AT_SCAN"), num("FIQ"), "pearson");
+    const r = computeCorrelation(num("AGE_AT_SCAN"), num("FIQ"));
     expect(r.overall.n).toBe(1015);
     expect(r.overall.r).toBeCloseTo(0.008374, 5);
   });
 
   it("FIQ ~ SRS_TOTAL_RAW grouped by diagnosis: ~0 within each group (overall -0.24 was mostly between-group)", async () => {
     const { num } = await loadColumns();
-    const r = computeCorrelation(num("FIQ"), num("SRS_TOTAL_RAW"), "pearson", {
+    const r = computeCorrelation(num("FIQ"), num("SRS_TOTAL_RAW"), {
       field: "DX_GROUP",
       codes: num("DX_GROUP"),
       values: [
@@ -249,7 +206,7 @@ describe("computeCorrelation — against the committed abide_retention.json", ()
 
   it("SRS_TOTAL_RAW ~ ADOS_G_TOTAL grouped by diagnosis: overall 0.30, within Autism ~0.16", async () => {
     const { num } = await loadColumns();
-    const r = computeCorrelation(num("SRS_TOTAL_RAW"), num("ADOS_G_TOTAL"), "pearson", {
+    const r = computeCorrelation(num("SRS_TOTAL_RAW"), num("ADOS_G_TOTAL"), {
       field: "DX_GROUP",
       codes: num("DX_GROUP"),
       values: [

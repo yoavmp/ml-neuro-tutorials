@@ -61,12 +61,10 @@ for (const { name, prefix } of BASES) {
       // defaults from configs/eda_correlation.json
       await expect(page.locator('[data-testid="correlation-x"]')).toHaveValue("FIQ");
       await expect(page.locator('[data-testid="correlation-y"]')).toHaveValue("SRS_TOTAL_RAW");
-      await expect(page.locator('[data-testid="correlation-method"]')).toHaveValue("pearson");
       await expect(page.locator('[data-testid="correlation-group"]')).toHaveValue("none");
 
       await expect(plot).toHaveAttribute("data-active-x", "FIQ");
       await expect(plot).toHaveAttribute("data-active-y", "SRS_TOTAL_RAW");
-      await expect(plot).toHaveAttribute("data-active-method", "pearson");
       await expect(plot).toHaveAttribute("data-active-group", "none");
       await expect(plot).toHaveAttribute("data-n", "778");
       await expect(plot).toHaveAttribute("data-r", "-0.2404");
@@ -115,29 +113,6 @@ for (const { name, prefix } of BASES) {
       expect(requests.filter((u) => banned.test(u))).toEqual([]);
       expect(failed, `failed: ${failed.join(", ")}`).toEqual([]);
       expect(sockets).toEqual([]);
-    });
-
-    test("Pearson <-> Spearman changes the displayed coefficient for a pair where they differ", async ({
-      page,
-    }) => {
-      await page.goto(appUrl(prefix, QUERY));
-      await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-      const plot = page.locator('[data-testid="correlation-plot"]');
-
-      // AGE_AT_SCAN ~ ADOS_G_TOTAL: Pearson -0.229, Spearman -0.332 (age is right-skewed)
-      await page.locator('[data-testid="correlation-x"]').selectOption("AGE_AT_SCAN");
-      await page.locator('[data-testid="correlation-y"]').selectOption("ADOS_G_TOTAL");
-      await expect(plot).toHaveAttribute("data-active-method", "pearson");
-      await expect(plot).toHaveAttribute("data-r", "-0.2290");
-      await expect(plot).toHaveAttribute("data-n", "347");
-
-      await page.locator('[data-testid="correlation-method"]').selectOption("spearman");
-      await expect(plot).toHaveAttribute("data-active-method", "spearman");
-      await expect(plot).toHaveAttribute("data-r", "-0.3321");
-      await expect(plot).toHaveAttribute("data-n", "347"); // same rows, different statistic
-      await expect(page.locator('[data-testid="correlation-stats"]')).toContainText(
-        "Spearman correlation r = -0.33",
-      );
     });
 
     test("grouping by diagnosis splits the scatter into per-group traces with per-group stats", async ({
@@ -197,7 +172,6 @@ for (const { name, prefix } of BASES) {
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
       const plot = page.locator('[data-testid="correlation-plot"]');
       await page.locator('[data-testid="correlation-x"]').selectOption("PIQ");
-      await page.locator('[data-testid="correlation-method"]').selectOption("spearman");
       await page.locator('[data-testid="correlation-group"]').selectOption("sex");
       await expect(plot).toHaveAttribute("data-active-x", "PIQ");
 
@@ -205,7 +179,6 @@ for (const { name, prefix } of BASES) {
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
       await expect(plot).toHaveAttribute("data-active-x", "FIQ");
       await expect(plot).toHaveAttribute("data-active-y", "SRS_TOTAL_RAW");
-      await expect(plot).toHaveAttribute("data-active-method", "pearson");
       await expect(plot).toHaveAttribute("data-active-group", "none");
     });
 
@@ -239,10 +212,10 @@ for (const { name, prefix } of BASES) {
       const plot = page.locator('[data-testid="correlation-plot"]');
       await expect(plot.locator("svg.main-svg").first()).toBeVisible();
 
-      const methodSelect = page.locator('[data-testid="correlation-method"]');
-      await methodSelect.focus();
-      await methodSelect.selectOption("spearman");
-      await expect(plot).toHaveAttribute("data-active-method", "spearman");
+      const groupSelect = page.locator('[data-testid="correlation-group"]');
+      await groupSelect.focus();
+      await groupSelect.selectOption("diagnosis");
+      await expect(plot).toHaveAttribute("data-active-group", "diagnosis");
 
       const box = await plot.boundingBox();
       expect(box?.width ?? 999).toBeLessThanOrEqual(375);

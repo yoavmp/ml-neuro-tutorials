@@ -45,20 +45,23 @@ class Toc(unittest.TestCase):
             chapters[1]["sections"][0]["file"], "chapters/chapter_01/exercise_01"
         )
 
-    def test_exercises_two_through_four_follow_exercise_one_in_order(self):
+    def test_exercises_one_through_twelve_follow_in_order(self):
         sections = self.toc["chapters"][1]["sections"]
         files = [s["file"] for s in sections]
         self.assertEqual(
             files,
-            [
-                "chapters/chapter_01/exercise_01",
-                "chapters/chapter_02/exercise_02",
-                "chapters/chapter_03/exercise_03",
-                "chapters/chapter_04/exercise_04",
-            ],
+            [f"chapters/chapter_{n:02d}/exercise_{n:02d}" for n in range(1, 13)],
         )
-        for chapter in ("chapter_02", "chapter_03", "chapter_04"):
-            self.assertTrue((BOOK / "chapters" / chapter / f"exercise_0{chapter[-1]}.ipynb").exists())
+        for n in (1, 2, 3):
+            self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb").exists())
+        for n in range(4, 13):
+            self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md").exists())
+
+    def test_no_exercise_13_in_toc(self):
+        sections = self.toc["chapters"][1]["sections"]
+        files = [s["file"] for s in sections]
+        self.assertNotIn("chapters/chapter_13/exercise_13", files)
+        self.assertEqual(len(files), 12)
 
 
 class Pages(unittest.TestCase):

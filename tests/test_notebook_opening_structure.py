@@ -1,5 +1,7 @@
 """WP20 correction pass: cross-notebook authoring-rule checks for Exercises
-1-4, covering the durable requirements in NOTEBOOK_AUTHORING_STANDARDS.md.
+1-3 (WP25 renumbered the active book to Exercises 1-3 plus placeholder
+Exercises 4-12, which have no notebook structure to check here), covering
+the durable requirements in NOTEBOOK_AUTHORING_STANDARDS.md.
 
 Deliberately structural/count-based rather than exact-wording where possible
 (the opening list content is free to be reworded by a future WP), except for
@@ -25,18 +27,16 @@ CANONICAL = {
     "chapter_01": REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb",
     "chapter_02": REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb",
     "chapter_03": REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
-    "chapter_04": REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb",
 }
 PORTABLE = {
     "chapter_01": REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb",
     "chapter_02": REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb",
     "chapter_03": REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
-    "chapter_04": REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
 }
 WIDGET_CONFIGS = sorted((REPO_ROOT / "book" / "_static" / "widgets" / "configs").glob("*.json"))
 
 # Exercise number, one row per notebook, in the same order as CANONICAL.
-EXERCISE_NUMBERS = {"chapter_01": "1", "chapter_02": "2", "chapter_03": "3", "chapter_04": "4"}
+EXERCISE_NUMBERS = {"chapter_01": "1", "chapter_02": "2", "chapter_03": "3"}
 
 COVERS_HEADING = "## What this notebook covers"
 MAIN_HEADING_RE = re.compile(r"^## \d+\.", re.MULTILINE)
@@ -137,7 +137,7 @@ class OpeningStructureTests(unittest.TestCase):
 
 class RepeatedLoadingCellTests(unittest.TestCase):
     """§3.2: Exercise 1 keeps its own first/only loading example visible;
-    Exercises 2-4 collapse the repeated loading cell's input while keeping
+    Exercises 2-3 collapse the repeated loading cell's input while keeping
     its useful output visible."""
 
     def test_exercise_1_loading_cells_are_visible(self):
@@ -146,16 +146,16 @@ class RepeatedLoadingCellTests(unittest.TestCase):
             tags = nb["cells"][idx].get("metadata", {}).get("tags", [])
             self.assertEqual(tags, [], f"chapter_01 cell {idx} should carry no hide tag")
 
-    def test_exercises_2_to_4_hide_input_on_the_repeated_loading_cell(self):
-        for key in ("chapter_02", "chapter_03", "chapter_04"):
+    def test_exercises_2_to_3_hide_input_on_the_repeated_loading_cell(self):
+        for key in ("chapter_02", "chapter_03"):
             nb = _load(CANONICAL[key])
             cell = nb["cells"][4]
             tags = cell.get("metadata", {}).get("tags", [])
             self.assertIn("hide-input", tags, f"{key} cell 4 should carry hide-input")
             self.assertNotIn("hide-cell", tags, f"{key} cell 4 must not use hide-cell (it hides output too)")
 
-    def test_exercises_2_to_4_loading_cell_output_is_present(self):
-        for key in ("chapter_02", "chapter_03", "chapter_04"):
+    def test_exercises_2_to_3_loading_cell_output_is_present(self):
+        for key in ("chapter_02", "chapter_03"):
             nb = _load(CANONICAL[key])
             cell = nb["cells"][4]
             text = _cell_output_text(cell)

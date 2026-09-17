@@ -1,125 +1,81 @@
 import { expect, test, type Frame } from "@playwright/test";
 
-// Proof that the embedded knn-explore activity works on the *final built
+// Proof that both embedded Exercise 3 activities work on the *final built
 // Exercise 3 HTML page*, served beneath the simulated GitHub Pages project
 // subpath -- not just the standalone widget page.
 
 const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html";
-const IFRAME_SELECTOR =
-  'iframe[title="Interactive KNN neighbour-count exploration for predicting age from brain structure"]';
-const N_FIT = 564;
+const THRESHOLD_IFRAME_SELECTOR =
+  'iframe[title="Interactive decision-threshold exploration for classifying autism vs. control from brain structure"]';
+const IMBALANCE_IFRAME_SELECTOR =
+  'iframe[title="Interactive class-imbalance exploration for classifying autism vs. control from brain structure"]';
 
-async function activityFrame(page: import("@playwright/test").Page): Promise<Frame> {
-  const handle = await page.locator(IFRAME_SELECTOR).elementHandle();
+async function frameFor(page: import("@playwright/test").Page, selector: string): Promise<Frame> {
+  const handle = await page.locator(selector).elementHandle();
   expect(handle, "iframe element present").not.toBeNull();
   const frame = await handle!.contentFrame();
   expect(frame, "iframe content frame present").not.toBeNull();
   return frame!;
 }
 
-test.describe("Chapter 3 built page — embedded KNN k-exploration", () => {
-  test("iframe loads, config+data are 200, both plots render, a real k change is real", async ({
+test.describe("Chapter 3 built page — embedded decision-threshold activity", () => {
+  test("iframe loads, config+data are 200, ROC plot renders at the default threshold", async ({
     page,
   }) => {
-    const APP_MARKER = "/_static/widgets/app/";
     const responses: { url: string; status: number }[] = [];
-    const activityRequests: string[] = [];
-    const failed: string[] = [];
-    const sockets: string[] = [];
     page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
-    page.on("request", (r) => {
-      if ((r.frame()?.url() ?? "").includes(APP_MARKER)) activityRequests.push(r.url());
-    });
-    page.on("requestfailed", (r) => failed.push(r.url()));
-    page.on("websocket", (ws) => sockets.push(ws.url()));
 
     await page.goto(CHAPTER_URL);
-    const iframe = page.locator(IFRAME_SELECTOR);
+    const iframe = page.locator(THRESHOLD_IFRAME_SELECTOR);
     await expect(iframe).toHaveCount(1);
     await iframe.scrollIntoViewIfNeeded();
 
-    const frame = await activityFrame(page);
+    const frame = await frameFor(page, THRESHOLD_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
 
-    const configResp = responses.find((r) => r.url.endsWith("/configs/knn_explore.json"));
-    const manifestResp = responses.find((r) => r.url.endsWith("/data/abide_knn_explore_manifest.json"));
-    const binaryResp = responses.find((r) => r.url.endsWith("/data/abide_knn_explore.bin"));
-    const obsoleteResp = responses.find((r) => r.url.endsWith("/data/abide_knn_explore.json"));
+    const configResp = responses.find((r) => r.url.endsWith("/configs/classification_threshold.json"));
+    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_classification_threshold.json"));
     expect(configResp?.status, "config HTTP status").toBe(200);
-    expect(manifestResp?.status, "manifest HTTP status").toBe(200);
-    expect(binaryResp?.status, "binary HTTP status").toBe(200);
-    expect(obsoleteResp, "no request for the obsolete large JSON asset").toBeUndefined();
+    expect(dataResp?.status, "data HTTP status").toBe(200);
 
-    const slider = frame.locator('[data-testid="knn-k-slider"]');
-    await expect(slider).toHaveValue("20"); // worked-example default
-    await expect(frame.locator('[data-testid="knn-scatter-plot"]')).toHaveAttribute(
-      "data-render-count",
-      /[1-9]/,
-    );
-    await expect(frame.locator('[data-testid="knn-curve-plot"]')).toHaveAttribute(
-      "data-render-count",
-      /[1-9]/,
-    );
+    await expect(frame.locator('[data-testid="cls-threshold-slider"]')).toHaveValue("0.5");
+    await expect(frame.locator('[data-testid="cls-roc-plot"]')).toHaveAttribute("data-render-count", /[1-9]/);
 
-    const metrics = await frame.locator('[data-testid="knn-metrics"]').innerText();
-    expect(metrics).toMatch(/k = 20/);
+    const metrics = await frame.locator('[data-testid="cls-metrics"]').innerText();
+    expect(metrics).toMatch(/threshold = 0\.50/);
+    expect(metrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.569/);
+  });
 
-    // a real control change: k=1 -> perfect fitting R2, different metrics text
-    const beforeMetrics = metrics;
-    await slider.fill("1");
-    await expect(frame.locator('[data-testid="knn-k-value"]')).toHaveText("1");
-    const afterMetrics = await frame.locator('[data-testid="knn-metrics"]').innerText();
+  test("moving the threshold changes the confusion matrix and metrics, but never the AUC", async ({ page }) => {
+    await page.goto(CHAPTER_URL);
+    await page.locator(THRESHOLD_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    const frame = await frameFor(page, THRESHOLD_IFRAME_SELECTOR);
+    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    const beforeMetrics = await frame.locator('[data-testid="cls-metrics"]').innerText();
+    const beforeTp = await frame.locator('[data-testid="cls-cm-tp"]').innerText();
+
+    await frame.locator('[data-testid="cls-threshold-slider"]').fill("0.9");
+    await frame.locator('[data-testid="cls-threshold-slider"]').dispatchEvent("change");
+
+    const afterMetrics = await frame.locator('[data-testid="cls-metrics"]').innerText();
+    const afterTp = await frame.locator('[data-testid="cls-cm-tp"]').innerText();
     expect(afterMetrics).not.toEqual(beforeMetrics);
-    expect(afterMetrics).toMatch(/fitting R2 = 1\.000/);
+    expect(afterTp).not.toEqual(beforeTp);
+    expect(afterMetrics).toMatch(/AUC \(fixed, threshold-independent\) = 0\.569/);
 
-    // no CDN / kernel / socket / off-origin from the activity
-    const origin = new URL(page.url()).origin;
-    expect(activityRequests.length).toBeGreaterThan(0);
-    const offOrigin = activityRequests.filter(
-      (u) => !u.startsWith(origin) && !u.startsWith("data:"),
-    );
-    expect(offOrigin, `off-origin: ${offOrigin.join(", ")}`).toEqual([]);
-    const banned =
-      /cdn\.plot\.ly|jsdelivr|unpkg|cdnjs|googleapis|gstatic|\/api\/kernels|pyodide|\/lite\/|voici|thebe|binder/i;
-    expect(activityRequests.filter((u) => banned.test(u))).toEqual([]);
-    expect(sockets).toEqual([]);
-    expect(failed.filter((u) => /_static\/widgets\//.test(u))).toEqual([]);
+    // reset control restores the default
+    await frame.locator('[data-testid="cls-threshold-reset"]').click();
+    await expect(frame.locator('[data-testid="cls-threshold-value"]')).toHaveText("0.50");
   });
 
-  test("k = N_fit collapses the scatter plot to the fitting-set mean", async ({ page }) => {
-    await page.goto(CHAPTER_URL);
-    await page.locator(IFRAME_SELECTOR).scrollIntoViewIfNeeded();
-    const frame = await activityFrame(page);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-
-    await frame.locator('[data-testid="knn-k-slider"]').fill(String(N_FIT));
-    await expect(frame.locator('[data-testid="knn-k-value"]')).toHaveText(String(N_FIT));
-    const metrics = await frame.locator('[data-testid="knn-metrics"]').innerText();
-    expect(metrics).toMatch(/fitting R2 = -?0\.000/);
-  });
-
-  test("browser refresh restores the configured default k", async ({ page }) => {
-    await page.goto(CHAPTER_URL);
-    await page.locator(IFRAME_SELECTOR).scrollIntoViewIfNeeded();
-    let frame = await activityFrame(page);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await frame.locator('[data-testid="knn-k-slider"]').fill("100");
-    await expect(frame.locator('[data-testid="knn-k-value"]')).toHaveText("100");
-
-    await page.reload();
-    await page.locator(IFRAME_SELECTOR).scrollIntoViewIfNeeded();
-    frame = await activityFrame(page);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await expect(frame.locator('[data-testid="knn-k-slider"]')).toHaveValue("20");
-  });
-
-  test("embedded activity is usable at a narrow viewport", async ({ page }) => {
+  test("embedded threshold activity is usable at a narrow viewport", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto(CHAPTER_URL);
-    await page.locator(IFRAME_SELECTOR).scrollIntoViewIfNeeded();
-    const frame = await activityFrame(page);
+    await page.locator(THRESHOLD_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    const frame = await frameFor(page, THRESHOLD_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await expect(frame.locator('[data-testid="knn-scatter-plot"]')).toBeVisible();
+    await expect(frame.locator('[data-testid="cls-roc-plot"]')).toBeVisible();
     const overflow = await frame.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
@@ -127,73 +83,55 @@ test.describe("Chapter 3 built page — embedded KNN k-exploration", () => {
   });
 });
 
-// Proof that the embedded knn-abc (Section 3) activity works on the final
-// built Exercise 3 HTML page, served beneath the simulated GitHub Pages
-// project subpath.
-const ABC_IFRAME_SELECTOR =
-  'iframe[title="Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure"]';
-
-async function abcFrame(page: import("@playwright/test").Page): Promise<Frame> {
-  const handle = await page.locator(ABC_IFRAME_SELECTOR).elementHandle();
-  expect(handle, "iframe element present").not.toBeNull();
-  const frame = await handle!.contentFrame();
-  expect(frame, "iframe content frame present").not.toBeNull();
-  return frame!;
-}
-
-test.describe("Chapter 3 built page — embedded honest-vs-invalid KNN activity", () => {
-  test("iframe loads, config+data are 200, all three panels render with the worked-example default k", async ({
-    page,
-  }) => {
+test.describe("Chapter 3 built page — embedded class-imbalance activity", () => {
+  test("iframe loads, config+data are 200, the accuracy-comparison chart renders at 95:5", async ({ page }) => {
     const responses: { url: string; status: number }[] = [];
     page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
 
     await page.goto(CHAPTER_URL);
-    const iframe = page.locator(ABC_IFRAME_SELECTOR);
+    const iframe = page.locator(IMBALANCE_IFRAME_SELECTOR);
     await expect(iframe).toHaveCount(1);
     await iframe.scrollIntoViewIfNeeded();
 
-    const frame = await abcFrame(page);
+    const frame = await frameFor(page, IMBALANCE_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
 
-    const configResp = responses.find((r) => r.url.endsWith("/configs/knn_abc.json"));
-    const manifestResp = responses.find((r) => r.url.endsWith("/data/abide_knn_abc_manifest.json"));
-    const binaryResp = responses.find((r) => r.url.endsWith("/data/abide_knn_abc.bin"));
-    const obsoleteResp = responses.find((r) => r.url.endsWith("/data/abide_knn_abc.json"));
+    const configResp = responses.find((r) => r.url.endsWith("/configs/classification_imbalance.json"));
+    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_classification_imbalance.json"));
     expect(configResp?.status, "config HTTP status").toBe(200);
-    expect(manifestResp?.status, "manifest HTTP status").toBe(200);
-    expect(binaryResp?.status, "binary HTTP status").toBe(200);
-    expect(obsoleteResp, "no request for the obsolete large JSON asset").toBeUndefined();
+    expect(dataResp?.status, "data HTTP status").toBe(200);
 
-    await expect(frame.locator('[data-testid="knn-abc-k-slider"]')).toHaveValue("20");
-    for (const panel of ["a", "b", "c"]) {
-      await expect(frame.locator(`[data-testid="knn-abc-panel-${panel}-plot"]`)).toHaveAttribute(
-        "data-render-count",
-        /[1-9]/,
-      );
-    }
+    await frame.locator('[data-testid="cls-imb-ratio-select"]').selectOption("95:5");
+    const cohort = await frame.locator('[data-testid="cls-imb-cohort"]').innerText();
+    expect(cohort).toMatch(/400 participants/);
+    expect(cohort).toMatch(/20 autism/);
+
+    await expect(frame.locator('[data-testid="cls-imb-plot"]')).toHaveAttribute("data-baseline-accuracy", "0.9500");
   });
 
-  test("k=1 makes panels B and C exactly perfect on the built page", async ({ page }) => {
+  test("changing the ratio and seed selects real precomputed data, not just labels", async ({ page }) => {
     await page.goto(CHAPTER_URL);
-    await page.locator(ABC_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
-    const frame = await abcFrame(page);
+    await page.locator(IMBALANCE_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    const frame = await frameFor(page, IMBALANCE_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
 
-    await frame.locator('[data-testid="knn-abc-k-slider"]').fill("1");
-    const bMetrics = await frame.locator('[data-testid="knn-abc-panel-b-metrics"]').innerText();
-    const cMetrics = await frame.locator('[data-testid="knn-abc-panel-c-metrics"]').innerText();
-    expect(bMetrics).toMatch(/R2 = 1\.000/);
-    expect(cMetrics).toMatch(/R2 = 1\.000/);
+    const before = await frame.locator('[data-testid="cls-imb-counts"]').innerText();
+    await frame.locator('[data-testid="cls-imb-ratio-select"]').selectOption("95:5");
+    const afterRatio = await frame.locator('[data-testid="cls-imb-counts"]').innerText();
+    expect(afterRatio).not.toEqual(before);
+
+    await frame.locator('[data-testid="cls-imb-seed-select"]').selectOption("1");
+    const afterSeed = await frame.locator('[data-testid="cls-imb-metrics"]').innerText();
+    expect(afterSeed.length).toBeGreaterThan(0);
   });
 
-  test("embedded honest-vs-invalid activity is usable at a narrow viewport", async ({ page }) => {
+  test("embedded imbalance activity is usable at a narrow viewport", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto(CHAPTER_URL);
-    await page.locator(ABC_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
-    const frame = await abcFrame(page);
+    await page.locator(IMBALANCE_IFRAME_SELECTOR).scrollIntoViewIfNeeded();
+    const frame = await frameFor(page, IMBALANCE_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await expect(frame.locator('[data-testid="knn-abc-panel-a-plot"]')).toBeVisible();
+    await expect(frame.locator('[data-testid="cls-imb-plot"]')).toBeVisible();
     const overflow = await frame.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

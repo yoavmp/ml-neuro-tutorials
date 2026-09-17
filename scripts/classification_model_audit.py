@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Reproducible logistic-regression classification audit for Exercise 4 (WP19).
+"""Reproducible logistic-regression classification audit for Exercise 3 (WP19).
 
-Exercise 4 predicts autism diagnosis from cortical structure -- the first
+Exercise 3 predicts autism diagnosis from cortical structure -- the first
 classification exercise in the course. WP19 removed the early
 cross-validation / formal parameter-selection lesson: ``C`` is fixed by
 course design at ``C_EXAMPLE = 1.0``, before the held-out result is
@@ -79,7 +79,7 @@ def _xy(frame: Any, cols: list[str]):
         raise RuntimeError("frame is missing the 'group' diagnosis column")
     present = frame["group"].notna().to_numpy()
     if not present.all():
-        raise RuntimeError("group has missing values; Exercise 4 expects diagnosis for every row")
+        raise RuntimeError("group has missing values; Exercise 3 expects diagnosis for every row")
     groups_raw = frame.loc[present, "group"].to_numpy(dtype="float64")
     unexpected = set(np.unique(groups_raw)) - {float(POSITIVE_CODE), float(NEGATIVE_CODE)}
     if unexpected:
@@ -109,7 +109,7 @@ def _split(X: Any, y: Any, subjects: Any):
 
 
 def select_canonical_c(frame: Any = None) -> float:
-    """The one fixed C for Exercise 4's canonical split -- reused by the
+    """The one fixed C for Exercise 3's canonical split -- reused by the
     threshold and imbalance export scripts so every artifact shares the
     exact same, course-design-fixed C (WP19). ``frame`` is accepted, but
     unused, for backward-compatible call sites -- C is a constant, not

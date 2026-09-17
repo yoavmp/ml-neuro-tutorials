@@ -1,4 +1,4 @@
-// Production activity: Exercise 4's decision-threshold interactive (WP17
+// Production activity: Exercise 3's decision-threshold interactive (WP17
 // sec 4). Uses the FIXED honest test-set predicted probabilities -- the
 // model is never refit when the threshold changes. Moving the threshold
 // slider recomputes a real confusion matrix, accuracy, sensitivity,

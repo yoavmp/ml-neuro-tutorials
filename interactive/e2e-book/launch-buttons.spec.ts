@@ -22,11 +22,6 @@ const CHAPTERS = [
     url: "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html",
     portable: "book/downloads/chapter_03/exercise_03_portable.ipynb",
   },
-  {
-    name: "Chapter 4",
-    url: "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html",
-    portable: "book/downloads/chapter_04/exercise_04_portable.ipynb",
-  },
 ];
 
 for (const { name, url, portable } of CHAPTERS) {
@@ -79,5 +74,10 @@ test("a page with no portable-notebook mapping (Introduction) gets no Colab butt
   page,
 }) => {
   await page.goto("/ml-neuro-tutorials/intro.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+test("a placeholder exercise page (Exercise 4) gets no Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });

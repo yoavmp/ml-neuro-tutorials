@@ -3,15 +3,16 @@ import { expect, test, type Frame, type Page } from "@playwright/test";
 // WP22 addendum: `chapter01-dark-mode.spec.ts` covers Exercise 1 (histogram,
 // correlation scatter) end to end, including the full light/dark/reload
 // cycle. This spec extends coverage to one Plotly activity from every other
-// exercise that has one -- including the Exercise 3 KNN A/B/C activity shown
-// in the original bug screenshot, which no automated spec had checked before
-// this addendum -- against the *built* Jupyter Book over real HTTP, OS/browser
-// forced to light throughout so the only way "dark" can appear anywhere is
-// via the book's own toggle (the exact mismatch the pre-WP22 code could not
-// handle).
+// exercise that has one, against the *built* Jupyter Book over real HTTP,
+// OS/browser forced to light throughout so the only way "dark" can appear
+// anywhere is via the book's own toggle (the exact mismatch the pre-WP22
+// code could not handle). WP25 moved the KNN exploration activity into
+// Exercise 2 and moved classification into Exercise 3; the discarded
+// knn-abc activity's dark-mode coverage (the original bug screenshot) lives
+// only on archive/pre-syllabus-notebook-structure.
 //
-// `regression-compare.ts`, `knn-abc.ts`, and `knn-explore.ts`'s scatter panel
-// all use Plotly's `scattergl` trace type, which renders through WebGL --
+// `regression-compare.ts` and `knn-explore.ts`'s scatter panel both use
+// Plotly's `scattergl` trace type, which renders through WebGL --
 // there is no per-point SVG element whose `fill` a computed-style check could
 // read. Every color assertion here instead reads the trace's own resolved
 // `marker.color`/`line.color` off `_fullData` (what Plotly actually used to
@@ -139,7 +140,7 @@ function assertDarkFigure(snap: PlotSnapshot, label: string): void {
 test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () => {
   test.describe.configure({ timeout: 60_000 });
 
-  test("Exercise 2 — regression feature-set comparison: initial dark load, both panels", async ({ page }) => {
+  test("Exercise 2 — regression feature-set comparison and KNN exploration: initial dark load", async ({ page }) => {
     await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html");
     const frame = await activityFrame(page, 'iframe[src*="config=../configs/regression_compare.json"]');
 
@@ -152,38 +153,6 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
       expect(snap.markerColors, `regression-compare ${testId}: diagonal reference line uses the dark palette`).toContain(
         DIAGONAL_LINE_DARK,
       );
-    }
-  });
-
-  test("Exercise 3 — KNN A/B/C and KNN exploration: initial dark load", async ({ page }) => {
-    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html");
-
-    // --- KNN A/B/C: all three panels, per the original bug screenshot ---
-    const abcFrame = await activityFrame(page, 'iframe[src*="config=../configs/knn_abc.json"]');
-    const panelIds = ["knn-abc-panel-a-plot", "knn-abc-panel-b-plot", "knn-abc-panel-c-plot"];
-    const panelSnaps: PlotSnapshot[] = [];
-    for (const testId of panelIds) {
-      const snap = await snapshotPlot(abcFrame, testId);
-      assertDarkFigure(snap, `knn-abc ${testId}`);
-      // Observed-vs-predicted points visible + diagonal reference line visible.
-      expect(snap.markerColors, `knn-abc ${testId}: observed-vs-predicted points visible (dark palette)`).toContain(
-        MARKER_PRIMARY_DARK,
-      );
-      expect(snap.markerColors, `knn-abc ${testId}: diagonal reference line visible (dark palette)`).toContain(
-        DIAGONAL_LINE_DARK,
-      );
-      // "Plot margins do not appear as light-gray bars": with paper/plot bg
-      // transparent (already asserted in assertDarkFigure) and the card
-      // background confirmed dark, the margin area cannot render as a light
-      // rectangle -- there is no separate margin-colored element to inspect.
-      panelSnaps.push(snap);
-    }
-    // All three panels use the same dark styling.
-    for (const snap of panelSnaps.slice(1)) {
-      expect(snap.bodyBg).toBe(panelSnaps[0]!.bodyBg);
-      expect(snap.gridStroke).toBe(panelSnaps[0]!.gridStroke);
-      expect(snap.tickTextFill).toBe(panelSnaps[0]!.tickTextFill);
-      expect(new Set(snap.markerColors)).toEqual(new Set(panelSnaps[0]!.markerColors));
     }
 
     // --- KNN exploration: one plot (cheap addition, same already-loaded page) ---
@@ -198,8 +167,8 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     );
   });
 
-  test("Exercise 4 — classification threshold ROC and class-imbalance: initial dark load", async ({ page }) => {
-    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html");
+  test("Exercise 3 — classification threshold ROC and class-imbalance: initial dark load", async ({ page }) => {
+    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html");
 
     const rocFrame = await activityFrame(page, 'iframe[src*="config=../configs/classification_threshold.json"]');
     const rocSnap = await snapshotPlot(rocFrame, "cls-roc-plot");

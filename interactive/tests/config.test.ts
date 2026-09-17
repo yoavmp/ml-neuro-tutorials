@@ -325,7 +325,7 @@ const validCorrelation = {
   schemaVersion: CONFIG_SCHEMA_VERSION,
   type: "eda-correlation",
   title: "ABIDE-II feature correlation explorer",
-  instructions: "Pick two numeric variables and a method.",
+  instructions: "Pick two numeric variables.",
   data: "../data/abide_retention.json",
   variables: [
     { name: "FIQ", label: "Full-scale IQ" },
@@ -334,7 +334,6 @@ const validCorrelation = {
   ],
   defaultX: "FIQ",
   defaultY: "SRS_TOTAL_RAW",
-  defaultMethod: "pearson",
   groupings: [
     {
       key: "diagnosis",
@@ -395,11 +394,6 @@ describe("parseActivityConfig — eda-correlation", () => {
     const r = parseActivityConfig({ ...validCorrelation, defaultY: "FIQ" });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toMatch(/must be different/);
-  });
-
-  it("rejects an unknown defaultMethod", () => {
-    const r = parseActivityConfig({ ...validCorrelation, defaultMethod: "kendall" });
-    expect(r.ok).toBe(false);
   });
 
   it("rejects a grouping field that is also a selectable variable", () => {
@@ -593,7 +587,6 @@ const validRegressionCompare = {
   defaultA: { measures: ["CT"], bundle: "frontoparietal" },
   defaultB: { measures: ["CT"], bundle: "occipital" },
   literatureNote: "P-FIT motivates the frontoparietal bundle.",
-  selectionBiasNote: "Exploratory comparison is not a final estimate.",
 };
 
 describe("parseActivityConfig — regression-compare", () => {
@@ -712,44 +705,6 @@ describe("parseActivityConfig — knn-explore", () => {
   it("accepts the shipped configs/knn_explore.json", async () => {
     const fs = await import("node:fs/promises");
     const url = new URL("../../book/_static/widgets/configs/knn_explore.json", import.meta.url);
-    const text = await fs.readFile(url, "utf-8");
-    const r = parseActivityConfigJson(text);
-    expect(r.ok, r.ok ? "" : r.error).toBe(true);
-  });
-});
-
-const validKnnAbc = {
-  schemaVersion: CONFIG_SCHEMA_VERSION,
-  type: "knn-abc",
-  title: "Honest vs invalid evaluation, interactively",
-  data: "../data/abide_knn_abc_manifest.json",
-  instructions: "Drag the slider to change k.",
-  k1Note: "At k=1, B and C are exactly perfect.",
-};
-
-describe("parseActivityConfig — knn-abc", () => {
-  it("accepts a well-formed knn-abc config", () => {
-    const r = parseActivityConfig(validKnnAbc);
-    expect(r.ok, r.ok ? "" : r.error).toBe(true);
-  });
-
-  it("accepts optional reflectionPrompts", () => {
-    const r = parseActivityConfig({ ...validKnnAbc, reflectionPrompts: ["Try k=1."] });
-    expect(r.ok, r.ok ? "" : r.error).toBe(true);
-  });
-
-  it("rejects unknown extra keys (strict schema)", () => {
-    expect(parseActivityConfig({ ...validKnnAbc, extra: 1 }).ok).toBe(false);
-  });
-
-  it("rejects a missing k1Note", () => {
-    const { k1Note: _drop, ...rest } = validKnnAbc;
-    expect(parseActivityConfig(rest).ok).toBe(false);
-  });
-
-  it("accepts the shipped configs/knn_abc.json", async () => {
-    const fs = await import("node:fs/promises");
-    const url = new URL("../../book/_static/widgets/configs/knn_abc.json", import.meta.url);
     const text = await fs.readFile(url, "utf-8");
     const r = parseActivityConfigJson(text);
     expect(r.ok, r.ok ? "" : r.error).toBe(true);

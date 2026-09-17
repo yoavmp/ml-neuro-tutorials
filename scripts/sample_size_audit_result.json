@@ -561,7 +561,7 @@
   "generated_by": "scripts/sample_size_audit.py --run",
   "protocol": {
     "inner_dev_split": {
-      "note": "Further splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189) for the empirical all-k curve (Exercise 3 section 4.5) and the interactive activity (section 4.6). Independent of, and never touching, the outer test set (251 rows) locked by protocol.holdout_split.",
+      "note": "Further splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189) for the empirical all-k curve (Exercise 2 section 6) and the interactive activity (section 7). Independent of, and never touching, the outer test set (251 rows) locked by protocol.holdout_split.",
       "random_state": 7,
       "stratify": "group",
       "test_size": 0.25
