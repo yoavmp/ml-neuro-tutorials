@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "type": "classification-imbalance",
   "title": "Class imbalance and misleading accuracy, interactively",
-  "description": "Course activity for Exercise 4: choose a class ratio and a predetermined split seed, then compare the logistic-regression model's test accuracy against the majority-class baseline accuracy on the same resampled cohort of real ABIDE participants -- plus AUC, balanced accuracy, sensitivity, and specificity.",
+  "description": "Course activity for Exercise 3: choose a class ratio and a predetermined split seed, then compare the logistic-regression model's test accuracy against the majority-class baseline accuracy on the same resampled cohort of real ABIDE participants -- plus AUC, balanced accuracy, sensitivity, and specificity.",
   "data": "../data/abide_classification_imbalance.json",
   "instructions": "Choose a class ratio (control is always the majority class here) and one of five predetermined split seeds. The chart compares the model's own test accuracy against what always-predict-control would score on the exact same test participants.",
-  "imbalanceNote": "As class imbalance increases, predicting only the majority class (control) produces increasingly high accuracy on its own -- without the model having learned anything about autism. A high accuracy can therefore coexist with a classifier that fails completely to identify autistic participants. Comparing accuracy against the majority-class baseline for the same test partition is what exposes this; the confusion matrix, sensitivity, specificity, balanced accuracy, and AUC reveal information that accuracy alone conceals. No single metric is universally sufficient -- which measures matter most depends on the scientific or clinical question. This activity uses a stratified split internally, to keep the displayed test partition matching the ratio you chose.",
   "reflectionPrompts": [
     "Before moving to 95:5, predict the majority-class baseline accuracy. Then check: how close is the model's own accuracy to that baseline?",
-    "At 95:5, which of the displayed measures (AUC, balanced accuracy, sensitivity, specificity) most clearly reveals whether the model is actually detecting autistic participants?"
+    "At 95:5, which of the displayed measures (AUC, balanced accuracy, sensitivity, specificity) most clearly reveals whether the model is actually detecting autistic participants?",
+    "As imbalance increases, the model's raw accuracy rises too. Is the model actually performing better than at 50:50, or worse? What might you wrongly conclude if you only saw its accuracy, without the baseline for comparison?"
   ]
 }

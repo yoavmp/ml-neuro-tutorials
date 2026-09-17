@@ -306,6 +306,17 @@ html[data-theme="dark"] {
   background: transparent;
 }
 
+/* The theme's default dark pygments style uses a saturated, glary yellow
+   (#FFD900) for comments, builtins (incl. `print`), and integer literals.
+   Muted to #c7a86b (still >=4.5:1 against the dark code background,
+   #201e2b) for easier extended reading; light mode already uses a muted
+   amber for these tokens and needs no change (WP24). */
+html[data-theme="dark"] .highlight .c1,
+html[data-theme="dark"] .highlight .nb,
+html[data-theme="dark"] .highlight .mi {
+  color: #c7a86b;
+}
+
 /* togglebutton — the collapsed/expanded bar shown for hide-input / hide-cell */
 .bd-article .toggle-button,
 .bd-article button.toggle-button {

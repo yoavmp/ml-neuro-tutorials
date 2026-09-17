@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Exercise 3: KNN and the Bias–Variance Tradeoff &#8212; Machine Learning for Neuroscience</title>
+    <title>Exercise 3: Classification and Metrics &#8212; Machine Learning for Neuroscience</title>
   
   
   
@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=297790ed" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=dc70b5b1" />
     <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-B2O2tOh4.css?v=592f4e85" />
   
   <!-- So that users can add custom icons -->
@@ -67,13 +67,13 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_03/exercise_03';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=07ce6fd0"></script>
-    <script src="../../_static/activity-resize.js?v=c26e5b35"></script>
-    <script src="../../_static/widgets/app/assets/index-DhCEOxCQ.js?v=4291b516"></script>
+    <script src="../../_static/launch-buttons.js?v=dc5299d9"></script>
+    <script src="../../_static/activity-resize.js?v=8e0b1445"></script>
+    <script src="../../_static/widgets/app/assets/index-Dq5i0z3g.js?v=e182aabd"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Exercise 4: Classification with Logistic Regression" href="../chapter_04/exercise_04.html" />
-    <link rel="prev" title="Exercise 2: Regression" href="../chapter_02/exercise_02.html" />
+    <link rel="next" title="Exercise 4: Cross-Validation for Classification and Regression" href="../chapter_04/exercise_04.html" />
+    <link rel="prev" title="Exercise 2: Regression and Bias-Variance Trade-Off" href="../chapter_02/exercise_02.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -224,10 +224,18 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../syllabus.html">Syllabus</a></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../contents.html">Contents</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1 — Exploratory data analysis (EDA)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_02/exercise_02.html">Exercise 2: Regression</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 3: KNN and the Bias–Variance Tradeoff</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Classification with Logistic Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1: Exploratory Data Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_02/exercise_02.html">Exercise 2: Regression and Bias-Variance Trade-Off</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 3: Classification and Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Cross-Validation for Classification and Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Trees and Boosting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: PCA and Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_09/exercise_09.html">Exercise 9: Advanced Models and Model Comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_10/exercise_10.html">Exercise 10: Common Machine Learning Mistakes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_11/exercise_11.html">Exercise 11: Embeddings and Representational Similarity Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_12/exercise_12.html">Exercise 12: Review and Exam-Style Questions</a></li>
 </ul>
 </details></li>
 </ul>
@@ -412,7 +420,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Exercise 3: KNN and the Bias–Variance Tradeoff</h1>
+    <h1>Exercise 3: Classification and Metrics</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -423,15 +431,15 @@
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#our-data-table">1. Our data table</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-standard-knn-regression-workflow">2. One standard KNN regression workflow</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-k-for-this-example">Choosing k for this example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-abide-classification-data">1. The ABIDE classification data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-a-linear-score-to-a-probability">2. From a linear score to a probability</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-logistic-regression-model">3. One logistic-regression model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-c-for-this-example">Choosing C for this example</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#correct-and-misleading-ways-to-evaluate-a-model">3. Correct and misleading ways to evaluate a model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-classic-biasvariance-tradeoff">4. The classic bias–variance tradeoff</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-performance-changes-across-every-k">5. How performance changes across every k</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-k-yourself">6. Explore k yourself</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classification-outcomes-and-metrics">4. Classification outcomes and metrics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-choosing-a-decision-threshold">5. Interactive activity: choosing a decision threshold</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-class-imbalance-and-misleading-accuracy">6. Interactive activity: class imbalance and misleading accuracy</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-summary">In summary</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
 </ul>
@@ -447,11 +455,11 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="exercise-3-knn-and-the-biasvariance-tradeoff">
-<h1>Exercise 3: KNN and the Bias–Variance Tradeoff<a class="headerlink" href="#exercise-3-knn-and-the-biasvariance-tradeoff" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-3-classification-and-metrics">
+<h1>Exercise 3: Classification and Metrics<a class="headerlink" href="#exercise-3-classification-and-metrics" title="Link to this heading">#</a></h1>
 <div class="how-to-use admonition">
 <p class="admonition-title">Run or download this notebook</p>
-<p>This page is fully readable as it is, and the interactive activity works
+<p>This page is fully readable as it is, and the interactive activities work
 here in the browser. To <strong>run or change the Python code</strong>, use the portable
 version of the notebook:</p>
 <ul class="simple">
@@ -459,49 +467,47 @@ version of the notebook:</p>
 <li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_03/exercise_03_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
 for VS Code or Jupyter</p></li>
 </ul>
-<p>The portable notebook keeps every Python analysis cell and swaps the embedded
-activity for a link back to this page.</p>
+<p>The portable notebook keeps every Python analysis cell and swaps the two
+embedded activities for links back to this page.</p>
 </div>
 <section id="what-this-notebook-covers">
 <h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
-<p>This is Exercise 3 of <em>Machine Learning for Neuroscience</em>. <strong>K-nearest
-neighbours (KNN)</strong> predicts a new participant’s outcome from the outcomes of
-the training participants who look most similar:</p>
-<ul class="simple">
-<li><p>for <strong>regression</strong>, KNN averages the outcome of the <code class="docutils literal notranslate"><span class="pre">k</span></code> nearest training
-participants;</p></li>
-<li><p>KNN can also do <strong>classification</strong>, voting among the <code class="docutils literal notranslate"><span class="pre">k</span></code> nearest labels
-instead of averaging – you will see that later; this notebook is
-regression only.</p></li>
-</ul>
-<p>This practice uses <code class="docutils literal notranslate"><span class="pre">k</span></code> – the number of neighbours – to make the
-<strong>bias–variance tradeoff</strong> concrete: a small <code class="docutils literal notranslate"><span class="pre">k</span></code> is flexible (low bias,
-high variance); a large <code class="docutils literal notranslate"><span class="pre">k</span></code> is smooth (higher bias, low variance).</p>
+<p>This is Exercise 3 of <em>Machine Learning for Neuroscience</em>. In this exercise,
+we will work through a classification pipeline using logistic regression
+and evaluate its predictions with classification metrics.</p>
+<p>Exercise 2 used ABIDE’s rich neuroimaging table to ask a <strong>regression</strong>
+question: predicting a participant’s age from cortical structure. Autism
+diagnosis – ABIDE’s own central scientific question – has not yet been
+addressed. This practice builds one <strong>classifier</strong>: predicting autism
+diagnosis from the same brain measurements, tested on participants it has
+not seen.</p>
 <p>In this notebook you will:</p>
 <ol class="arabic simple">
-<li><p>reuse Exercise 2’s data table, target, feature recipe, and locked
-train/test split;</p></li>
-<li><p>fit one standardized KNN regression workflow at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">20</span></code>, the value used
-in this worked example, on the training participants, and compare it
-with Exercise 2’s linear regression on the exact same data;</p></li>
-<li><p>interactively compare correct and misleading ways to evaluate a model,
-across every <code class="docutils literal notranslate"><span class="pre">k</span></code>;</p></li>
-<li><p>see the classic bias–variance tradeoff as a labelled, conceptual curve;</p></li>
-<li><p>see how training and validation error change across every <code class="docutils literal notranslate"><span class="pre">k</span></code>, computed
-directly from this dataset;</p></li>
-<li><p>explore that yourself with a browser activity, including how predictions
-vary across different training samples.</p></li>
+<li><p>look at the ABIDE data used for classifying autism diagnosis;</p></li>
+<li><p>turn a logistic-regression score into a probability;</p></li>
+<li><p>build one logistic-regression classifier and test it on participants it
+has not seen;</p></li>
+<li><p>read a confusion matrix, and compute accuracy, sensitivity, and
+specificity from it, plus an ROC curve and AUC;</p></li>
+<li><p>use a browser activity to explore how changing the decision threshold
+changes those measures;</p></li>
+<li><p>see why accuracy can be misleading when one diagnosis group is much
+larger than the other.</p></li>
 </ol>
-<p><strong>Prerequisites:</strong> Exercise 2’s train/test workflow, R² and MSE, and
-<code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> / <code class="docutils literal notranslate"><span class="pre">fit</span></code> / <code class="docutils literal notranslate"><span class="pre">predict</span></code> in scikit-learn.</p>
+<p><strong>Prerequisites:</strong> Exercise 2’s train/test workflow, <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> / <code class="docutils literal notranslate"><span class="pre">fit</span></code> / <code class="docutils literal notranslate"><span class="pre">predict</span></code> in scikit-learn, and testing a model on
+held-out participants (Exercise 2’s comparison of correct and misleading
+evaluation methods, including resubstitution – this notebook does not
+repeat that demonstration again).</p>
 </section>
-<section id="our-data-table">
-<h2>1. Our data table<a class="headerlink" href="#our-data-table" title="Link to this heading">#</a></h2>
-<p>This is the same ABIDE-II data table Exercise 2 uses: one <strong>row per
-participant</strong>, phenotype columns (including the target, <code class="docutils literal notranslate"><span class="pre">age</span></code>), and brain
-columns (<code class="docutils literal notranslate"><span class="pre">fsCT</span></code>, <code class="docutils literal notranslate"><span class="pre">fsArea</span></code>, <code class="docutils literal notranslate"><span class="pre">fsVol</span></code>, <code class="docutils literal notranslate"><span class="pre">fsLGI</span></code>, one HCP-MMP1 cortical region per
-hemisphere). See Exercise 2 for the full provenance and column-by-column
-discussion; this notebook only reloads the table and previews it.</p>
+<section id="the-abide-classification-data">
+<h2>1. The ABIDE classification data<a class="headerlink" href="#the-abide-classification-data" title="Link to this heading">#</a></h2>
+<p>ABIDE’s own central scientific distinction is <strong>autism diagnosis</strong>.
+Exercise 2 used this same rich dataset to ask a regression question about
+age instead; this notebook returns to ABIDE’s original question. The table
+itself is unchanged: the same 1004-participant data table, one row per
+participant, with the same 360 bilateral cortical-thickness (<code class="docutils literal notranslate"><span class="pre">fsCT</span></code>) columns
+used throughout Exercise 2.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="admonition hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -512,17 +518,16 @@ discussion; this notebook only reloads the table and previews it.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data loading. In the published book this cell is collapsed; it is plain,</span>
 <span class="c1"># runnable Python -- one public CSV pinned to an immutable commit. Nothing</span>
 <span class="c1"># here is repository-specific. Same data and provenance as Exercise 2.</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
-
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neighbors</span><span class="w"> </span><span class="kn">import</span> <span class="n">KNeighborsRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">r2_score</span><span class="p">,</span> <span class="n">mean_squared_error</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">roc_auc_score</span><span class="p">,</span> <span class="n">roc_curve</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">PIN</span> <span class="o">=</span> <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"</span>
 <span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/</span><span class="si">{</span><span class="n">PIN</span><span class="si">}</span><span class="s2">/tu-machine-learning-yarkoni/data"</span>
@@ -544,10 +549,19 @@ discussion; this notebook only reloads the table and previews it.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># A compact preview only -- Exercise 2 already covers this table in full.</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># group: 1 = autism, 2 = control -- native to this table, no join needed.</span>
+<span class="c1"># A compact preview plus class counts and a missingness statement.</span>
 <span class="n">preview_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"subject"</span><span class="p">,</span> <span class="s2">"site"</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">,</span> <span class="s2">"sex"</span><span class="p">,</span> <span class="s2">"fsCT_L_46_ROI"</span><span class="p">]</span>
 <span class="n">display</span><span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="n">preview_cols</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"age available for"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span> <span class="s2">"of"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_df</span><span class="p">),</span> <span class="s2">"participants"</span><span class="p">)</span>
+
+<span class="n">class_counts</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+<span class="n">n_autism</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">class_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">n_control</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">class_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">n_missing_group</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="n">n_dup_subjects</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="s2">"subject"</span><span class="p">]</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"class counts: </span><span class="si">{</span><span class="n">n_autism</span><span class="si">}</span><span class="s2"> autism (group=1), </span><span class="si">{</span><span class="n">n_control</span><span class="si">}</span><span class="s2"> control (group=2)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"missing diagnosis: </span><span class="si">{</span><span class="n">n_missing_group</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">model_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> participants"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"duplicate participant ids: </span><span class="si">{</span><span class="n">n_dup_subjects</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -608,47 +622,109 @@ discussion; this notebook only reloads the table and previews it.</p>
     </tr>
   </tbody>
 </table>
-</div></div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>age available for 1004 of 1004 participants
+</div></div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>class counts: 463 autism (group=1), 541 control (group=2)
+missing diagnosis: 0 of 1004 participants
+duplicate participant ids: 0
 </pre></div>
 </div>
 </div>
 </div>
-</section>
-<section id="one-standard-knn-regression-workflow">
-<h2>2. One standard KNN regression workflow<a class="headerlink" href="#one-standard-knn-regression-workflow" title="Link to this heading">#</a></h2>
-<p><strong>Target:</strong> <code class="docutils literal notranslate"><span class="pre">age</span></code>, in years – Exercise 2’s own outcome. <strong>Features:</strong> the
-exact same recipe as Exercise 2’s worked example – every one of the 360
-cortical atlas parcels for cortical thickness (<code class="docutils literal notranslate"><span class="pre">fsCT</span></code>), bilateral. <strong>Split:</strong>
-the exact same locked 75/25 train/test split as Exercise 2
-(<code class="docutils literal notranslate"><span class="pre">train_test_split(test_size=0.25,</span> <span class="pre">random_state=42,</span> <span class="pre">stratify=group)</span></code>),
-re-derived here from the same data so it lands on the identical 753
-training and 251 test participants.</p>
-<p>KNN regression predicts</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>For this table, what does one row represent, and what does the target for
+this notebook represent? (They are not the same kind of thing as Exercise
+2’s outcome.)</p>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">One row is still one participant – unchanged from Exercises 1-2. The target
+for this notebook is <code class="docutils literal notranslate"><span class="pre">group</span></code>, recoded to a binary autism/control label: it
+is a <strong>categorical diagnosis</strong>, not a continuous measurement like <code class="docutils literal notranslate"><span class="pre">age</span></code>. That
+is the difference between this notebook’s task (classification) and
+Exercise 2’s task (regression): the same rows and the same brain columns,
+a different kind of outcome.</p>
+</div>
+</details></section>
+<section id="from-a-linear-score-to-a-probability">
+<h2>2. From a linear score to a probability<a class="headerlink" href="#from-a-linear-score-to-a-probability" title="Link to this heading">#</a></h2>
+<p>Logistic regression starts exactly like linear regression: a weighted sum of
+the standardized features plus an intercept, <span class="math notranslate nohighlight">\(z = w \cdot x + b\)</span>. Unlike
+linear regression, that score <span class="math notranslate nohighlight">\(z\)</span> is not the prediction itself – it is
+passed through the <strong>sigmoid</strong> function to become a probability between 0
+and 1:</p>
 <div class="math notranslate nohighlight">
-\[\hat{y}(x_0)=\frac{1}{k}\sum_{i\in\mathcal{N}_k(x_0)}y_i,\]</div>
-<p>the average outcome of the <code class="docutils literal notranslate"><span class="pre">k</span></code> training participants whose <strong>features</strong> are
-closest to <span class="math notranslate nohighlight">\(x_0\)</span>. The neighbourhood is found using predictors only – a new
-participant’s <code class="docutils literal notranslate"><span class="pre">age</span></code> is never used to find their neighbours.</p>
-<p>Feature scaling matters here more directly than it did for linear
-regression: KNN measures distance in feature space, and an unscaled feature
-with large numeric range would dominate that distance just because of its
-units, not because it is more informative. <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> belongs inside
-the <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> and must be fit on the training data only, exactly like
-Exercise 2.</p>
-<p><strong>A short note on dimensionality.</strong> In very high-dimensional feature spaces,
-most pairs of points end up roughly equally far apart, so “nearest
-neighbour” can stop meaning much – the <em>curse of dimensionality</em>. This
-recipe’s 360 standardized features are not astronomically high-dimensional
-for 753 training rows, and KNN works well here at
-k = 20; a higher-dimensional recipe or a smaller sample could behave
-differently.</p>
+\[P(Y=1\mid X)=\frac{1}{1+e^{-z}}\]</div>
+<p>In plain language:</p>
+<ol class="arabic simple">
+<li><p>Logistic regression calculates a weighted linear score, exactly like
+linear regression’s <span class="math notranslate nohighlight">\(z\)</span>.</p></li>
+<li><p>The sigmoid squashes that score into a probability between 0 and 1.</p></li>
+<li><p>A <strong>decision threshold</strong>, commonly 0.50, converts the probability into a
+predicted class: probability at or above the threshold predicts autism,
+below it predicts control.</p></li>
+</ol>
+<p>This notebook does not derive the loss function logistic regression
+minimizes to find <span class="math notranslate nohighlight">\(w\)</span> and <span class="math notranslate nohighlight">\(b\)</span> – only what the fitted model outputs and how
+that output becomes a class label.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># A small, clean sigmoid figure: any real-valued score maps to (0, 1).</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sigmoid</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="p">))</span>
+
+<span class="n">z_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">z_grid</span><span class="p">,</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">z_grid</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#2a6f9e"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"linear score z"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"P(Y = 1 | X)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"The sigmoid function"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/014a37faca4000a57e79b7c3e9b6b7fae98df55a3ac0d07c26489f46ccffa20e.png" src="../../_images/014a37faca4000a57e79b7c3e9b6b7fae98df55a3ac0d07c26489f46ccffa20e.png" />
+</div>
+</div>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>If two participants receive autism probabilities of 0.48 and 0.52, must
+their underlying model evidence be very different merely because their
+predicted labels differ?</p>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">No. At the default 0.50 threshold, 0.48 predicts control and 0.52 predicts
+autism – opposite labels – but the two probabilities themselves are nearly
+identical. The sigmoid is continuous: a tiny change in the linear score
+crossing the threshold flips the label while barely changing the model’s
+actual evidence. A predicted label is a summary of a probability, and near a
+threshold that summary can be almost arbitrary.</p>
+</div>
+</details></section>
+<section id="one-logistic-regression-model">
+<h2>3. One logistic-regression model<a class="headerlink" href="#one-logistic-regression-model" title="Link to this heading">#</a></h2>
+<p><strong>Target:</strong> diagnosis (<code class="docutils literal notranslate"><span class="pre">group</span></code>, recoded autism=1 / control=0). <strong>Positive
+class:</strong> autism. <strong>Negative class:</strong> control. <strong>Predictors:</strong> the exact same
+360 bilateral cortical-thickness (<code class="docutils literal notranslate"><span class="pre">fsCT</span></code>) columns used throughout Exercise
+2 – no diagnosis-derived field, participant id, age, sex, site, or
+behavioural score is a predictor. <strong>Split:</strong> a participant-level, stratified
+75/25 train/test split, <code class="docutils literal notranslate"><span class="pre">random_state=42</span></code> – the same fixed
+random seed used throughout this course, chosen before this split was ever scored. <strong>Model:</strong>
+<code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> (fit on training rows only) then <code class="docutils literal notranslate"><span class="pre">LogisticRegression</span></code>
+using <code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">=</span> <span class="pre">1.0</span></code> for this example, fit on the training participants and
+evaluated once on the test participants. A later lesson introduces
+systematic methods for selecting <code class="docutils literal notranslate"><span class="pre">C</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The full set of 360 cortical-thickness columns -- identical recipe and</span>
 <span class="c1"># code to Exercise 2's Section 2.</span>
 <span class="n">FEATURES</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">BRAIN_COLS</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)]</span>
 <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES</span><span class="p">)</span>           <span class="c1"># brain-only</span>
-<span class="k">assert</span> <span class="s2">"age"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FEATURES</span>                                  <span class="c1"># no target leakage</span>
+<span class="k">assert</span> <span class="s2">"group"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FEATURES</span>                                <span class="c1"># no target leakage</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES</span><span class="p">)</span><span class="si">}</span><span class="s2"> features, e.g. </span><span class="si">{</span><span class="n">FEATURES</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -661,41 +737,36 @@ differently.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Brain-only X and target y, then the SAME fixed, stratified split as</span>
-<span class="c1"># Exercise 2 (groups is carried through only so Section 5 can re-split the</span>
-<span class="c1"># training partition later; it does not change X_train/X_test/y_train/y_test).</span>
-<span class="n">has_age</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-<span class="n">groups</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>      <span class="c1"># 1 = autism, 2 = control</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Brain-only X and binary target y. group has no missing values (checked</span>
+<span class="c1"># above), so every one of the 1004 participants is usable here -- unlike</span>
+<span class="c1"># Exercise 2's FIQ target, this notebook needs no row filtering.</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="s2">"group"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>   <span class="c1"># 1 = autism, 0 = control</span>
 
-<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">groups_train</span><span class="p">,</span> <span class="n">groups_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
-    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups</span>
+<span class="c1"># One fixed, reproducible, participant-level split, stratified by y itself</span>
+<span class="c1"># (the diagnosis label) -- not by a covariate, since y IS diagnosis here.</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_train = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_test = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_features = </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"train autism rate = </span><span class="si">{</span><span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">   test autism rate = </span><span class="si">{</span><span class="n">y_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>n_train = 753   n_test = 251   n_features = 360
+train autism rate = 0.461   test autism rate = 0.462
 </pre></div>
 </div>
 </div>
 </div>
-<div class="think-first admonition">
-<p class="admonition-title">Think first</p>
-<p>Exercise 2’s linear regression scored held-out R² = 0.469 on this exact
-split and feature set. Before running KNN: do you expect it to score
-higher, lower, or about the same – and why? (Hint: think about what each
-model assumes about how brain structure relates to age.)</p>
-</div>
-<section id="choosing-k-for-this-example">
-<h3>Choosing k for this example<a class="headerlink" href="#choosing-k-for-this-example" title="Link to this heading">#</a></h3>
+<section id="choosing-c-for-this-example">
+<h3>Choosing C for this example<a class="headerlink" href="#choosing-c-for-this-example" title="Link to this heading">#</a></h3>
 <p>In this introductory exercise, we choose one model setting in advance, fit
 the model using the training participants, and evaluate it on the test
 participants. A later lesson will introduce systematic methods for
 selecting model settings.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">K_EXAMPLE</span> <span class="o">=</span> <span class="mi">20</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">C_EXAMPLE</span> <span class="o">=</span> <span class="mf">1.0</span>
 </pre></div>
 </div>
 <p>This is simply the value used for this worked example, chosen before the
@@ -703,455 +774,444 @@ held-out result below is computed. It is not optimized, tuned, or chosen
 because it performed best.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">K_EXAMPLE</span> <span class="o">=</span> <span class="mi">20</span>
-
-<span class="n">knn_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">K_EXAMPLE</span><span class="p">))</span>
-<span class="n">knn_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
-
-<span class="n">y_pred</span> <span class="o">=</span> <span class="n">knn_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-<span class="n">test_r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
-<span class="n">test_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k = </span><span class="si">{</span><span class="n">K_EXAMPLE</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"held-out R^2 = </span><span class="si">{</span><span class="n">test_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"held-out MSE = </span><span class="si">{</span><span class="n">test_mse</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">  (RMSE </span><span class="si">{</span><span class="n">test_mse</span><span class="o">**</span><span class="mf">0.5</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> years)"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>k = 20
-held-out R^2 = 0.664
-held-out MSE = 31.4  (RMSE 5.6 years)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">C_EXAMPLE</span> <span class="o">=</span> <span class="mf">1.0</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="cell tag_hide-input docutils container">
-<details class="admonition hide above-input">
-<summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell source</p>
-<p class="expanded admonition-title">Hide code cell source</p>
-</summary>
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Observed vs predicted on the test set, with the perfect-prediction diagonal.</span>
-<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">4.4</span><span class="p">,</span> <span class="mf">4.4</span><span class="p">))</span>
-<span class="n">lims</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">y_test</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_test</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lims</span><span class="p">,</span> <span class="n">lims</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Perfect prediction (observed = predicted)"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">lims</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">lims</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">"equal"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"observed age (years)"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"predicted age (years, held-out)"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"KNN (k=</span><span class="si">{</span><span class="n">K_EXAMPLE</span><span class="si">}</span><span class="s2">), held-out R$^2$ = </span><span class="si">{</span><span class="n">test_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"upper left"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</details>
-<div class="cell_output docutils container">
-<img alt="../../_images/f6df9edebf2d487f7b305b60d72d184d74cc79c12b1d59792721dbac6703f6a2.png" src="../../_images/f6df9edebf2d487f7b305b60d72d184d74cc79c12b1d59792721dbac6703f6a2.png" />
-</div>
-</div>
-<p>A few things to hold onto:</p>
-<ul class="simple">
-<li><p>KNN with k = 20 scores a genuinely <strong>positive held-out
-R²</strong> on this recipe – no curse-of-dimensionality problem here;</p></li>
-<li><p>unlike the linear-regression hyperplane, KNN makes no assumption about the
-<em>shape</em> of the relationship between features and age – it only assumes
-that similar brain measurements go with similar ages;</p></li>
-<li><p>this is still a random-participant split from the same 17 ABIDE-II sites,
-so it says nothing about generalisation to a new scanner or site.</p></li>
-</ul>
-<p><strong>Compared with Exercise 2.</strong> On these exact same 753 training and 251 test
-participants, the exact same 360-feature recipe, and the exact same target:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For comparison only -- exact same split/recipe/target as Exercise 2's</span>
-<span class="c1"># Section 2, refit here so the comparison is self-contained.</span>
-<span class="n">ols_compare</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">LinearRegression</span><span class="p">())</span>
-<span class="n">ols_compare</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
-<span class="n">ols_r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">ols_compare</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Exercise 2 linear regression   held-out R^2 = </span><span class="si">{</span><span class="n">ols_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"This notebook's KNN (k=</span><span class="si">{</span><span class="n">K_EXAMPLE</span><span class="si">}</span><span class="s2">)    held-out R^2 = </span><span class="si">{</span><span class="n">test_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Explicit scaling, written out: fit_transform LEARNS the training columns'</span>
+<span class="c1"># means/standard deviations; transform then applies those SAME already-</span>
+<span class="c1"># learned values to the test data -- the scaler is never fitted on the test</span>
+<span class="c1"># set, exactly like Exercise 2's Section 2. Uses C = 1.0, the value chosen</span>
+<span class="c1"># for this example, from above.</span>
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="n">X_train_scaled</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">X_test_scaled</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="n">explicit_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="n">C_EXAMPLE</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+<span class="n">explicit_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_scaled</span><span class="p">,</span> <span class="n">y_train</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>As in Exercise 2, <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code>’s <code class="docutils literal notranslate"><span class="pre">make_pipeline</span></code> bundles the scaler and the
+classifier into one object so <code class="docutils literal notranslate"><span class="pre">.fit()</span></code> always scales before fitting and
+<code class="docutils literal notranslate"><span class="pre">.predict()</span></code> / <code class="docutils literal notranslate"><span class="pre">.predict_proba()</span></code> always reuse the scaler already learned
+from training data. This is the model used for the rest of this notebook.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The pipeline shortcut: same two steps, bundled, with C = 1.0, the value</span>
+<span class="c1"># chosen for this example. This is the model used for the rest of this notebook.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="n">C_EXAMPLE</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">y_proba</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">classes_</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
+<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">explicit_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test_scaled</span><span class="p">))</span>   <span class="c1"># identical to the explicit version above</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"predicted labels and probabilities computed for the held-out test set."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Every metric below uses only these 251 test participants -- none of them were used to fit the model."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Exercise 2 linear regression   held-out R^2 = 0.469
-This notebook's KNN (k=20)    held-out R^2 = 0.664
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>predicted labels and probabilities computed for the held-out test set.
+Every metric below uses only these 251 test participants -- none of them were used to fit the model.
 </pre></div>
 </div>
 </div>
 </div>
-<p>KNN scores higher than linear regression <strong>on this specific recipe and
-dataset</strong>. That is one comparison, not a universal claim that KNN beats
-linear regression – a different feature set, sample size, or outcome could
-easily reverse it. What it does show is that a non-parametric method with no
-assumption about the relationship’s shape found real, usable structure here.</p>
 </section>
 </section>
-<section id="correct-and-misleading-ways-to-evaluate-a-model">
-<h2>3. Correct and misleading ways to evaluate a model<a class="headerlink" href="#correct-and-misleading-ways-to-evaluate-a-model" title="Link to this heading">#</a></h2>
-<p>Same fixed split, same 360-feature recipe, but now for <strong>every</strong> <code class="docutils literal notranslate"><span class="pre">k</span></code>, not
-just one: <code class="docutils literal notranslate"><span class="pre">k</span></code> also changes how <em>dramatically</em> resubstitution and leakage
-inflate performance, and the interactive activity below lets you see that
-directly instead of reading it off two static tables.</p>
+<section id="classification-outcomes-and-metrics">
+<h2>4. Classification outcomes and metrics<a class="headerlink" href="#classification-outcomes-and-metrics" title="Link to this heading">#</a></h2>
+<p>A confusion matrix counts every combination of actual and predicted
+diagnosis on the held-out test set. Rows are the <strong>actual</strong> diagnosis,
+columns are the <strong>predicted</strong> diagnosis, and autism is the positive class:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
-<tr class="row-odd"><th class="head"><p></p></th>
-<th class="head"><p>fit on</p></th>
-<th class="head"><p>evaluate on</p></th>
-<th class="head"><p>what it estimates</p></th>
+<tr class="row-odd"><th class="head"><p>Outcome</p></th>
+<th class="head"><p>Interpretation</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><strong>A. Valid</strong></p></td>
-<td><p>training rows</p></td>
-<td><p>untouched test rows</p></td>
-<td><p>performance on new participants</p></td>
+<tr class="row-even"><td><p>True negative</p></td>
+<td><p>A control participant is classified as control.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>B. Resubstitution</strong></p></td>
-<td><p>training rows</p></td>
-<td><p>those same training rows</p></td>
-<td><p>how well it fits data it has seen (a diagnostic, not a generalisation estimate)</p></td>
+<tr class="row-odd"><td><p>False positive</p></td>
+<td><p>A control participant is classified as autistic.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>C. Invalid (leakage)</strong></p></td>
-<td><p><strong>test rows</strong></p></td>
-<td><p>those same test rows</p></td>
-<td><p>nothing usable – the data used to fit cannot also give a valid score</p></td>
+<tr class="row-even"><td><p>False negative</p></td>
+<td><p>An autistic participant is classified as control.</p></td>
+</tr>
+<tr class="row-odd"><td><p>True positive</p></td>
+<td><p>An autistic participant is classified as autistic.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<p><strong>Accuracy</strong> is the proportion of all test participants classified
+correctly:</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN}\]</div>
+<p>Two more specific rates matter as much as accuracy, especially under class
+imbalance (Section 6):</p>
+<ul class="simple">
+<li><p><strong>Sensitivity</strong> (recall): the proportion of <em>actually autistic</em>
+participants the model detects, <span class="math notranslate nohighlight">\(TP/(TP+FN)\)</span>;</p></li>
+<li><p><strong>Specificity</strong>: the proportion of <em>actually control</em> participants the
+model correctly identifies, <span class="math notranslate nohighlight">\(TN/(TN+FP)\)</span>.</p></li>
+</ul>
+<p>A single threshold gives one confusion matrix. The <strong>ROC curve</strong> plots
+sensitivity against the false-positive rate (<span class="math notranslate nohighlight">\(1-\mathrm{specificity}\)</span>) as
+the threshold sweeps across every possible value, and <strong>AUC</strong> (area under
+that curve) summarizes ranking performance independent of any one threshold:
+0.5 is chance-level ranking, 1.0 is perfect ranking.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The test-set confusion matrix, accuracy, sensitivity, specificity,</span>
+<span class="c1"># ROC curve, and AUC -- every number below uses only the 251 test</span>
+<span class="c1"># participants excluded from fitting.</span>
+<span class="n">cm</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">tn</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">tp</span> <span class="o">=</span> <span class="n">cm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">cm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">cm</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">cm</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="n">sensitivity</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fn</span><span class="p">)</span>
+<span class="n">specificity</span> <span class="o">=</span> <span class="n">tn</span> <span class="o">/</span> <span class="p">(</span><span class="n">tn</span> <span class="o">+</span> <span class="n">fp</span><span class="p">)</span>
+<span class="n">auc</span> <span class="o">=</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">)</span>
+
+<span class="n">cm_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="sa">f</span><span class="s2">"TN = </span><span class="si">{</span><span class="n">tn</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"FP = </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">"</span><span class="p">],</span>
+    <span class="p">[</span><span class="sa">f</span><span class="s2">"FN = </span><span class="si">{</span><span class="n">fn</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"TP = </span><span class="si">{</span><span class="n">tp</span><span class="si">}</span><span class="s2">"</span><span class="p">],</span>
+<span class="p">])</span>
+<span class="n">cm_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="n">cm_labels</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">"actual control"</span><span class="p">,</span> <span class="s2">"actual autism"</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"predicted control"</span><span class="p">,</span> <span class="s2">"predicted autism"</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">cm_table</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"accuracy    = </span><span class="si">{</span><span class="n">accuracy</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sensitivity = </span><span class="si">{</span><span class="n">sensitivity</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  (proportion of autistic participants detected)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"specificity = </span><span class="si">{</span><span class="n">specificity</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  (proportion of control participants correctly identified)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"AUC         = </span><span class="si">{</span><span class="n">auc</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  (0.5 = chance-level ranking, 1.0 = perfect ranking)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>predicted control</th>
+      <th>predicted autism</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>actual control</th>
+      <td>TN = 75</td>
+      <td>FP = 60</td>
+    </tr>
+    <tr>
+      <th>actual autism</th>
+      <td>FN = 54</td>
+      <td>TP = 62</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>accuracy    = 0.546
+sensitivity = 0.534  (proportion of autistic participants detected)
+specificity = 0.556  (proportion of control participants correctly identified)
+AUC         = 0.569  (0.5 = chance-level ranking, 1.0 = perfect ranking)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ROC curve.</span>
+<span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">roc_curve</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">4.6</span><span class="p">,</span> <span class="mf">4.4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#2a6f9e"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"ROC curve (AUC = </span><span class="si">{</span><span class="n">auc</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">"--"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.5"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Chance-level ranking"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"false positive rate"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"true positive rate (sensitivity)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"ROC curve, held-out test set"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"lower right"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/43480753d5de49fde2e338809fe3b89688810da75034a4ae4a31b4a40a795bd8.png" src="../../_images/43480753d5de49fde2e338809fe3b89688810da75034a4ae4a31b4a40a795bd8.png" />
+</div>
+</div>
+<p>This discrimination is modest, not strong – reported plainly rather than
+dressed up. This split estimates generalisation to <strong>new participants drawn
+from these same 17 ABIDE-II sites</strong>; it is not evidence of generalisation to
+a completely unseen acquisition site.</p>
 <div class="think-first admonition">
 <p class="admonition-title">Think first</p>
-<p>At k = 20 (Section 2’s worked-example value), predict the order of A, B, and C
-from largest to smallest R². Then predict what changes about that ordering
-at the smallest possible <code class="docutils literal notranslate"><span class="pre">k</span></code>, and why.</p>
+<p>Why is <code class="docutils literal notranslate"><span class="pre">predict_proba()</span></code>, not <code class="docutils literal notranslate"><span class="pre">predict()</span></code>, needed to compute the ROC curve
+and AUC?</p>
 </div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">predict()</span></code> only returns the class label already decided at one fixed
+threshold (0.50 by default) – a single point, not a curve. The ROC curve
+needs the underlying probability for every participant so the threshold can
+be swept across every possible value and a new confusion matrix computed at
+each one. <code class="docutils literal notranslate"><span class="pre">predict_proba()</span></code> is what makes that sweep possible; <code class="docutils literal notranslate"><span class="pre">predict()</span></code>
+alone would only ever give one (FPR, TPR) point.</p>
+</div>
+</details></section>
+<section id="interactive-activity-choosing-a-decision-threshold">
+<h2>5. Interactive activity: choosing a decision threshold<a class="headerlink" href="#interactive-activity-choosing-a-decision-threshold" title="Link to this heading">#</a></h2>
+<p>The activity below uses the <strong>exact same fixed test-set predicted
+probabilities</strong> computed in Section 3 – moving the threshold never refits
+the model. It recomputes, live, the confusion matrix, accuracy, sensitivity,
+specificity, the percentage of participants predicted autistic, and where
+the chosen threshold lands on the ROC curve.</p>
 <iframe
-  title="Interactive comparison of correct and misleading KNN evaluation for predicting age from brain structure"
-  src="../../_static/widgets/app/index.html?config=../configs/knn_abc.json"
+  title="Interactive decision-threshold exploration for classifying autism vs. control from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/classification_threshold.json"
   loading="lazy"
   width="100%"
-  height="900"
+  height="1150"
   class="ml-activity"
   style="width: 100%;"
 ></iframe>
-<p>The activity recomputes real predictions, R², and MSE for all three panels
-at whichever <code class="docutils literal notranslate"><span class="pre">k</span></code> you choose – nothing is a canned label. A few things to
-notice as you move <code class="docutils literal notranslate"><span class="pre">k</span></code>:</p>
-<ul class="simple">
-<li><p><strong>at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>, B and C are exactly perfect (R² = 1.000):</strong> every evaluated
-point is its own nearest neighbour, at distance zero, so the prediction
-reproduces the observation by construction, not because anything was
-learned;</p></li>
-<li><p><strong>A at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code> is not perfect:</strong> the test participants it evaluates were
-never used for fitting, so <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>’s perfect B/C scores are the clearest
-possible evidence that evaluating on fitted data is invalid – not evidence
-that KNN generalises perfectly;</p></li>
-<li><p><strong>increasing <code class="docutils literal notranslate"><span class="pre">k</span></code> averages more observations,</strong> which usually reduces this
-dramatic resubstitution effect – watch how much closer A, B, and C stay to
-each other as <code class="docutils literal notranslate"><span class="pre">k</span></code> grows past k = 20 (Section 2’s worked-example value).</p></li>
-</ul>
-</section>
-<section id="the-classic-biasvariance-tradeoff">
-<h2>4. The classic bias–variance tradeoff<a class="headerlink" href="#the-classic-biasvariance-tradeoff" title="Link to this heading">#</a></h2>
-<p>For a model <span class="math notranslate nohighlight">\(\hat f\)</span> predicting outcome <span class="math notranslate nohighlight">\(Y\)</span> from features <span class="math notranslate nohighlight">\(X\)</span>, the expected
-squared prediction error on a new observation decomposes as</p>
-<div class="math notranslate nohighlight">
-\[\mathbb{E}\left[(Y-\hat f(X))^2\right]
-=\operatorname{Bias}(\hat f(X))^2
-+\operatorname{Var}(\hat f(X))
-+\sigma^2.\]</div>
-<p>For KNN, <code class="docutils literal notranslate"><span class="pre">k</span></code> controls flexibility directly:</p>
-<ul class="simple">
-<li><p><strong>small <code class="docutils literal notranslate"><span class="pre">k</span></code></strong> -&gt; high flexibility, low bias, high variance (the model
-chases whichever few neighbours happened to be closest);</p></li>
-<li><p><strong>large <code class="docutils literal notranslate"><span class="pre">k</span></code></strong> -&gt; low flexibility, higher bias, lower variance (the model
-averages over so many neighbours it stops reacting to any one of them);</p></li>
-<li><p><strong>training error alone</strong> keeps falling as flexibility increases (Section
-3 showed <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code> reaching a perfect resubstitution score), so it favours
-excessive flexibility and cannot be used to choose <code class="docutils literal notranslate"><span class="pre">k</span></code>;</p></li>
-<li><p><strong>expected test error</strong> is minimised at some intermediate flexibility,
-where the falling bias² and the rising variance trade off against each
-other.</p></li>
-</ul>
-<p>This is a <strong>general tendency of KNN</strong>, not a guarantee for every finite
-sample: the curve below is a <strong>labelled, conceptual illustration</strong> of the
-tradeoff – smooth idealised curves, not a measurement from the ABIDE data.
-Sections 5 and 6 compute observable, clearly-labelled analogues <em>from this
-dataset</em>.</p>
-<div class="cell tag_hide-input docutils container">
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>If failing to identify an autistic participant were considered more costly
+than falsely flagging a control, would you generally lower or raise the
+decision threshold?</p>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Check your reasoning</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Lower it. A lower threshold predicts autism more readily – for a fixed set
+of probabilities, lowering the threshold can only increase or hold constant
+the number of participants predicted autistic. That increases sensitivity
+(fewer autistic participants missed, fewer false negatives) at the cost of
+specificity (more controls falsely flagged, more false positives). Whether
+that tradeoff is worth it depends on which error is more costly in context
+– the model and its probabilities do not change, only which errors you are
+choosing to accept.</p>
+</div>
+</details><div class="cell tag_hide-cell docutils container">
 <details class="admonition hide above-input">
 <summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell source</p>
-<p class="expanded admonition-title">Hide code cell source</p>
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
 </summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># CONCEPTUAL illustration only -- smooth idealised curves, not measured from</span>
-<span class="c1"># the ABIDE data. Sections 5-6 compute the empirical analogues.</span>
-<span class="n">flexibility</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>          <span class="c1"># 0 = very smooth, 1 = very flexible</span>
-<span class="n">bias_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">flexibility</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="mf">2.2</span>
-<span class="n">variance</span> <span class="o">=</span> <span class="n">flexibility</span> <span class="o">**</span> <span class="mf">2.2</span> <span class="o">*</span> <span class="mf">2.0</span>
-<span class="n">irreducible</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">)</span>
-<span class="n">expected_test_error</span> <span class="o">=</span> <span class="n">bias_sq</span> <span class="o">+</span> <span class="n">variance</span> <span class="o">+</span> <span class="n">irreducible</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ordinary, editable Python: change threshold and rerun to explore the same</span>
+<span class="c1"># tradeoff the browser activity shows, using the exact same fixed test-set</span>
+<span class="c1"># probabilities computed in Section 3 -- the model is never refit here.</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.50</span>
 
-<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.4</span><span class="p">,</span> <span class="mf">3.8</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="n">bias_sq</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"squared bias"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#2a6f9e"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="n">variance</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"variance"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#b5622f"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="n">irreducible</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"irreducible error (sigma^2)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.55"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flexibility</span><span class="p">,</span> <span class="n">expected_test_error</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"expected test error"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.1"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.2</span><span class="p">)</span>
-<span class="n">best</span> <span class="o">=</span> <span class="n">flexibility</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">expected_test_error</span><span class="p">)]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">"minimum expected</span><span class="se">\n</span><span class="s2">test error"</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">expected_test_error</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
-            <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">best</span> <span class="o">-</span> <span class="mf">0.30</span><span class="p">,</span> <span class="n">expected_test_error</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.85</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-            <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">"-&gt;"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.3"</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"model flexibility  (low k $</span><span class="se">\\</span><span class="s2">to$ high flexibility, for KNN)"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"error (arbitrary units)"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Bias</span><span class="se">\u2013</span><span class="s2">variance tradeoff -- CONCEPTUAL, not estimated from ABIDE data"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">"upper center"</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">thr_pred</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_proba</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">thr_cm</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">thr_pred</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">thr_tn</span><span class="p">,</span> <span class="n">thr_fp</span><span class="p">,</span> <span class="n">thr_fn</span><span class="p">,</span> <span class="n">thr_tp</span> <span class="o">=</span> <span class="n">thr_cm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">thr_cm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">thr_cm</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">thr_cm</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">thr_accuracy</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">thr_pred</span><span class="p">)</span>
+<span class="n">thr_sensitivity</span> <span class="o">=</span> <span class="n">thr_tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">thr_tp</span> <span class="o">+</span> <span class="n">thr_fn</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">thr_tp</span> <span class="o">+</span> <span class="n">thr_fn</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
+<span class="n">thr_specificity</span> <span class="o">=</span> <span class="n">thr_tn</span> <span class="o">/</span> <span class="p">(</span><span class="n">thr_tn</span> <span class="o">+</span> <span class="n">thr_fp</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">thr_tn</span> <span class="o">+</span> <span class="n">thr_fp</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
+<span class="n">pct_predicted_autism</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">thr_pred</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"threshold = </span><span class="si">{</span><span class="n">threshold</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"accuracy = </span><span class="si">{</span><span class="n">thr_accuracy</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  sensitivity = </span><span class="si">{</span><span class="n">thr_sensitivity</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  specificity = </span><span class="si">{</span><span class="n">thr_specificity</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"predicted autism = </span><span class="si">{</span><span class="n">pct_predicted_autism</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"AUC is unchanged by the threshold: </span><span class="si">{</span><span class="n">auc</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>threshold = 0.50
+accuracy = 0.546  sensitivity = 0.534  specificity = 0.556
+predicted autism = 48.6%
+AUC is unchanged by the threshold: 0.569
 </pre></div>
 </div>
 </div>
 </details>
-<div class="cell_output docutils container">
-<img alt="../../_images/0befe04a952e2272c33c024421e469677bed25aa0073cea438d4a469930ff324.png" src="../../_images/0befe04a952e2272c33c024421e469677bed25aa0073cea438d4a469930ff324.png" />
-</div>
 </div>
 </section>
-<section id="how-performance-changes-across-every-k">
-<h2>5. How performance changes across every k<a class="headerlink" href="#how-performance-changes-across-every-k" title="Link to this heading">#</a></h2>
-<p>This section builds a separate demonstration using only the outer-<strong>training</strong>
-partition (<code class="docutils literal notranslate"><span class="pre">X_train</span></code>, <code class="docutils literal notranslate"><span class="pre">y_train</span></code>, 753 rows) – the outer test set from
-Sections 2–3 is never touched here.</p>
-<p>Split the training partition itself into two groups: a <strong>fitting group</strong>,
-the participants KNN is fit on, and a <strong>validation group</strong>, the
-participants it is scored on. We call their sizes <code class="docutils literal notranslate"><span class="pre">N_fit</span></code> (number of
-fitting participants) and <code class="docutils literal notranslate"><span class="pre">N_val</span></code> (number of validation participants).</p>
-<p>Every integer <code class="docutils literal notranslate"><span class="pre">k</span></code> from 1 through <code class="docutils literal notranslate"><span class="pre">N_fit</span></code> is evaluated on both the fitting
-group (resubstitution) and the validation group, using the
-sort-distances-once-then-cumulative-sum trick (Section 6 reuses the same
-idea, and its plain-language description, in the browser).</p>
-<div class="cell docutils container">
+<section id="interactive-activity-class-imbalance-and-misleading-accuracy">
+<h2>6. Interactive activity: class imbalance and misleading accuracy<a class="headerlink" href="#interactive-activity-class-imbalance-and-misleading-accuracy" title="Link to this heading">#</a></h2>
+<p>So far this notebook’s cohort (463 autism, 541 control) is only mildly
+imbalanced. Real diagnostic cohorts are often far more skewed. The activity
+below resamples real ABIDE participants – control always the majority
+class – into six class ratios (50:50 through 95:5) from a fixed total
+cohort of 400 participants, using the SAME fixed model (<code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">=</span> <span class="pre">1.0</span></code> from
+Section 3) throughout every ratio and seed.</p>
+<p>400 was chosen so that even the sparsest ratio, 95:5, stays meaningfully
+sparse (20 autism participants total) while a stratified 25% test
+partition still keeps a handful of autism participants (about 5) – few
+enough to make the imbalance concrete, without making a stratified test
+partition impossible.</p>
+<iframe
+  title="Interactive class-imbalance exploration for classifying autism vs. control from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/classification_imbalance.json"
+  loading="lazy"
+  width="100%"
+  height="1150"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<p>As class imbalance increases, predicting only the majority class (control) produces increasingly high accuracy on its own – without the model having learned anything about autism. A high accuracy can therefore coexist with a classifier that fails completely to identify autistic participants. Comparing the model’s accuracy against the majority-class baseline accuracy for the SAME test partition is what exposes this; the confusion matrix, sensitivity, specificity, balanced accuracy, and AUC reveal information that accuracy alone conceals. No single metric is universally sufficient – which measures matter most depends on the scientific or clinical question being asked. This activity uses a stratified train/test split internally, to keep the displayed test partition matching the ratio you chose.</p>
+<p>The activity’s <strong>Reflect</strong> questions (below the controls) ask you to predict the majority-class baseline, identify which displayed measures expose a failing classifier, and compare accuracy against the baseline as imbalance grows – answer them after you have tried a few ratios.</p>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">FIT_TEST_SIZE</span> <span class="o">=</span> <span class="mf">0.25</span>
-<span class="n">FIT_RANDOM_STATE</span> <span class="o">=</span> <span class="mi">7</span>   <span class="c1"># independent of the outer split's random_state=42</span>
-<span class="n">X_fit</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
-    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">FIT_TEST_SIZE</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">FIT_RANDOM_STATE</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups_train</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ordinary, editable Python: change class_ratio and random_state and rerun</span>
+<span class="c1"># to explore the same imbalance/misleading-accuracy demonstration the</span>
+<span class="c1"># browser activity shows, using real resampled participants and the SAME</span>
+<span class="c1"># fixed model from Section 3 (C = C_EXAMPLE = 1.0).</span>
+<span class="n">class_ratio</span> <span class="o">=</span> <span class="s2">"90:10"</span>
+<span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span>
+
+<span class="n">RATIO_TABLE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"50:50"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.50</span><span class="p">,</span> <span class="mf">0.50</span><span class="p">),</span> <span class="s2">"60:40"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.60</span><span class="p">,</span> <span class="mf">0.40</span><span class="p">),</span> <span class="s2">"70:30"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.70</span><span class="p">,</span> <span class="mf">0.30</span><span class="p">),</span>
+    <span class="s2">"80:20"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.80</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">),</span> <span class="s2">"90:10"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.90</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">),</span> <span class="s2">"95:5"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="n">majority_pct</span><span class="p">,</span> <span class="n">minority_pct</span> <span class="o">=</span> <span class="n">RATIO_TABLE</span><span class="p">[</span><span class="n">class_ratio</span><span class="p">]</span>
+<span class="n">cohort_size</span> <span class="o">=</span> <span class="mi">400</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">20000</span><span class="p">)</span>  <span class="c1"># fixed cohort draw, independent of random_state</span>
+<span class="n">majority_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">minority_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">n_majority</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">cohort_size</span> <span class="o">*</span> <span class="n">majority_pct</span><span class="p">)</span>
+<span class="n">n_minority</span> <span class="o">=</span> <span class="n">cohort_size</span> <span class="o">-</span> <span class="n">n_majority</span>
+<span class="n">chosen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">majority_idx</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_majority</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">minority_idx</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_minority</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+<span class="p">])</span>
+<span class="n">X_cohort</span><span class="p">,</span> <span class="n">y_cohort</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">chosen</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">chosen</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cohort: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_cohort</span><span class="p">)</span><span class="si">}</span><span class="s2"> participants (</span><span class="si">{</span><span class="n">n_majority</span><span class="si">}</span><span class="s2"> control, </span><span class="si">{</span><span class="n">n_minority</span><span class="si">}</span><span class="s2"> autism)"</span><span class="p">)</span>
+
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xte</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">yte</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_cohort</span><span class="p">,</span> <span class="n">y_cohort</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y_cohort</span>
 <span class="p">)</span>
-<span class="n">N_FIT</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_fit</span><span class="p">)</span>
-<span class="n">N_VAL</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_val</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"fitting participants (N_fit) = </span><span class="si">{</span><span class="n">N_FIT</span><span class="si">}</span><span class="s2">   validation participants (N_val) = </span><span class="si">{</span><span class="n">N_VAL</span><span class="si">}</span><span class="s2">   (from the </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">-row outer-training partition only)"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>fitting participants (N_fit) = 564   validation participants (N_val) = 189   (from the 753-row outer-training partition only)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Scale using the fitting subset only, then sort each query point's distances</span>
-<span class="c1"># to every fitting point ONCE and derive predictions for every k from a</span>
-<span class="c1"># cumulative mean -- far cheaper than refitting KNeighborsRegressor N_fit times.</span>
-<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">scaler_dev</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_fit</span><span class="p">)</span>
-<span class="n">Xf</span> <span class="o">=</span> <span class="n">scaler_dev</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_fit</span><span class="p">)</span>
-<span class="n">Xv</span> <span class="o">=</span> <span class="n">scaler_dev</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_val</span><span class="p">)</span>
+<span class="n">imb_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="n">C_EXAMPLE</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+<span class="n">imb_pred</span> <span class="o">=</span> <span class="n">imb_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span>
+<span class="n">imb_proba</span> <span class="o">=</span> <span class="n">imb_model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">Xte</span><span class="p">)[:,</span> <span class="nb">list</span><span class="p">(</span><span class="n">imb_model</span><span class="o">.</span><span class="n">classes_</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">sorted_neighbor_targets</span><span class="p">(</span><span class="n">X_query</span><span class="p">,</span> <span class="n">X_ref</span><span class="p">,</span> <span class="n">y_ref</span><span class="p">):</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X_query</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">X_ref</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">y_ref</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+<span class="n">imb_cm</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">yte</span><span class="p">,</span> <span class="n">imb_pred</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">imb_tn</span><span class="p">,</span> <span class="n">imb_fp</span><span class="p">,</span> <span class="n">imb_fn</span><span class="p">,</span> <span class="n">imb_tp</span> <span class="o">=</span> <span class="n">imb_cm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">imb_cm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">imb_cm</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">imb_cm</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">imb_accuracy</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">yte</span><span class="p">,</span> <span class="n">imb_pred</span><span class="p">)</span>
+<span class="n">imb_sensitivity</span> <span class="o">=</span> <span class="n">imb_tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">imb_tp</span> <span class="o">+</span> <span class="n">imb_fn</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">imb_tp</span> <span class="o">+</span> <span class="n">imb_fn</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
+<span class="n">imb_specificity</span> <span class="o">=</span> <span class="n">imb_tn</span> <span class="o">/</span> <span class="p">(</span><span class="n">imb_tn</span> <span class="o">+</span> <span class="n">imb_fp</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">imb_tn</span> <span class="o">+</span> <span class="n">imb_fp</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
+<span class="n">imb_balanced_accuracy</span> <span class="o">=</span> <span class="p">(</span><span class="n">imb_sensitivity</span> <span class="o">+</span> <span class="n">imb_specificity</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="n">imb_auc</span> <span class="o">=</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">yte</span><span class="p">,</span> <span class="n">imb_proba</span><span class="p">)</span>
+<span class="n">n_test_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">yte</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="n">n_test_neg</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">yte</span><span class="p">)</span> <span class="o">-</span> <span class="n">n_test_pos</span>
+<span class="n">imb_baseline</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">n_test_pos</span><span class="p">,</span> <span class="n">n_test_neg</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">yte</span><span class="p">)</span>
 
-<span class="n">sorted_val</span> <span class="o">=</span> <span class="n">sorted_neighbor_targets</span><span class="p">(</span><span class="n">Xv</span><span class="p">,</span> <span class="n">Xf</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>   <span class="c1"># N_val x N_fit, nearest first</span>
-<span class="n">sorted_fit</span> <span class="o">=</span> <span class="n">sorted_neighbor_targets</span><span class="p">(</span><span class="n">Xf</span><span class="p">,</span> <span class="n">Xf</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>   <span class="c1"># N_fit x N_fit (self-inclusive)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">r2_mse_curve</span><span class="p">(</span><span class="n">sorted_targets</span><span class="p">,</span> <span class="n">observed</span><span class="p">):</span>
-    <span class="n">cum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">sorted_targets</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">ks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sorted_targets</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">pred_all_k</span> <span class="o">=</span> <span class="n">cum</span> <span class="o">/</span> <span class="n">ks</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
-    <span class="n">ss_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">observed</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred_all_k</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">ss_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">observed</span> <span class="o">-</span> <span class="n">observed</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">r2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">ss_res</span> <span class="o">/</span> <span class="n">ss_tot</span>
-    <span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">observed</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred_all_k</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">r2</span><span class="p">,</span> <span class="n">mse</span>
-
-<span class="n">val_r2</span><span class="p">,</span> <span class="n">val_mse</span> <span class="o">=</span> <span class="n">r2_mse_curve</span><span class="p">(</span><span class="n">sorted_val</span><span class="p">,</span> <span class="n">y_val</span><span class="p">)</span>
-<span class="n">fit_r2</span><span class="p">,</span> <span class="n">fit_mse</span> <span class="o">=</span> <span class="n">r2_mse_curve</span><span class="p">(</span><span class="n">sorted_fit</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>
-<span class="n">ks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N_FIT</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">val_optimal_k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ks</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">val_r2</span><span class="p">)])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"computed </span><span class="si">{</span><span class="n">N_FIT</span><span class="si">}</span><span class="s2"> values of k for </span><span class="si">{</span><span class="n">N_FIT</span><span class="si">}</span><span class="s2"> fitting and </span><span class="si">{</span><span class="n">N_VAL</span><span class="si">}</span><span class="s2"> validation points in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k=1                        fit R^2=</span><span class="si">{</span><span class="n">fit_r2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">   val R^2=</span><span class="si">{</span><span class="n">val_r2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k=</span><span class="si">{</span><span class="n">val_optimal_k</span><span class="si">}</span><span class="s2"> (lowest validation error)  val R^2=</span><span class="si">{</span><span class="n">val_r2</span><span class="p">[</span><span class="n">val_optimal_k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k=N_fit=</span><span class="si">{</span><span class="n">N_FIT</span><span class="si">}</span><span class="s2">                fit R^2=</span><span class="si">{</span><span class="n">fit_r2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">   val R^2=</span><span class="si">{</span><span class="n">val_r2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>computed 564 values of k for 564 fitting and 189 validation points in 0.4s
-k=1                        fit R^2=1.000   val R^2=0.279
-k=17 (lowest validation error)  val R^2=0.634
-k=N_fit=564                fit R^2=-0.000   val R^2=-0.004
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Verify the k = N_fit endpoint explicitly: with every fitting participant as</span>
-<span class="c1"># a neighbour, "the k nearest" is just "everyone", so the prediction is the</span>
-<span class="c1"># SAME constant -- the fitting-set mean age -- for every validation participant.</span>
-<span class="n">pred_val_at_k_nfit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">sorted_val</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">N_FIT</span>
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">pred_val_at_k_nfit</span><span class="p">,</span> <span class="n">y_fit</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"k = N_fit: every validation prediction equals the fitting-set mean, </span><span class="si">{</span><span class="n">y_fit</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> years"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>k = N_fit: every validation prediction equals the fitting-set mean, 15.192 years
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell tag_hide-input docutils container">
-<details class="admonition hide above-input">
-<summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell source</p>
-<p class="expanded admonition-title">Hide code cell source</p>
-</summary>
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">3.9</span><span class="p">))</span>
-
-<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">fit_mse</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"fitting MSE (resubstitution)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#2a6f9e"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">val_mse</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"validation MSE"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#b5622f"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"k (log scale) </span><span class="se">\u2014</span><span class="s2"> high flexibility (small k) $</span><span class="se">\\</span><span class="s2">to$ high smoothing (large k)"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"mean squared error (years$^2$)"</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">k_mark</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"k=1"</span><span class="p">),</span> <span class="p">(</span><span class="n">val_optimal_k</span><span class="p">,</span> <span class="s2">"lowest validation error"</span><span class="p">),</span> <span class="p">(</span><span class="n">N_FIT</span><span class="p">,</span> <span class="s2">"k=N_fit"</span><span class="p">)]:</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">k_mark</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Fitting vs validation error across k"</span><span class="p">)</span>
-
-<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">val_r2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#b5622f"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">val_optimal_k</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s2">"lowest validation</span><span class="se">\n</span><span class="s2">error, k=</span><span class="si">{</span><span class="n">val_optimal_k</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">val_optimal_k</span><span class="p">,</span> <span class="n">val_r2</span><span class="p">[</span><span class="n">val_optimal_k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]),</span>
-            <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">val_optimal_k</span> <span class="o">*</span> <span class="mf">2.2</span><span class="p">,</span> <span class="n">val_r2</span><span class="p">[</span><span class="n">val_optimal_k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.15</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-            <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">"-&gt;"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.3"</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"k (log scale)"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"validation R$^2$"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Validation R$^2$ across k"</span><span class="p">)</span>
-
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">3.6</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">))</span>
+<span class="n">bars</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">([</span><span class="s2">"logistic</span><span class="se">\n</span><span class="s2">regression"</span><span class="p">,</span> <span class="s2">"majority-class</span><span class="se">\n</span><span class="s2">baseline"</span><span class="p">],</span> <span class="p">[</span><span class="n">imb_accuracy</span><span class="p">,</span> <span class="n">imb_baseline</span><span class="p">],</span>
+              <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">"#2a6f9e"</span><span class="p">,</span> <span class="s2">"#b5760a"</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">bar</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bars</span><span class="p">,</span> <span class="p">[</span><span class="n">imb_accuracy</span><span class="p">,</span> <span class="n">imb_baseline</span><span class="p">]):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">bar</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">bar</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">value</span> <span class="o">+</span> <span class="mf">0.02</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"test accuracy"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"class ratio </span><span class="si">{</span><span class="n">class_ratio</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"AUC = </span><span class="si">{</span><span class="n">imb_auc</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  balanced accuracy = </span><span class="si">{</span><span class="n">imb_balanced_accuracy</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  "</span>
+      <span class="sa">f</span><span class="s2">"sensitivity = </span><span class="si">{</span><span class="n">imb_sensitivity</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  specificity = </span><span class="si">{</span><span class="n">imb_specificity</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"test class counts: </span><span class="si">{</span><span class="n">n_test_neg</span><span class="si">}</span><span class="s2"> control, </span><span class="si">{</span><span class="n">n_test_pos</span><span class="si">}</span><span class="s2"> autism"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>cohort: 400 participants (360 control, 40 autism)
+</pre></div>
+</div>
+<img alt="../../_images/098e47caa97cce70ac1dd78389af616cc23fda3ba7429ed57b56789913c0f163.png" src="../../_images/098e47caa97cce70ac1dd78389af616cc23fda3ba7429ed57b56789913c0f163.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>AUC = 0.556  balanced accuracy = 0.478  sensitivity = 0.000  specificity = 0.956
+test class counts: 90 control, 10 autism
 </pre></div>
 </div>
 </div>
 </details>
-<div class="cell_output docutils container">
-<img alt="../../_images/e339bc1d06d8f4ae3e0624bf9902a05a1deeae43be949703a45b1d23574ebc2e.png" src="../../_images/e339bc1d06d8f4ae3e0624bf9902a05a1deeae43be949703a45b1d23574ebc2e.png" />
 </div>
-</div>
-<div class="note admonition">
-<p class="admonition-title">What this curve shows – and does not</p>
-<p>Fitting error keeps falling as <code class="docutils literal notranslate"><span class="pre">k</span></code> shrinks (perfect at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>, exactly the
-resubstitution optimism Section 3 demonstrated) while validation error is
-lowest at an intermediate <code class="docutils literal notranslate"><span class="pre">k</span></code> and rises again toward both ends – <strong>behaviour
-consistent with</strong> the bias–variance tradeoff. It does not <strong>directly
-estimate</strong> bias and variance: the true population relationship between
-cortical structure and age is unknown, and this is one observational sample,
-not repeated draws from that population. The <code class="docutils literal notranslate"><span class="pre">k</span></code> with the lowest validation error here need not match the k = 20
-worked-example value from Section 2 – they come from different splits of
-different data and are not meant to agree exactly. Repeatedly inspecting this
-curve is for illustration here; it is not used to claim a final optimized
-score.</p>
-<p>This development curve is exploratory. It never retunes or replaces the
-Section 2 model: the outer test set stays locked, and the <code class="docutils literal notranslate"><span class="pre">k</span></code> reported there
-is the notebook’s one number that counts.</p>
-</div>
-</section>
-<section id="explore-k-yourself">
-<h2>6. Explore k yourself<a class="headerlink" href="#explore-k-yourself" title="Link to this heading">#</a></h2>
-<p>The central <code class="docutils literal notranslate"><span class="pre">k</span></code>-complexity relationship, stated plainly: a <strong>larger <code class="docutils literal notranslate"><span class="pre">k</span></code></strong>
-averages more neighbours and approaches predicting the fitting-set mean – a
-<strong>simpler, smoother model</strong> with lower variance but higher bias. A
-<strong>smaller <code class="docutils literal notranslate"><span class="pre">k</span></code></strong> follows individual fitting participants more closely – a
-<strong>more flexible, more complex model</strong> with lower bias but higher variance and
-a greater risk of overfitting. “Lower bias” is a general tendency of KNN, not
-a guarantee for every finite sample – the activity below, and Section 3’s
-activity above, let you watch what actually happens in this one.</p>
-<p>The activity below lets you move the same <code class="docutils literal notranslate"><span class="pre">k</span></code> from 1 through every fitting
-participant (<code class="docutils literal notranslate"><span class="pre">N_fit</span></code>) yourself, on the same fitting/validation split as Section 5 – now with an
-exact numeric entry alongside the slider, and three deterministic
-alternative training samples so you can see directly how much predictions
-depend on <em>which</em> participants happened to be drawn for training, at small
-and large <code class="docutils literal notranslate"><span class="pre">k</span></code>. Every plot and every number recomputes from the actual
-refitted model at your chosen <code class="docutils literal notranslate"><span class="pre">k</span></code> – nothing is a canned label. The activity
-opens at k = 20, the same worked-example value as Section 2, but this is
-exploration of model behaviour, not parameter selection: moving the slider
-does not choose a final k for the notebook. It runs entirely in the browser,
-offline, with no brain features or participant identifiers ever sent
-anywhere.</p>
-<iframe
-  title="Interactive KNN neighbour-count exploration for predicting age from brain structure"
-  src="../../_static/widgets/app/index.html?config=../configs/knn_explore.json"
-  loading="lazy"
-  width="100%"
-  height="2700"
-  class="ml-activity"
-  style="width: 100%;"
-></iframe>
 </section>
 <section id="in-summary">
 <h2>In summary<a class="headerlink" href="#in-summary" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p>KNN regression predicts by averaging the <code class="docutils literal notranslate"><span class="pre">k</span></code> nearest training
-participants’ outcomes; <code class="docutils literal notranslate"><span class="pre">k</span></code> directly controls flexibility.</p></li>
-<li><p>Fixing <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">20</span></code> in advance, fitting on the training participants, and
+<li><p>Logistic regression outputs probabilities before class labels; a decision
+threshold turns a probability into a prediction.</p></li>
+<li><p>Fixing <code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">=</span> <span class="pre">1.0</span></code> in advance, fitting on the training participants, and
 evaluating once on a locked test set is the same workflow
-structure Exercise 2 used for linear regression – only the model family
-changed. A later lesson introduces systematic methods for choosing <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p></li>
-<li><p>Resubstitution and leakage inflate performance the same way they did for
-linear regression; how <em>dramatically</em> they inflate it depends on <code class="docutils literal notranslate"><span class="pre">k</span></code> –
-the Section 3 activity makes that dependence, and its extreme at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>,
-directly interactive.</p></li>
-<li><p>Small <code class="docutils literal notranslate"><span class="pre">k</span></code> means low bias and high variance; large <code class="docutils literal notranslate"><span class="pre">k</span></code> means higher bias
-and low variance; training error alone cannot choose between them. The
-Section 6 activity’s training-sample-sensitivity and binned-calibration
-panels make both halves of that tradeoff separately observable.</p></li>
-<li><p>A curve computed from real fitting and validation data is
-<strong>consistent with</strong> the bias–variance tradeoff without being a direct
-measurement of it – the population relationship is unknown and only one
-sample is available.</p></li>
+structure Exercise 2 used for <code class="docutils literal notranslate"><span class="pre">k</span></code>. A later lesson introduces systematic
+methods for choosing <code class="docutils literal notranslate"><span class="pre">C</span></code>.</p></li>
+<li><p>Testing on participants excluded from fitting – not on the training
+data – is what every metric in this notebook does; all of them came
+from the held-out test set.</p></li>
+<li><p>A confusion matrix identifies the kinds of correct and incorrect
+decisions a classifier makes.</p></li>
+<li><p>Accuracy should be interpreted relative to class balance and an
+appropriate baseline: a classifier that predicts only the majority class
+can score a high accuracy while detecting none of the minority class.</p></li>
+<li><p>Confusion-matrix-derived measures – sensitivity, specificity, balanced
+accuracy – and AUC can reveal failures hidden by accuracy alone; a
+chosen threshold changes the confusion matrix, never the AUC.</p></li>
 </ul>
-<p>Next practice: classification, where KNN votes among neighbours’ labels
-instead of averaging their values.</p>
 <section id="questions-to-take-away">
 <h3>Questions to take away<a class="headerlink" href="#questions-to-take-away" title="Link to this heading">#</a></h3>
-<ol class="arabic simple">
-<li><p>What happens to flexibility when <code class="docutils literal notranslate"><span class="pre">k</span></code> increases?</p></li>
-<li><p>Why can <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code> achieve perfect resubstitution performance?</p></li>
-<li><p>Why is that not evidence of good generalisation?</p></li>
-<li><p>What does <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">N_fit</span></code> predict for every new participant?</p></li>
-<li><p>Why must scaling be learned only from training data, exactly as in
-Exercise 2?</p></li>
-<li><p>In Section 6, at a small <code class="docutils literal notranslate"><span class="pre">k</span></code>, why do the three training samples’ scatter
-plots differ more than they do at a large <code class="docutils literal notranslate"><span class="pre">k</span></code>?</p></li>
-<li><p>In Section 6’s binned calibration panel, why does the ensemble’s
-prediction line flatten as <code class="docutils literal notranslate"><span class="pre">k</span></code> grows, and which participants does that
-flattening hurt most?</p></li>
-<li><p>Why is a validation curve computed from one dataset not a direct
-measurement of bias and variance?</p></li>
-<li><p>Would the <code class="docutils literal notranslate"><span class="pre">k</span></code> used here necessarily generalise to a completely new
-scanning site? Why or why not?</p></li>
-</ol>
-</section>
+<p><strong>1.</strong> Why is <code class="docutils literal notranslate"><span class="pre">predict_proba()</span></code>, not <code class="docutils literal notranslate"><span class="pre">predict()</span></code>, needed to compute the ROC
+curve and AUC?</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">predict()</span></code> only returns the class label already decided at one fixed
+threshold (0.50 by default) – a single point, not a curve. The ROC curve
+needs the underlying probability for every participant so the threshold can
+be swept across every possible value and a new confusion matrix computed at
+each one. <code class="docutils literal notranslate"><span class="pre">predict_proba()</span></code> is what makes that sweep possible; <code class="docutils literal notranslate"><span class="pre">predict()</span></code>
+alone would only ever give one (FPR, TPR) point.</p>
+</div>
+</details><p><strong>2.</strong> What generally happens to false negatives when the decision threshold
+is lowered?</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">They generally decrease. A lower threshold predicts the positive class
+(autism) more readily, so fewer actually-positive participants are missed
+(fewer false negatives) – at the cost of more false positives, since more
+controls are now also predicted positive.</p>
+</div>
+</details><p><strong>3.</strong> Why can 95% accuracy describe a useless classifier under class
+imbalance, and what should you look at instead?</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">At a severe enough class imbalance (e.g. 95:5), predicting the majority
+class for everyone reaches 95% accuracy while detecting none of the
+minority class. Accuracy alone cannot distinguish that classifier from one
+that has genuinely learned to separate the classes. Comparing accuracy to
+the majority-class baseline for the same test partition, and inspecting
+sensitivity, specificity, balanced accuracy, and AUC, reveals what accuracy
+alone conceals.</p>
+</div>
+</details></section>
 </section>
 </section>
 
@@ -1191,7 +1251,7 @@ scanning site? Why or why not?</p></li>
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Exercise 2: Regression</p>
+        <p class="prev-next-title">Exercise 2: Regression and Bias-Variance Trade-Off</p>
       </div>
     </a>
     <a class="right-next"
@@ -1199,7 +1259,7 @@ scanning site? Why or why not?</p></li>
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Exercise 4: Classification with Logistic Regression</p>
+        <p class="prev-next-title">Exercise 4: Cross-Validation for Classification and Regression</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1222,15 +1282,15 @@ scanning site? Why or why not?</p></li>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#our-data-table">1. Our data table</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-standard-knn-regression-workflow">2. One standard KNN regression workflow</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-k-for-this-example">Choosing k for this example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-abide-classification-data">1. The ABIDE classification data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-a-linear-score-to-a-probability">2. From a linear score to a probability</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-logistic-regression-model">3. One logistic-regression model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-c-for-this-example">Choosing C for this example</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#correct-and-misleading-ways-to-evaluate-a-model">3. Correct and misleading ways to evaluate a model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-classic-biasvariance-tradeoff">4. The classic bias–variance tradeoff</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-performance-changes-across-every-k">5. How performance changes across every k</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-k-yourself">6. Explore k yourself</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classification-outcomes-and-metrics">4. Classification outcomes and metrics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-choosing-a-decision-threshold">5. Interactive activity: choosing a decision threshold</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-class-imbalance-and-misleading-accuracy">6. Interactive activity: class imbalance and misleading accuracy</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-summary">In summary</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
 </ul>
