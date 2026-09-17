@@ -190,4 +190,45 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
       "#d9a441",
     );
   });
+
+  test("Exercise 4 — validation-stability, validation-lock-test, nested-cv-explorer: initial dark load", async ({
+    page,
+  }) => {
+    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html");
+
+    const stabilityFrame = await activityFrame(page, 'iframe[src*="config=../configs/validation_stability.json"]');
+    for (const testId of ["validation-stability-single-plot", "validation-stability-cv-plot"]) {
+      const snap = await snapshotPlot(stabilityFrame, testId);
+      assertDarkFigure(snap, `validation-stability ${testId}`);
+      expect(snap.markerColors, `validation-stability ${testId}: bars use the dark palette`).toContain(
+        MARKER_PRIMARY_DARK,
+      );
+      expect(
+        snap.markerColors,
+        `validation-stability ${testId}: highlighted seed / mean line uses the dark palette`,
+      ).toContain(DIAGONAL_LINE_DARK);
+    }
+
+    // Cheap addition, same already-loaded page.
+    const lockTestFrame = await activityFrame(page, 'iframe[src*="config=../configs/validation_lock_test.json"]');
+    const lockTestSnap = await snapshotPlot(lockTestFrame, "validation-lock-test-plot");
+    assertDarkFigure(lockTestSnap, "validation-lock-test validation-lock-test-plot");
+    expect(lockTestSnap.markerColors, "validation-lock-test: training line uses the dark palette").toContain(
+      MARKER_PRIMARY_DARK,
+    );
+    expect(lockTestSnap.markerColors, "validation-lock-test: validation line uses the dark palette").toContain(
+      DIAGONAL_LINE_DARK,
+    );
+
+    // Cheap addition, same already-loaded page.
+    const nestedCvFrame = await activityFrame(page, 'iframe[src*="config=../configs/nested_cv_explorer.json"]');
+    const nestedCvSnap = await snapshotPlot(nestedCvFrame, "nested-cv-inner-plot");
+    assertDarkFigure(nestedCvSnap, "nested-cv-explorer nested-cv-inner-plot");
+    expect(nestedCvSnap.markerColors, "nested-cv-explorer: candidate-k bars use the dark palette").toContain(
+      MARKER_PRIMARY_DARK,
+    );
+    expect(nestedCvSnap.markerColors, "nested-cv-explorer: selected-k bar uses the dark palette").toContain(
+      DIAGONAL_LINE_DARK,
+    );
+  });
 });
