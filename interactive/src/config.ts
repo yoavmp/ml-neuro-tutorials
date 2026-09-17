@@ -274,6 +274,48 @@ const classificationImbalanceConfig = z
   })
   .strict();
 
+// WP27 (Exercise 4): "One Split or Several Folds?" -- combined single-split
+// instability + fixed-model cross-validation activity. Sample size, seed and
+// fold-count are all discrete, predeclared, audited values (no continuous
+// in-browser recomputation).
+const validationStabilityConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("validation-stability"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    sizeKeys: z.array(z.string().min(1)).min(1, "config.sizeKeys must list at least one sample size"),
+    defaultSizeKey: z.string().min(1, "config.defaultSizeKey must be a non-empty string"),
+    defaultSeed: z.number().int(),
+    defaultFolds: z.number().int().positive(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP27 (Exercise 4): "Choose k Before Revealing the Test Set" -- tune k on
+// training/validation only, then lock the choice and reveal the held-out
+// test result once.
+const validationLockTestConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("validation-lock-test"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultK: z.number().int().positive(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP27 (Exercise 4): "Look Inside Nested Cross-Validation" -- precomputed
+// outer/inner fold explorer.
+const nestedCvExplorerConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("nested-cv-explorer"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultOuterFold: z.number().int().nonnegative(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -288,6 +330,9 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   knnExploreConfig,
   classificationThresholdConfig,
   classificationImbalanceConfig,
+  validationStabilityConfig,
+  validationLockTestConfig,
+  nestedCvExplorerConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -300,6 +345,9 @@ export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
 export type KnnExploreConfig = z.infer<typeof knnExploreConfig>;
 export type ClassificationThresholdConfig = z.infer<typeof classificationThresholdConfig>;
 export type ClassificationImbalanceConfig = z.infer<typeof classificationImbalanceConfig>;
+export type ValidationStabilityConfig = z.infer<typeof validationStabilityConfig>;
+export type ValidationLockTestConfig = z.infer<typeof validationLockTestConfig>;
+export type NestedCvExplorerConfig = z.infer<typeof nestedCvExplorerConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
@@ -465,6 +513,18 @@ function checkSemantics(config: ActivityConfig): string | null {
           `config.measurementSubsets (${subsetKeys.join(", ")})`
         );
       }
+    }
+  }
+  if (config.type === "validation-stability") {
+    const keys = [...new Set(config.sizeKeys)];
+    if (keys.length !== config.sizeKeys.length) {
+      return `config.sizeKeys has duplicate value(s)`;
+    }
+    if (!config.sizeKeys.includes(config.defaultSizeKey)) {
+      return (
+        `config.defaultSizeKey "${config.defaultSizeKey}" is not one of ` +
+        `config.sizeKeys (${config.sizeKeys.join(", ")})`
+      );
     }
   }
   return null;

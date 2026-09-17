@@ -728,3 +728,111 @@ describe("parseActivityConfigJson", () => {
     expect(r.ok).toBe(false);
   });
 });
+
+// WP27 (Exercise 4)
+
+const validValidationStability = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "validation-stability",
+  title: "One Split or Several Folds?",
+  data: "../data/wp27_validation_stability.json",
+  instructions: "instructions",
+  sizeKeys: ["30", "50", "all"],
+  defaultSizeKey: "50",
+  defaultSeed: 0,
+  defaultFolds: 5,
+};
+
+describe("validation-stability config", () => {
+  it("accepts a well-formed config", () => {
+    expect(parseActivityConfig(validValidationStability).ok).toBe(true);
+  });
+
+  it("rejects a defaultSizeKey not present in sizeKeys", () => {
+    const r = parseActivityConfig({ ...validValidationStability, defaultSizeKey: "100" });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects duplicate sizeKeys", () => {
+    const r = parseActivityConfig({
+      ...validValidationStability,
+      sizeKeys: ["30", "30", "all"],
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects unknown extra keys (strict schema)", () => {
+    expect(parseActivityConfig({ ...validValidationStability, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/validation_stability.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/validation_stability.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
+const validValidationLockTest = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "validation-lock-test",
+  title: "Choose k Before Revealing the Test Set",
+  data: "../data/wp27_validation_lock_test.json",
+  instructions: "instructions",
+  defaultK: 20,
+};
+
+describe("validation-lock-test config", () => {
+  it("accepts a well-formed config", () => {
+    expect(parseActivityConfig(validValidationLockTest).ok).toBe(true);
+  });
+
+  it("rejects a non-positive defaultK", () => {
+    expect(parseActivityConfig({ ...validValidationLockTest, defaultK: 0 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/validation_lock_test.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/validation_lock_test.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});
+
+const validNestedCvExplorer = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "nested-cv-explorer",
+  title: "Look Inside Nested Cross-Validation",
+  data: "../data/wp27_nested_cv_explorer.json",
+  instructions: "instructions",
+  defaultOuterFold: 0,
+};
+
+describe("nested-cv-explorer config", () => {
+  it("accepts a well-formed config", () => {
+    expect(parseActivityConfig(validNestedCvExplorer).ok).toBe(true);
+  });
+
+  it("rejects a negative defaultOuterFold", () => {
+    expect(parseActivityConfig({ ...validNestedCvExplorer, defaultOuterFold: -1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/nested_cv_explorer.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/nested_cv_explorer.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});

@@ -12,6 +12,9 @@ import { regressionCompareComponent } from "./regression-compare";
 import { knnExploreComponent } from "./knn-explore";
 import { classificationThresholdComponent } from "./classification-threshold";
 import { classificationImbalanceComponent } from "./classification-imbalance";
+import { validationStabilityComponent } from "./validation-stability";
+import { validationLockTestComponent } from "./validation-lock-test";
+import { nestedCvExplorerComponent } from "./nested-cv-explorer";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -23,3 +26,6 @@ registry.register(regressionCompareComponent);
 registry.register(knnExploreComponent);
 registry.register(classificationThresholdComponent);
 registry.register(classificationImbalanceComponent);
+registry.register(validationStabilityComponent);
+registry.register(validationLockTestComponent);
+registry.register(nestedCvExplorerComponent);
