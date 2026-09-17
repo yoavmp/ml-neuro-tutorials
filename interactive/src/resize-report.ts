@@ -1,9 +1,9 @@
 // Reports this page's full document height to a same-origin embedding parent
 // (WP16). The Jupyter Book pages embed each activity in an `<iframe>` with a
 // single static `height` attribute -- but a `<details>` disclosure opening, a
-// training-sample tab switching plots, or the Exercise 2 / knn-abc
-// comparison grid collapsing from side-by-side panels to a stacked column at
-// a narrow iframe width all change this page's real height without a
+// training-sample tab switching plots, or a comparison grid collapsing from
+// side-by-side panels to a stacked column at a narrow iframe width all
+// change this page's real height without a
 // navigation. A single static number cannot stay correct at every viewport
 // width (measured: the book theme's own sidebar/TOC visibility is not even
 // monotonic in outer viewport width, so a CSS breakpoint on the outer page

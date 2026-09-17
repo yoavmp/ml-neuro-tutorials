@@ -1,4 +1,4 @@
-// Production activity: Exercise 4's class-imbalance / misleading-accuracy
+// Production activity: Exercise 3's class-imbalance / misleading-accuracy
 // interactive (WP18 sec 4). Every ratio/seed combination's counts and
 // metrics are precomputed offline (scripts/export_classification_imbalance_data.py)
 // from real resampled ABIDE participants -- the browser only selects and

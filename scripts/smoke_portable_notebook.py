@@ -12,12 +12,11 @@ Notebooks and their expected strings:
   1114 x 13; the complete-case retention example reports all 13 variables.
 * ``chapter_02/exercise_02_portable.ipynb`` -- the merged modelling table loads
   with `age` available for all 1004 participants; the held-out linear-regression
-  workflow runs and prints its R-squared; the learning curve prints n/p.
-* ``chapter_03/exercise_03_portable.ipynb`` -- the same data table; the
-  fixed-k=20 KNN workflow runs and prints its held-out R-squared; the
-  from-scratch empirical k=1..N_fit curve runs and verifies the k=N_fit
-  endpoint; the static honest-vs-invalid k_demo cell runs.
-* ``chapter_04/exercise_04_portable.ipynb`` -- the same brain table, diagnosis
+  workflow runs and prints its R-squared; the fixed-k=20 KNN workflow (reusing
+  the same split) runs and prints its own held-out R-squared; the from-scratch
+  empirical k=1..N_fit curve runs and verifies the k=N_fit endpoint; the
+  learning curve prints n/p.
+* ``chapter_03/exercise_03_portable.ipynb`` -- the same brain table, diagnosis
   (`group`) as target; the fixed-C=1.0 honest logistic-regression workflow
   runs and prints its confusion matrix, accuracy, and AUC; the editable
   threshold and class-imbalance demo cells run.
@@ -54,23 +53,17 @@ SMOKE = {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb",
         "expect": (
             "age available for 1004 of 1004",
-            "held-out R^2 =",
             "n_features = 360",
+            "held-out R^2 = 0.469",
+            "k = 20",
+            "held-out R^2 = 0.664",
+            "fitting participants (N_fit) = 564   validation participants (N_val) = 189",
+            "every validation prediction equals the fitting-set mean",
             "n_features (p) = 10",
         ),
     },
     "chapter_03": {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
-        "expect": (
-            "age available for 1004 of 1004",
-            "k = 20",
-            "held-out R^2 = 0.664",
-            "fitting participants (N_fit) = 564   validation participants (N_val) = 189",
-            "every validation prediction equals the fitting-set mean",
-        ),
-    },
-    "chapter_04": {
-        "path": REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
         "expect": (
             "463 autism (group=1), 541 control (group=2)",
             "n_train = 753   n_test = 251   n_features = 360",

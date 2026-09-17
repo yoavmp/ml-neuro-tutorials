@@ -14,7 +14,8 @@ WP19 correction: this activity previously scored every entry with a hidden
 5-fold ``KFold`` / ``cross_val_predict`` procedure. Early lessons no longer
 teach or use cross-validation, so every catalog entry now uses the **same**
 fixed, reproducible train/test split (``protocol.holdout_split`` --
-identical to Exercise 2's own Section 2 worked example and Exercise 3):
+identical to Exercise 2's own Section 2 worked example, and reused by
+Exercise 2's own KNN section):
 ``train_test_split(test_size=0.25, random_state=42, stratify=group)`` on the
 same eligible cohort (age present after requiring usable brain data, n=1004).
 Every entry shares the exact same 753 training / 251 test participants, so
@@ -88,7 +89,8 @@ def _metrics(observed: "Any", predicted: "Any") -> tuple[float, float]:
 
 def _split_indices(n: int, groups: "Any", manifest: dict[str, Any]) -> tuple["Any", "Any"]:
     """The one fixed, reproducible train/test split (WP19): identical to
-    Exercise 2 Section 2 / Exercise 3's own outer holdout split. Returns
+    Exercise 2 Section 2's own outer holdout split, also reused by Exercise 2's
+    own KNN section. Returns
     (idx_train, idx_test) -- the same participant indices are reused for
     every bundle x measure combination below."""
     import numpy as np

@@ -254,16 +254,6 @@ const knnExploreConfig = z
   })
   .strict();
 
-const knnAbcConfig = z
-  .object({
-    ...baseFields,
-    type: z.literal("knn-abc"),
-    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
-    k1Note: z.string().min(1, "config.k1Note must be a non-empty string"),
-    reflectionPrompts: z.array(z.string().min(1)).optional(),
-  })
-  .strict();
-
 const classificationThresholdConfig = z
   .object({
     ...baseFields,
@@ -296,7 +286,6 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   tableInspectionConfig,
   regressionCompareConfig,
   knnExploreConfig,
-  knnAbcConfig,
   classificationThresholdConfig,
   classificationImbalanceConfig,
 ]);
@@ -309,7 +298,6 @@ export type EdaCorrelationConfig = z.infer<typeof edaCorrelationConfig>;
 export type TableInspectionConfig = z.infer<typeof tableInspectionConfig>;
 export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
 export type KnnExploreConfig = z.infer<typeof knnExploreConfig>;
-export type KnnAbcConfig = z.infer<typeof knnAbcConfig>;
 export type ClassificationThresholdConfig = z.infer<typeof classificationThresholdConfig>;
 export type ClassificationImbalanceConfig = z.infer<typeof classificationImbalanceConfig>;
 

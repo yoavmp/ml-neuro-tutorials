@@ -1,4 +1,4 @@
-// Pure, unit-tested helpers for the Exercise 3 "vary k" KNN activity. No DOM,
+// Pure, unit-tested helpers for the Exercise 2 "vary k" KNN activity. No DOM,
 // no Plotly. r2Score / meanSquaredError / sharedAxisRange are the same generic
 // metrics regression-compare.ts already defines; reused here rather than
 // duplicated.

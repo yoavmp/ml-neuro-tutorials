@@ -1,14 +1,16 @@
 """Repository-wide content audit for WP19: confirms that early-course
 cross-validation / formal-parameter-selection material -- neither taught nor
 implemented -- is absent from the rendered student-facing sources of
-Exercises 1-4.
+Exercises 1-3 (WP25 renumbered the active book to Exercises 1-3 plus
+placeholder Exercises 4-12; the discarded old Exercise 3 sections and the
+old Exercise 4 numbering live only on archive/pre-syllabus-notebook-structure).
 
-Scope (WP19 §8.1, corrected): the four canonical notebooks, their generated
-portable notebooks, and the five activity-widget config JSON files whose
-text is rendered directly in the book pages (knn_explore, knn_abc,
-classification_threshold, classification_imbalance, regression_compare).
-Historical WP documents and completed WP reports are records and are
-intentionally NOT scanned here (WP19 §2 scope rule).
+Scope (WP19 §8.1, corrected; paths updated by WP25): the three active
+canonical notebooks, their generated portable notebooks, and the four
+activity-widget config JSON files whose text is rendered directly in the
+book pages (knn_explore, classification_threshold, classification_imbalance,
+regression_compare). Historical WP documents and completed WP reports are
+records and are intentionally NOT scanned here (WP19 §2 scope rule).
 
 WP19 correction (Exercise 2): the regression-compare feature-set-comparison
 activity previously scored every catalog entry with a hidden 5-fold KFold /
@@ -33,31 +35,29 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
+# Indices: 0=ch1 canonical, 1=ch2 canonical, 2=ch3 canonical,
+# 3=ch1 portable, 4=ch2 portable, 5=ch3 portable.
 NOTEBOOK_PATHS = [
     REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb",
     REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb",
     REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
-    REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb",
     REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb",
     REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb",
     REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
-    REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
 ]
 
 WIDGET_CONFIG_PATHS = [
     REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "knn_explore.json",
-    REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "knn_abc.json",
     REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "classification_threshold.json",
     REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "classification_imbalance.json",
     REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "regression_compare.json",
 ]
 
-# Generated data artifacts for the Exercise 1-4 activities (checked for
+# Generated data artifacts for the Exercise 1-3 activities (checked for
 # leftover implementation, not just wording, per the WP19 correction).
 GENERATED_ARTIFACT_PATHS = [
     REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_regression_models.json",
     REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_knn_explore_manifest.json",
-    REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_knn_abc_manifest.json",
     REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_classification_threshold.json",
     REPO_ROOT / "book" / "_static" / "widgets" / "data" / "abide_classification_imbalance.json",
 ]
@@ -125,13 +125,13 @@ class NotebookContentAudit(unittest.TestCase):
                 matches, [], f"{path.relative_to(REPO_ROOT)} contains prohibited terms: {matches}"
             )
 
-    def test_exercise_3_uses_fixed_k20_language(self):
-        for path in (NOTEBOOK_PATHS[2], NOTEBOOK_PATHS[6]):
+    def test_exercise_2_uses_fixed_k20_language(self):
+        for path in (NOTEBOOK_PATHS[1], NOTEBOOK_PATHS[4]):
             text = _notebook_text(path)
             self.assertIn("K_EXAMPLE = 20", text, path)
 
-    def test_exercise_4_uses_fixed_c1_language(self):
-        for path in (NOTEBOOK_PATHS[3], NOTEBOOK_PATHS[7]):
+    def test_exercise_3_uses_fixed_c1_language(self):
+        for path in (NOTEBOOK_PATHS[2], NOTEBOOK_PATHS[5]):
             text = _notebook_text(path)
             self.assertIn("C_EXAMPLE = 1.0", text, path)
 

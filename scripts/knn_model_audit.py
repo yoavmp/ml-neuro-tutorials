@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reproducible KNN model audit for Exercise 3 (WP19: fixed worked-example k).
+"""Reproducible KNN model audit for Exercise 2 (WP19: fixed worked-example k).
 
 Goal: verify -- empirically, before/after writing the notebook -- the locked
 held-out performance of the standardized KNN-regression worked example at the
@@ -8,7 +8,7 @@ feature recipe is a reasonable choice compared with two smaller predeclared
 anatomical bundles evaluated at the exact same fixed k.
 
 WP19 removed the early cross-validation / formal parameter-selection lesson
-from Exercise 3. This script no longer searches candidate ``k`` values or
+from Exercise 2. This script no longer searches candidate ``k`` values or
 selects one by cross-validation: every candidate below is evaluated at the
 single fixed ``K_EXAMPLE = 20``, exactly as the notebook's worked example
 does. There is no hidden search that happens to return 20.

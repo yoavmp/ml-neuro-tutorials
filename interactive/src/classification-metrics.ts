@@ -1,4 +1,4 @@
-// Pure, DOM-free classification metrics shared by both Exercise 4 activities
+// Pure, DOM-free classification metrics shared by both Exercise 3 activities
 // (WP17). No sklearn re-implementation shortcuts: confusion matrix, ROC
 // curve, and AUC are all computed directly from labels + scores, the same
 // definitions scikit-learn uses, so a chosen threshold recomputes a REAL

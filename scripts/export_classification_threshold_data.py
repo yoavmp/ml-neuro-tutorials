@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministically export the Exercise 4 decision-threshold interactive
+"""Deterministically export the Exercise 3 decision-threshold interactive
 (WP17 sec 4).
 
 The browser activity ``classification-threshold`` lets a student move a
@@ -9,7 +9,7 @@ recomputed live from a FIXED set of honest test-set predicted probabilities.
 The model is never refit when the threshold changes; only the confusion
 matrix depends on the threshold, never the AUC.
 
-Exactly Exercise 4's own locked split/recipe/model
+Exactly Exercise 3's own locked split/recipe/model
 (``book/config/abide_modeling.json`` ``classification``):
 ``Pipeline(StandardScaler(), LogisticRegression(C=<selected>, max_iter=5000))``
 on the canonical ``all-eligible x CT`` recipe (p=360),

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministically export the Exercise 3 KNN "vary k" activity data.
+"""Deterministically export the Exercise 2 KNN "vary k" activity data.
 
 The browser activity ``knn-explore`` (book/_static/widgets/) lets a student move
 a slider across every integer ``k`` from 1 through ``N_fit`` and see standardized

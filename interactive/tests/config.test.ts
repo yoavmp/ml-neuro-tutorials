@@ -711,44 +711,6 @@ describe("parseActivityConfig — knn-explore", () => {
   });
 });
 
-const validKnnAbc = {
-  schemaVersion: CONFIG_SCHEMA_VERSION,
-  type: "knn-abc",
-  title: "Honest vs invalid evaluation, interactively",
-  data: "../data/abide_knn_abc_manifest.json",
-  instructions: "Drag the slider to change k.",
-  k1Note: "At k=1, B and C are exactly perfect.",
-};
-
-describe("parseActivityConfig — knn-abc", () => {
-  it("accepts a well-formed knn-abc config", () => {
-    const r = parseActivityConfig(validKnnAbc);
-    expect(r.ok, r.ok ? "" : r.error).toBe(true);
-  });
-
-  it("accepts optional reflectionPrompts", () => {
-    const r = parseActivityConfig({ ...validKnnAbc, reflectionPrompts: ["Try k=1."] });
-    expect(r.ok, r.ok ? "" : r.error).toBe(true);
-  });
-
-  it("rejects unknown extra keys (strict schema)", () => {
-    expect(parseActivityConfig({ ...validKnnAbc, extra: 1 }).ok).toBe(false);
-  });
-
-  it("rejects a missing k1Note", () => {
-    const { k1Note: _drop, ...rest } = validKnnAbc;
-    expect(parseActivityConfig(rest).ok).toBe(false);
-  });
-
-  it("accepts the shipped configs/knn_abc.json", async () => {
-    const fs = await import("node:fs/promises");
-    const url = new URL("../../book/_static/widgets/configs/knn_abc.json", import.meta.url);
-    const text = await fs.readFile(url, "utf-8");
-    const r = parseActivityConfigJson(text);
-    expect(r.ok, r.ok ? "" : r.error).toBe(true);
-  });
-});
-
 describe("parseActivityConfigJson", () => {
   it("parses and validates a JSON string", () => {
     const r = parseActivityConfigJson(JSON.stringify(valid));

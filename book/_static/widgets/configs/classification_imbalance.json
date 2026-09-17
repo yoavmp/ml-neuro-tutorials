@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "type": "classification-imbalance",
   "title": "Class imbalance and misleading accuracy, interactively",
-  "description": "Course activity for Exercise 4: choose a class ratio and a predetermined split seed, then compare the logistic-regression model's test accuracy against the majority-class baseline accuracy on the same resampled cohort of real ABIDE participants -- plus AUC, balanced accuracy, sensitivity, and specificity.",
+  "description": "Course activity for Exercise 3: choose a class ratio and a predetermined split seed, then compare the logistic-regression model's test accuracy against the majority-class baseline accuracy on the same resampled cohort of real ABIDE participants -- plus AUC, balanced accuracy, sensitivity, and specificity.",
   "data": "../data/abide_classification_imbalance.json",
   "instructions": "Choose a class ratio (control is always the majority class here) and one of five predetermined split seeds. The chart compares the model's own test accuracy against what always-predict-control would score on the exact same test participants.",
   "reflectionPrompts": [

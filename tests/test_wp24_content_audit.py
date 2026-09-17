@@ -23,8 +23,10 @@ EX1 = REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb"
 EX1_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb"
 EX2 = REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb"
 EX2_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb"
-EX4 = REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb"
-EX4_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
+# WP25 moved this content wholesale from chapter_04 to chapter_03 (the
+# classification lesson is now Exercise 3; chapter_04 is a placeholder).
+EX4 = REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb"
+EX4_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb"
 
 EDA_CORRELATION_JSON = REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "eda_correlation.json"
 REGRESSION_COMPARE_JSON = REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "regression_compare.json"
@@ -180,8 +182,10 @@ class Exercise2SampleSizeSectionAccurate(unittest.TestCase):
     non-ranked feature-bundle selection; the fixed feature set is unchanged."""
 
     def test_section_5_is_concise(self):
+        # WP25 moved this subsection under "## Bonus" as "### What does
+        # sample size change?" (previously the top-level "## 5.").
         text = _notebook_markdown_text(EX2)
-        start = text.index("## 5. What does sample size change?")
+        start = text.index("### What does sample size change?")
         marker = "```{admonition} What the learning curve shows"
         end = text.index(marker, start) if marker in text[start:] else len(text)
         section = text[start:end]

@@ -1,4 +1,4 @@
-// Loader for the Exercise 3 "vary k" activity artifact
+// Loader for the Exercise 2 "vary k" activity artifact
 // (book/_static/widgets/data/abide_knn_explore_manifest.json +
 // abide_knn_explore.bin, produced by scripts/export_knn_explore_data.py).
 // DOM / Plotly free so it can be unit tested and reused independently of the

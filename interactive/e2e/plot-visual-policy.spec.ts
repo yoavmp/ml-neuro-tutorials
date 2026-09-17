@@ -62,7 +62,6 @@ const CHARTS = [
     query: "../configs/regression_compare.json",
     plotTestId: "regression-A-plot",
   },
-  { activity: "knn-abc", query: "../configs/knn_abc.json", plotTestId: "knn-abc-panel-a-plot" },
   { activity: "knn-explore", query: "../configs/knn_explore.json", plotTestId: "knn-scatter-plot" },
 ];
 
@@ -133,7 +132,6 @@ test.describe("shared Plotly presentation policy", () => {
 
   for (const { activity, query, plotTestId } of [
     { activity: "regression-compare", query: "../configs/regression_compare.json", plotTestId: "regression-A-plot" },
-    { activity: "knn-abc", query: "../configs/knn_abc.json", plotTestId: "knn-abc-panel-a-plot" },
   ]) {
     test(`${activity}: comparison-card background matches the page, not the old lavender-gray surface`, async ({
       page,

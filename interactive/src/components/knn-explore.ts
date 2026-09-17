@@ -1,4 +1,4 @@
-// Production activity: Exercise 3's "vary k" KNN exploration.
+// Production activity: Exercise 2's "vary k" KNN exploration.
 //
 // A k slider AND a synchronized numeric input (WP14 §4.5) drive standardized
 // KNN regression for age refit at that k: fitting R2/MSE, validation R2/MSE,
@@ -92,10 +92,10 @@ function mount(args: MountArgs<KnnExploreConfig, KnnExploreData>): MountHandle {
   cohortLine.setAttribute("data-testid", "knn-cohort");
   cohortLine.textContent =
     `Fitting set: ${data.split.nFit} participants · Validation set: ${data.split.nValidation} ` +
-    `participants (both drawn from Exercise 2's own ${data.split.nOuterTrain}-participant training ` +
-    `partition; the outer test set is untouched by this activity). Feature recipe: ` +
+    `participants (both drawn from the ${data.split.nOuterTrain}-participant training partition ` +
+    `used above; the outer test set is untouched by this activity). Feature recipe: ` +
     `${data.featureRecipe.featureCount} standardized cortical-thickness features, the same as ` +
-    `Exercise 2's own recipe.`;
+    `the recipe used above.`;
   container.appendChild(cohortLine);
 
   // --- controls: slider + synchronized numeric input (WP14 §4.5) --------
