@@ -52,9 +52,9 @@ class Toc(unittest.TestCase):
             files,
             [f"chapters/chapter_{n:02d}/exercise_{n:02d}" for n in range(1, 13)],
         )
-        for n in (1, 2, 3):
+        for n in (1, 2, 3, 4):
             self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb").exists())
-        for n in range(4, 13):
+        for n in range(5, 13):
             self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md").exists())
 
     def test_no_exercise_13_in_toc(self):

@@ -1,11 +1,13 @@
-"""Offline assertions for the WP25 placeholder pages, Exercises 4-12.
+"""Offline assertions for the WP25 placeholder pages, Exercises 5-12.
 
 WP25 restructured the book around the new course syllabus. Exercises 1-3 are
-full notebooks (covered by their own dedicated test files); Exercises 4-12
-are minimal Markdown placeholder pages with no content yet. This file
-confirms each placeholder exists, carries exactly its required title and
-one placeholder sentence, and contains none of the material the task
-explicitly excludes from a placeholder (no learning objectives, dates,
+full notebooks (covered by their own dedicated test files); Exercises 5-12
+are minimal Markdown placeholder pages with no content yet. WP27 converted
+Exercise 4 from a placeholder into a real notebook (see
+test_exercise_04_notebook.py), so it is no longer covered here. This file
+confirms each remaining placeholder exists, carries exactly its required
+title and one placeholder sentence, and contains none of the material the
+task explicitly excludes from a placeholder (no learning objectives, dates,
 final-project reminders, Colab/download buttons, interactive content, empty
 code cells, syllabus quotations, or section outlines).
 
@@ -23,7 +25,6 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 PLACEHOLDER_TITLES = {
-    4: "Exercise 4: Cross-Validation for Classification and Regression",
     5: "Exercise 5: Regularization and Feature Selection",
     6: "Exercise 6: Decision Trees",
     7: "Exercise 7: Trees and Boosting",
