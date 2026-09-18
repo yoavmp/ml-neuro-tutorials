@@ -162,6 +162,34 @@
     "export_data_script": "scripts/export_knn_explore_data.py",
     "export_data_artifact": "book/_static/widgets/data/abide_knn_explore_manifest.json + book/_static/widgets/data/abide_knn_explore.bin"
   },
+  "regularization": {
+    "target": "age",
+    "canonical_recipe": {
+      "bundle": "all-eligible",
+      "measures": ["CT"],
+      "note": "Identical to protocol.canonical_recipe and knn.canonical_recipe (p=360): Exercise 5 tunes and evaluates Ridge/Lasso on the same predictors as Exercises 2 and 4, not on the p=1432 regularisation_preview space -- feature selection and regularization are this exercise's own topic, not a repeat of the earlier p>n demonstration."
+    },
+    "dev_split": {
+      "test_size": 0.25,
+      "random_state": 7,
+      "stratify": "group",
+      "note": "Identical to knn.dev_split: splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189), used for the 'Shrink the Coefficients' activity and Exercise 5 section 3's SelectKBest illustration. Independent of, and never touching, the outer test set (251 rows) locked by protocol.holdout_split."
+    },
+    "ridge_alpha_grid": "np.logspace(-1, 5, 25)",
+    "lasso_alpha_grid": "np.logspace(-3, 1, 25)",
+    "grid_note": "Audited empirically on the dev split (scripts/regularization_model_audit.py): with p=360 and n_fit=564, unregularised linear regression overfits sharply (validation R2 below 0) even though n_fit > p, because many cortical-thickness columns are highly redundant. Ridge's validation MSE is minimised near alpha~1e3 and Lasso's near alpha~0.1-0.3, both comfortably interior to these grids, not at either boundary.",
+    "nested_cv_pipeline": {
+      "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=100)",
+      "inner_cv": "KFold(n_splits=5, shuffle=True, random_state=101)",
+      "note": "Identical outer/inner folds to Exercise 4 section 6's nested cross-validation, applied here to compare Linear Regression, Ridge, and Lasso (alpha tuned by inner GridSearchCV) on the full eligible cohort (n=1004) rather than a single train/validation/test split."
+    },
+    "audit_script": "scripts/regularization_model_audit.py",
+    "audit_result": "scripts/regularization_model_audit_result.json",
+    "export_data_script": "scripts/export_regularization_widget.py",
+    "export_data_artifact": "book/_static/widgets/data/regularization_explore.json",
+    "stepwise_candidate_bundle": "frontal",
+    "stepwise_note": "SequentialFeatureSelector forward selection is demonstrated on the 'frontal' (prefrontal-only, 20 ROI, p=40 bilateral CT) bundle only -- small enough to run quickly and to show a readable selection order, unlike the full p=360 recipe."
+  },
   "classification": {
     "target": "group",
     "positive_class": {"code": 1, "label": "autism"},

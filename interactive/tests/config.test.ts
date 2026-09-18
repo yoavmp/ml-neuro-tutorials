@@ -836,3 +836,39 @@ describe("nested-cv-explorer config", () => {
     expect(r.ok, r.ok ? "" : r.error).toBe(true);
   });
 });
+
+const validRegularizationExplore = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "regularization-explore",
+  title: "Shrink the Coefficients",
+  data: "../data/regularization_explore.json",
+  instructions: "instructions",
+  defaultModel: "ridge",
+  linearRegressionNote: "Linear Regression has no alpha.",
+  coefficientDisplayNote: "A display choice, not another feature-selection step.",
+};
+
+describe("regularization-explore config", () => {
+  it("accepts a well-formed config", () => {
+    expect(parseActivityConfig(validRegularizationExplore).ok).toBe(true);
+  });
+
+  it("rejects an invalid defaultModel", () => {
+    expect(parseActivityConfig({ ...validRegularizationExplore, defaultModel: "svm" }).ok).toBe(false);
+  });
+
+  it("rejects an unknown extra field (strict)", () => {
+    expect(parseActivityConfig({ ...validRegularizationExplore, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/regularization_explore.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/regularization_explore.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+});

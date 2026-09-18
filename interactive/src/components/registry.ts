@@ -15,6 +15,7 @@ import { classificationImbalanceComponent } from "./classification-imbalance";
 import { validationStabilityComponent } from "./validation-stability";
 import { validationLockTestComponent } from "./validation-lock-test";
 import { nestedCvExplorerComponent } from "./nested-cv-explorer";
+import { regularizationExploreComponent } from "./regularization-explore";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -29,3 +30,4 @@ registry.register(classificationImbalanceComponent);
 registry.register(validationStabilityComponent);
 registry.register(validationLockTestComponent);
 registry.register(nestedCvExplorerComponent);
+registry.register(regularizationExploreComponent);

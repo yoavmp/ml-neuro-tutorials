@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "type": "regularization-explore",
+  "title": "Shrink the coefficients",
+  "description": "Course activity for Exercise 5: choose Linear Regression, Ridge, or Lasso and move the regularization strength (alpha) to see how a model's coefficients, predictions, and training/validation error change, on the same 360-feature cortical-thickness recipe used throughout the course.",
+  "data": "../data/regularization_explore.json",
+  "instructions": "Choose a model, then move alpha (regularization strength) on the log-scale slider or pick an exact value from the dropdown. Regularization adds a penalty on the size of the coefficients to the model's fitting objective; alpha controls how strong that penalty is. Watch the observed-vs-predicted plot, the coefficient bars, and the training/validation MSE update together. Linear Regression has no alpha -- it is shown as the unregularized baseline. Only training and validation numbers are shown here; the test set stays locked.",
+  "defaultModel": "ridge",
+  "linearRegressionNote": "Linear Regression has no regularization strength to set: it is the unregularized baseline shown for comparison. Choose Ridge or Lasso to use the alpha control.",
+  "coefficientDisplayNote": "This chart shows a fixed set of the largest-magnitude standardized coefficients at the current alpha -- a display choice so the chart stays readable, not a second feature-selection step. All 360 features are used to fit every model shown here (except where Lasso has shrunk a coefficient to exactly zero).",
+  "reflectionPrompts": [
+    "Switch between Ridge and Lasso at a similar validation MSE. Which one changes the number of nonzero coefficients, and which mostly keeps many small coefficients?",
+    "Increase alpha well past the best validation value for either model. What happens to the coefficient bars and to validation MSE?",
+    "A coefficient reaches exactly zero for Lasso at some alpha. Does that prove the corresponding brain region has nothing to do with age?",
+    "Should you choose alpha using the training curve or the validation curve? Why?"
+  ]
+}

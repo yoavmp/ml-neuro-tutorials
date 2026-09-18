@@ -78,6 +78,11 @@ const CHARTS = [
     query: "../configs/nested_cv_explorer.json",
     plotTestId: "nested-cv-inner-plot",
   },
+  {
+    activity: "regularization-explore",
+    query: "../configs/regularization_explore.json",
+    plotTestId: "regularization-predictions-plot",
+  },
 ];
 
 test.describe("shared Plotly presentation policy", () => {

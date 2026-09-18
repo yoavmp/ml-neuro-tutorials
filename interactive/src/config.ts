@@ -319,6 +319,20 @@ const nestedCvExplorerConfig = z
   })
   .strict();
 
+const regularizationExploreModel = z.enum(["linear", "ridge", "lasso"]);
+
+const regularizationExploreConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("regularization-explore"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultModel: regularizationExploreModel,
+    linearRegressionNote: z.string().min(1, "config.linearRegressionNote must be a non-empty string"),
+    coefficientDisplayNote: z.string().min(1, "config.coefficientDisplayNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -336,6 +350,7 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   validationStabilityConfig,
   validationLockTestConfig,
   nestedCvExplorerConfig,
+  regularizationExploreConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -351,6 +366,8 @@ export type ClassificationImbalanceConfig = z.infer<typeof classificationImbalan
 export type ValidationStabilityConfig = z.infer<typeof validationStabilityConfig>;
 export type ValidationLockTestConfig = z.infer<typeof validationLockTestConfig>;
 export type NestedCvExplorerConfig = z.infer<typeof nestedCvExplorerConfig>;
+export type RegularizationExploreModel = z.infer<typeof regularizationExploreModel>;
+export type RegularizationExploreConfig = z.infer<typeof regularizationExploreConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
