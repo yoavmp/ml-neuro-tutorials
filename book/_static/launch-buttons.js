@@ -21,7 +21,7 @@
  * This is a static, explicit page -> portable-notebook mapping (checked by
  * interactive/e2e-book/launch-buttons.spec.ts against the *built* HTML), not a
  * guess from the current URL pattern: unmapped pages (Introduction, Syllabus,
- * Contents, and the placeholder Exercises 5-12, which have no portable
+ * Contents, and the placeholder Exercises 6-12, which have no portable
  * notebook yet) get no button.
  */
 (function () {
@@ -41,6 +41,8 @@
       "book/downloads/chapter_03/exercise_03_portable.ipynb",
     "chapters/chapter_04/exercise_04.html":
       "book/downloads/chapter_04/exercise_04_portable.ipynb",
+    "chapters/chapter_05/exercise_05.html":
+      "book/downloads/chapter_05/exercise_05_portable.ipynb",
   };
 
   function portableFor(pathname) {
