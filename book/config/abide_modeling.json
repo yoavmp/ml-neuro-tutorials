@@ -689,7 +689,12 @@
       ],
       "random_forest_max_features": 19,
       "random_forest_max_features_note": "round(sqrt(360)) = 19, a commonly used default for randomized feature subsampling. An alternative candidate, p/3=120 (a textbook regression heuristic), was also audited (see scripts/export_tree_ensemble_widget.py); sqrt(p) was kept because it was decided before either candidate's validation outcome was compared, not selected afterward to manufacture a preferred result.",
-      "note": "Each of the 5 deterministic replicates draws 70% of the dev-split fitting partition (395 of 564 rows) without replacement at a predefined seed; every model in a replicate trains on the identical subset and is scored on the identical fixed validation partition (n_val=189). Bagging and Random Forest additionally perform their own internal bootstrap sampling."
+      "note": "Each of the 5 deterministic replicates draws 70% of the dev-split fitting partition (395 of 564 rows) without replacement at a predefined seed; every model in a replicate trains on the identical subset and is scored on the identical fixed validation partition (n_val=189). Bagging and Random Forest additionally perform their own internal bootstrap sampling.",
+      "fixed_prediction_replicate": {
+        "index": 0,
+        "seed": 0,
+        "note": "WP30 sec 5: the 'One Tree or Many?' widget's observed-vs-predicted panel always uses this one fixed, predeclared training sample (the first replicate in the exported artifact) -- there is no student-visible replicate/seed selector. The distribution and ensemble-size panels still aggregate across all 5 replicate_seeds above."
+      }
     },
     "fair_comparison": {
       "bundle": "all-eligible",
@@ -706,6 +711,28 @@
       "n_estimators": 50,
       "random_forest_max_features": 19,
       "note": "Section 6's identical-fold comparison of DecisionTreeRegressor, BaggingRegressor, and RandomForestRegressor, all with the same fixed complexity settings declared above -- no hyperparameter search."
+    },
+    "classification_complexity_curve": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "min_samples_leaf": 5,
+      "random_state": 42,
+      "depth_grid": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "cv": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+      "note": "WP30 sec 4: a bounded, conditional audit of whether an autism classification tree usefully contrasts with the age-regression complexity curve above. Cohort, target coding, and feature recipe are identical to classification.canonical_recipe / classification.positive_class / classification.negative_class (Exercise 3): the full eligible cohort (group present, n as audited), autism=1/control=0, all-eligible x CT (p=360). min_samples_leaf=5 is fixed by course design before viewing the curve, matching decision_tree.complexity_curve's own regression setting for consistency (not scanned for a favorable picture). Mean training/validation ROC AUC are computed by 5-fold stratified cross-validation over the full eligible cohort; classification.holdout_split's locked test partition is never touched by this audit. Whether a second, classification-tree figure is added to the notebook is decided by a fixed rule (WP30 sec 4.2), evaluated exactly once against this configuration's result and not adjusted afterward -- see scripts/decision_tree_model_audit_result.json.classification_complexity_curve.inclusion_rule and WPs/reports/WP30_REPORT.md for the actual outcome."
     },
     "audit_script": "scripts/decision_tree_model_audit.py",
     "audit_result": "scripts/decision_tree_model_audit_result.json",

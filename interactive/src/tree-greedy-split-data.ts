@@ -57,11 +57,29 @@ const round = z
   })
   .strict();
 
+const generatingProcess = z
+  .object({
+    formula: z.string().min(1),
+    x1: z.object({ distribution: z.string().min(1), mean: z.number(), sd: z.number().positive() }).strict(),
+    x2: z.object({ distribution: z.string().min(1), mean: z.number(), sd: z.number().positive() }).strict(),
+    intercept: z.number(),
+    beta1: z.number(),
+    beta2: z.number(),
+    gamma: z.number(),
+    noiseSD: z.number().positive(),
+    nObservations: z.number().int().positive(),
+    seedSearchRange: z.tuple([z.number().int(), z.number().int()]),
+    selectedSeed: z.number().int().nonnegative(),
+    selectionNote: z.string().min(1),
+  })
+  .strict();
+
 export const treeGreedySplitDataSchema = z
   .object({
     schemaVersion: z.literal(1),
     activity: z.literal("tree-greedy-split"),
     syntheticDataNote: z.string().min(1),
+    generatingProcess,
     features: z
       .object({
         x1: z.object({ name: z.string().min(1), label: z.string().min(1) }).strict(),

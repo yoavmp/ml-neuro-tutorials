@@ -39,8 +39,11 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
   let theme = getPlotlyTheme(getActiveTheme());
   let destroyed = false;
 
-  const seeds = data.replicates.map((r) => r.seed);
-  let replicateSeed = seeds.includes(config.defaultReplicateSeed) ? config.defaultReplicateSeed : seeds[0]!;
+  // WP30: the prediction panel always uses one fixed, predeclared training
+  // sample -- the first replicate in the data artifact -- never a
+  // student-visible seed selector. The distribution and ensemble-size
+  // panels still aggregate across every audited replicate.
+  const fixedReplicate = data.replicates[0]!;
   let nTrees = data.nTreesGrid.includes(config.defaultNTrees) ? config.defaultNTrees : data.nTreesGrid[0]!;
   let highlightModel: TreeEnsembleCompareHighlight = config.defaultHighlightModel;
 
@@ -67,32 +70,16 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
   cohortLine.className = "widget-stats";
   cohortLine.setAttribute("data-testid", "tree-ensemble-cohort");
   cohortLine.textContent =
-    `Each training replicate draws ${Math.round(data.settings.replicateFraction * 100)}% of the ` +
-    `${data.settings.replicatePoolSize}-participant fitting pool without replacement. Fixed validation set: ` +
+    `Each of ${data.replicates.length} training replicates draws ${Math.round(data.settings.replicateFraction * 100)}% ` +
+    `of the ${data.settings.replicatePoolSize}-participant fitting pool without replacement. Fixed validation set: ` +
     `${data.split.devSplit.nVal} participants, identical across every replicate and model. Feature recipe: ` +
-    `${data.featureRecipe.featureCount} cortical-thickness features, the same as Exercises 2, 4, and 5.`;
+    `${data.featureRecipe.featureCount} cortical-thickness features, the same as Exercises 2, 4, and 5. ` +
+    `MSE is lower-is-better throughout.`;
   container.appendChild(cohortLine);
 
   // --- controls ---------------------------------------------------------
   const controls = document.createElement("div");
   controls.className = "widget-controls";
-
-  const replicateGroup = document.createElement("div");
-  replicateGroup.className = "widget-control";
-  const replicateLabel = document.createElement("label");
-  replicateLabel.setAttribute("for", "tree-ensemble-replicate");
-  replicateLabel.textContent = "Training replicate:";
-  const replicateSelect = document.createElement("select");
-  replicateSelect.id = "tree-ensemble-replicate";
-  replicateSelect.setAttribute("data-testid", "tree-ensemble-replicate-select");
-  seeds.forEach((s, i) => {
-    const opt = document.createElement("option");
-    opt.value = String(s);
-    opt.textContent = `Replicate ${i + 1} (seed ${s})`;
-    replicateSelect.appendChild(opt);
-  });
-  replicateGroup.append(replicateLabel, replicateSelect);
-  controls.appendChild(replicateGroup);
 
   const nTreesGroup = document.createElement("div");
   nTreesGroup.className = "widget-control";
@@ -135,6 +122,11 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
   p1Heading.textContent = "Performance across training replicates";
   container.appendChild(p1Heading);
 
+  const p1Caption = document.createElement("p");
+  p1Caption.className = "widget-note";
+  p1Caption.textContent = "MSE (years²): lower is better.";
+  container.appendChild(p1Caption);
+
   const distPlot = document.createElement("div");
   distPlot.className = "widget-plot";
   distPlot.setAttribute("data-testid", "tree-ensemble-distribution-plot");
@@ -147,6 +139,11 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
   p2Heading.textContent = "Effect of ensemble size";
   container.appendChild(p2Heading);
 
+  const p2Caption = document.createElement("p");
+  p2Caption.className = "widget-note";
+  p2Caption.textContent = "MSE (years²): lower is better.";
+  container.appendChild(p2Caption);
+
   const sizePlot = document.createElement("div");
   sizePlot.className = "widget-plot";
   sizePlot.setAttribute("data-testid", "tree-ensemble-size-plot");
@@ -156,7 +153,7 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
   // --- panel 3 ---------------------------------------------------------
   const p3Heading = document.createElement("h2");
   p3Heading.className = "widget-subhead";
-  p3Heading.textContent = "Observed vs predicted age (selected replicate and model)";
+  p3Heading.textContent = "Observed vs predicted age (fixed training sample, selected model)";
   container.appendChild(p3Heading);
 
   const predictionMetrics = document.createElement("p");
@@ -186,12 +183,8 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
 
   // --- helpers ---------------------------------------------------------
 
-  function currentReplicate() {
-    return data.replicates.find((r) => r.seed === replicateSeed)!;
-  }
-
   function pointFor(model: TreeEnsembleCompareHighlight, n: number): TreeEnsembleModelPoint {
-    const r = currentReplicate();
+    const r = fixedReplicate;
     if (model === "single-tree") return r.singleTree;
     if (model === "bagging") return r.bagging.byNTrees[String(n)]!;
     return r.randomForest.byNTrees[String(n)]!;
@@ -223,7 +216,7 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
 
     const layout = buildPlotLayout(theme, {
       height: 320,
-      yaxis: { title: { text: `Validation MSE across ${data.replicates.length} replicates (lower is better)` } },
+      yaxis: { title: { text: "MSE (years²)" } },
     });
     await Plotly.react(distPlot, traces, layout, PLOT_CONFIG);
     if (destroyed) return;
@@ -276,7 +269,7 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
       height: 320,
       showlegend: true,
       xaxis: { title: { text: "Number of trees" }, type: "log" as const },
-      yaxis: { title: { text: "Mean validation MSE across replicates (lower is better)" } },
+      yaxis: { title: { text: "MSE (years²)" } },
     });
     await Plotly.react(sizePlot, [singleTrace, bagTrace, rfTrace], layout, PLOT_CONFIG);
     if (destroyed) return;
@@ -345,14 +338,9 @@ function mount(args: MountArgs<TreeEnsembleCompareConfig, TreeEnsembleCompareDat
     await Promise.all([drawDistribution(), drawSizeCurve(), drawPrediction()]);
   }
 
-  replicateSelect.value = String(replicateSeed);
   nTreesSelect.value = String(nTrees);
   modelSelect.value = highlightModel;
 
-  replicateSelect.addEventListener("change", () => {
-    replicateSeed = Number(replicateSelect.value);
-    void draw();
-  });
   nTreesSelect.addEventListener("change", () => {
     nTrees = Number(nTreesSelect.value);
     void draw();

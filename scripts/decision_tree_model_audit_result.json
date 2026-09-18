@@ -1,4 +1,58 @@
 {
+  "classification_complexity_curve": {
+    "best_depth": 3,
+    "best_depth_index": 2,
+    "best_val_auc": 0.531971,
+    "cv": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+    "depth2_val_auc": 0.507889,
+    "depth_grid": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "inclusion_rule": {
+      "depth_at_least_3": true,
+      "include_figure": true,
+      "margin_at_least_0_01": true
+    },
+    "margin_over_depth2": 0.024082,
+    "min_samples_leaf": 5,
+    "n": 1004,
+    "n_negative": 541,
+    "n_positive": 463,
+    "p": 360,
+    "train_auc": [
+      0.559869,
+      0.615974,
+      0.676381,
+      0.742741,
+      0.796864,
+      0.85065,
+      0.894352,
+      0.924183,
+      0.946564,
+      0.964583
+    ],
+    "val_auc": [
+      0.508602,
+      0.507889,
+      0.531971,
+      0.510403,
+      0.496251,
+      0.499699,
+      0.517886,
+      0.51896,
+      0.527962,
+      0.525348
+    ]
+  },
   "complexity_curve": {
     "best_depth": 2,
     "best_depth_index": 1,
@@ -127,7 +181,7 @@
     }
   },
   "generated_by": "scripts/decision_tree_model_audit.py --run",
-  "runtime_seconds": 21.7,
+  "runtime_seconds": 23.4,
   "single_tree": {
     "depth": 3,
     "features": [

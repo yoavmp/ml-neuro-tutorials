@@ -32,7 +32,9 @@ test.describe("Chapter 6 built page — title and structure", () => {
     expect(bodyText.toLowerCase()).not.toContain("adaboost");
     expect(bodyText.toLowerCase()).not.toContain("gradient boosting");
     expect(bodyText.toLowerCase()).not.toContain("xgboost");
-    expect(bodyText.toLowerCase()).not.toContain("classification tree");
+    // WP30 sec 4: the conditional classification-tree complexity curve's
+    // inclusion rule passed for this audit, so a classification-tree panel
+    // is expected in the built page (unlike WP29, which never added one).
 
     await expect(page.locator(GREEDY_IFRAME_SELECTOR)).toHaveCount(1);
     await expect(page.locator(ENSEMBLE_IFRAME_SELECTOR)).toHaveCount(1);
@@ -73,7 +75,9 @@ test.describe("Chapter 6 built page — embedded Build a Tree Greedily activity"
     await frame.locator('[data-testid="tree-greedy-reveal-button"]').click();
     const revealText = await frame.locator('[data-testid="tree-greedy-reveal-panel"]').innerText();
     expect(revealText).toContain("Greedy optimum");
-    expect(revealText.toLowerCase()).toContain("x1");
+    // WP30: the widget shows the student-facing "Brain measure 1/2" labels,
+    // not the raw "x1"/"x2" schema field names.
+    expect(revealText.toLowerCase()).toContain("brain measure 1");
   });
 });
 
@@ -92,6 +96,7 @@ test.describe("Chapter 6 built page — embedded One Tree or Many? activity", ()
     expect(dataResp?.status, "data HTTP status").toBe(200);
 
     await expect(frame.locator('[data-testid="tree-ensemble-model-select"]')).toHaveValue("random-forest");
+    await expect(frame.locator('[data-testid="tree-ensemble-replicate-select"]')).toHaveCount(0);
     await expect(frame.locator('[data-testid="tree-ensemble-distribution-plot"]')).toHaveAttribute(
       "data-render-count",
       /[1-9]/,
@@ -106,7 +111,7 @@ test.describe("Chapter 6 built page — embedded One Tree or Many? activity", ()
     );
   });
 
-  test("browser refresh restores the configured default replicate and model", async ({ page }) => {
+  test("browser refresh restores the configured default model", async ({ page }) => {
     await page.goto(CHAPTER_URL);
     let frame = await frameFor(page, ENSEMBLE_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");

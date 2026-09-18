@@ -45,20 +45,23 @@ test.describe("tree-ensemble-compare", () => {
     expect(metrics).toContain("feature-subset size");
   });
 
-  test("changing training replicate updates the prediction plot", async ({ page }) => {
+  test("has no visible training-replicate/seed selector", async ({ page }) => {
     await page.goto(appUrl(QUERY));
     await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    await expect(page.locator('[data-testid="tree-ensemble-replicate-select"]')).toHaveCount(0);
+    await expect(page.getByText("Training replicate:", { exact: false })).toHaveCount(0);
+  });
 
-    const renderCountBefore = await page
-      .locator('[data-testid="tree-ensemble-prediction-plot"]')
-      .getAttribute("data-render-count");
-    await page.locator('[data-testid="tree-ensemble-replicate-select"]').selectOption({ index: 1 });
-    await expect(async () => {
-      const current = await page
-        .locator('[data-testid="tree-ensemble-prediction-plot"]')
-        .getAttribute("data-render-count");
-      expect(current).not.toBe(renderCountBefore);
-    }).toPass({ timeout: 3000 });
+  test("both MSE panels use the shortened y-axis title", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    for (const testid of ["tree-ensemble-distribution-plot", "tree-ensemble-size-plot"]) {
+      const title = await page
+        .locator(`[data-testid="${testid}"]`)
+        .evaluate((el) => (el as unknown as { _fullLayout?: { yaxis?: { title?: { text?: string } } } })._fullLayout
+          ?.yaxis?.title?.text);
+      expect(title).toBe("MSE (years²)");
+    }
   });
 
   test("selecting the single tree disables the number-of-trees control", async ({ page }) => {

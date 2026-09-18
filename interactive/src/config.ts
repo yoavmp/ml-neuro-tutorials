@@ -346,10 +346,13 @@ const treeGreedySplitConfig = z
   })
   .strict();
 
-// WP29 (Exercise 6): "One Tree or Many?" -- a single regression tree,
+// WP29/WP30 (Exercise 6): "One Tree or Many?" -- a single regression tree,
 // bagging, and a Random Forest compared across five deterministic training
 // replicates (scripts/export_tree_ensemble_widget.py), all evaluated on one
-// fixed validation set.
+// fixed validation set. WP30: the prediction panel always uses one fixed,
+// predeclared training sample (the first replicate in the data artifact) --
+// there is no visible replicate/seed selector, so the config carries no
+// default-replicate field.
 const treeEnsembleCompareHighlight = z.enum(["single-tree", "bagging", "random-forest"]);
 
 const treeEnsembleCompareConfig = z
@@ -357,7 +360,6 @@ const treeEnsembleCompareConfig = z
     ...baseFields,
     type: z.literal("tree-ensemble-compare"),
     instructions: z.string().min(1, "config.instructions must be a non-empty string"),
-    defaultReplicateSeed: z.number().int().nonnegative(),
     defaultNTrees: z.number().int().positive(),
     defaultHighlightModel: treeEnsembleCompareHighlight,
     randomForestNote: z.string().min(1, "config.randomForestNote must be a non-empty string"),

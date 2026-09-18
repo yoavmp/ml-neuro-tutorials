@@ -52,8 +52,22 @@ function base() {
   return {
     schemaVersion: 1 as const,
     activity: "tree-greedy-split" as const,
-    syntheticDataNote: "This dataset is synthetic.",
-    features: { x1: { name: "x1", label: "X1" }, x2: { name: "x2", label: "X2" } },
+    syntheticDataNote: "This dataset is simulated, not ABIDE observations.",
+    generatingProcess: {
+      formula: "y = INTERCEPT + BETA1*z(x1) + BETA2*z(x2) + GAMMA*z(x1)*z(x2) + noise",
+      x1: { distribution: "Normal", mean: 5.5, sd: 2.0 },
+      x2: { distribution: "Normal", mean: 5.5, sd: 2.0 },
+      intercept: 20.0,
+      beta1: 6.0,
+      beta2: 5.0,
+      gamma: 1.5,
+      noiseSD: 2.5,
+      nObservations: 16,
+      seedSearchRange: [0, 49] as [number, number],
+      selectedSeed: 17,
+      selectionNote: "first passing seed",
+    },
+    features: { x1: { name: "x1", label: "Brain measure 1" }, x2: { name: "x2", label: "Brain measure 2" } },
     observations,
     rounds: [
       round("root", "Root node", allIds),
@@ -99,6 +113,12 @@ describe("parseTreeGreedySplitData", () => {
   it("rejects an activeObservationIds entry that names an unknown observation", () => {
     const b = base();
     b.rounds[0]!.activeObservationIds = [0, 1, 2, 999];
+    expect(parseTreeGreedySplitData(b).ok).toBe(false);
+  });
+
+  it("rejects a missing generatingProcess block", () => {
+    const b = base() as Record<string, unknown>;
+    delete b.generatingProcess;
     expect(parseTreeGreedySplitData(b).ok).toBe(false);
   });
 

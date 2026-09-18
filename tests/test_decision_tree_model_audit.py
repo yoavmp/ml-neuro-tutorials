@@ -64,6 +64,39 @@ class CommittedResult(unittest.TestCase):
         cc = self.result["complexity_curve"]
         self.assertNotEqual(cc["best_depth"], cc["depth_grid"][-1])
 
+    def test_classification_complexity_curve_uses_the_exercise_3_recipe_and_cv(self):
+        ccc = self.result["classification_complexity_curve"]
+        self.assertEqual(ccc["p"], 360)
+        self.assertEqual(ccc["cv"], "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)")
+        self.assertEqual(ccc["min_samples_leaf"], dta.DT["classification_complexity_curve"]["min_samples_leaf"])
+        self.assertEqual(ccc["depth_grid"], list(range(1, 11)))
+
+    def test_classification_complexity_curve_uses_the_full_eligible_cohort_not_a_holdout(self):
+        # n must be the full eligible cohort (group present), not the
+        # smaller classification.holdout_split test partition -- this audit
+        # never touches that locked outer test set.
+        ccc = self.result["classification_complexity_curve"]
+        self.assertEqual(ccc["n"], ccc["n_positive"] + ccc["n_negative"])
+        self.assertGreater(ccc["n"], dta.MANIFEST["classification"]["holdout_split"]["test_size"] * ccc["n"])
+
+    def test_classification_inclusion_rule_is_evaluated_exactly_as_specified(self):
+        ccc = self.result["classification_complexity_curve"]
+        depths = ccc["depth_grid"]
+        val_auc = ccc["val_auc"]
+        rounded = [round(v, 2) for v in val_auc]
+        best_rounded = max(rounded)
+        expected_best_i = min(i for i, v in enumerate(rounded) if v == best_rounded)
+        expected_best_depth = depths[expected_best_i]
+        expected_margin = round(val_auc[expected_best_i] - val_auc[depths.index(2)], 6)
+        self.assertEqual(ccc["best_depth"], expected_best_depth)
+        self.assertEqual(ccc["margin_over_depth2"], expected_margin)
+        self.assertEqual(ccc["inclusion_rule"]["depth_at_least_3"], expected_best_depth >= 3)
+        self.assertEqual(ccc["inclusion_rule"]["margin_at_least_0_01"], expected_margin >= 0.01)
+        self.assertEqual(
+            ccc["inclusion_rule"]["include_figure"],
+            bool(expected_best_depth >= 3 and expected_margin >= 0.01),
+        )
+
     def test_fair_comparison_uses_identical_folds_for_every_model(self):
         fc = self.result["fair_comparison"]
         self.assertEqual(fc["cv"], "KFold(n_splits=5, shuffle=True, random_state=100)")
