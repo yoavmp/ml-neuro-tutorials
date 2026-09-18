@@ -25,7 +25,9 @@ import nbformat
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 NB_PATH = REPO_ROOT / "book" / "chapters" / "chapter_05" / "exercise_05.ipynb"
+PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_05" / "exercise_05_portable.ipynb"
 MANIFEST = json.loads((REPO_ROOT / "book" / "config" / "abide_modeling.json").read_text())
+LAUNCH_BUTTONS_JS = (REPO_ROOT / "book" / "_static" / "launch-buttons.js").read_text(encoding="utf-8")
 
 SECTION_TITLES = [
     "## 1. Why Select Features?",
@@ -117,6 +119,22 @@ class Notebook(unittest.TestCase):
             "https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/"
             "book/downloads/chapter_05/exercise_05_portable.ipynb",
             opening,
+        )
+
+    def test_launch_buttons_js_maps_chapter_5_to_its_portable_notebook(self):
+        self.assertIn(
+            '"chapters/chapter_05/exercise_05.html":\n'
+            '      "book/downloads/chapter_05/exercise_05_portable.ipynb",',
+            LAUNCH_BUTTONS_JS,
+        )
+
+    def test_portable_notebook_exists_and_banner_links_the_published_page(self):
+        self.assertTrue(PORTABLE_PATH.exists())
+        portable = nbformat.read(PORTABLE_PATH, as_version=4)
+        banner = _src(portable.cells[0])
+        self.assertIn(
+            "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html",
+            banner,
         )
 
     def test_eight_numbered_sections_present_in_order(self):

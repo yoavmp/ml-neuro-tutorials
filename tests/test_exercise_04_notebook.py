@@ -446,10 +446,12 @@ class LaunchButtonsAndPlaceholders(unittest.TestCase):
             portable_banner,
         )
 
-    # -- 28. Exercises 5-12 remain placeholders without launch buttons --------
+    # -- 28. Exercises 6-12 remain placeholders without launch buttons --------
+    # (WP28 converted Exercise 5 into a notebook too; see
+    # test_exercise_05_notebook.py for its own launch-link assertions.)
 
-    def test_exercises_5_through_12_remain_placeholders_without_launch_buttons(self):
-        for n in range(5, 13):
+    def test_exercises_6_through_12_remain_placeholders_without_launch_buttons(self):
+        for n in range(6, 13):
             page = f"chapters/chapter_{n:02d}/exercise_{n:02d}.html"
             self.assertNotIn(page, LAUNCH_BUTTONS_JS)
             md_path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md"
