@@ -53,6 +53,46 @@ async function waitForBothPanelsRendered(frame: Frame): Promise<void> {
   );
 }
 
+// `data-render-count` bumping only means `Plotly.react()` resolved -- Plotly's
+// own `automargin` handling can still adjust the SVG's title/tick positions
+// over one or two further animation frames after that promise settles (a
+// well-known Plotly quirk: automargin measures rendered text, then relayouts
+// again to fit it). Measuring geometry immediately after the render-count
+// check can therefore race that internal relayout on a loaded CI runner --
+// this is the actual source of WP28's intermittent clearance failures, not a
+// missing render-count wait. Poll each target element's bounding rect once
+// per animation frame and only proceed once every rect has stopped changing
+// for a few consecutive frames, with a bounded timeout so a genuinely broken
+// layout still fails fast instead of hanging.
+async function waitForStableGeometry(frame: Frame, selectors: string[]): Promise<void> {
+  await frame.evaluate(() => {
+    delete (window as unknown as { __geometryStability?: unknown }).__geometryStability;
+  });
+  await frame.waitForFunction(
+    ({ selectors, stableFrames }) => {
+      const w = window as unknown as {
+        __geometryStability?: { count: number; last: string };
+      };
+      const rects: string[] = [];
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        rects.push(`${r.x.toFixed(2)},${r.y.toFixed(2)},${r.width.toFixed(2)},${r.height.toFixed(2)}`);
+      }
+      const signature = rects.join(";");
+      if (!w.__geometryStability || w.__geometryStability.last !== signature) {
+        w.__geometryStability = { count: 1, last: signature };
+        return false;
+      }
+      w.__geometryStability.count += 1;
+      return w.__geometryStability.count >= stableFrames;
+    },
+    { selectors, stableFrames: 4 },
+    { timeout: 3000, polling: "raf" },
+  );
+}
+
 for (const { name, width, height } of VIEWPORTS) {
   test.describe(`Chapter 5 built page — Exercise 5 plot geometry @ ${name}`, () => {
     test("x-axis title stays fully inside the plot's box, with a clear gap above the ROI-summary disclosure", async ({
@@ -63,6 +103,10 @@ for (const { name, width, height } of VIEWPORTS) {
       const frame = await activityFrame(page);
       await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
       await waitForBothPanelsRendered(frame);
+      await waitForStableGeometry(frame, [
+        '[data-testid="regression-A-plot"]',
+        '[data-testid="regression-A-roi-summary"]',
+      ]);
 
       const plotBox = await frame.locator('[data-testid="regression-A-plot"]').boundingBox();
       const roiSummaryBox = await frame.locator('[data-testid="regression-A-roi-summary"]').boundingBox();
@@ -189,6 +233,10 @@ for (const { name, width, height } of VIEWPORTS) {
           .getAttribute("data-render-count");
         expect(current).not.toBe(renderCountBefore);
       }).toPass({ timeout: 3000 });
+      await waitForStableGeometry(frame, [
+        '[data-testid="regression-A-plot"]',
+        '[data-testid="regression-A-roi-summary"]',
+      ]);
 
       const after = await frame.evaluate(() => {
         const panel = document.querySelector('[data-testid="regression-panel-A"]')!;
