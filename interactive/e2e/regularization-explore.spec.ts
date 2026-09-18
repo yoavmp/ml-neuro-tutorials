@@ -95,5 +95,24 @@ for (const { name, prefix } of BASES) {
       expect(bodyText.toLowerCase()).not.toContain("test r2");
       expect(bodyText.toLowerCase()).not.toContain("held-out");
     });
+
+    test("shows the error panel when pointed at a nonexistent config", async ({ page }) => {
+      await page.goto(appUrl(prefix, "?config=../configs/regularization_explore_missing.json"));
+      await expect(page.locator('[data-testid="widget-error"]')).toBeVisible();
+      await expect(page.locator('[data-testid="widget-error-message"]')).toContainText("HTTP 404");
+    });
+
+    test("is usable at a narrow (390 px) viewport without horizontal document scroll", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 900 });
+      await page.goto(appUrl(prefix, QUERY));
+      await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+      await expect(page.locator('[data-testid="regularization-predictions-plot"]')).toBeVisible();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(1);
+    });
   });
 }
