@@ -1,4 +1,5 @@
-// Pure, unit-tested helpers for the Exercise II model-comparison activity.
+// Pure, unit-tested helpers for the Exercise 5 predefined-feature-set-
+// comparison activity (WP28; previously Exercise II / Exercise 2's Bonus).
 // No DOM, no Plotly. The component (components/regression-compare.ts) turns the
 // selected catalog entry into a scatter of observed vs held-out predicted
 // values; these functions do the arithmetic and the lookups.

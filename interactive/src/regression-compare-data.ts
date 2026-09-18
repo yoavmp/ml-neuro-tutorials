@@ -1,4 +1,5 @@
-// Zod schema + parser for the Exercise II model-comparison catalog artifact
+// Zod schema + parser for the Exercise 5 predefined-feature-set-comparison
+// catalog artifact (WP28; previously Exercise II / Exercise 2's Bonus)
 // (book/_static/widgets/data/abide_regression_models.json, produced by
 // scripts/export_regression_catalog.py). DOM / Plotly free so it can be unit
 // tested and reused independently of the rendering component.
