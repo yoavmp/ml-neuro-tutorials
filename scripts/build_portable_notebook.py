@@ -30,8 +30,8 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,all}``
-(default ``all``) scopes both modes. Exercises 6-12 are placeholder pages
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,all}``
+(default ``all``) scopes both modes. Exercises 7-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
 registered here. The bare ``--write`` / ``--check`` invocations keep working
 and now cover every registered notebook.
@@ -70,6 +70,9 @@ PUBLISHED_PAGE_CH4 = (
 )
 PUBLISHED_PAGE_CH5 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html"
+)
+PUBLISHED_PAGE_CH6 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -663,12 +666,96 @@ CHAPTER_05 = NotebookSpec(
     colab_title="Exercise 5: Regularization and Feature Selection",
 )
 
+_CH6_BANNER = (
+    "# Exercise 6: Decision Trees - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 6 decision-trees\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the\n"
+    "canonical course notebook by `scripts/build_portable_notebook.py`. It is\n"
+    "meant for running or editing the code in Google Colab or in a local\n"
+    "VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH6 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the optional\n"
+    "reproduction of the greedy-splitting calculation -- is kept and\n"
+    "runnable. Questions marked *Think first* are left as open prompts."
+)
+
+_CH6_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH6_GREEDY_IFRAME_REPLACEMENT = (
+    "### Build a tree greedily on the course website\n"
+    "\n"
+    "The interactive activity walks through the greedy splitting algorithm on\n"
+    "a small synthetic dataset: choose a feature and threshold at each active\n"
+    "node, lock your answer, then reveal the greedy optimum and compare.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 6 page:\n"
+    "> <" + PUBLISHED_PAGE_CH6 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> section reproduces the same threshold/MSE calculation directly in\n"
+    "> Python."
+)
+
+_CH6_ENSEMBLE_IFRAME_REPLACEMENT = (
+    "### One tree or many? on the course website\n"
+    "\n"
+    "The interactive activity compares a single regression tree, bagging, and\n"
+    "a Random Forest across five deterministic training replicates and a\n"
+    "range of ensemble sizes, for predicting age from brain structure.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 6 page:\n"
+    "> <" + PUBLISHED_PAGE_CH6 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+CHAPTER_06 = NotebookSpec(
+    key="chapter_06",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_06" / "exercise_06.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_06" / "exercise_06_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH6,
+    banner_source=_CH6_BANNER,
+    setup_source=_CH6_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive greedy-splitting activity for a small synthetic regression tree": (
+            _CH6_GREEDY_IFRAME_REPLACEMENT
+        ),
+        "Interactive comparison of a single tree, bagging, and Random Forest for predicting age from brain structure": (
+            _CH6_ENSEMBLE_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 6: Decision Trees",
+)
+
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
     CHAPTER_03.key: CHAPTER_03,
     CHAPTER_04.key: CHAPTER_04,
     CHAPTER_05.key: CHAPTER_05,
+    CHAPTER_06.key: CHAPTER_06,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).

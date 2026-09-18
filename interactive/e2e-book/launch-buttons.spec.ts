@@ -38,6 +38,13 @@ const CHAPTERS = [
     url: "/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html",
     portable: "book/downloads/chapter_05/exercise_05_portable.ipynb",
   },
+  {
+    // WP29 §6: Exercise 6 is now a complete notebook, with its own portable
+    // notebook and Colab button.
+    name: "Chapter 6",
+    url: "/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html",
+    portable: "book/downloads/chapter_06/exercise_06_portable.ipynb",
+  },
 ];
 
 for (const { name, url, portable } of CHAPTERS) {
@@ -93,10 +100,9 @@ test("a page with no portable-notebook mapping (Introduction) gets no Colab butt
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });
 
-// WP28 §6: Exercises 6-12 remain placeholders after WP28. This replaces the
-// earlier stale assertion that Exercise 4 had no Colab button, and then the
-// intermediate assertion (WP28 §3) that Exercise 5 had none either.
-test("a placeholder exercise page (Exercise 6) gets no Colab button", async ({ page }) => {
-  await page.goto("/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html");
+// WP29 §6: Exercises 7-12 remain placeholders after WP29. This replaces the
+// earlier stale assertion (WP28 §6) that Exercise 6 had no Colab button.
+test("a placeholder exercise page (Exercise 7) gets no Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });

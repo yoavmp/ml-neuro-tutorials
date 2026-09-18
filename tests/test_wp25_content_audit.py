@@ -114,7 +114,7 @@ class SyllabusPageUnchangedTests(unittest.TestCase):
 
 class ExerciseOneThroughTwelveTitles(unittest.TestCase):
     def _title_of(self, n: int) -> str:
-        if n <= 5:
+        if n <= 6:
             import json
 
             path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
@@ -151,7 +151,7 @@ class ExerciseOneThroughTwelveTitles(unittest.TestCase):
 class NoFinalProjectReferences(unittest.TestCase):
     def test_no_final_project_reference_in_any_exercise_1_to_12_page(self):
         for n in range(1, 13):
-            if n <= 5:
+            if n <= 6:
                 path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
             else:
                 path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md"
@@ -160,7 +160,7 @@ class NoFinalProjectReferences(unittest.TestCase):
                 self.assertNotIn(needle, text, (n, needle))
 
     def test_no_final_project_reference_in_portable_notebooks(self):
-        for n in (1, 2, 3, 4, 5):
+        for n in (1, 2, 3, 4, 5, 6):
             path = (
                 REPO_ROOT
                 / "book"
