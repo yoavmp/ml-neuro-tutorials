@@ -140,8 +140,27 @@ function assertDarkFigure(snap: PlotSnapshot, label: string): void {
 test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () => {
   test.describe.configure({ timeout: 60_000 });
 
-  test("Exercise 2 — regression feature-set comparison and KNN exploration: initial dark load", async ({ page }) => {
+  test("Exercise 2 — KNN exploration: initial dark load", async ({ page }) => {
+    // WP28: the regression-compare activity previously checked here moved to
+    // Exercise 5 (see the Exercise 5 test below); Exercise 2's built page now
+    // embeds knn-explore only.
     await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html");
+
+    const exploreFrame = await activityFrame(page, 'iframe[src*="config=../configs/knn_explore.json"]');
+    const exploreSnap = await snapshotPlot(exploreFrame, "knn-scatter-plot");
+    assertDarkFigure(exploreSnap, "knn-explore knn-scatter-plot");
+    expect(exploreSnap.markerColors, "knn-explore scatter: validation points visible (dark palette)").toContain(
+      MARKER_PRIMARY_DARK,
+    );
+    expect(exploreSnap.markerColors, "knn-explore scatter: diagonal reference line visible (dark palette)").toContain(
+      DIAGONAL_LINE_DARK,
+    );
+  });
+
+  test("Exercise 5 — feature-set comparison and regularization exploration: initial dark load", async ({
+    page,
+  }) => {
+    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html");
     const frame = await activityFrame(page, 'iframe[src*="config=../configs/regression_compare.json"]');
 
     for (const testId of ["regression-A-plot", "regression-B-plot"]) {
@@ -155,16 +174,18 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
       );
     }
 
-    // --- KNN exploration: one plot (cheap addition, same already-loaded page) ---
-    const exploreFrame = await activityFrame(page, 'iframe[src*="config=../configs/knn_explore.json"]');
-    const exploreSnap = await snapshotPlot(exploreFrame, "knn-scatter-plot");
-    assertDarkFigure(exploreSnap, "knn-explore knn-scatter-plot");
-    expect(exploreSnap.markerColors, "knn-explore scatter: validation points visible (dark palette)").toContain(
-      MARKER_PRIMARY_DARK,
-    );
-    expect(exploreSnap.markerColors, "knn-explore scatter: diagonal reference line visible (dark palette)").toContain(
-      DIAGONAL_LINE_DARK,
-    );
+    // Cheap addition, same already-loaded page.
+    const regFrame = await activityFrame(page, 'iframe[src*="config=../configs/regularization_explore.json"]');
+    const regSnap = await snapshotPlot(regFrame, "regularization-predictions-plot");
+    assertDarkFigure(regSnap, "regularization-explore regularization-predictions-plot");
+    expect(
+      regSnap.markerColors,
+      "regularization-explore: validation scatter uses the dark palette",
+    ).toContain(MARKER_PRIMARY_DARK);
+    expect(
+      regSnap.markerColors,
+      "regularization-explore: diagonal reference line uses the dark palette",
+    ).toContain(DIAGONAL_LINE_DARK);
   });
 
   test("Exercise 3 — classification threshold ROC and class-imbalance: initial dark load", async ({ page }) => {
