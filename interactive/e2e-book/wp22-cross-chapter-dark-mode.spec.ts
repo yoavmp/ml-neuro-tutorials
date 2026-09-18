@@ -188,6 +188,22 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     ).toContain(DIAGONAL_LINE_DARK);
   });
 
+  test("Exercise 6 — one tree or many?: initial dark load", async ({ page }) => {
+    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html");
+    const frame = await activityFrame(page, 'iframe[src*="config=../configs/tree_ensemble_compare.json"]');
+
+    const snap = await snapshotPlot(frame, "tree-ensemble-prediction-plot");
+    assertDarkFigure(snap, "tree-ensemble-compare tree-ensemble-prediction-plot");
+    expect(
+      snap.markerColors,
+      "tree-ensemble-compare: validation scatter uses the dark palette",
+    ).toContain(MARKER_PRIMARY_DARK);
+    expect(
+      snap.markerColors,
+      "tree-ensemble-compare: diagonal reference line uses the dark palette",
+    ).toContain(DIAGONAL_LINE_DARK);
+  });
+
   test("Exercise 3 — classification threshold ROC and class-imbalance: initial dark load", async ({ page }) => {
     await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html");
 
