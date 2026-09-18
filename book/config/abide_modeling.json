@@ -28,7 +28,14 @@
       "right_on": "SUB_ID",
       "how": "left",
       "note": "Every one of the 1004 brain-table participants is present in the phenotypic file (0 unmatched). The merged modelling table is 1004 rows.",
-      "phenotype_columns_kept": ["FIQ", "VIQ", "PIQ", "SRS_TOTAL_RAW", "ADOS_G_TOTAL", "ADI_R_SOCIAL_TOTAL_A"]
+      "phenotype_columns_kept": [
+        "FIQ",
+        "VIQ",
+        "PIQ",
+        "SRS_TOTAL_RAW",
+        "ADOS_G_TOTAL",
+        "ADI_R_SOCIAL_TOTAL_A"
+      ]
     }
   },
   "atlas": {
@@ -47,26 +54,268 @@
         "note": "WP14 audit (raw abide2.tsv, pinned commit e4eed3c4): this one HCP-MMP1 parietal parcel is the only ROI whose two hemisphere columns do not share a common raw suffix -- the left-hemisphere column is 'fs<measure>_L_5L_ROI' and the right-hemisphere column is 'fs<measure>_R_5R_ROI' (never 'fs<measure>_R_5L_ROI' or 'fs<measure>_L_5R_ROI', confirmed for all 4 measures, 1004/1004 participants, zero missing). Both columns are genuine continuous cortical measurements (e.g. CT range 1.30-3.42mm, matching every other parcel's plausible range), not identifiers, aggregates, or malformed fields. WP12/WP13 treated '5L' and '5R' as two separate single-hemisphere-only ROI labels and excluded both from the 'all-eligible' bundle, undercounting the canonical recipe at p=358 instead of 360. This entry corrects that: canonical ROI id '5' is genuinely bilateral like every other parcel, it is just labelled asymmetrically in this source table's column names."
       }
     },
-    "roi_label_inventory": ["1", "10d", "10pp", "10r", "10v", "11l", "13l", "2", "23c", "23d", "24dd", "24dv", "25", "31a", "31pd", "31pv", "33pr", "3a", "3b", "4", "43", "44", "45", "46", "47l", "47m", "47s", "5", "52", "55b", "5m", "5mv", "6a", "6d", "6ma", "6mp", "6r", "6v", "7AL", "7Am", "7PC", "7PL", "7Pm", "7m", "8Ad", "8Av", "8BL", "8BM", "8C", "9-46d", "9a", "9m", "9p", "A1", "A4", "A5", "AAIC", "AIP", "AVI", "DVT", "EC", "FEF", "FFC", "FOP1", "FOP2", "FOP3", "FOP4", "FOP5", "FST", "H", "IFJa", "IFJp", "IFSa", "IFSp", "IP0", "IP1", "IP2", "IPS1", "Ig", "LBelt", "LIPd", "LIPv", "LO1", "LO2", "LO3", "MBelt", "MI", "MIP", "MST", "MT", "OFC", "OP1", "OP2-3", "OP4", "PBelt", "PCV", "PEF", "PF", "PFcm", "PFm", "PFop", "PFt", "PGi", "PGp", "PGs", "PH", "PHA1", "PHA2", "PHA3", "PHT", "PI", "PIT", "POS1", "POS2", "PSL", "PeEc", "Pir", "PoI1", "PoI2", "PreS", "ProS", "RI", "RSC", "SCEF", "SFL", "STGa", "STSda", "STSdp", "STSva", "STSvp", "STV", "TA2", "TE1a", "TE1m", "TE1p", "TE2a", "TE2p", "TF", "TGd", "TGv", "TPOJ1", "TPOJ2", "TPOJ3", "V1", "V2", "V3", "V3A", "V3B", "V3CD", "V4", "V4t", "V6", "V6A", "V7", "V8", "VIP", "VMV1", "VMV2", "VMV3", "VVC", "a10p", "a24", "a24pr", "a32pr", "a47r", "a9-46v", "d23ab", "d32", "i6-8", "p10p", "p24", "p24pr", "p32", "p32pr", "p47r", "p9-46v", "pOFC", "s32", "s6-8", "v23ab"],
+    "roi_label_inventory": [
+      "1",
+      "10d",
+      "10pp",
+      "10r",
+      "10v",
+      "11l",
+      "13l",
+      "2",
+      "23c",
+      "23d",
+      "24dd",
+      "24dv",
+      "25",
+      "31a",
+      "31pd",
+      "31pv",
+      "33pr",
+      "3a",
+      "3b",
+      "4",
+      "43",
+      "44",
+      "45",
+      "46",
+      "47l",
+      "47m",
+      "47s",
+      "5",
+      "52",
+      "55b",
+      "5m",
+      "5mv",
+      "6a",
+      "6d",
+      "6ma",
+      "6mp",
+      "6r",
+      "6v",
+      "7AL",
+      "7Am",
+      "7PC",
+      "7PL",
+      "7Pm",
+      "7m",
+      "8Ad",
+      "8Av",
+      "8BL",
+      "8BM",
+      "8C",
+      "9-46d",
+      "9a",
+      "9m",
+      "9p",
+      "A1",
+      "A4",
+      "A5",
+      "AAIC",
+      "AIP",
+      "AVI",
+      "DVT",
+      "EC",
+      "FEF",
+      "FFC",
+      "FOP1",
+      "FOP2",
+      "FOP3",
+      "FOP4",
+      "FOP5",
+      "FST",
+      "H",
+      "IFJa",
+      "IFJp",
+      "IFSa",
+      "IFSp",
+      "IP0",
+      "IP1",
+      "IP2",
+      "IPS1",
+      "Ig",
+      "LBelt",
+      "LIPd",
+      "LIPv",
+      "LO1",
+      "LO2",
+      "LO3",
+      "MBelt",
+      "MI",
+      "MIP",
+      "MST",
+      "MT",
+      "OFC",
+      "OP1",
+      "OP2-3",
+      "OP4",
+      "PBelt",
+      "PCV",
+      "PEF",
+      "PF",
+      "PFcm",
+      "PFm",
+      "PFop",
+      "PFt",
+      "PGi",
+      "PGp",
+      "PGs",
+      "PH",
+      "PHA1",
+      "PHA2",
+      "PHA3",
+      "PHT",
+      "PI",
+      "PIT",
+      "POS1",
+      "POS2",
+      "PSL",
+      "PeEc",
+      "Pir",
+      "PoI1",
+      "PoI2",
+      "PreS",
+      "ProS",
+      "RI",
+      "RSC",
+      "SCEF",
+      "SFL",
+      "STGa",
+      "STSda",
+      "STSdp",
+      "STSva",
+      "STSvp",
+      "STV",
+      "TA2",
+      "TE1a",
+      "TE1m",
+      "TE1p",
+      "TE2a",
+      "TE2p",
+      "TF",
+      "TGd",
+      "TGv",
+      "TPOJ1",
+      "TPOJ2",
+      "TPOJ3",
+      "V1",
+      "V2",
+      "V3",
+      "V3A",
+      "V3B",
+      "V3CD",
+      "V4",
+      "V4t",
+      "V6",
+      "V6A",
+      "V7",
+      "V8",
+      "VIP",
+      "VMV1",
+      "VMV2",
+      "VMV3",
+      "VVC",
+      "a10p",
+      "a24",
+      "a24pr",
+      "a32pr",
+      "a47r",
+      "a9-46v",
+      "d23ab",
+      "d32",
+      "i6-8",
+      "p10p",
+      "p24",
+      "p24pr",
+      "p32",
+      "p32pr",
+      "p47r",
+      "p9-46v",
+      "pOFC",
+      "s32",
+      "s6-8",
+      "v23ab"
+    ],
     "bilateral_label_count": 180
   },
   "measures": {
-    "CT": {"prefix": "fsCT", "name": "cortical thickness", "unit": "mm"},
-    "Area": {"prefix": "fsArea", "name": "cortical surface area", "unit": "mm^2"},
-    "Vol": {"prefix": "fsVol", "name": "grey-matter volume", "unit": "mm^3"},
-    "LGI": {"prefix": "fsLGI", "name": "local gyrification index", "unit": "unitless"}
+    "CT": {
+      "prefix": "fsCT",
+      "name": "cortical thickness",
+      "unit": "mm"
+    },
+    "Area": {
+      "prefix": "fsArea",
+      "name": "cortical surface area",
+      "unit": "mm^2"
+    },
+    "Vol": {
+      "prefix": "fsVol",
+      "name": "grey-matter volume",
+      "unit": "mm^3"
+    },
+    "LGI": {
+      "prefix": "fsLGI",
+      "name": "local gyrification index",
+      "unit": "unitless"
+    }
   },
-  "non_brain_columns": ["site", "subject", "age", "age_resid", "sex", "group"],
-  "identifier_columns": ["subject", "SUB_ID", "site"],
+  "non_brain_columns": [
+    "site",
+    "subject",
+    "age",
+    "age_resid",
+    "sex",
+    "group"
+  ],
+  "identifier_columns": [
+    "subject",
+    "SUB_ID",
+    "site"
+  ],
   "cohort": {
     "row_count": 1004,
-    "sites": ["ABIDEII-KKI_1", "ABIDEII-GU_1", "ABIDEII-OHSU_1", "ABIDEII-NYU_1", "ABIDEII-BNI_1", "ABIDEII-SDSU_1", "ABIDEII-EMC_1", "ABIDEII-IP_1", "ABIDEII-ONRC_2", "ABIDEII-TCD_1", "ABIDEII-IU_1", "ABIDEII-ETH_1", "ABIDEII-USM_1", "ABIDEII-UCD_1", "ABIDEII-UCLA_1", "ABIDEII-KUL_3", "ABIDEII-NYU_2"],
+    "sites": [
+      "ABIDEII-KKI_1",
+      "ABIDEII-GU_1",
+      "ABIDEII-OHSU_1",
+      "ABIDEII-NYU_1",
+      "ABIDEII-BNI_1",
+      "ABIDEII-SDSU_1",
+      "ABIDEII-EMC_1",
+      "ABIDEII-IP_1",
+      "ABIDEII-ONRC_2",
+      "ABIDEII-TCD_1",
+      "ABIDEII-IU_1",
+      "ABIDEII-ETH_1",
+      "ABIDEII-USM_1",
+      "ABIDEII-UCD_1",
+      "ABIDEII-UCLA_1",
+      "ABIDEII-KUL_3",
+      "ABIDEII-NYU_2"
+    ],
     "n_sites": 17,
-    "group_codes": {"1": "autism", "2": "control"},
-    "group_counts": {"1": 463, "2": 541},
-    "sex_codes": {"1": "male", "2": "female"},
-    "sex_counts": {"1": 765, "2": 239},
-    "age_years": {"min": 5.128, "max": 64.0, "mean": 15.1}
+    "group_codes": {
+      "1": "autism",
+      "2": "control"
+    },
+    "group_counts": {
+      "1": 463,
+      "2": 541
+    },
+    "sex_codes": {
+      "1": "male",
+      "2": "female"
+    },
+    "sex_counts": {
+      "1": 765,
+      "2": 239
+    },
+    "age_years": {
+      "min": 5.128,
+      "max": 64.0,
+      "mean": 15.1
+    }
   },
   "targets": {
     "age": {
@@ -77,7 +326,10 @@
       "meaning": "Age at scan in years; a native column of abide2.tsv itself (no phenotypic-file join needed) and the Yarkoni tutorial's own target.",
       "available_n": 1004,
       "missing_n": 0,
-      "range": [5.128, 64.0],
+      "range": [
+        5.128,
+        64.0
+      ],
       "mean": 15.101,
       "sd": 9.429,
       "structural_note": "Present for every one of the 1004 participants with usable brain data; 0 missing. Spans childhood through late adulthood (5.1-64.0 yr) across all 17 sites.",
@@ -91,7 +343,10 @@
       "meaning": "Full-scale IQ (composite standard score; the exact test instrument varies by site and is not recorded per row in the merged 1004 - FIQ_TEST_TYPE is entirely empty here).",
       "available_n": 908,
       "missing_n": 96,
-      "range": [49.0, 149.0],
+      "range": [
+        49.0,
+        149.0
+      ],
       "mean": 111.1,
       "sd": 15.3,
       "structural_note": "Present at 16 of 17 sites; missing entirely only at ABIDEII-EMC_1 (n=53). Balanced across diagnosis (autism 423, control 485).",
@@ -107,18 +362,56 @@
   },
   "leakage_guard": {
     "principle": "Every column of the model input matrix X must match atlas.column_pattern and name an ROI in roi_label_inventory. Nothing else may enter X.",
-    "forbidden_exact": ["FIQ", "VIQ", "PIQ", "FIQ_TEST_TYPE", "VIQ_TEST_TYPE", "PIQ_TEST_TYPE", "SRS_TOTAL_RAW", "ADOS_G_TOTAL", "ADI_R_SOCIAL_TOTAL_A", "DX_GROUP", "group", "age", "age_resid", "AGE_AT_SCAN", "sex", "SEX", "site", "SITE_ID", "subject", "SUB_ID", "HANDEDNESS_CATEGORY", "CURRENT_MED_STATUS"],
+    "forbidden_exact": [
+      "FIQ",
+      "VIQ",
+      "PIQ",
+      "FIQ_TEST_TYPE",
+      "VIQ_TEST_TYPE",
+      "PIQ_TEST_TYPE",
+      "SRS_TOTAL_RAW",
+      "ADOS_G_TOTAL",
+      "ADI_R_SOCIAL_TOTAL_A",
+      "DX_GROUP",
+      "group",
+      "age",
+      "age_resid",
+      "AGE_AT_SCAN",
+      "sex",
+      "SEX",
+      "site",
+      "SITE_ID",
+      "subject",
+      "SUB_ID",
+      "HANDEDNESS_CATEGORY",
+      "CURRENT_MED_STATUS"
+    ],
     "forbidden_pattern": "(?i)(^|_)(id|sub|subject|participant|site|age|sex|dx|iq|fiq|viq|piq|group|handed|scan|med_status)($|_)"
   },
   "protocol": {
-    "holdout_split": {"test_size": 0.25, "random_state": 42, "stratify": "group"},
+    "holdout_split": {
+      "test_size": 0.25,
+      "random_state": 42,
+      "stratify": "group"
+    },
     "preprocessing": "sklearn Pipeline(StandardScaler(), LinearRegression()); the scaler is fitted on training rows / training folds only. No imputation is needed - the brain features have no missing values and rows missing the target are dropped before splitting.",
     "generalisation_target": "Held-out participants drawn from the same 17 ABIDE-II sites. A random participant split does NOT estimate generalisation to unseen scanners or sites.",
-    "canonical_recipe": {"bundle": "all-eligible", "measures": ["CT"], "note": "Bilateral cortical thickness across every one of the 360 HCP-MMP1 cortical parcels (WP14 audit: all 360 raw columns per measure, confirmed genuine -- see atlas.hemisphere_specific_labels). Age-related cortical thinning is a whole-cortex phenomenon (Bethlehem et al. 2022; Storsve et al. 2014), not one a small literature-specified regional bundle would represent fairly, so the canonical recipe uses the full eligible ROI set for one measure rather than a hand-picked subset. p=360 stays well under n_train (~803 at the full holdout split, ~726 at 5-fold), so ordinary least squares is well posed."},
+    "canonical_recipe": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "note": "Bilateral cortical thickness across every one of the 360 HCP-MMP1 cortical parcels (WP14 audit: all 360 raw columns per measure, confirmed genuine -- see atlas.hemisphere_specific_labels). Age-related cortical thinning is a whole-cortex phenomenon (Bethlehem et al. 2022; Storsve et al. 2014), not one a small literature-specified regional bundle would represent fairly, so the canonical recipe uses the full eligible ROI set for one measure rather than a hand-picked subset. p=360 stays well under n_train (~803 at the full holdout split, ~726 at 5-fold), so ordinary least squares is well posed."
+    },
     "regularisation_preview": {
       "purpose": "WP12 6.1: a short, honest demonstration of what happens when p is comparable to or exceeds n_train, and whether ridge / lasso stabilise it, for BOTH targets.",
       "bundle": "all-eligible",
-      "measures": ["CT", "Area", "Vol", "LGI"],
+      "measures": [
+        "CT",
+        "Area",
+        "Vol",
+        "LGI"
+      ],
       "note": "p=1432 exceeds n_train at every split used in this manifest (holdout ~753-681, 5-fold ~803-726), so ordinary least squares is underdetermined for both age and FIQ here (diagnostic only, never the recommended model). Ridge and lasso are fitted with StandardScaler inside the pipeline and their alpha is chosen by an inner cross-validation on the training partition only - never by consulting held-out or outer-CV score.",
       "ridge_alpha_grid": "np.logspace(-1, 6, 29)",
       "lasso_alpha_grid": "np.logspace(-3, 2, 26)",
@@ -128,8 +421,18 @@
     "sample_size_demo": {
       "purpose": "WP15 sec 2: an isolated demonstration of what training-set size alone does to a fixed, modest linear model's held-out stability and accuracy, decoupled from the whole-cortex canonical recipe's own p=360 near-n=p instability (protocol.canonical_recipe; see the double-descent finding this recipe genuinely produces, documented unchanged in scripts/regression_model_audit_result.json / WPs/reports/WP14_REPORT.md and preserved in Exercise 2's main worked example, section 2-4).",
       "selected_bundle": "sensorimotor_core",
-      "measures": ["CT"],
-      "sizes": [40, 60, 90, 130, 200, 300, "len(y_train)"],
+      "measures": [
+        "CT"
+      ],
+      "sizes": [
+        40,
+        60,
+        90,
+        130,
+        200,
+        300,
+        "len(y_train)"
+      ],
       "audit_script": "scripts/sample_size_audit.py",
       "audit_result": "scripts/sample_size_audit_result.json",
       "note": "sensorimotor_core was selected by a predeclared, training-only audit over 4 candidate compact (<=12-column) bilateral cortical-thickness bundles (sensorimotor_core, early_visual, auditory_core_belt, atlas_order_every_30th), scored ONLY against a fixed inner development split carved from the outer-training partition -- the locked outer test set (protocol.holdout_split) was never consulted while choosing the candidate. All 4 candidates passed the predeclared decision rule (clear upward median-R2 trend, materially narrowing instability, no interpolation-threshold collapse, seed-robust, meaningful final result); sensorimotor_core was the first passing candidate in declaration/source-preference order (a small, well-established literature bundle takes preference over the deterministic atlas-order rule), not the highest-scoring one. Full per-candidate audit table: scripts/sample_size_audit_result.json."
@@ -137,8 +440,33 @@
   },
   "catalog": {
     "target": "age",
-    "measurement_subsets": [["CT"], ["Area"], ["Vol"], ["LGI"], ["CT", "Area"]],
-    "bundles": ["frontoparietal", "frontal", "parietal", "temporal", "occipital", "sensorimotor", "all-eligible"],
+    "measurement_subsets": [
+      [
+        "CT"
+      ],
+      [
+        "Area"
+      ],
+      [
+        "Vol"
+      ],
+      [
+        "LGI"
+      ],
+      [
+        "CT",
+        "Area"
+      ]
+    ],
+    "bundles": [
+      "frontoparietal",
+      "frontal",
+      "parietal",
+      "temporal",
+      "occipital",
+      "sensorimotor",
+      "all-eligible"
+    ],
     "identifiability_rule": "An entry is offered only if its feature count p is below 0.7 * (training n, from protocol.holdout_split). all-eligible x [CT,Area] (p=720) and any entry with p >= that bound is disabled with a visible reason rather than fitted with a pseudo-inverse.",
     "note": "The interactive feature-set comparison activity offers ordinary least squares only, never regularised models; that restriction is about this activity being unregularised OLS, not about p vs n in general (WP12 6.3) - the separate regularisation-preview computation (protocol.regularisation_preview) is where ridge / lasso are used, on the full p=1432 space, computed directly in the notebook rather than exposed as extra activity controls. Trying many entries here is still exploratory model comparison; the held-out score of the best-looking entry is not an unbiased estimate of its performance (WP19: every entry is scored once on the same fixed protocol.holdout_split test participants, not by cross-validation)."
   },
@@ -146,7 +474,9 @@
     "target": "age",
     "canonical_recipe": {
       "bundle": "all-eligible",
-      "measures": ["CT"],
+      "measures": [
+        "CT"
+      ],
       "note": "Identical to protocol.canonical_recipe (p=360), reused so this KNN result is directly comparable to Exercise 2's own OLS result: same participants, split, target, and feature set."
     },
     "dev_split": {
@@ -166,7 +496,9 @@
     "target": "age",
     "canonical_recipe": {
       "bundle": "all-eligible",
-      "measures": ["CT"],
+      "measures": [
+        "CT"
+      ],
       "note": "Identical to protocol.canonical_recipe and knn.canonical_recipe (p=360): Exercise 5 tunes and evaluates Ridge/Lasso on the same predictors as Exercises 2 and 4, not on the p=1432 regularisation_preview space -- feature selection and regularization are this exercise's own topic, not a repeat of the earlier p>n demonstration."
     },
     "dev_split": {
@@ -192,11 +524,19 @@
   },
   "classification": {
     "target": "group",
-    "positive_class": {"code": 1, "label": "autism"},
-    "negative_class": {"code": 2, "label": "control"},
+    "positive_class": {
+      "code": 1,
+      "label": "autism"
+    },
+    "negative_class": {
+      "code": 2,
+      "label": "control"
+    },
     "canonical_recipe": {
       "bundle": "all-eligible",
-      "measures": ["CT"],
+      "measures": [
+        "CT"
+      ],
       "note": "Identical to protocol.canonical_recipe (p=360) and knn.canonical_recipe: the same 360 bilateral cortical-thickness parcels used throughout Exercise 2, so Exercise 3 needs no new feature-selection discussion."
     },
     "holdout_split": {
@@ -221,56 +561,352 @@
       "cohort_size": 400,
       "cohort_size_rationale": "WP17 sec 5: a fixed total N is drawn (without replacement, real participants) for every ratio so the demonstration only ever varies class balance and split strategy, never sample size. N=400 keeps every ratio's larger class within the available pool at 95:5 (380 of 541 available control participants) and every ratio's smaller class within the available pool at 50:50 (200 of 463 available autism participants), while making 95:5 meaningfully sparse: 20 minority (autism) participants total, about 15 in a stratified 75% train partition and about 5 in a stratified 25% test partition -- few enough to make the imbalance concrete, not so few that a stratified test partition becomes structurally impossible.",
       "ratios": [
-        {"key": "50:50", "majorityPct": 0.50, "minorityPct": 0.50},
-        {"key": "60:40", "majorityPct": 0.60, "minorityPct": 0.40},
-        {"key": "70:30", "majorityPct": 0.70, "minorityPct": 0.30},
-        {"key": "80:20", "majorityPct": 0.80, "minorityPct": 0.20},
-        {"key": "90:10", "majorityPct": 0.90, "minorityPct": 0.10},
-        {"key": "95:5", "majorityPct": 0.95, "minorityPct": 0.05}
+        {
+          "key": "50:50",
+          "majorityPct": 0.5,
+          "minorityPct": 0.5
+        },
+        {
+          "key": "60:40",
+          "majorityPct": 0.6,
+          "minorityPct": 0.4
+        },
+        {
+          "key": "70:30",
+          "majorityPct": 0.7,
+          "minorityPct": 0.3
+        },
+        {
+          "key": "80:20",
+          "majorityPct": 0.8,
+          "minorityPct": 0.2
+        },
+        {
+          "key": "90:10",
+          "majorityPct": 0.9,
+          "minorityPct": 0.1
+        },
+        {
+          "key": "95:5",
+          "majorityPct": 0.95,
+          "minorityPct": 0.05
+        }
       ],
       "majority_class": "control",
       "minority_class": "autism",
       "cohort_resample_seed_base": 20000,
       "cohort_resample_note": "For each ratio, the majority/minority participants are drawn once, without replacement, using random_state = cohort_resample_seed_base + ratio_index (0-5, in the ratios list order above) -- fixed per ratio, independent of the split seeds below, so every split seed for a given ratio compares the exact same cohort.",
-      "split_seeds": [0, 1, 2, 3, 4],
+      "split_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
       "split_seeds_note": "A predetermined selector for split-to-split variability only: each seed drives one stratified train_test_split(test_size=0.25, random_state=seed, stratify=y) of the same fixed per-ratio cohort, using the fixed C in classification.worked_example_C throughout. Stratification is an implementation detail here, not a separate comparison (WP18 sec 4)."
+    }
+  },
+  "decision_tree": {
+    "target": "age",
+    "canonical_recipe": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "note": "Identical to protocol.canonical_recipe (p=360): the tree-complexity curve (section 3) and the fair model comparison (section 6) use the same predictors as Exercises 2, 4, and 5."
+    },
+    "dev_split": {
+      "test_size": 0.25,
+      "random_state": 7,
+      "stratify": "group",
+      "note": "Identical to knn.dev_split / regularization.dev_split: splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189). The outer test set (251 rows, protocol.holdout_split) is never touched anywhere in this exercise."
+    },
+    "single_tree": {
+      "bundle": "sensorimotor_core",
+      "measures": [
+        "CT"
+      ],
+      "features": [
+        "fsCT_L_3a_ROI",
+        "fsCT_R_2_ROI"
+      ],
+      "feature_selection_note": "The two largest-magnitude training-partition (outer-training, 753 rows) correlates with age within the compact 5-ROI sensorimotor_core bundle -- not a search across the full 360-column recipe. fsCT_L_3a_ROI: r=-0.498; fsCT_R_2_ROI: r=-0.491.",
+      "settings": {
+        "max_depth": 3,
+        "min_samples_leaf": 20,
+        "random_state": 42
+      },
+      "settings_note": "The exact settings suggested by the course brief, audited and confirmed to produce a readable, non-degenerate 8-leaf tree on this feature pair (fit on the dev-split fitting partition, n_fit=564; evaluated on its validation partition, n_val=189)."
+    },
+    "complexity_curve": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "min_samples_leaf": 5,
+      "random_state": 42,
+      "depth_grid": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "note": "Fit on the dev-split fitting partition (n_fit=564, full p=360 recipe) and scored on its validation partition (n_val=189). Validation MSE is minimised at depth=2 and rises after depth=3, while training MSE keeps falling -- the section's overfitting illustration."
+    },
+    "ensemble": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "replicate_pool": "dev_split.fit",
+      "replicate_fraction": 0.7,
+      "replicate_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "fixed_validation": "dev_split.val",
+      "tree_settings": {
+        "max_depth": 6,
+        "min_samples_leaf": 5,
+        "random_state": 42
+      },
+      "n_trees_grid": [
+        1,
+        5,
+        10,
+        25,
+        50,
+        100
+      ],
+      "random_forest_max_features": 19,
+      "random_forest_max_features_note": "round(sqrt(360)) = 19, a commonly used default for randomized feature subsampling. An alternative candidate, p/3=120 (a textbook regression heuristic), was also audited (see scripts/export_tree_ensemble_widget.py); sqrt(p) was kept because it was decided before either candidate's validation outcome was compared, not selected afterward to manufacture a preferred result.",
+      "note": "Each of the 5 deterministic replicates draws 70% of the dev-split fitting partition (395 of 564 rows) without replacement at a predefined seed; every model in a replicate trains on the identical subset and is scored on the identical fixed validation partition (n_val=189). Bagging and Random Forest additionally perform their own internal bootstrap sampling."
+    },
+    "fair_comparison": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "cv": "KFold(n_splits=5, shuffle=True, random_state=100)",
+      "cohort": "full eligible cohort (n=1004), not the outer holdout split",
+      "tree_settings": {
+        "max_depth": 6,
+        "min_samples_leaf": 5,
+        "random_state": 42
+      },
+      "n_estimators": 50,
+      "random_forest_max_features": 19,
+      "note": "Section 6's identical-fold comparison of DecisionTreeRegressor, BaggingRegressor, and RandomForestRegressor, all with the same fixed complexity settings declared above -- no hyperparameter search."
+    },
+    "audit_script": "scripts/decision_tree_model_audit.py",
+    "audit_result": "scripts/decision_tree_model_audit_result.json",
+    "export_data_scripts": {
+      "tree_greedy_split": "scripts/export_tree_greedy_widget.py",
+      "tree_ensemble_compare": "scripts/export_tree_ensemble_widget.py"
+    },
+    "export_data_artifacts": {
+      "tree_greedy_split": "book/_static/widgets/data/tree_greedy_split.json",
+      "tree_ensemble_compare": "book/_static/widgets/data/tree_ensemble_compare.json"
     }
   },
   "bundles": {
     "frontoparietal": {
       "label": "Frontoparietal (P-FIT)",
       "literature": "Jung & Haier (2007) Parieto-Frontal Integration Theory: dorsolateral prefrontal cortex (BA 9/45/46/47), inferior/superior parietal lobule and intraparietal sulcus (BA 7/39/40), and dorsal anterior cingulate (BA 32).",
-      "rois": ["46", "9-46d", "a9-46v", "p9-46v", "9a", "9p", "8C", "8Av", "8Ad", "IFJa", "IFJp", "IFSa", "IFSp", "p47r", "a47r", "8BL", "PGs", "PGi", "PFm", "PF", "PFt", "IP0", "IP1", "IP2", "IPS1", "LIPv", "LIPd", "MIP", "AIP", "7PC", "7PL", "7Pm", "7AL", "7Am", "a32pr", "p32pr", "d32", "8BM", "SCEF"]
+      "rois": [
+        "46",
+        "9-46d",
+        "a9-46v",
+        "p9-46v",
+        "9a",
+        "9p",
+        "8C",
+        "8Av",
+        "8Ad",
+        "IFJa",
+        "IFJp",
+        "IFSa",
+        "IFSp",
+        "p47r",
+        "a47r",
+        "8BL",
+        "PGs",
+        "PGi",
+        "PFm",
+        "PF",
+        "PFt",
+        "IP0",
+        "IP1",
+        "IP2",
+        "IPS1",
+        "LIPv",
+        "LIPd",
+        "MIP",
+        "AIP",
+        "7PC",
+        "7PL",
+        "7Pm",
+        "7AL",
+        "7Am",
+        "a32pr",
+        "p32pr",
+        "d32",
+        "8BM",
+        "SCEF"
+      ]
     },
     "frontal": {
       "label": "Prefrontal only",
       "literature": "The prefrontal component of P-FIT and of Narr et al. (2007): dorsolateral / inferior frontal cortex plus dorsal anterior cingulate, with no parietal ROIs.",
-      "rois": ["46", "9-46d", "a9-46v", "p9-46v", "9a", "9p", "8C", "8Av", "8Ad", "IFJa", "IFJp", "IFSa", "IFSp", "p47r", "a47r", "8BL", "a32pr", "p32pr", "d32", "8BM", "SCEF"]
+      "rois": [
+        "46",
+        "9-46d",
+        "a9-46v",
+        "p9-46v",
+        "9a",
+        "9p",
+        "8C",
+        "8Av",
+        "8Ad",
+        "IFJa",
+        "IFJp",
+        "IFSa",
+        "IFSp",
+        "p47r",
+        "a47r",
+        "8BL",
+        "a32pr",
+        "p32pr",
+        "d32",
+        "8BM",
+        "SCEF"
+      ]
     },
     "parietal": {
       "label": "Parietal only",
       "literature": "The parietal component of P-FIT: inferior parietal lobule (PG*, PF*), intraparietal sulcus (IP*, IPS1, LIP*, MIP, VIP, AIP) and superior parietal lobule (area 7 subdivisions).",
-      "rois": ["PGs", "PGi", "PGp", "PFm", "PF", "PFt", "PFop", "IP0", "IP1", "IP2", "IPS1", "LIPv", "LIPd", "MIP", "VIP", "AIP", "7PC", "7PL", "7Pm", "7AL", "7Am"]
+      "rois": [
+        "PGs",
+        "PGi",
+        "PGp",
+        "PFm",
+        "PF",
+        "PFt",
+        "PFop",
+        "IP0",
+        "IP1",
+        "IP2",
+        "IPS1",
+        "LIPv",
+        "LIPd",
+        "MIP",
+        "VIP",
+        "AIP",
+        "7PC",
+        "7PL",
+        "7Pm",
+        "7AL",
+        "7Am"
+      ]
     },
     "temporal": {
       "label": "Lateral temporal (comparison)",
       "literature": "Lateral / superior temporal cortex. Narr et al. (2007) reported some temporal thickness-IQ associations, so this is a scoped anatomical comparison, not a null region.",
-      "rois": ["STGa", "STSda", "STSdp", "STSva", "STSvp", "TE1a", "TE1m", "TE1p", "TE2a", "TE2p", "TGd", "TGv", "TF", "PHT", "TA2", "A5", "STV", "PSL"]
+      "rois": [
+        "STGa",
+        "STSda",
+        "STSdp",
+        "STSva",
+        "STSvp",
+        "TE1a",
+        "TE1m",
+        "TE1p",
+        "TE2a",
+        "TE2p",
+        "TGd",
+        "TGv",
+        "TF",
+        "PHT",
+        "TA2",
+        "A5",
+        "STV",
+        "PSL"
+      ]
     },
     "occipital": {
       "label": "Occipital / early visual (comparison)",
       "literature": "Primary and extrastriate visual cortex. Not part of P-FIT's core; included as a similarly sized anatomical comparison bundle.",
-      "rois": ["V1", "V2", "V3", "V4", "V3A", "V3B", "V6", "V6A", "V7", "V8", "VVC", "VMV1", "VMV2", "VMV3", "LO1", "LO2", "LO3", "PIT", "FST", "V4t", "V3CD", "DVT", "ProS"]
+      "rois": [
+        "V1",
+        "V2",
+        "V3",
+        "V4",
+        "V3A",
+        "V3B",
+        "V6",
+        "V6A",
+        "V7",
+        "V8",
+        "VVC",
+        "VMV1",
+        "VMV2",
+        "VMV3",
+        "LO1",
+        "LO2",
+        "LO3",
+        "PIT",
+        "FST",
+        "V4t",
+        "V3CD",
+        "DVT",
+        "ProS"
+      ]
     },
     "sensorimotor": {
       "label": "Sensorimotor (comparison)",
       "literature": "Primary and premotor / somatosensory cortex. A similarly sized non-association-cortex comparison bundle.",
-      "rois": ["4", "3a", "3b", "1", "2", "6d", "6a", "6v", "6r", "6ma", "6mp", "5m", "5mv", "24dd", "24dv", "OP1", "OP2-3", "OP4", "43", "PoI1"]
+      "rois": [
+        "4",
+        "3a",
+        "3b",
+        "1",
+        "2",
+        "6d",
+        "6a",
+        "6v",
+        "6r",
+        "6ma",
+        "6mp",
+        "5m",
+        "5mv",
+        "24dd",
+        "24dv",
+        "OP1",
+        "OP2-3",
+        "OP4",
+        "43",
+        "PoI1"
+      ]
     },
     "sensorimotor_core": {
       "label": "Sensorimotor core (compact)",
       "literature": "Primary motor cortex (BA4) plus primary somatosensory cortex (BA 3a/3b/1/2) -- the classic sensorimotor strip (Penfield & Rasmussen 1950 homunculus; HCP-MMP1 areas 4/3a/3b/1/2, Glasser et al. 2016). A minimal (p=10 columns), maximally well-established anatomical subset of the larger `sensorimotor` comparison bundle above, used only by protocol.sample_size_demo (WP15 sec 2) -- never by protocol.canonical_recipe or catalog, which keep the full 360-parcel recipe.",
-      "rois": ["4", "3a", "3b", "1", "2"]
+      "rois": [
+        "4",
+        "3a",
+        "3b",
+        "1",
+        "2"
+      ]
     }
   },
   "literature": {
