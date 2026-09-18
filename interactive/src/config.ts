@@ -333,6 +333,38 @@ const regularizationExploreConfig = z
   })
   .strict();
 
+// WP29 (Exercise 6): "Build a Tree Greedily" -- a small deterministic
+// synthetic dataset walked through three predetermined active nodes (root,
+// one child, another child); the greedy optimum at each node is precomputed
+// (scripts/export_tree_greedy_widget.py), never recomputed live.
+const treeGreedySplitConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("tree-greedy-split"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP29 (Exercise 6): "One Tree or Many?" -- a single regression tree,
+// bagging, and a Random Forest compared across five deterministic training
+// replicates (scripts/export_tree_ensemble_widget.py), all evaluated on one
+// fixed validation set.
+const treeEnsembleCompareHighlight = z.enum(["single-tree", "bagging", "random-forest"]);
+
+const treeEnsembleCompareConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("tree-ensemble-compare"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultReplicateSeed: z.number().int().nonnegative(),
+    defaultNTrees: z.number().int().positive(),
+    defaultHighlightModel: treeEnsembleCompareHighlight,
+    randomForestNote: z.string().min(1, "config.randomForestNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -351,6 +383,8 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   validationLockTestConfig,
   nestedCvExplorerConfig,
   regularizationExploreConfig,
+  treeGreedySplitConfig,
+  treeEnsembleCompareConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -368,6 +402,9 @@ export type ValidationLockTestConfig = z.infer<typeof validationLockTestConfig>;
 export type NestedCvExplorerConfig = z.infer<typeof nestedCvExplorerConfig>;
 export type RegularizationExploreModel = z.infer<typeof regularizationExploreModel>;
 export type RegularizationExploreConfig = z.infer<typeof regularizationExploreConfig>;
+export type TreeGreedySplitConfig = z.infer<typeof treeGreedySplitConfig>;
+export type TreeEnsembleCompareHighlight = z.infer<typeof treeEnsembleCompareHighlight>;
+export type TreeEnsembleCompareConfig = z.infer<typeof treeEnsembleCompareConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

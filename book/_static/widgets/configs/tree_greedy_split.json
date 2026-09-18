@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "type": "tree-greedy-split",
+  "title": "Build a tree greedily",
+  "description": "Course activity for Exercise 6: walk through the greedy splitting algorithm on a small synthetic dataset, choosing a feature and threshold at each active node and comparing your choice with the greedy optimum.",
+  "data": "../data/tree_greedy_split.json",
+  "instructions": "At each active node, pick a feature (X1 or X2) and browse the candidate thresholds for that feature. The score card shows the parent MSE, your proposed split's weighted MSE, its MSE reduction, and how many participants would go to each child. Lock your answer, then reveal the greedy optimum for this node and compare. Continue to move to the next active node -- the activity always moves on using the true greedy-optimal split, not your own proposal.",
+  "reflectionPrompts": [
+    "Which mattered more for the best split: equal group sizes or similar target values within each child?",
+    "Did a visually reasonable-looking split ever have a worse MSE than you expected?",
+    "The algorithm chose the best split available at this node. Did it know whether that split would still look best after two more levels of splitting?",
+    "Could the locally best split at the root ever lead to a less good complete tree than a different root split would have?",
+    "Why are the candidate thresholds placed between observed values rather than on top of them?"
+  ]
+}
