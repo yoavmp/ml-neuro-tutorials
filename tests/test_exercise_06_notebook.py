@@ -422,6 +422,31 @@ class ClassificationComplexityContrast(NotebookLoads):
             self.assertNotIn("Classification: predicting autism diagnosis", self.full_source)
             self.assertNotIn("DecisionTreeClassifier", self.full_source)
 
+    def test_corrected_development_only_numbers_match_the_committed_audit(self):
+        if not DT_RESULT["classification_complexity_curve"]["inclusion_rule"]["include_figure"]:
+            self.skipTest("inclusion rule failed; no figure to check")
+        ccc = DT_RESULT["classification_complexity_curve"]
+        i = None
+        for idx, c in enumerate(self.cells):
+            if c["cell_type"] == "markdown" and "ROC AUC is higher-is-better" in _src(c):
+                i = idx
+        self.assertIsNotNone(i)
+        text = _src(self.cells[i])
+        self.assertIn(f"max_depth={ccc['best_depth']}", text)
+        self.assertIn(f"{ccc['best_val_auc']:.3f}", text)
+        self.assertIn(f"{ccc['depth2_val_auc']:.3f}", text)
+        self.assertIn(f"{ccc['margin_over_depth2']:.3f}", text)
+        self.assertIn("development partition", text)
+        self.assertIn("753", text)
+        self.assertIn("251", text)
+        self.assertNotIn("full eligible cohort", text)
+
+    def test_no_stale_claim_that_never_reading_an_index_was_sufficient(self):
+        # WP30R sec 5: the earlier, misleading provenance framing must not
+        # survive anywhere in student-facing text.
+        self.assertNotIn("is never touched by this audit", self.full_source_lower)
+        self.assertNotIn("never read a stored", self.full_source_lower)
+
     def test_panels_are_clearly_labeled_and_carry_the_required_caveats(self):
         if not DT_RESULT["classification_complexity_curve"]["inclusion_rule"]["include_figure"]:
             self.skipTest("inclusion rule failed; no figure to check")
@@ -437,9 +462,22 @@ class ClassificationComplexityContrast(NotebookLoads):
 
     def test_classification_audit_uses_the_exercise_3_cohort_and_recipe(self):
         text = self.full_source
-        self.assertIn('y_cls = (model_df.loc[has_group, "group"].to_numpy(float) == 1.0).astype(int)', text)
-        self.assertIn("X_cls = model_df.loc[has_group, FEATURES].to_numpy(float)", text)
+        self.assertIn(
+            'y_eligible = (model_df.loc[has_group, "group"].to_numpy(float) == 1.0).astype(int)', text
+        )
+        self.assertIn("X_eligible = model_df.loc[has_group, FEATURES].to_numpy(float)", text)
         self.assertIn("StratifiedKFold(n_splits=5, shuffle=True, random_state=42)", text)
+
+    def test_classification_audit_reconstructs_exercise_3_outer_split_and_excludes_it(self):
+        # WP30R: the notebook must reconstruct Exercise 3's exact outer
+        # split, prove development/outer-test disjointness by participant
+        # set (not merely by omission), and restrict the CV pool (X_cls,
+        # y_cls) to the development rows only.
+        text = self.full_source
+        self.assertIn("test_size=0.25, random_state=42, stratify=y_eligible", text)
+        self.assertIn("dev_subjects.isdisjoint(test_subjects)", text)
+        self.assertIn("dev_subjects | test_subjects == set(subjects_eligible)", text)
+        self.assertIn("X_cls, y_cls = X_eligible[dev_pos], y_eligible[dev_pos]", text)
 
     def test_classification_audit_never_touches_an_outer_test_set(self):
         section_start = _index_of_cell_starting_with(self.cells, "## 3. How Large Should the Tree Be?")
@@ -447,6 +485,16 @@ class ClassificationComplexityContrast(NotebookLoads):
         text = "\n".join(_src(c) for c in self.cells[section_start:section_end])
         self.assertNotIn("X_test", text)
         self.assertNotIn("y_test", text)
+        # test_pos/test_subjects exist only for the disjointness assertions
+        # above -- never passed to .fit(/.predict(/roc_auc_score(.
+        for forbidden in (".fit(X_eligible[test_pos]", ".predict(X_eligible[test_pos]", "roc_auc_score(y_eligible[test_pos]"):
+            self.assertNotIn(forbidden, text)
+
+    def test_classification_audit_reports_eligible_development_outer_test_sizes(self):
+        out = _collect_output(self.nb)
+        self.assertIn("eligible = 1004", out)
+        self.assertIn("development = 753", out)
+        self.assertIn("outer test (excluded) = 251", out)
 
 
 class SectionFourEnsembleIntro(NotebookLoads):

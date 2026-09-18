@@ -34,7 +34,16 @@ Design rules, shared with the rest of this course's audits:
 * the outer test set (``protocol.holdout_split``) is never read by this
   script -- the dev split (``regularization.dev_split``, reused verbatim)
   is used throughout sections 1 and 3, and section 6's cross-validation
-  runs on the full eligible cohort instead of the outer split.
+  runs on the full eligible cohort instead of the outer split;
+* the classification-depth curve (WP30R correction) reconstructs Exercise
+  3's exact outer ``classification.holdout_split`` train_test_split over
+  the full eligible cohort and restricts every cross-validation fold to
+  the resulting development-partition rows only. Exclusion is proven by
+  participant-set membership (development and outer-test subject-id sets
+  are asserted disjoint and their union asserted to equal the eligible
+  cohort) -- not by the earlier, misleading "this script never reads a
+  stored test-index object" framing, which did not actually keep the
+  locked outer-test participants out of the cross-validated folds.
 
 Usage::
 
@@ -187,13 +196,78 @@ def _complexity_curve(frame: Any) -> dict[str, Any]:
     }
 
 
+def _classification_eligible_cohort(frame: Any) -> dict[str, Any]:
+    """The full eligible classification cohort (group present, coded exactly
+    as Exercise 3's classification_model_audit.py), plus stable per-row
+    subject identifiers -- shared by the outer-split reconstruction and the
+    development-only feature matrix below so both index into identical row
+    order."""
+    import numpy as np
+
+    CLS = MANIFEST["classification"]
+    present = frame["group"].notna().to_numpy()
+    if not present.all():
+        raise RuntimeError("group has missing values; Exercise 3 expects diagnosis for every row")
+    groups_raw = frame.loc[present, "group"].to_numpy(dtype="float64")
+    positive_code = float(CLS["positive_class"]["code"])
+    negative_code = float(CLS["negative_class"]["code"])
+    unexpected = set(np.unique(groups_raw)) - {positive_code, negative_code}
+    if unexpected:
+        raise ValueError(f"group has unexpected codes: {sorted(unexpected)}")
+    y_eligible = (groups_raw == positive_code).astype(int)
+    subjects_eligible = frame.loc[present, "subject"].to_numpy()
+    return {"present": present, "y_eligible": y_eligible, "subjects_eligible": subjects_eligible}
+
+
+def _classification_dev_test_positions(y_eligible: Any, subjects_eligible: Any) -> dict[str, Any]:
+    """Reconstruct Exercise 3's exact outer split (``classification.holdout_split``:
+    ``train_test_split(test_size=0.25, random_state=42, stratify=y)``) over the
+    full eligible cohort, and PROVE the reconstruction by participant-set
+    membership -- not by the earlier, misleading claim that never reading a
+    stored test-index object was sufficient to keep the locked outer-test
+    rows out of a later cross-validation (WP30R sec 5). Returns positions
+    (into the eligible-cohort row order) for development and outer-test."""
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+
+    CLS = MANIFEST["classification"]
+    split = CLS["holdout_split"]
+    all_positions = np.arange(len(y_eligible))
+    dev_pos, test_pos = train_test_split(
+        all_positions, test_size=split["test_size"], random_state=split["random_state"], stratify=y_eligible
+    )
+    dev_pos = np.sort(dev_pos)
+    test_pos = np.sort(test_pos)
+
+    dev_subjects = set(subjects_eligible[dev_pos].tolist())
+    test_subjects = set(subjects_eligible[test_pos].tolist())
+    eligible_subjects = set(subjects_eligible.tolist())
+    if dev_subjects & test_subjects:
+        raise RuntimeError("reconstructed development/outer-test participant sets overlap")
+    if (dev_subjects | test_subjects) != eligible_subjects:
+        raise RuntimeError("reconstructed development + outer-test union does not equal the eligible cohort")
+    if len(dev_pos) + len(test_pos) != len(y_eligible):
+        raise RuntimeError("reconstructed development/outer-test sizes do not sum to the eligible cohort")
+
+    return {
+        "dev_pos": dev_pos,
+        "test_pos": test_pos,
+        "dev_subjects_disjoint_from_test": True,
+        "dev_test_union_equals_eligible": True,
+    }
+
+
 def _classification_complexity_curve(frame: Any) -> dict[str, Any]:
-    # WP30 sec 4: bounded, conditional audit of whether an autism
-    # classification tree usefully contrasts with the age-regression
-    # complexity curve above. Cohort, target coding, and feature recipe
-    # match Exercise 3's classification_model_audit.py exactly. All
-    # settings (min_samples_leaf, depth grid, folds, seed) are fixed here,
-    # before this function is ever run -- see book/config/abide_modeling.json
+    # WP30R: bounded, conditional audit of whether an autism classification
+    # tree usefully contrasts with the age-regression complexity curve
+    # above. Cohort, target coding, and feature recipe match Exercise 3's
+    # classification_model_audit.py exactly. Cross-validation is restricted
+    # to Exercise 3's own development partition (classification.holdout_split,
+    # reconstructed above) -- the locked outer-test participants are excluded
+    # by row-level participant-set membership before any fold is formed, and
+    # no tree here is ever fit or scored on them. All settings
+    # (min_samples_leaf, depth grid, folds, seed) are fixed before this
+    # function is ever run -- see book/config/abide_modeling.json
     # decision_tree.classification_complexity_curve for the declared
     # rationale. The inclusion rule below is evaluated mechanically from
     # this one run and is never adjusted after seeing the result.
@@ -202,7 +276,6 @@ def _classification_complexity_curve(frame: Any) -> dict[str, Any]:
     from sklearn.model_selection import StratifiedKFold
     from sklearn.tree import DecisionTreeClassifier
 
-    CLS = MANIFEST["classification"]
     CURVE = DT["classification_complexity_curve"]
     # Matches the notebook's own FEATURES list (raw table order), not
     # scripts/abide_modeling_data.py's canonical bundle_columns order --
@@ -212,21 +285,31 @@ def _classification_complexity_curve(frame: Any) -> dict[str, Any]:
     cols = _natural_order_columns(frame)
     assert_brain_only(cols)
 
-    present = frame["group"].notna().to_numpy()
-    groups_raw = frame.loc[present, "group"].to_numpy(dtype="float64")
-    positive_code = float(CLS["positive_class"]["code"])
-    negative_code = float(CLS["negative_class"]["code"])
-    unexpected = set(np.unique(groups_raw)) - {positive_code, negative_code}
-    if unexpected:
-        raise ValueError(f"group has unexpected codes: {sorted(unexpected)}")
-    y = (groups_raw == positive_code).astype(int)
-    X = frame.loc[present, cols].to_numpy(dtype="float64")
+    cohort = _classification_eligible_cohort(frame)
+    present, y_eligible, subjects_eligible = cohort["present"], cohort["y_eligible"], cohort["subjects_eligible"]
+    X_eligible = frame.loc[present, cols].to_numpy(dtype="float64")
+
+    positions = _classification_dev_test_positions(y_eligible, subjects_eligible)
+    dev_pos, test_pos = positions["dev_pos"], positions["test_pos"]
+
+    X_dev = X_eligible[dev_pos]
+    y_dev = y_eligible[dev_pos]
+    subjects_dev = subjects_eligible[dev_pos]
+    subjects_test = subjects_eligible[test_pos]
+
+    # Re-assert disjointness on the actual arrays fed to cross-validation
+    # (not just the positions), so a future refactor cannot silently widen
+    # X_dev/y_dev back to the full eligible cohort without this failing.
+    if set(subjects_dev.tolist()) & set(subjects_test.tolist()):
+        raise RuntimeError("development rows fed to cross-validation overlap the outer-test participants")
+    if len(X_dev) != len(dev_pos) or len(y_dev) != len(dev_pos):
+        raise RuntimeError("development feature/target arrays do not match the development positions")
 
     depths = CURVE["depth_grid"]
     min_samples_leaf = CURVE["min_samples_leaf"]
     random_state = CURVE["random_state"]
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
-    fold_splits = list(skf.split(X, y))
+    fold_splits = list(skf.split(X_dev, y_dev))  # folds only over development rows
 
     train_auc: list[float] = []
     val_auc: list[float] = []
@@ -236,17 +319,17 @@ def _classification_complexity_curve(frame: Any) -> dict[str, Any]:
         for train_idx, val_idx in fold_splits:
             clf = DecisionTreeClassifier(
                 max_depth=depth, min_samples_leaf=min_samples_leaf, random_state=random_state
-            ).fit(X[train_idx], y[train_idx])
+            ).fit(X_dev[train_idx], y_dev[train_idx])
             pos_col = list(clf.classes_).index(1)
-            train_proba = clf.predict_proba(X[train_idx])[:, pos_col]
-            val_proba = clf.predict_proba(X[val_idx])[:, pos_col]
-            train_fold_auc.append(roc_auc_score(y[train_idx], train_proba))
-            val_fold_auc.append(roc_auc_score(y[val_idx], val_proba))
+            train_proba = clf.predict_proba(X_dev[train_idx])[:, pos_col]
+            val_proba = clf.predict_proba(X_dev[val_idx])[:, pos_col]
+            train_fold_auc.append(roc_auc_score(y_dev[train_idx], train_proba))
+            val_fold_auc.append(roc_auc_score(y_dev[val_idx], val_proba))
         train_auc.append(round(float(np.mean(train_fold_auc)), 6))
         val_auc.append(round(float(np.mean(val_fold_auc)), 6))
 
-    # Inclusion rule (WP30 sec 4.2): ties at the displayed (2-decimal)
-    # precision prefer the shallower depth.
+    # Inclusion rule (WP30 sec 4.2, unchanged by WP30R): ties at the
+    # displayed (2-decimal) precision prefer the shallower depth.
     display_precision = 2
     rounded = [round(v, display_precision) for v in val_auc]
     best_rounded = max(rounded)
@@ -258,13 +341,31 @@ def _classification_complexity_curve(frame: Any) -> dict[str, Any]:
     margin_at_least_0_01 = margin >= 0.01
     include_figure = bool(depth_at_least_3 and margin_at_least_0_01)
 
+    n_eligible_positive = int(y_eligible.sum())
+    n_dev_positive = int(y_dev.sum())
+    test_labels = y_eligible[test_pos]
+    n_test_positive = int(test_labels.sum())
+
     return {
         "p": len(cols),
-        "n": int(len(y)),
-        "n_positive": int(y.sum()),
-        "n_negative": int(len(y) - int(y.sum())),
+        "n_eligible": int(len(y_eligible)),
+        "n_eligible_positive": n_eligible_positive,
+        "n_eligible_negative": int(len(y_eligible) - n_eligible_positive),
+        "n_development": int(len(y_dev)),
+        "n_development_positive": n_dev_positive,
+        "n_development_negative": int(len(y_dev) - n_dev_positive),
+        "n_outer_test": int(len(test_pos)),
+        "n_outer_test_positive": n_test_positive,
+        "n_outer_test_negative": int(len(test_pos) - n_test_positive),
+        "development_test_disjoint": positions["dev_subjects_disjoint_from_test"],
+        "development_test_union_equals_eligible": positions["dev_test_union_equals_eligible"],
+        "outer_holdout_reconstruction": {
+            "test_size": MANIFEST["classification"]["holdout_split"]["test_size"],
+            "random_state": MANIFEST["classification"]["holdout_split"]["random_state"],
+            "stratify": "y (autism/control label, identical to Exercise 3)",
+        },
         "min_samples_leaf": min_samples_leaf,
-        "cv": f"StratifiedKFold(n_splits=5, shuffle=True, random_state={random_state})",
+        "cv": f"StratifiedKFold(n_splits=5, shuffle=True, random_state={random_state}) -- development rows only",
         "depth_grid": depths,
         "train_auc": train_auc,
         "val_auc": val_auc,
@@ -389,6 +490,19 @@ def validate(results: dict[str, Any]) -> list[str]:
                 break
 
     ccc = results.get("classification_complexity_curve", {})
+    if not ccc.get("development_test_disjoint"):
+        problems.append("classification_complexity_curve: development_test_disjoint must be true")
+    if not ccc.get("development_test_union_equals_eligible"):
+        problems.append("classification_complexity_curve: development_test_union_equals_eligible must be true")
+    n_elig, n_dev, n_test = ccc.get("n_eligible"), ccc.get("n_development"), ccc.get("n_outer_test")
+    if None in (n_elig, n_dev, n_test) or n_dev + n_test != n_elig:
+        problems.append("classification_complexity_curve: n_development + n_outer_test must equal n_eligible")
+    if ccc.get("n_eligible_positive") is not None and ccc.get("n_development_positive") is not None:
+        if ccc.get("n_development_positive", 0) + ccc.get("n_outer_test_positive", 0) != ccc.get("n_eligible_positive"):
+            problems.append("classification_complexity_curve: positive-class counts do not partition across development/outer-test")
+    if isinstance(n_test, int) and n_test <= 0:
+        problems.append("classification_complexity_curve: n_outer_test must be positive (the outer test set must be non-empty)")
+
     depths_c = ccc.get("depth_grid", [])
     val_auc = ccc.get("val_auc", [])
     if len(depths_c) != len(val_auc) or not depths_c:
@@ -446,7 +560,9 @@ def _print_summary(results: dict[str, Any]) -> None:
     print()
     ccc = results.get("classification_complexity_curve")
     if ccc:
-        print(f"=== classification complexity curve (p={ccc['p']}, n={ccc['n']}): "
+        print(f"=== classification complexity curve (p={ccc['p']}, "
+              f"eligible={ccc['n_eligible']}, development={ccc['n_development']}, "
+              f"outer_test_excluded={ccc['n_outer_test']}): "
               f"best depth = {ccc['best_depth']} (val AUC={ccc['best_val_auc']:.3f}), "
               f"depth-2 val AUC={ccc['depth2_val_auc']:.3f}, margin={ccc['margin_over_depth2']:.3f} ===")
         print(f"    inclusion rule: {ccc['inclusion_rule']}")

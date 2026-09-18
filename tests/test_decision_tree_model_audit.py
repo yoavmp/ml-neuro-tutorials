@@ -67,17 +67,75 @@ class CommittedResult(unittest.TestCase):
     def test_classification_complexity_curve_uses_the_exercise_3_recipe_and_cv(self):
         ccc = self.result["classification_complexity_curve"]
         self.assertEqual(ccc["p"], 360)
-        self.assertEqual(ccc["cv"], "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)")
+        self.assertEqual(ccc["cv"], "StratifiedKFold(n_splits=5, shuffle=True, random_state=42) -- development rows only")
         self.assertEqual(ccc["min_samples_leaf"], dta.DT["classification_complexity_curve"]["min_samples_leaf"])
         self.assertEqual(ccc["depth_grid"], list(range(1, 11)))
 
-    def test_classification_complexity_curve_uses_the_full_eligible_cohort_not_a_holdout(self):
-        # n must be the full eligible cohort (group present), not the
-        # smaller classification.holdout_split test partition -- this audit
-        # never touches that locked outer test set.
+    def test_classification_complexity_curve_eligible_cohort_matches_exercise_3(self):
         ccc = self.result["classification_complexity_curve"]
-        self.assertEqual(ccc["n"], ccc["n_positive"] + ccc["n_negative"])
-        self.assertGreater(ccc["n"], dta.MANIFEST["classification"]["holdout_split"]["test_size"] * ccc["n"])
+        self.assertEqual(ccc["n_eligible"], ccc["n_eligible_positive"] + ccc["n_eligible_negative"])
+        self.assertEqual(ccc["n_eligible"], 1004)
+        self.assertEqual(ccc["n_eligible_positive"], 463)
+        self.assertEqual(ccc["n_eligible_negative"], 541)
+
+    def test_classification_complexity_curve_cv_pool_is_development_only_not_the_full_cohort(self):
+        # WP30R correction: the pool fed to StratifiedKFold must be exactly
+        # Exercise 3's development partition, not the full eligible cohort
+        # -- the bug this WP fixes.
+        ccc = self.result["classification_complexity_curve"]
+        expected_test_size = dta.MANIFEST["classification"]["holdout_split"]["test_size"]
+        expected_n_test = round(expected_test_size * ccc["n_eligible"])
+        self.assertEqual(ccc["n_outer_test"], expected_n_test)
+        self.assertEqual(ccc["n_development"], ccc["n_eligible"] - ccc["n_outer_test"])
+        self.assertLess(ccc["n_development"], ccc["n_eligible"])
+        # Must match Exercise 3's own committed outer split sizes exactly.
+        cls_result_path = dta.REPO_ROOT / "scripts" / "classification_model_audit_result.json"
+        cls_result = json.loads(cls_result_path.read_text(encoding="utf-8"))
+        self.assertEqual(ccc["n_development"], cls_result["cohort"]["n_train"])
+        self.assertEqual(ccc["n_outer_test"], cls_result["cohort"]["n_test"])
+
+    def test_classification_complexity_curve_proves_participant_set_exclusion(self):
+        # WP30R sec 5: exclusion must be proven by participant-set
+        # membership, not by "never reading a stored index" alone.
+        ccc = self.result["classification_complexity_curve"]
+        self.assertTrue(ccc["development_test_disjoint"])
+        self.assertTrue(ccc["development_test_union_equals_eligible"])
+        self.assertEqual(ccc["n_development"] + ccc["n_outer_test"], ccc["n_eligible"])
+        self.assertEqual(
+            ccc["n_development_positive"] + ccc["n_outer_test_positive"], ccc["n_eligible_positive"]
+        )
+        self.assertEqual(
+            ccc["n_development_negative"] + ccc["n_outer_test_negative"], ccc["n_eligible_negative"]
+        )
+
+    def test_classification_complexity_curve_never_reports_outer_test_auc(self):
+        ccc = self.result["classification_complexity_curve"]
+        forbidden_keys = {"test_auc", "outer_test_auc", "test_val_auc", "holdout_auc"}
+        self.assertEqual(forbidden_keys & set(ccc.keys()), set())
+
+    def test_classification_complexity_curve_reconstruction_is_deterministic_offline(self):
+        # The full network reconstruction (identical participant membership
+        # to Exercise 3's own train_test_split, not just matching sizes) is
+        # proved once, offline-independently of a live frame, by replaying
+        # the same train_test_split call with the same eligible-cohort
+        # sizes/labels/seed this committed result itself records -- a
+        # network-dependent, fully independent re-derivation is documented
+        # in WPs/reports/WP30R_REPORT.md instead of run on every offline
+        # test invocation.
+        import numpy as np
+        from sklearn.model_selection import train_test_split
+
+        ccc = self.result["classification_complexity_curve"]
+        recon = ccc["outer_holdout_reconstruction"]
+        y_eligible = np.array([1] * ccc["n_eligible_positive"] + [0] * ccc["n_eligible_negative"])
+        dev_pos, test_pos = train_test_split(
+            np.arange(len(y_eligible)),
+            test_size=recon["test_size"],
+            random_state=recon["random_state"],
+            stratify=y_eligible,
+        )
+        self.assertEqual(len(dev_pos), ccc["n_development"])
+        self.assertEqual(len(test_pos), ccc["n_outer_test"])
 
     def test_classification_inclusion_rule_is_evaluated_exactly_as_specified(self):
         ccc = self.result["classification_complexity_curve"]

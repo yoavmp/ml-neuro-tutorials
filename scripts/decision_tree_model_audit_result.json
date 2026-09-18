@@ -1,10 +1,10 @@
 {
   "classification_complexity_curve": {
-    "best_depth": 3,
-    "best_depth_index": 2,
-    "best_val_auc": 0.531971,
-    "cv": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
-    "depth2_val_auc": 0.507889,
+    "best_depth": 5,
+    "best_depth_index": 4,
+    "best_val_auc": 0.567219,
+    "cv": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42) -- development rows only",
+    "depth2_val_auc": 0.5337,
     "depth_grid": [
       1,
       2,
@@ -17,40 +17,53 @@
       9,
       10
     ],
+    "development_test_disjoint": true,
+    "development_test_union_equals_eligible": true,
     "inclusion_rule": {
       "depth_at_least_3": true,
       "include_figure": true,
       "margin_at_least_0_01": true
     },
-    "margin_over_depth2": 0.024082,
+    "margin_over_depth2": 0.033519,
     "min_samples_leaf": 5,
-    "n": 1004,
-    "n_negative": 541,
-    "n_positive": 463,
+    "n_development": 753,
+    "n_development_negative": 406,
+    "n_development_positive": 347,
+    "n_eligible": 1004,
+    "n_eligible_negative": 541,
+    "n_eligible_positive": 463,
+    "n_outer_test": 251,
+    "n_outer_test_negative": 135,
+    "n_outer_test_positive": 116,
+    "outer_holdout_reconstruction": {
+      "random_state": 42,
+      "stratify": "y (autism/control label, identical to Exercise 3)",
+      "test_size": 0.25
+    },
     "p": 360,
     "train_auc": [
-      0.559869,
-      0.615974,
-      0.676381,
-      0.742741,
-      0.796864,
-      0.85065,
-      0.894352,
-      0.924183,
-      0.946564,
-      0.964583
+      0.574231,
+      0.641663,
+      0.709954,
+      0.775238,
+      0.8306,
+      0.876589,
+      0.912239,
+      0.937687,
+      0.957903,
+      0.970262
     ],
     "val_auc": [
-      0.508602,
-      0.507889,
-      0.531971,
-      0.510403,
-      0.496251,
-      0.499699,
-      0.517886,
-      0.51896,
-      0.527962,
-      0.525348
+      0.523314,
+      0.5337,
+      0.520184,
+      0.555953,
+      0.567219,
+      0.556099,
+      0.548692,
+      0.551787,
+      0.55027,
+      0.549039
     ]
   },
   "complexity_curve": {
@@ -181,7 +194,7 @@
     }
   },
   "generated_by": "scripts/decision_tree_model_audit.py --run",
-  "runtime_seconds": 23.4,
+  "runtime_seconds": 32.4,
   "single_tree": {
     "depth": 3,
     "features": [
