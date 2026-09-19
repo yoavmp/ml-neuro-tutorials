@@ -21,6 +21,12 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
 import export_tree_greedy_widget as tg  # noqa: E402
+from semantic_json_compare import (  # noqa: E402
+    DEFAULT_ABS_TOL,
+    SemanticMismatch,
+    assert_semantically_equal,
+    semantic_diff,
+)
 
 
 class CommittedArtifact(unittest.TestCase):
@@ -33,10 +39,11 @@ class CommittedArtifact(unittest.TestCase):
         self.assertEqual(problems, [], problems)
 
     def test_matches_a_fresh_recomputation(self):
-        self.assertEqual(
-            json.dumps(self.data, sort_keys=True),
-            json.dumps(tg.build_data(), sort_keys=True),
-        )
+        # Semantic, not byte-for-byte: cross-platform floating-point noise
+        # (macOS vs. Linux CI, WP31 run 35437984824) can differ in the
+        # final decimal digit of a computed float without the artifact's
+        # structure or content actually changing. See semantic_json_compare.
+        assert_semantically_equal(self.data, tg.build_data(), abs_tol=DEFAULT_ABS_TOL)
 
     def test_observation_count_is_exactly_16(self):
         self.assertEqual(len(self.data["observations"]), 16)
