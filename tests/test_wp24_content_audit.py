@@ -23,6 +23,9 @@ EX1 = REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb"
 EX1_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb"
 EX2 = REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb"
 EX2_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb"
+# WP28 moved "Compare Two Feature Sets" (and its exploratory-comparison
+# warning) from Exercise 2's Bonus section to Exercise 5.
+EX5 = REPO_ROOT / "book" / "chapters" / "chapter_05" / "exercise_05.ipynb"
 # WP25 moved this content wholesale from chapter_04 to chapter_03 (the
 # classification lesson is now Exercise 3; chapter_04 is a placeholder).
 EX4 = REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb"
@@ -155,14 +158,19 @@ class Exercise1CorrelationWidgetPearsonOnly(unittest.TestCase):
         self.assertIn("correlation-group", source)
 
 
-class Exercise2SingleExploratoryWarning(unittest.TestCase):
-    """WP24 §3.1: the exploratory-comparison warning appears once, in the
-    notebook, and the widget's duplicate note is gone."""
+def _norm_ws(text: str) -> str:
+    return " ".join(text.split())
 
-    NEEDLE = "exploratory model comparison"
+
+class Exercise5SingleExploratoryWarning(unittest.TestCase):
+    """WP24 §3.1 (moved to Exercise 5 by WP28): the exploratory-comparison
+    warning appears once, in the notebook, and the widget's duplicate note
+    is gone. Exercise 2 no longer carries this activity or warning at all."""
+
+    NEEDLE = "exploratory comparison"
 
     def test_notebook_contains_warning_exactly_once(self):
-        text = _notebook_markdown_text(EX2)
+        text = _norm_ws(_notebook_markdown_text(EX5))
         self.assertEqual(text.count(self.NEEDLE), 1)
 
     def test_widget_config_has_no_selection_bias_note(self):
@@ -171,10 +179,14 @@ class Exercise2SingleExploratoryWarning(unittest.TestCase):
         self.assertNotIn(self.NEEDLE, raw.lower())
 
     def test_warning_follows_the_interactive_activity(self):
-        text = _notebook_text(EX2)
+        text = _norm_ws(_notebook_text(EX5))
         iframe_idx = text.index("regression_compare.json")
         warning_idx = text.index(self.NEEDLE)
         self.assertGreater(warning_idx, iframe_idx)
+
+    def test_no_exploratory_comparison_warning_left_in_exercise_2(self):
+        text = _norm_ws(_notebook_markdown_text(EX2))
+        self.assertNotIn(self.NEEDLE, text)
 
 
 class Exercise2SampleSizeSectionAccurate(unittest.TestCase):

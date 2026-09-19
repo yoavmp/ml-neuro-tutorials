@@ -46,7 +46,7 @@ EXERCISE_TITLES = {
     1: "Exercise 1: Exploratory Data Analysis",
     2: "Exercise 2: Regression and Bias-Variance Trade-Off",
     3: "Exercise 3: Classification and Metrics",
-    4: "Exercise 4: Cross-Validation for Classification and Regression",
+    4: "Exercise 4: Validation and Cross-Validation",
     5: "Exercise 5: Regularization and Feature Selection",
     6: "Exercise 6: Decision Trees",
     7: "Exercise 7: Trees and Boosting",
@@ -114,7 +114,7 @@ class SyllabusPageUnchangedTests(unittest.TestCase):
 
 class ExerciseOneThroughTwelveTitles(unittest.TestCase):
     def _title_of(self, n: int) -> str:
-        if n <= 3:
+        if n <= 6:
             import json
 
             path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
@@ -133,7 +133,7 @@ class ExerciseOneThroughTwelveTitles(unittest.TestCase):
         required_phrases = (
             "Regression and Bias-Variance Trade-Off",
             "Classification and Metrics",
-            "Cross-Validation for Classification and Regression",
+            "Validation and Cross-Validation",
             "Regularization and Feature Selection",
             "Advanced Models and Model Comparison",
             "Representational Similarity Analysis",
@@ -151,7 +151,7 @@ class ExerciseOneThroughTwelveTitles(unittest.TestCase):
 class NoFinalProjectReferences(unittest.TestCase):
     def test_no_final_project_reference_in_any_exercise_1_to_12_page(self):
         for n in range(1, 13):
-            if n <= 3:
+            if n <= 6:
                 path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
             else:
                 path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md"
@@ -160,7 +160,7 @@ class NoFinalProjectReferences(unittest.TestCase):
                 self.assertNotIn(needle, text, (n, needle))
 
     def test_no_final_project_reference_in_portable_notebooks(self):
-        for n in (1, 2, 3):
+        for n in (1, 2, 3, 4, 5, 6):
             path = (
                 REPO_ROOT
                 / "book"
@@ -175,15 +175,16 @@ class NoFinalProjectReferences(unittest.TestCase):
 
 class NoDuplicateActiveCopies(unittest.TestCase):
     def test_only_one_active_classification_notebook(self):
-        # Exercise 4 must be a placeholder, not a second copy of the
-        # classification lesson.
-        ex4_md = (REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.md").read_text(
+        # WP27 replaced the Exercise 4 placeholder with a real validation/
+        # cross-validation notebook. It must not become a second copy of the
+        # classification lesson that already lives in Exercise 3.
+        ex4_nb = (REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb").read_text(
             encoding="utf-8"
         )
-        self.assertNotIn("LogisticRegression", ex4_md)
-        self.assertNotIn("confusion matrix", ex4_md.lower())
+        self.assertNotIn("LogisticRegression", ex4_nb)
+        self.assertNotIn("confusion matrix", ex4_nb.lower())
         self.assertFalse(
-            (REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb").exists()
+            (REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.md").exists()
         )
 
     def test_only_one_active_copy_of_the_transferred_knn_material(self):

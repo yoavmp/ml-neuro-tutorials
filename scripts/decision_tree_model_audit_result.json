@@ -1,0 +1,249 @@
+{
+  "classification_complexity_curve": {
+    "best_depth": 5,
+    "best_depth_index": 4,
+    "best_val_auc": 0.567219,
+    "cv": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42) -- development rows only",
+    "depth2_val_auc": 0.5337,
+    "depth_grid": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "development_test_disjoint": true,
+    "development_test_union_equals_eligible": true,
+    "inclusion_rule": {
+      "depth_at_least_3": true,
+      "include_figure": true,
+      "margin_at_least_0_01": true
+    },
+    "margin_over_depth2": 0.033519,
+    "min_samples_leaf": 5,
+    "n_development": 753,
+    "n_development_negative": 406,
+    "n_development_positive": 347,
+    "n_eligible": 1004,
+    "n_eligible_negative": 541,
+    "n_eligible_positive": 463,
+    "n_outer_test": 251,
+    "n_outer_test_negative": 135,
+    "n_outer_test_positive": 116,
+    "outer_holdout_reconstruction": {
+      "random_state": 42,
+      "stratify": "y (autism/control label, identical to Exercise 3)",
+      "test_size": 0.25
+    },
+    "p": 360,
+    "train_auc": [
+      0.574231,
+      0.641663,
+      0.709954,
+      0.775238,
+      0.8306,
+      0.876589,
+      0.912239,
+      0.937687,
+      0.957903,
+      0.970262
+    ],
+    "val_auc": [
+      0.523314,
+      0.5337,
+      0.520184,
+      0.555953,
+      0.567219,
+      0.556099,
+      0.548692,
+      0.551787,
+      0.55027,
+      0.549039
+    ]
+  },
+  "complexity_curve": {
+    "best_depth": 2,
+    "best_depth_index": 1,
+    "best_val_mse": 41.6389,
+    "depth_grid": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "n_fit": 564,
+    "n_leaves": [
+      2,
+      4,
+      8,
+      15,
+      26,
+      41,
+      54,
+      66,
+      78,
+      85
+    ],
+    "n_val": 189,
+    "p": 360,
+    "train_mse": [
+      64.8037,
+      45.2751,
+      31.4749,
+      20.482,
+      12.9214,
+      8.5992,
+      7.3302,
+      6.631,
+      6.3024,
+      6.209
+    ],
+    "val_mse": [
+      52.4203,
+      41.6389,
+      43.093,
+      46.927,
+      56.1811,
+      58.8654,
+      58.9291,
+      59.0001,
+      58.5232,
+      58.8003
+    ]
+  },
+  "fair_comparison": {
+    "cv": "KFold(n_splits=5, shuffle=True, random_state=100)",
+    "models": {
+      "bagging": {
+        "fold_mse": [
+          44.3537,
+          29.5116,
+          40.2625,
+          15.3776,
+          33.8817
+        ],
+        "fold_r2": [
+          0.606542,
+          0.587969,
+          0.630999,
+          0.73403,
+          0.62577
+        ],
+        "mean_mse": 32.6774,
+        "mean_r2": 0.637062,
+        "sd_mse": 10.0462
+      },
+      "random_forest": {
+        "fold_mse": [
+          47.7115,
+          25.6687,
+          41.6404,
+          18.7793,
+          37.8498
+        ],
+        "fold_r2": [
+          0.576756,
+          0.641621,
+          0.61837,
+          0.675195,
+          0.581942
+        ],
+        "mean_mse": 34.33,
+        "mean_r2": 0.618777,
+        "sd_mse": 10.5994
+      },
+      "single_tree": {
+        "fold_mse": [
+          53.0063,
+          59.8345,
+          57.8131,
+          53.6129,
+          62.9463
+        ],
+        "fold_r2": [
+          0.529786,
+          0.164609,
+          0.47015,
+          0.072716,
+          0.304746
+        ],
+        "mean_mse": 57.4426,
+        "mean_r2": 0.308401,
+        "sd_mse": 3.7549
+      }
+    },
+    "n": 1004,
+    "n_estimators": 50,
+    "p": 360,
+    "random_forest_max_features": 19,
+    "tree_settings": {
+      "max_depth": 6,
+      "min_samples_leaf": 5,
+      "random_state": 42
+    }
+  },
+  "generated_by": "scripts/decision_tree_model_audit.py --run",
+  "runtime_seconds": 32.4,
+  "single_tree": {
+    "depth": 3,
+    "features": [
+      "fsCT_L_3a_ROI",
+      "fsCT_R_2_ROI"
+    ],
+    "leaf_predicted_values": [
+      10.04,
+      11.51,
+      12.72,
+      13.19,
+      14.67,
+      15.19,
+      17.09,
+      19.27,
+      20.07,
+      20.71,
+      22.64,
+      24.65,
+      25.1,
+      29.78,
+      33.73
+    ],
+    "leaf_sample_counts": {
+      "3": 26,
+      "4": 20,
+      "6": 21,
+      "7": 28,
+      "10": 63,
+      "11": 78,
+      "13": 180,
+      "14": 148
+    },
+    "min_leaf_sample_count": 20,
+    "n_fit": 564,
+    "n_leaves": 8,
+    "n_val": 189,
+    "settings": {
+      "max_depth": 3,
+      "min_samples_leaf": 20,
+      "random_state": 42
+    },
+    "tree_text": "|--- fsCT_L_3a_ROI <= 1.80\n|   |--- fsCT_R_2_ROI <= 1.88\n|   |   |--- fsCT_L_3a_ROI <= 1.71\n|   |   |   |--- value: [33.73]\n|   |   |--- fsCT_L_3a_ROI >  1.71\n|   |   |   |--- value: [24.65]\n|   |--- fsCT_R_2_ROI >  1.88\n|   |   |--- fsCT_R_2_ROI <= 2.00\n|   |   |   |--- value: [22.64]\n|   |   |--- fsCT_R_2_ROI >  2.00\n|   |   |   |--- value: [19.27]\n|--- fsCT_L_3a_ROI >  1.80\n|   |--- fsCT_L_3a_ROI <= 1.96\n|   |   |--- fsCT_R_2_ROI <= 2.04\n|   |   |   |--- value: [20.07]\n|   |   |--- fsCT_R_2_ROI >  2.04\n|   |   |   |--- value: [14.67]\n|   |--- fsCT_L_3a_ROI >  1.96\n|   |   |--- fsCT_R_2_ROI <= 2.26\n|   |   |   |--- value: [12.72]\n|   |   |--- fsCT_R_2_ROI >  2.26\n|   |   |   |--- value: [10.04]\n",
+    "val_mse": 45.9783,
+    "val_r2": 0.361081
+  },
+  "source": {
+    "brainTableSha256": "ad0db42f85c77cbb8b4e023df288d34b29f1a63870a0cf1955c5b3b0d357579e",
+    "phenotypeTableSha256": "537e541114884f63a2e736ba4d223a816dd013f701e56fb223ebe42e219e06f6",
+    "pinnedCommit": "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"
+  }
+}

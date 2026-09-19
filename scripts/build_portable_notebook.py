@@ -30,11 +30,11 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,all}`` (default
-``all``) scopes both modes. Exercises 4-12 are placeholder pages with no
-interactive activity and no portable notebook, so they are not registered here.
-The bare ``--write`` / ``--check`` invocations keep working and now cover every
-registered notebook.
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,all}``
+(default ``all``) scopes both modes. Exercises 7-12 are placeholder pages
+with no interactive activity and no portable notebook, so they are not
+registered here. The bare ``--write`` / ``--check`` invocations keep working
+and now cover every registered notebook.
 
 Determinism: each output depends only on its committed inputs. Serialization
 goes through ``nbformat.writes`` (sorted keys, fixed indent) with a single
@@ -64,6 +64,15 @@ PUBLISHED_PAGE_CH2 = (
 )
 PUBLISHED_PAGE_CH3 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html"
+)
+PUBLISHED_PAGE_CH4 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html"
+)
+PUBLISHED_PAGE_CH5 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html"
+)
+PUBLISHED_PAGE_CH6 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -220,12 +229,11 @@ _CH2_BANNER = (
     "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
     "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
     "\n"
-    "The richer version -- with the feature-set-comparison and k-exploration\n"
-    "activities embedded and running in the browser -- is the published\n"
-    "course page:\n"
+    "The richer version -- with the k-exploration activity embedded and\n"
+    "running in the browser -- is the published course page:\n"
     "<" + PUBLISHED_PAGE_CH2 + ">\n"
     "\n"
-    "In this notebook both interactive activities are replaced by links to\n"
+    "In this notebook that interactive activity is replaced by a link to\n"
     "that page; every Python analysis cell is kept and runnable. Questions\n"
     "marked *Think first* are followed, where one exists, by a collapsible\n"
     "*Check your reasoning* block; open questions are left without one fixed\n"
@@ -364,9 +372,6 @@ CHAPTER_02 = NotebookSpec(
     lesson_packages="numpy pandas matplotlib scikit-learn",
     drop_admonition_titles=DROP_ADMONITION_TITLES,
     iframe_replacements={
-        "Interactive feature-set comparison for predicting age from brain structure": (
-            _CH2_IFRAME_REPLACEMENT
-        ),
         "Interactive KNN neighbour-count exploration for predicting age from brain structure": (
             _CH2_KNN_EXPLORE_IFRAME_REPLACEMENT
         ),
@@ -472,10 +477,285 @@ CHAPTER_03 = NotebookSpec(
     colab_title="Exercise 3: Classification and Metrics",
 )
 
+_CH4_BANNER = (
+    "# Exercise 4: Validation and Cross-Validation - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 4 validation and\n"
+    "cross-validation practice from **Machine Learning for Neuroscience**,\n"
+    "generated from the canonical course notebook by\n"
+    "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
+    "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the three embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH4 + ">\n"
+    "\n"
+    "In this notebook the three interactive activities are replaced by links\n"
+    "to that page; every Python analysis cell -- including the ordinary,\n"
+    "editable equivalents of every activity -- is kept and runnable. The cell\n"
+    "that reveals the locked test-set result (Section 5) keeps no saved\n"
+    "output here, even though every other code cell normally would: you must\n"
+    "run it yourself to see the result, exactly as the browser activity asks\n"
+    "you to choose a value of k before revealing its test score."
+)
+
+_CH4_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas` and `scikit-learn`. All\n"
+    "three are already installed on Google Colab, and in a typical\n"
+    "scientific-Python environment, so there is normally nothing to do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH4_STABILITY_IFRAME_REPLACEMENT = (
+    "### Explore split and fold instability on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a sample size, a random seed,\n"
+    "and a number of cross-validation folds, and compares a single-split test\n"
+    "score with cross-validation fold scores for the same fixed KNN model.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 4 page:\n"
+    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell runs one such cross-validation directly."
+)
+
+_CH4_LOCK_TEST_IFRAME_REPLACEMENT = (
+    "### Tune k yourself on the course website\n"
+    "\n"
+    "The interactive activity lets you compare training and validation\n"
+    "performance across candidate values of k, choose a final value, and\n"
+    "reveal the held-out test result once you lock in your choice.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 4 page:\n"
+    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> two cells run the same tuning step, and then the same one-time reveal,\n"
+    "> directly in Python."
+)
+
+_CH4_NESTED_CV_IFRAME_REPLACEMENT = (
+    "### Explore nested cross-validation yourself on the course website\n"
+    "\n"
+    "The interactive activity lets you inspect, outer fold by outer fold, how\n"
+    "the inner cross-validation compared candidate k values and how the\n"
+    "resulting choice then scored on that fold's outer test data.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 4 page:\n"
+    "> <" + PUBLISHED_PAGE_CH4 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The\n"
+    "> preceding cells already compute and print the same fold-by-fold\n"
+    "> results as a table."
+)
+
+CHAPTER_04 = NotebookSpec(
+    key="chapter_04",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH4,
+    banner_source=_CH4_BANNER,
+    setup_source=_CH4_SETUP,
+    lesson_packages="numpy pandas scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive single-split and cross-validation stability comparison for predicting age from brain structure": (
+            _CH4_STABILITY_IFRAME_REPLACEMENT
+        ),
+        "Interactive KNN tuning activity: choose k before revealing the test result": (
+            _CH4_LOCK_TEST_IFRAME_REPLACEMENT
+        ),
+        "Interactive nested cross-validation explorer for predicting age from brain structure": (
+            _CH4_NESTED_CV_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 4: Validation and Cross-Validation",
+)
+
+_CH5_BANNER = (
+    "# Exercise 5: Regularization and Feature Selection - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 5 regularization and\n"
+    "feature-selection practice from **Machine Learning for Neuroscience**,\n"
+    "generated from the canonical course notebook by\n"
+    "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
+    "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH5 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the optional\n"
+    "reproduction of the regularization activity's alpha curves -- is kept\n"
+    "and runnable. Questions marked *Think first* are followed, where one\n"
+    "exists, by a collapsible *Check your reasoning* block; open questions\n"
+    "are left without one fixed answer."
+)
+
+_CH5_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH5_COMPARE_IFRAME_REPLACEMENT = (
+    "### Compare predefined feature sets on the course website\n"
+    "\n"
+    "The interactive activity lets you configure two linear-regression models\n"
+    "-- a measurement type and an anatomical ROI bundle each -- and compares\n"
+    "their held-out performance on one fixed cohort and one fixed train/test\n"
+    "split.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 5 page:\n"
+    "> <" + PUBLISHED_PAGE_CH5 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+_CH5_REGULARIZATION_IFRAME_REPLACEMENT = (
+    "### Shrink the coefficients on the course website\n"
+    "\n"
+    "The interactive activity lets you choose Linear Regression, Ridge, or\n"
+    "Lasso and move alpha on a logarithmic scale, watching predictions,\n"
+    "coefficients, and training/validation error update together.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 5 page:\n"
+    "> <" + PUBLISHED_PAGE_CH5 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> section reproduces the same alpha curves directly in Python."
+)
+
+CHAPTER_05 = NotebookSpec(
+    key="chapter_05",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_05" / "exercise_05.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_05" / "exercise_05_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH5,
+    banner_source=_CH5_BANNER,
+    setup_source=_CH5_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive feature-set comparison for predicting age from brain structure": (
+            _CH5_COMPARE_IFRAME_REPLACEMENT
+        ),
+        "Interactive Ridge/Lasso regularization exploration for predicting age from brain structure": (
+            _CH5_REGULARIZATION_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 5: Regularization and Feature Selection",
+)
+
+_CH6_BANNER = (
+    "# Exercise 6: Decision Trees - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 6 decision-trees\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the\n"
+    "canonical course notebook by `scripts/build_portable_notebook.py`. It is\n"
+    "meant for running or editing the code in Google Colab or in a local\n"
+    "VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH6 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the optional\n"
+    "reproduction of the greedy-splitting calculation -- is kept and\n"
+    "runnable. Questions marked *Think first* are left as open prompts."
+)
+
+_CH6_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH6_GREEDY_IFRAME_REPLACEMENT = (
+    "### Build a tree greedily on the course website\n"
+    "\n"
+    "The interactive activity walks through the greedy splitting algorithm on\n"
+    "a small synthetic dataset: choose a feature and threshold at each active\n"
+    "node, lock your answer, then reveal the greedy optimum and compare.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 6 page:\n"
+    "> <" + PUBLISHED_PAGE_CH6 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> section reproduces the same threshold/MSE calculation directly in\n"
+    "> Python."
+)
+
+_CH6_ENSEMBLE_IFRAME_REPLACEMENT = (
+    "### One tree or many? on the course website\n"
+    "\n"
+    "The interactive activity compares a single regression tree, bagging, and\n"
+    "a Random Forest across five deterministic training replicates and a\n"
+    "range of ensemble sizes, for predicting age from brain structure.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 6 page:\n"
+    "> <" + PUBLISHED_PAGE_CH6 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+CHAPTER_06 = NotebookSpec(
+    key="chapter_06",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_06" / "exercise_06.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_06" / "exercise_06_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH6,
+    banner_source=_CH6_BANNER,
+    setup_source=_CH6_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive greedy-splitting activity for a small synthetic regression tree": (
+            _CH6_GREEDY_IFRAME_REPLACEMENT
+        ),
+        "Interactive comparison of a single tree, bagging, and Random Forest for predicting age from brain structure": (
+            _CH6_ENSEMBLE_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 6: Decision Trees",
+)
+
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
     CHAPTER_03.key: CHAPTER_03,
+    CHAPTER_04.key: CHAPTER_04,
+    CHAPTER_05.key: CHAPTER_05,
+    CHAPTER_06.key: CHAPTER_06,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).

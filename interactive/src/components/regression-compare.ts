@@ -1,4 +1,5 @@
-// Production activity: Exercise II feature-set comparison.
+// Production activity: Exercise 5's "Compare Predefined Feature Sets"
+// (WP28; moved from Exercise 2's Bonus section, previously "Exercise II").
 //
 // Two independent panels (Model A, Model B). Each picks a measurement subset and
 // an anatomical ROI bundle; the component looks the resulting recipe up in the

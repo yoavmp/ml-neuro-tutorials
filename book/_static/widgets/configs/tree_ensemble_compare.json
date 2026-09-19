@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "type": "tree-ensemble-compare",
+  "title": "One tree or many?",
+  "description": "Course activity for Exercise 6: compare a single regression tree, bagging, and a Random Forest across five deterministic training replicates for predicting age from brain structure.",
+  "data": "../data/tree_ensemble_compare.json",
+  "instructions": "Choose a number of trees, then pick which model to highlight in the prediction panel. The top panel shows each model's validation MSE across all five audited training replicates; the middle panel shows how validation MSE changes as more trees are added to bagging and the Random Forest; the bottom panel shows observed-versus-predicted age, using one fixed training sample, for the model you selected.",
+  "defaultNTrees": 25,
+  "defaultHighlightModel": "random-forest",
+  "randomForestNote": "Random Forest combines bootstrap sampling with a random subset of features considered at each split. Bagging uses every feature at every split; only the training sample changes from tree to tree.",
+  "reflectionPrompts": [
+    "Which model changed the most as you switched between training replicates?",
+    "Did adding more trees change the average validation MSE, its variability across replicates, or both?",
+    "At roughly how many trees do bagging and Random Forest results start to stabilize?",
+    "Did the Random Forest outperform bagging at every number of trees, or only some?",
+    "Why does averaging many trees reduce variance without making any individual tree shallower?"
+  ]
+}

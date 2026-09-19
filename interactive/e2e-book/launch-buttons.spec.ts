@@ -22,6 +22,29 @@ const CHAPTERS = [
     url: "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html",
     portable: "book/downloads/chapter_03/exercise_03_portable.ipynb",
   },
+  {
+    // WP28 §3: Exercise 4 is no longer a placeholder (WP27) -- it has its own
+    // portable notebook and Colab button like chapters 1-3, so it belongs in
+    // this loop rather than under the "placeholder gets no button" checks
+    // below, where a stale assertion previously claimed the opposite.
+    name: "Chapter 4",
+    url: "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html",
+    portable: "book/downloads/chapter_04/exercise_04_portable.ipynb",
+  },
+  {
+    // WP28 §6: Exercise 5 is now a complete notebook, with its own portable
+    // notebook and Colab button.
+    name: "Chapter 5",
+    url: "/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html",
+    portable: "book/downloads/chapter_05/exercise_05_portable.ipynb",
+  },
+  {
+    // WP29 §6: Exercise 6 is now a complete notebook, with its own portable
+    // notebook and Colab button.
+    name: "Chapter 6",
+    url: "/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html",
+    portable: "book/downloads/chapter_06/exercise_06_portable.ipynb",
+  },
 ];
 
 for (const { name, url, portable } of CHAPTERS) {
@@ -77,7 +100,9 @@ test("a page with no portable-notebook mapping (Introduction) gets no Colab butt
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });
 
-test("a placeholder exercise page (Exercise 4) gets no Colab button", async ({ page }) => {
-  await page.goto("/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html");
+// WP29 §6: Exercises 7-12 remain placeholders after WP29. This replaces the
+// earlier stale assertion (WP28 §6) that Exercise 6 had no Colab button.
+test("a placeholder exercise page (Exercise 7) gets no Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });

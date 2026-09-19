@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "type": "validation-stability",
+  "title": "One Split or Several Folds?",
+  "description": "Course activity for Exercise 4: compare a single train/test split with cross-validation across a predeclared set of sample sizes, seeds, and fold counts, holding the KNN model (k=20) fixed.",
+  "instructions": "Choose a sample size, a random seed, and a number of folds. The random seed changes only how the same participants are partitioned, not which participants are included. Compare the single-split test score with the cross-validation fold scores below.",
+  "data": "../data/wp27_validation_stability.json",
+  "sizeKeys": ["30", "50", "75", "100", "150", "250", "500", "all"],
+  "defaultSizeKey": "100",
+  "defaultSeed": 0,
+  "defaultFolds": 5,
+  "reflectionPrompts": [
+    "How much does the result change when only the split changes?",
+    "Is the variability larger with 50 participants or with the full sample?",
+    "Could two researchers using different splits reach different conclusions?",
+    "Does increasing the number of folds always improve the model?",
+    "What changes when the number of folds increases?"
+  ]
+}

@@ -155,20 +155,24 @@ class Notebook(unittest.TestCase):
         self.assertLess(bonus_pos, summary_pos)
         self.assertEqual(self.md.count("## Bonus"), 1)
 
-    def test_bonus_contains_feature_set_and_sample_size_as_subsections(self):
+    def test_bonus_contains_only_sample_size_subsection(self):
+        # WP28: "Comparing feature sets" moved to Exercise 5 section 2. The
+        # Bonus section now contains only the sample-size extension.
         bonus_pos = self.md.index("## Bonus")
         bonus_text = self.md[bonus_pos:]
-        self.assertIn("### Comparing feature sets", bonus_text)
+        self.assertNotIn("### Comparing feature sets", bonus_text)
         self.assertIn("### What does sample size change?", bonus_text)
         # not top-level numbered sections anymore
         self.assertNotIn("## 4. Comparing feature sets", self.md)
         self.assertNotIn("## 5. What does sample size change?", self.md)
-        # one short student-facing sentence marking them optional
+        # one short student-facing sentence marking it optional, singular
         low_bonus = bonus_text.lower()
         self.assertTrue(
             "not required for the core session" in low_bonus or "optional" in low_bonus,
             bonus_text[:400],
         )
+        self.assertIn("The activity below extends the main lesson with one further", self.md)
+        self.assertNotIn("two activities below", low_bonus)
 
     def test_no_cross_validation_or_best_k_selection_introduced(self):
         low = (self.md + self.code).lower()
@@ -204,21 +208,14 @@ class Notebook(unittest.TestCase):
         self.assertNotIn("knn-abc", self.md + self.code)
         self.assertNotIn("ols_compare", self.code)
 
-    def test_two_iframes_regression_compare_and_knn_explore_each_once(self):
+    def test_one_iframe_knn_explore_only(self):
+        # WP28: the regression-compare iframe moved to Exercise 5 section 2;
+        # Exercise 2 now embeds only the knn-explore activity.
         iframe_cells = [c for c in self.cells if "<iframe" in _src(c)]
-        self.assertEqual(len(iframe_cells), 2)
+        self.assertEqual(len(iframe_cells), 1)
         srcs = [_src(c) for c in iframe_cells]
-        self.assertEqual(sum("configs/regression_compare.json" in s for s in srcs), 1)
+        self.assertEqual(sum("configs/regression_compare.json" in s for s in srcs), 0)
         self.assertEqual(sum("configs/knn_explore.json" in s for s in srcs), 1)
-
-    def test_activity_iframe_points_at_the_regression_compare_config(self):
-        iframe_cells = [c for c in self.cells if "<iframe" in _src(c)]
-        matching = [c for c in iframe_cells if "configs/regression_compare.json" in _src(c)]
-        self.assertEqual(len(matching), 1)
-        self.assertIn(
-            'title="Interactive feature-set comparison for predicting age from brain structure"',
-            _src(matching[0]),
-        )
 
     def test_activity_iframe_points_at_the_knn_explore_config(self):
         iframe_cells = [c for c in self.cells if "<iframe" in _src(c)]
@@ -328,9 +325,12 @@ class Notebook(unittest.TestCase):
         after = self.code.split("invalid_test_fitted_model", 2)
         self.assertEqual(len(after), 3)  # defined + used once in section 3 only
 
-    def test_age_literature_citations_present(self):
-        self.assertIn("10.1038/s41586-022-04554-y", self.md)  # Bethlehem et al. 2022
-        self.assertIn("10.1523/JNEUROSCI.0391-14.2014", self.md)  # Storsve et al. 2014
+    def test_age_literature_named_without_requiring_doi_links(self):
+        # WP28: the DOI-linked citations moved to Exercise 5 section 2 along
+        # with "Comparing feature sets"; Exercise 2 section 2 still names both
+        # studies in prose (no DOI required here any more).
+        self.assertIn("Bethlehem et al. 2022", self.md)
+        self.assertIn("Storsve et al. 2014", self.md)
 
     def test_no_iq_literature_without_fiq_analysis(self):
         self.assertNotIn("10.1017/S0140525X07001185", self.md)  # Jung & Haier P-FIT

@@ -274,6 +274,99 @@ const classificationImbalanceConfig = z
   })
   .strict();
 
+// WP27 (Exercise 4): "One Split or Several Folds?" -- combined single-split
+// instability + fixed-model cross-validation activity. Sample size, seed and
+// fold-count are all discrete, predeclared, audited values (no continuous
+// in-browser recomputation).
+const validationStabilityConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("validation-stability"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    sizeKeys: z.array(z.string().min(1)).min(1, "config.sizeKeys must list at least one sample size"),
+    defaultSizeKey: z.string().min(1, "config.defaultSizeKey must be a non-empty string"),
+    defaultSeed: z.number().int(),
+    defaultFolds: z.number().int().positive(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP27 (Exercise 4): "Choose k Before Revealing the Test Set" -- tune k on
+// training/validation only, then lock the choice and reveal the held-out
+// test result once.
+const validationLockTestConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("validation-lock-test"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultK: z.number().int().positive(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+    // WP27R: shown only once the test curve is revealed, distinct from the
+    // pre-lock reflectionPrompts above.
+    postRevealReflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP27 (Exercise 4): "Look Inside Nested Cross-Validation" -- precomputed
+// outer/inner fold explorer.
+const nestedCvExplorerConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("nested-cv-explorer"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultOuterFold: z.number().int().nonnegative(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const regularizationExploreModel = z.enum(["linear", "ridge", "lasso"]);
+
+const regularizationExploreConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("regularization-explore"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultModel: regularizationExploreModel,
+    linearRegressionNote: z.string().min(1, "config.linearRegressionNote must be a non-empty string"),
+    coefficientDisplayNote: z.string().min(1, "config.coefficientDisplayNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP29 (Exercise 6): "Build a Tree Greedily" -- a small deterministic
+// synthetic dataset walked through three predetermined active nodes (root,
+// one child, another child); the greedy optimum at each node is precomputed
+// (scripts/export_tree_greedy_widget.py), never recomputed live.
+const treeGreedySplitConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("tree-greedy-split"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP29/WP30 (Exercise 6): "One Tree or Many?" -- a single regression tree,
+// bagging, and a Random Forest compared across five deterministic training
+// replicates (scripts/export_tree_ensemble_widget.py), all evaluated on one
+// fixed validation set. WP30: the prediction panel always uses one fixed,
+// predeclared training sample (the first replicate in the data artifact) --
+// there is no visible replicate/seed selector, so the config carries no
+// default-replicate field.
+const treeEnsembleCompareHighlight = z.enum(["single-tree", "bagging", "random-forest"]);
+
+const treeEnsembleCompareConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("tree-ensemble-compare"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultNTrees: z.number().int().positive(),
+    defaultHighlightModel: treeEnsembleCompareHighlight,
+    randomForestNote: z.string().min(1, "config.randomForestNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -288,6 +381,12 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   knnExploreConfig,
   classificationThresholdConfig,
   classificationImbalanceConfig,
+  validationStabilityConfig,
+  validationLockTestConfig,
+  nestedCvExplorerConfig,
+  regularizationExploreConfig,
+  treeGreedySplitConfig,
+  treeEnsembleCompareConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -300,6 +399,14 @@ export type RegressionCompareConfig = z.infer<typeof regressionCompareConfig>;
 export type KnnExploreConfig = z.infer<typeof knnExploreConfig>;
 export type ClassificationThresholdConfig = z.infer<typeof classificationThresholdConfig>;
 export type ClassificationImbalanceConfig = z.infer<typeof classificationImbalanceConfig>;
+export type ValidationStabilityConfig = z.infer<typeof validationStabilityConfig>;
+export type ValidationLockTestConfig = z.infer<typeof validationLockTestConfig>;
+export type NestedCvExplorerConfig = z.infer<typeof nestedCvExplorerConfig>;
+export type RegularizationExploreModel = z.infer<typeof regularizationExploreModel>;
+export type RegularizationExploreConfig = z.infer<typeof regularizationExploreConfig>;
+export type TreeGreedySplitConfig = z.infer<typeof treeGreedySplitConfig>;
+export type TreeEnsembleCompareHighlight = z.infer<typeof treeEnsembleCompareHighlight>;
+export type TreeEnsembleCompareConfig = z.infer<typeof treeEnsembleCompareConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }
@@ -465,6 +572,18 @@ function checkSemantics(config: ActivityConfig): string | null {
           `config.measurementSubsets (${subsetKeys.join(", ")})`
         );
       }
+    }
+  }
+  if (config.type === "validation-stability") {
+    const keys = [...new Set(config.sizeKeys)];
+    if (keys.length !== config.sizeKeys.length) {
+      return `config.sizeKeys has duplicate value(s)`;
+    }
+    if (!config.sizeKeys.includes(config.defaultSizeKey)) {
+      return (
+        `config.defaultSizeKey "${config.defaultSizeKey}" is not one of ` +
+        `config.sizeKeys (${config.sizeKeys.join(", ")})`
+      );
     }
   }
   return null;

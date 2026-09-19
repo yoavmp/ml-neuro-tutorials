@@ -1,17 +1,18 @@
 import { expect, test, type Frame, type Page } from "@playwright/test";
 
-// WP16 regression guard: the deployed Exercise 2 feature-set comparison used
-// to paint its x-axis title outside the plot's own box, overlapping the
-// ROI-summary <details> row below it by ~15px, and its comparison cards used
-// a lavender-gray background instead of the page's own surface. This spec
+// WP16 regression guard: the deployed feature-set comparison used to paint
+// its x-axis title outside the plot's own box, overlapping the ROI-summary
+// <details> row below it by ~15px, and its comparison cards used a
+// lavender-gray background instead of the page's own surface. This spec
 // reproduces both checks against the *built* Jupyter Book at the real
 // deployed content width plus a wider desktop and a narrow (390 px) layout,
-// so a future regression is caught at all three.
+// so a future regression is caught at all three. WP28 moved the activity
+// (and this spec) from Exercise 2's Bonus section to Exercise 5 section 2.
 //
 // 1350 px outer viewport measures to ~742-744 px iframe width in the built
 // book at the time this spec was written (sidebar visible, single content
 // column) -- the width named in WP16 as the real deployed reproduction case.
-const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html";
+const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html";
 const IFRAME_SELECTOR =
   'iframe[title="Interactive feature-set comparison for predicting age from brain structure"]';
 
@@ -52,8 +53,48 @@ async function waitForBothPanelsRendered(frame: Frame): Promise<void> {
   );
 }
 
+// `data-render-count` bumping only means `Plotly.react()` resolved -- Plotly's
+// own `automargin` handling can still adjust the SVG's title/tick positions
+// over one or two further animation frames after that promise settles (a
+// well-known Plotly quirk: automargin measures rendered text, then relayouts
+// again to fit it). Measuring geometry immediately after the render-count
+// check can therefore race that internal relayout on a loaded CI runner --
+// this is the actual source of WP28's intermittent clearance failures, not a
+// missing render-count wait. Poll each target element's bounding rect once
+// per animation frame and only proceed once every rect has stopped changing
+// for a few consecutive frames, with a bounded timeout so a genuinely broken
+// layout still fails fast instead of hanging.
+async function waitForStableGeometry(frame: Frame, selectors: string[]): Promise<void> {
+  await frame.evaluate(() => {
+    delete (window as unknown as { __geometryStability?: unknown }).__geometryStability;
+  });
+  await frame.waitForFunction(
+    ({ selectors, stableFrames }) => {
+      const w = window as unknown as {
+        __geometryStability?: { count: number; last: string };
+      };
+      const rects: string[] = [];
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        rects.push(`${r.x.toFixed(2)},${r.y.toFixed(2)},${r.width.toFixed(2)},${r.height.toFixed(2)}`);
+      }
+      const signature = rects.join(";");
+      if (!w.__geometryStability || w.__geometryStability.last !== signature) {
+        w.__geometryStability = { count: 1, last: signature };
+        return false;
+      }
+      w.__geometryStability.count += 1;
+      return w.__geometryStability.count >= stableFrames;
+    },
+    { selectors, stableFrames: 4 },
+    { timeout: 3000, polling: "raf" },
+  );
+}
+
 for (const { name, width, height } of VIEWPORTS) {
-  test.describe(`Chapter 2 built page — Exercise 2 plot geometry @ ${name}`, () => {
+  test.describe(`Chapter 5 built page — Exercise 5 plot geometry @ ${name}`, () => {
     test("x-axis title stays fully inside the plot's box, with a clear gap above the ROI-summary disclosure", async ({
       page,
     }) => {
@@ -62,6 +103,10 @@ for (const { name, width, height } of VIEWPORTS) {
       const frame = await activityFrame(page);
       await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
       await waitForBothPanelsRendered(frame);
+      await waitForStableGeometry(frame, [
+        '[data-testid="regression-A-plot"]',
+        '[data-testid="regression-A-roi-summary"]',
+      ]);
 
       const plotBox = await frame.locator('[data-testid="regression-A-plot"]').boundingBox();
       const roiSummaryBox = await frame.locator('[data-testid="regression-A-roi-summary"]').boundingBox();
@@ -188,6 +233,10 @@ for (const { name, width, height } of VIEWPORTS) {
           .getAttribute("data-render-count");
         expect(current).not.toBe(renderCountBefore);
       }).toPass({ timeout: 3000 });
+      await waitForStableGeometry(frame, [
+        '[data-testid="regression-A-plot"]',
+        '[data-testid="regression-A-roi-summary"]',
+      ]);
 
       const after = await frame.evaluate(() => {
         const panel = document.querySelector('[data-testid="regression-panel-A"]')!;
