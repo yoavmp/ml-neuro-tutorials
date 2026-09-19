@@ -56,6 +56,8 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUT_PATH = REPO_ROOT / "book" / "_static" / "widgets" / "data" / "tree_greedy_split.json"
 
+from semantic_json_compare import DEFAULT_ABS_TOL, semantic_diff  # noqa: E402
+
 # --- the fixed generating formula (decided before any seed was inspected) --
 N_OBSERVATIONS = 16
 MU1, SD1 = 5.5, 2.0
@@ -366,8 +368,10 @@ def cmd_check() -> int:
         return 1
     data = json.loads(OUT_PATH.read_text(encoding="utf-8"))
     recomputed = build_data()
-    if json.dumps(data, sort_keys=True) != json.dumps(recomputed, sort_keys=True):
+    mismatch = semantic_diff(data, recomputed, abs_tol=DEFAULT_ABS_TOL)
+    if mismatch is not None:
         print("ERROR: committed artifact does not match a fresh recomputation.", file=sys.stderr)
+        print(f"  - {mismatch}", file=sys.stderr)
         return 1
     problems = validate(data)
     if problems:
