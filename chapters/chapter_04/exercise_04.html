@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Exercise 4: Cross-Validation for Classification and Regression &#8212; Machine Learning for Neuroscience</title>
+    <title>Exercise 4: Validation and Cross-Validation &#8212; Machine Learning for Neuroscience</title>
   
   
   
@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=dc70b5b1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=5cd63e90" />
     <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-B2O2tOh4.css?v=592f4e85" />
   
   <!-- So that users can add custom icons -->
@@ -65,9 +65,9 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_04/exercise_04';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=dc5299d9"></script>
+    <script src="../../_static/launch-buttons.js?v=53d626a9"></script>
     <script src="../../_static/activity-resize.js?v=8e0b1445"></script>
-    <script src="../../_static/widgets/app/assets/index-Dq5i0z3g.js?v=e182aabd"></script>
+    <script src="../../_static/widgets/app/assets/index-lCZ4SDbv.js?v=0d143c57"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Exercise 5: Regularization and Feature Selection" href="../chapter_05/exercise_05.html" />
@@ -159,6 +159,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -221,7 +225,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1: Exploratory Data Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_02/exercise_02.html">Exercise 2: Regression and Bias-Variance Trade-Off</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_03/exercise_03.html">Exercise 3: Classification and Metrics</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 4: Cross-Validation for Classification and Regression</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 4: Validation and Cross-Validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Trees and Boosting</a></li>
@@ -338,7 +342,7 @@
       
       
       
-      <li><a href="../../_sources/chapters/chapter_04/exercise_04.md" target="_blank"
+      <li><a href="../../_sources/chapters/chapter_04/exercise_04.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -348,7 +352,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.ipynb</span>
 </a>
 </li>
       
@@ -401,7 +405,9 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -412,11 +418,33 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Exercise 4: Cross-Validation for Classification and Regression</h1>
+    <h1>Exercise 4: Validation and Cross-Validation</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#our-regression-data">1. Our Regression Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-one-split-to-cross-validation">2. From One Split to Cross-Validation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cross-validation-for-a-fixed-knn-model">3. Cross-Validation for a Fixed KNN Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-validation-and-test-data">4. Train, Validation, and Test Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tune-knn-without-looking-at-the-test-set">5. Tune KNN Without Looking at the Test Set</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-reproduce-the-tuning-activity-in-python">Optional: Reproduce the Tuning Activity in Python</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nested-cross-validation">6. Nested Cross-Validation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-a-validation-strategy">7. Choosing a Validation Strategy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-summary">In summary</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -426,9 +454,852 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="exercise-4-cross-validation-for-classification-and-regression">
-<h1>Exercise 4: Cross-Validation for Classification and Regression<a class="headerlink" href="#exercise-4-cross-validation-for-classification-and-regression" title="Link to this heading">#</a></h1>
-<p>Materials for this exercise will be added before the practice session.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-4-validation-and-cross-validation">
+<h1>Exercise 4: Validation and Cross-Validation<a class="headerlink" href="#exercise-4-validation-and-cross-validation" title="Link to this heading">#</a></h1>
+<div class="how-to-use admonition">
+<p class="admonition-title">Run or download this notebook</p>
+<p>This page is fully readable as it is, and the interactive activities work
+here in the browser. To <strong>run or change the Python code</strong>, use the portable
+version of the notebook:</p>
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_04/exercise_04_portable.ipynb">Open the portable notebook in Colab</a></strong></p></li>
+<li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_04/exercise_04_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
+for VS Code or Jupyter</p></li>
+</ul>
+<p>The portable notebook keeps every Python analysis cell and swaps each
+embedded activity for a link back to this page.</p>
+</div>
+<section id="what-this-notebook-covers">
+<h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
+<p>This is Exercise 4 of <em>Machine Learning for Neuroscience</em>. Exercise 4 is about
+<strong>validation and cross-validation</strong> – comparing a single train/test split with
+cross-validation, and using training, validation, and test data to tune and
+honestly evaluate a model.</p>
+<p>It reuses Exercise 2’s ABIDE-II age-prediction task and its fixed KNN
+predictor set unchanged. The predictors themselves were already fixed before
+this lesson – nothing here selects, adds, or removes a feature. Feature
+selection is Exercise 5’s topic, not this one.</p>
+<p>In this notebook you will:</p>
+<ol class="arabic simple">
+<li><p>reuse Exercise 2’s ABIDE age-prediction data and its fixed KNN predictors;</p></li>
+<li><p>compare a single train/test split with cross-validation across several
+sample sizes;</p></li>
+<li><p>evaluate one fixed KNN model with 5-fold cross-validation;</p></li>
+<li><p>distinguish training, validation, and test data;</p></li>
+<li><p>tune KNN’s number of neighbours, <code class="docutils literal notranslate"><span class="pre">k</span></code>, using training and validation data
+only, then reveal a test result once;</p></li>
+<li><p>use nested cross-validation to keep tuning separate from evaluation;</p></li>
+<li><p>compare validation strategies for different research situations.</p></li>
+</ol>
+<p><strong>Prerequisites:</strong> Exercise 2’s regression and KNN material; comfort with
+<code class="docutils literal notranslate"><span class="pre">pandas</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, and the scikit-learn <code class="docutils literal notranslate"><span class="pre">fit</span></code> / <code class="docutils literal notranslate"><span class="pre">predict</span></code> / <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code>
+pattern.</p>
+</section>
+<section id="our-regression-data">
+<h2>1. Our Regression Data<a class="headerlink" href="#our-regression-data" title="Link to this heading">#</a></h2>
+<p>This exercise reuses Exercise 2’s ABIDE-II regression table unchanged: the
+same participants, the same target, and the same fixed predictor set. Nothing
+in this section is new – it is here so this notebook is self-contained.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data loading. In the published book this cell is collapsed; it is plain,</span>
+<span class="c1"># runnable Python -- one public CSV pinned to an immutable commit. Nothing</span>
+<span class="c1"># here is repository-specific. This is the exact same ABIDE-II table Exercise</span>
+<span class="c1"># 2 uses, with age as a native column.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span><span class="p">,</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neighbors</span><span class="w"> </span><span class="kn">import</span> <span class="n">KNeighborsRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">KFold</span><span class="p">,</span> <span class="n">cross_validate</span><span class="p">,</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+
+<span class="n">PIN</span> <span class="o">=</span> <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"</span>
+<span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/</span><span class="si">{</span><span class="n">PIN</span><span class="si">}</span><span class="s2">/tu-machine-learning-yarkoni/data"</span>
+
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE</span><span class="si">}</span><span class="s2">/abide2.tsv"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Unnamed"</span><span class="p">)]]</span>
+
+<span class="n">BRAIN_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data table: </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>data table: 1004 participants x 1446 columns
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The same fixed 360 cortical-thickness predictors used in Exercise 2's KNN</span>
+<span class="c1"># worked example (fsCT_*, both hemispheres of every HCP-MMP1 parcel). This</span>
+<span class="c1"># exercise is about how we EVALUATE and TUNE a model, not about choosing</span>
+<span class="c1"># features -- feature selection is Exercise 5's topic.</span>
+<span class="n">FEATURES</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">BRAIN_COLS</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)]</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES</span><span class="p">)</span>           <span class="c1"># brain-only</span>
+<span class="k">assert</span> <span class="s2">"age"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FEATURES</span>                                  <span class="c1"># no target leakage</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES</span><span class="p">)</span><span class="si">}</span><span class="s2"> predictors, fixed before this lesson, e.g. </span><span class="si">{</span><span class="n">FEATURES</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>360 predictors, fixed before this lesson, e.g. ['fsCT_L_V1_ROI', 'fsCT_L_MST_ROI', 'fsCT_L_V6_ROI']
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1-2. brain-only X and target y; reusing the exact participant filter,</span>
+<span class="c1"># feature order, and stratified train/test split from Exercise 2, so the</span>
+<span class="c1"># training and test partitions below are IDENTICAL to Exercise 2's.</span>
+<span class="n">has_age</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">groups</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>      <span class="c1"># 1 = autism, 2 = control</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">groups_train</span><span class="p">,</span> <span class="n">groups_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_train = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_test = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_features = </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>n_train = 753   n_test = 251   n_features = 360
+</pre></div>
+</div>
+</div>
+</div>
+<p>A short reminder before we start, both already established in Exercise 2:</p>
+<ul class="simple">
+<li><p>KNN predicts a participant’s age by averaging the <code class="docutils literal notranslate"><span class="pre">k</span></code> training participants
+whose <strong>predictors</strong> are closest to theirs, so it depends directly on
+distances in predictor space;</p></li>
+<li><p>an unscaled predictor with a large numeric range would dominate that
+distance just because of its units. A scikit-learn <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> keeps
+<code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> bundled with the model, so scaling is learned from
+training data only and refit separately inside every fold below – never
+from validation or test data.</p></li>
+</ul>
+</section>
+<section id="from-one-split-to-cross-validation">
+<h2>2. From One Split to Cross-Validation<a class="headerlink" href="#from-one-split-to-cross-validation" title="Link to this heading">#</a></h2>
+<p>Exercises 1-3 evaluated every model with one train/test split. That split is
+not wrong: it is a genuine, honest estimate of performance on participants the
+model never saw while fitting. But its exact number depends on <em>which</em>
+participants happened to land in the training set and which landed in the
+test set – and that dependence matters more when the available sample is
+small.</p>
+<p><strong>Cross-validation</strong> partitions the data into several folds, fits the model
+on all-but-one fold, evaluates it on the held-out fold, and repeats until
+every fold has served as the held-out one once. That gives several
+performance estimates from the same data instead of one.</p>
+<p>With the full eligible cohort (1004 participants), a single 75/25 split and
+5-fold cross-validation give broadly similar answers across five predeclared
+random seeds. That is not true at every sample size: at 30 and 50
+participants, the single-split test R² swings widely across seeds – for some
+seeds it even lands below zero, worse than always predicting the
+training-set mean age. Try the activity below to see this directly.</p>
+<blockquote>
+<div><p>The full ABIDE sample is relatively large for this demonstration. The
+small-sample settings represent research situations in which only tens of
+participants are available.</p>
+</div></blockquote>
+<iframe
+  title="Interactive single-split and cross-validation stability comparison for predicting age from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/validation_stability.json"
+  loading="lazy"
+  width="100%"
+  height="1750"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe></section>
+<section id="cross-validation-for-a-fixed-knn-model">
+<h2>3. Cross-Validation for a Fixed KNN Model<a class="headerlink" href="#cross-validation-for-a-fixed-knn-model" title="Link to this heading">#</a></h2>
+<p>The activity above lets you compare a single split with cross-validation
+across several sample sizes and seeds. The cell below runs one specific
+cross-validation directly in Python, on the full eligible cohort, with <code class="docutils literal notranslate"><span class="pre">k</span></code>
+fixed at the same value Exercise 2 used – this section evaluates one model,
+it does not choose <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p>
+<p>Cross-validation with <code class="docutils literal notranslate"><span class="pre">K</span></code> folds:</p>
+<ol class="arabic simple">
+<li><p>split the participants into <code class="docutils literal notranslate"><span class="pre">K</span></code> folds;</p></li>
+<li><p>fit on <code class="docutils literal notranslate"><span class="pre">K</span> <span class="pre">-</span> <span class="pre">1</span></code> folds;</p></li>
+<li><p>evaluate on the remaining fold;</p></li>
+<li><p>repeat until every fold has been used for evaluation exactly once;</p></li>
+<li><p>summarize the <code class="docutils literal notranslate"><span class="pre">K</span></code> fold results.</p></li>
+</ol>
+<p>scikit-learn’s <code class="docutils literal notranslate"><span class="pre">cross_validate</span></code> reports <strong>negative</strong> mean squared error
+(<code class="docutils literal notranslate"><span class="pre">neg_mean_squared_error</span></code>) so that, like every other scorer it ranks, a
+higher score is always better. The cell below negates it back to ordinary
+(positive) MSE before printing – lower MSE is better.</p>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ordinary, editable Python: the same kind of 5-fold cross-validation the</span>
+<span class="c1"># activity above lets you explore, computed directly with scikit-learn on the</span>
+<span class="c1"># full eligible cohort, with k fixed throughout -- this cell evaluates one</span>
+<span class="c1"># model, it does not choose k.</span>
+<span class="n">K_EXAMPLE</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># the same fixed value used in Exercise 2's KNN worked example</span>
+
+<span class="n">cv_pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">K_EXAMPLE</span><span class="p">))</span>
+<span class="n">cv_folds</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_validate</span><span class="p">(</span>
+    <span class="n">cv_pipe</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv_folds</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="p">(</span><span class="s2">"neg_mean_squared_error"</span><span class="p">,</span> <span class="s2">"r2"</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># scikit-learn reports NEGATIVE MSE; negate it back to ordinary (positive) MSE.</span>
+<span class="n">cv_fold_mse</span> <span class="o">=</span> <span class="o">-</span><span class="n">cv_scores</span><span class="p">[</span><span class="s2">"test_neg_mean_squared_error"</span><span class="p">]</span>
+<span class="n">cv_fold_r2</span> <span class="o">=</span> <span class="n">cv_scores</span><span class="p">[</span><span class="s2">"test_r2"</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">mse</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cv_fold_mse</span><span class="p">,</span> <span class="n">cv_fold_r2</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"fold </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: MSE = </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   R^2 = </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mean MSE = </span><span class="si">{</span><span class="n">cv_fold_mse</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   (sd </span><span class="si">{</span><span class="n">cv_fold_mse</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mean R^2 = </span><span class="si">{</span><span class="n">cv_fold_r2</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>fold 1: MSE = 42.9   R^2 = 0.554
+fold 2: MSE = 33.4   R^2 = 0.596
+fold 3: MSE = 31.5   R^2 = 0.554
+fold 4: MSE = 34.9   R^2 = 0.662
+fold 5: MSE = 26.3   R^2 = 0.709
+mean MSE = 33.8   (sd 5.4)
+mean R^2 = 0.615
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<p>A few things to notice:</p>
+<ul class="simple">
+<li><p>five folds give five MSE values from the <em>same</em> 1004 participants and the
+<em>same</em> fixed <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">20</span></code> – they differ because each fold holds out a
+different subset of participants, not because the model changed;</p></li>
+<li><p>the mean and standard deviation summarize that spread in one number each;
+a small standard deviation here means the folds mostly agree;</p></li>
+<li><p>this is model <strong>evaluation</strong>, not model <strong>tuning</strong> – <code class="docutils literal notranslate"><span class="pre">k</span></code> stayed fixed
+throughout. Section 5 introduces tuning.</p></li>
+</ul>
+</section>
+<section id="train-validation-and-test-data">
+<h2>4. Train, Validation, and Test Data<a class="headerlink" href="#train-validation-and-test-data" title="Link to this heading">#</a></h2>
+<p>So far every model in this course has used one setting chosen in advance –
+Exercise 2’s <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">20</span></code>, Exercise 3’s <code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">=</span> <span class="pre">1.0</span></code>. A <strong>hyperparameter</strong> is a model
+setting chosen before fitting; for KNN, the number of neighbours <code class="docutils literal notranslate"><span class="pre">k</span></code> is a
+hyperparameter. When several candidate values are genuinely worth comparing,
+three data roles keep that comparison honest:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Subset</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Training data</p></td>
+<td><p>Fit model parameters</p></td>
+</tr>
+<tr class="row-odd"><td><p>Validation data</p></td>
+<td><p>Compare hyperparameter values</p></td>
+</tr>
+<tr class="row-even"><td><p>Test data</p></td>
+<td><p>Evaluate the selected procedure once</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The procedure:</p>
+<ol class="arabic simple">
+<li><p>fit candidate KNN models, one per candidate <code class="docutils literal notranslate"><span class="pre">k</span></code>, on training data;</p></li>
+<li><p>compare their validation MSE;</p></li>
+<li><p>choose <code class="docutils literal notranslate"><span class="pre">k</span></code> using validation data only;</p></li>
+<li><p>refit using training and validation data together;</p></li>
+<li><p>evaluate once on untouched test data.</p></li>
+</ol>
+<p>Looking at the test result repeatedly – checking it, changing <code class="docutils literal notranslate"><span class="pre">k</span></code>, checking
+again – turns the test set into another validation set: the number it
+eventually reports is no longer an honest estimate of performance on
+participants the whole procedure never touched.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>Two values of <code class="docutils literal notranslate"><span class="pre">k</span></code> matter for what follows: the <strong>training-selected <code class="docutils literal notranslate"><span class="pre">k</span></code></strong> is
+the candidate with the lowest <em>training</em> MSE; the <strong>validation-selected <code class="docutils literal notranslate"><span class="pre">k</span></code></strong>
+is the candidate with the lowest <em>validation</em> MSE.</p>
+<ol class="arabic simple">
+<li><p>Which one do you expect to perform best on the training set itself: the
+training-selected <code class="docutils literal notranslate"><span class="pre">k</span></code> or the validation-selected <code class="docutils literal notranslate"><span class="pre">k</span></code>?</p></li>
+<li><p>Which one do you expect to perform better on unseen test participants?</p></li>
+<li><p>Why might the value that gives the lowest training error fail on new
+participants?</p></li>
+<li><p>Should you change <code class="docutils literal notranslate"><span class="pre">k</span></code> after seeing the test result?</p></li>
+</ol>
+</div>
+</section>
+<section id="tune-knn-without-looking-at-the-test-set">
+<h2>5. Tune KNN Without Looking at the Test Set<a class="headerlink" href="#tune-knn-without-looking-at-the-test-set" title="Link to this heading">#</a></h2>
+<p>The activity below plots training and validation MSE across candidate <code class="docutils literal notranslate"><span class="pre">k</span></code>
+values side by side. Choose a final <code class="docutils literal notranslate"><span class="pre">k</span></code>, then press “Lock Choice and Reveal
+Test Result” to add a third panel: test MSE across the same candidates,
+revealed for the first and only time.</p>
+<iframe
+  title="Interactive KNN tuning activity: choose k before revealing the test result"
+  src="../../_static/widgets/app/index.html?config=../configs/validation_lock_test.json"
+  loading="lazy"
+  width="100%"
+  height="1400"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe><p>Once you lock a choice above, a third panel appears: test MSE across the
+same candidate <code class="docutils literal notranslate"><span class="pre">k</span></code> values, revealed for the first time. Look at its shape
+next to the other two – the test curve tracks the validation curve far
+more closely than the training curve: both dip to a minimum somewhere in
+the middle of the candidate range, while training MSE keeps falling all
+the way to <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code>. That resemblance – not a guarantee that the
+validation-selected value always wins – is this section’s central
+lesson: validation error is a far better guide to test performance than
+training error is, even on a single split.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think again, after revealing</p>
+<ol class="arabic simple">
+<li><p>Which curve does the revealed test-MSE curve resemble more: the
+training curve or the validation curve?</p></li>
+<li><p>Did the validation-selected <code class="docutils literal notranslate"><span class="pre">k</span></code> also minimize test MSE on this
+particular split?</p></li>
+<li><p>If a different <code class="docutils literal notranslate"><span class="pre">k</span></code> looks better on the revealed test curve, why must
+you not switch to it now?</p></li>
+<li><p>What would happen to the meaning of the test set if you repeated this
+whole procedure – lock, reveal, reconsider – many times?</p></li>
+</ol>
+</div>
+<section id="optional-reproduce-the-tuning-activity-in-python">
+<h3>Optional: Reproduce the Tuning Activity in Python<a class="headerlink" href="#optional-reproduce-the-tuning-activity-in-python" title="Link to this heading">#</a></h3>
+<p>The interactive activity above contains the main lesson. Expand this
+optional section if you want to reproduce the analysis in Python.</p>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Further split the OUTER training partition set aside in Section 1 (753</span>
+<span class="c1"># participants) into a fitting subset and a validation subset. The outer test</span>
+<span class="c1"># set (X_test, y_test) is not read anywhere in this cell.</span>
+<span class="n">X_fit</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups_train</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_fit = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_fit</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_val = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_val</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">CANDIDATE_KS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">564</span><span class="p">]</span>
+
+<span class="n">tuning_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">CANDIDATE_KS</span><span class="p">:</span>
+    <span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">))</span>
+    <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_fit</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>
+    <span class="n">train_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_fit</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_fit</span><span class="p">))</span>
+    <span class="n">val_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_val</span><span class="p">))</span>
+    <span class="n">tuning_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"k"</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s2">"train_mse"</span><span class="p">:</span> <span class="n">train_mse</span><span class="p">,</span> <span class="s2">"val_mse"</span><span class="p">:</span> <span class="n">val_mse</span><span class="p">})</span>
+
+<span class="n">tuning</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tuning_rows</span><span class="p">)</span>
+<span class="n">training_selected_k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tuning</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tuning</span><span class="p">[</span><span class="s2">"train_mse"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">(),</span> <span class="s2">"k"</span><span class="p">])</span>
+<span class="n">validation_selected_k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tuning</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tuning</span><span class="p">[</span><span class="s2">"val_mse"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">(),</span> <span class="s2">"k"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"training-selected k   = </span><span class="si">{</span><span class="n">training_selected_k</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"validation-selected k = </span><span class="si">{</span><span class="n">validation_selected_k</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">tuning</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>n_fit = 564   n_val = 189
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>training-selected k   = 1
+validation-selected k = 25
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>k</th>
+      <th>train_mse</th>
+      <th>val_mse</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>0.00</td>
+      <td>51.91</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>14.52</td>
+      <td>36.43</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>19.98</td>
+      <td>32.12</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>5</td>
+      <td>26.75</td>
+      <td>33.66</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>8</td>
+      <td>31.84</td>
+      <td>30.28</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>10</td>
+      <td>32.45</td>
+      <td>29.03</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>15</td>
+      <td>34.57</td>
+      <td>26.98</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>20</td>
+      <td>37.13</td>
+      <td>27.13</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>25</td>
+      <td>38.33</td>
+      <td>26.66</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>30</td>
+      <td>39.68</td>
+      <td>28.41</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>50</td>
+      <td>43.73</td>
+      <td>29.90</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>75</td>
+      <td>47.87</td>
+      <td>31.87</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>100</td>
+      <td>50.26</td>
+      <td>33.28</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>150</td>
+      <td>54.66</td>
+      <td>36.31</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>250</td>
+      <td>61.93</td>
+      <td>43.35</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>400</td>
+      <td>73.83</td>
+      <td>54.79</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>564</td>
+      <td>92.53</td>
+      <td>72.23</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</details>
+</div>
+<p>Run the next cell only after you have chosen (or confirmed) a <code class="docutils literal notranslate"><span class="pre">k</span></code> using only
+the two columns above. It reveals the test-set result for the
+training-selected value, the validation-selected value, and your own choice
+– once, matching the “Lock Choice and Reveal Test Result” button above.</p>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reveal, once: refit on the full outer-training partition (fit + validation</span>
+<span class="c1"># combined) at each of the values below, then score on the outer test set --</span>
+<span class="c1"># looked at here for the first and only time in this notebook. Edit</span>
+<span class="c1"># STUDENT_CHOICE_K to try a different value, then rerun this cell.</span>
+<span class="n">STUDENT_CHOICE_K</span> <span class="o">=</span> <span class="n">validation_selected_k</span>
+
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">"training-selected"</span><span class="p">,</span> <span class="n">training_selected_k</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"validation-selected"</span><span class="p">,</span> <span class="n">validation_selected_k</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"your choice"</span><span class="p">,</span> <span class="n">STUDENT_CHOICE_K</span><span class="p">),</span>
+<span class="p">]:</span>
+    <span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">))</span>
+    <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+    <span class="n">test_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+    <span class="n">test_r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> k = </span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">&gt;3d</span><span class="si">}</span><span class="s2">   test MSE = </span><span class="si">{</span><span class="n">test_mse</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   test R^2 = </span><span class="si">{</span><span class="n">test_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>training-selected    k =   1   test MSE = 50.2   test R^2 = 0.462
+validation-selected  k =  25   test MSE = 32.6   test R^2 = 0.651
+your choice          k =  25   test MSE = 32.6   test R^2 = 0.651
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<p>A few things to hold onto:</p>
+<ul class="simple">
+<li><p>the training-selected value is expected to look best on training data
+<em>because it was selected there</em> – <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">1</span></code> fits every training participant
+almost perfectly and generalises poorly;</p></li>
+<li><p>the validation-selected value is expected to generalise better, since
+validation participants were never used to fit any candidate model;</p></li>
+<li><p>“expected” is not “guaranteed”: a single test split can occasionally favour
+a different value by chance;</p></li>
+<li><p>whichever value you chose above, it must not change after seeing this
+cell’s output. In a real analysis, this cell would run once.</p></li>
+</ul>
+</section>
+</section>
+<section id="nested-cross-validation">
+<h2>6. Nested Cross-Validation<a class="headerlink" href="#nested-cross-validation" title="Link to this heading">#</a></h2>
+<p>Section 4-5 used one train/validation/test split to tune and evaluate <code class="docutils literal notranslate"><span class="pre">k</span></code>.
+With limited data, a single split spends participants on three separate
+roles and reports only one evaluation. <strong>Nested cross-validation</strong> reuses the
+same participants for both tuning and evaluation, without letting the two
+mix:</p>
+<ul class="simple">
+<li><p>an <strong>inner</strong> cross-validation chooses <code class="docutils literal notranslate"><span class="pre">k</span></code>, using only the current outer
+fold’s training data;</p></li>
+<li><p>an <strong>outer</strong> cross-validation evaluates the complete tuning procedure –
+inner selection included – on data the inner loop never saw.</p></li>
+</ul>
+<div class="ml-ncv-diagram" role="group" aria-label="Diagram: outer cross-validation rotates an outer-test fold across 5 iterations; for one outer-training set, inner cross-validation rotates an inner-validation fold across 5 iterations to choose k, which is then refit on all outer-training data and evaluated once on that iteration's outer-test fold." style="margin:1.4rem 0;">
+<div style="display:flex;flex-wrap:wrap;gap:4px 4px;align-items:center;margin-bottom:12px;font-size:0.86rem;"><span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span>Outer training</span></span><span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span>Outer test</span></span><span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span>Inner training</span></span><span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span>Inner validation</span></span></div>
+<div style="display:flex;overflow-x:auto;gap:20px;align-items:flex-start;padding-bottom:6px;" aria-hidden="true">
+<div style="flex:0 0 auto;">
+<div style="font-weight:600;font-size:0.92rem;margin-bottom:2px;">Outer cross-validation</div>
+<div style="font-size:0.78rem;color:var(--ml-muted, #5c5674);margin-bottom:8px;max-width:180px;">5 outer iterations; the outer-test segment (yellow) rotates. Outlined row: the iteration zoomed into on the right.</div>
+<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">1</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">2</span><span style="display:flex;gap:3px;outline:2px solid var(--ml-accent, #dd5f1b);outline-offset:2px;border-radius:4px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">3</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">4</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">5</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span></span></div>
+</div>
+<div style="flex:0 0 auto;align-self:center;font-size:1.5rem;padding-top:44px;color:var(--ml-muted, #5c5674);">&#8594;</div>
+<div style="flex:0 0 auto;">
+<div style="font-weight:600;font-size:0.92rem;margin-bottom:2px;">Inner cross-validation</div>
+<div style="font-size:0.78rem;color:var(--ml-muted, #5c5674);margin-bottom:8px;max-width:180px;">Zoomed from outer iteration 2's training data: 5 inner iterations; the inner-validation segment (orange) rotates.</div>
+<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">1</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">2</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">3</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">4</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">5</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span></span></div>
+</div>
+<div style="flex:0 0 auto;align-self:center;font-size:1.5rem;padding-top:44px;color:var(--ml-muted, #5c5674);">&#8594;</div>
+<div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;max-width:190px;padding-top:30px;">
+<div style="border-left:4px solid var(--ml-ncv-inner-val, #e0a877);padding-left:8px;font-size:0.86rem;">Choose <code>k</code></div>
+<div style="border-left:4px solid var(--ml-ink, #1b1826);padding-left:8px;font-size:0.86rem;">Refit the selected <code>k</code> on all outer-training data</div>
+<div style="border-left:4px solid var(--ml-ncv-outer-test, #e6c368);padding-left:8px;font-size:0.86rem;">Evaluate the tuning procedure</div>
+</div>
+</div>
+<p style="margin-top:10px;font-size:0.86rem;color:var(--ml-muted, #5c5674);">Inner-validation folds (orange) choose <code>k</code>, using only the current outer iteration's training data. Outer-test folds (yellow) then evaluate the complete tuning procedure -- inner selection included -- on data the inner loop never saw. Outer-test folds never choose <code>k</code>.</p>
+</div>
+<p>The outer test fold must not participate in scaling, choosing <code class="docutils literal notranslate"><span class="pre">k</span></code>, comparing
+candidate models, or any other preprocessing decision for that fold. Because
+each outer fold’s training data contains different participants, different
+outer folds <em>can</em> select different values of <code class="docutils literal notranslate"><span class="pre">k</span></code> – the inner
+cross-validation does not have to agree with itself from fold to fold.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># One complete nested-cross-validation pipeline: an inner GridSearchCV</span>
+<span class="c1"># chooses k using only this outer fold's training data; the outer fold then</span>
+<span class="c1"># evaluates that choice on data the inner loop never saw. Scaling is fitted</span>
+<span class="c1"># inside the pipeline, so it is refit separately for every inner and outer</span>
+<span class="c1"># training partition.</span>
+<span class="n">NESTED_CANDIDATE_KS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">]</span>
+<span class="n">N_OUTER</span><span class="p">,</span> <span class="n">N_INNER</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span>
+<span class="n">OUTER_SEED</span><span class="p">,</span> <span class="n">INNER_SEED</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">101</span>
+
+<span class="n">outer_cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">N_OUTER</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">OUTER_SEED</span><span class="p">)</span>
+<span class="n">inner_cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">N_INNER</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">INNER_SEED</span><span class="p">)</span>
+
+<span class="n">nested_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">fold_i</span><span class="p">,</span> <span class="p">(</span><span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">outer_cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">)):</span>
+    <span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+    <span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+
+    <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"knn"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">())])</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span>
+        <span class="n">pipe</span><span class="p">,</span>
+        <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s2">"knn__n_neighbors"</span><span class="p">:</span> <span class="n">NESTED_CANDIDATE_KS</span><span class="p">},</span>
+        <span class="n">scoring</span><span class="o">=</span><span class="s2">"neg_mean_squared_error"</span><span class="p">,</span>
+        <span class="n">cv</span><span class="o">=</span><span class="n">inner_cv</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>  <span class="c1"># only this outer fold's TRAINING data</span>
+    <span class="n">selected_k</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">[</span><span class="s2">"knn__n_neighbors"</span><span class="p">]</span>
+
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_te</span><span class="p">)</span>  <span class="c1"># the outer TEST fold, evaluated once</span>
+    <span class="n">nested_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">"outer_fold"</span><span class="p">:</span> <span class="n">fold_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">"selected_k"</span><span class="p">:</span> <span class="n">selected_k</span><span class="p">,</span>
+            <span class="s2">"n_train"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_tr</span><span class="p">),</span>
+            <span class="s2">"n_test"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_te</span><span class="p">),</span>
+            <span class="s2">"outer_test_mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span>
+            <span class="s2">"outer_test_r2"</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+<span class="n">nested</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">nested_rows</span><span class="p">)</span>
+<span class="n">nested</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>outer_fold</th>
+      <th>selected_k</th>
+      <th>n_train</th>
+      <th>n_test</th>
+      <th>outer_test_mse</th>
+      <th>outer_test_r2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>15</td>
+      <td>803</td>
+      <td>201</td>
+      <td>36.265</td>
+      <td>0.678</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>12</td>
+      <td>803</td>
+      <td>201</td>
+      <td>31.147</td>
+      <td>0.565</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>10</td>
+      <td>803</td>
+      <td>201</td>
+      <td>43.106</td>
+      <td>0.605</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>18</td>
+      <td>803</td>
+      <td>201</td>
+      <td>20.459</td>
+      <td>0.646</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>15</td>
+      <td>804</td>
+      <td>200</td>
+      <td>35.798</td>
+      <td>0.605</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mean outer-test MSE = </span><span class="si">{</span><span class="n">nested</span><span class="p">[</span><span class="s1">'outer_test_mse'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   (sd </span><span class="si">{</span><span class="n">nested</span><span class="p">[</span><span class="s1">'outer_test_mse'</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mean outer-test R^2 = </span><span class="si">{</span><span class="n">nested</span><span class="p">[</span><span class="s1">'outer_test_r2'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"selected k per outer fold: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">nested</span><span class="p">[</span><span class="s1">'selected_k'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>mean outer-test MSE = 33.4   (sd 7.5)
+mean outer-test R^2 = 0.620
+selected k per outer fold: [15, 12, 10, 18, 15]
+</pre></div>
+</div>
+</div>
+</div>
+<p>With this denser grid, the outer folds no longer all agree: the
+<code class="docutils literal notranslate"><span class="pre">selected_k</span></code> column above shows four different values across the five
+outer folds. Different outer folds <em>can</em> select different <code class="docutils literal notranslate"><span class="pre">k</span></code> values,
+because each outer training set contains different participants – that
+is what happened here. They are not guaranteed to disagree, only
+permitted to: if a rerun’s folds all happened to agree instead, that
+would be an equally valid outcome, not evidence against the method. The
+best <em>inner</em> cross-validation score is not reported as a final
+performance estimate: it is biased toward whichever candidate happened
+to look best on the data used to choose it. The <strong>outer</strong>-test MSE and
+R² above – averaged over five folds that never influenced any tuning
+decision – estimate the performance of the whole tuning procedure.</p>
+<p>The activity below lets you inspect this fold by fold: which candidate
+<code class="docutils literal notranslate"><span class="pre">k</span></code> values the inner cross-validation compared, which one it selected,
+and how that selection then scored on the outer test fold.</p>
+<iframe
+  title="Interactive nested cross-validation explorer for predicting age from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/nested_cv_explorer.json"
+  loading="lazy"
+  width="100%"
+  height="1350"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe></section>
+<section id="choosing-a-validation-strategy">
+<h2>7. Choosing a Validation Strategy<a class="headerlink" href="#choosing-a-validation-strategy" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Situation</p></th>
+<th class="head"><p>Appropriate approach</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Large dataset and fixed model</p></td>
+<td><p>Train/test split may be sufficient</p></td>
+</tr>
+<tr class="row-odd"><td><p>Tune a model with enough data</p></td>
+<td><p>Train/validation/test split</p></td>
+</tr>
+<tr class="row-even"><td><p>Evaluate a fixed model with limited data</p></td>
+<td><p>Cross-validation</p></td>
+</tr>
+<tr class="row-odd"><td><p>Tune and evaluate with limited data</p></td>
+<td><p>Nested cross-validation</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Nested cross-validation estimates the performance of the complete tuning
+procedure. After evaluation, a final model can be tuned and fitted using all
+available development data, but its performance estimate still comes from
+the outer folds.</p>
+<p>In the homework, you will apply the same workflow to logistic-regression
+classification.</p>
+<p>These examples treat participants as independent observations. Repeated
+measurements from the same participant would need to remain together in the
+same fold.</p>
+</section>
+<section id="in-summary">
+<h2>In summary<a class="headerlink" href="#in-summary" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>One train/test split is an honest but single estimate; its exact number
+depends on which participants land in each subset, and that dependence is
+most visible at small sample sizes. Cross-validation evaluates the same
+fixed model across several partitions instead of one.</p></li>
+<li><p>Training, validation, and test data play three different roles: fit
+parameters, compare hyperparameter candidates, and evaluate the selected
+procedure once. Reusing the test set to choose or re-choose a hyperparameter
+turns it into another validation set.</p></li>
+<li><p>The training-selected <code class="docutils literal notranslate"><span class="pre">k</span></code> and the validation-selected <code class="docutils literal notranslate"><span class="pre">k</span></code> are different
+values here (Section 5) for a concrete reason: the training-selected value
+was chosen using the same data it is then judged on.</p></li>
+<li><p>Nested cross-validation keeps tuning and evaluation separate without
+spending participants on three fixed roles: an inner loop chooses <code class="docutils literal notranslate"><span class="pre">k</span></code>, an
+outer loop evaluates the whole procedure on data the inner loop never saw.
+Different outer folds can select different <code class="docutils literal notranslate"><span class="pre">k</span></code> values, because each has
+different training data.</p></li>
+<li><p>No single validation strategy is always correct – the right one depends on
+dataset size and on whether the model is being tuned or only evaluated.</p></li>
+</ul>
+<p>Next practice: regularization and feature selection.</p>
+<section id="questions-to-take-away">
+<h3>Questions to take away<a class="headerlink" href="#questions-to-take-away" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Why does a single train/test split’s result depend on which participants
+land in the test set, and why does that dependence matter more at small
+sample sizes?</p></li>
+<li><p>In Section 3, why does scikit-learn report <em>negative</em> mean squared error,
+and why does that not change which fold’s model performed best?</p></li>
+<li><p>What is a hyperparameter? Give one example from this notebook and one from
+Exercise 3.</p></li>
+<li><p>In Section 5, why is the training-selected <code class="docutils literal notranslate"><span class="pre">k</span></code> expected to look better than
+the validation-selected <code class="docutils literal notranslate"><span class="pre">k</span></code> on the training data itself?</p></li>
+<li><p>Why would repeatedly checking the test result and re-choosing <code class="docutils literal notranslate"><span class="pre">k</span></code>
+invalidate the test score as an evaluation?</p></li>
+<li><p>In Section 6, what does the inner cross-validation choose, and what does
+the outer cross-validation evaluate?</p></li>
+<li><p>Why is the best <em>inner</em> cross-validation score not reported as the final
+performance estimate?</p></li>
+<li><p>Why can different outer folds select different values of <code class="docutils literal notranslate"><span class="pre">k</span></code>?</p></li>
+<li><p>A dataset has repeated scans from the same participants. What would need
+to change about how folds are constructed?</p></li>
+</ol>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -485,6 +1356,37 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#our-regression-data">1. Our Regression Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-one-split-to-cross-validation">2. From One Split to Cross-Validation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cross-validation-for-a-fixed-knn-model">3. Cross-Validation for a Fixed KNN Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-validation-and-test-data">4. Train, Validation, and Test Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tune-knn-without-looking-at-the-test-set">5. Tune KNN Without Looking at the Test Set</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-reproduce-the-tuning-activity-in-python">Optional: Reproduce the Tuning Activity in Python</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nested-cross-validation">6. Nested Cross-Validation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-a-validation-strategy">7. Choosing a Validation Strategy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-summary">In summary</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

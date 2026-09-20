@@ -48,6 +48,17 @@
 
   --ml-measure: 46rem;        /* comfortable text column                  */
   --ml-radius: 10px;
+
+  /* WP27R: Exercise 4's inline nested-cross-validation split diagram
+     (raw HTML in the notebook, no Mermaid/JS). Every colored element sets
+     these via `background-color:var(--ml-ncv-x, #fallback)` with a
+     fallback matching the value below, so the exact same markup renders
+     with sensible static (light-mode) colors anywhere this stylesheet is
+     absent -- the portable notebook, Colab, GitHub. */
+  --ml-ncv-outer-train: #a9c2e3;  /* muted blue   */
+  --ml-ncv-outer-test: #e6c368;   /* muted yellow */
+  --ml-ncv-inner-train: #a3cbae;  /* muted green  */
+  --ml-ncv-inner-val: #e0a877;    /* muted orange */
 }
 
 /* Re-map the theme's own tokens (light). These selectors match the
@@ -95,6 +106,13 @@ html[data-theme="dark"] {
   --pst-color-link-hover: #f7ad82;
   --pst-color-accent: #f0915c;
   --pst-color-inline-code: #f0915c;
+
+  /* WP27R: dark-mode override for the nested-cross-validation diagram
+     colors defined on :root below. */
+  --ml-ncv-outer-train: #4d6a94;
+  --ml-ncv-outer-test: #8a7434;
+  --ml-ncv-inner-train: #3f6b4d;
+  --ml-ncv-inner-val: #8a5a34;
 }
 
 /* --------------------------------------------------------------------------

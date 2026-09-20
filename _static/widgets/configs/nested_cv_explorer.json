@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "type": "nested-cv-explorer",
+  "title": "Look Inside Nested Cross-Validation",
+  "description": "Course activity for Exercise 4: inspect, outer fold by outer fold, how inner cross-validation selects k and how the outer-test fold then evaluates that choice.",
+  "instructions": "Choose an outer fold. The bar chart shows the inner cross-validation's mean MSE for every candidate k inside that fold's training data; the highlighted bar is the k it selected. The table below summarises every outer fold.",
+  "data": "../data/wp27_nested_cv_explorer.json",
+  "defaultOuterFold": 0,
+  "reflectionPrompts": [
+    "Why can different outer folds select different values of k?",
+    "Which result estimates future performance: the best inner score or the outer score?",
+    "Why must the outer-test score not influence the selected k?",
+    "What would go wrong if scaling were fitted before creating the folds?"
+  ]
+}

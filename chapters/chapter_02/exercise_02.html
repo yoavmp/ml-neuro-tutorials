@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=dc70b5b1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=5cd63e90" />
     <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-B2O2tOh4.css?v=592f4e85" />
   
   <!-- So that users can add custom icons -->
@@ -67,9 +67,9 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_02/exercise_02';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=dc5299d9"></script>
+    <script src="../../_static/launch-buttons.js?v=53d626a9"></script>
     <script src="../../_static/activity-resize.js?v=8e0b1445"></script>
-    <script src="../../_static/widgets/app/assets/index-Dq5i0z3g.js?v=e182aabd"></script>
+    <script src="../../_static/widgets/app/assets/index-lCZ4SDbv.js?v=0d143c57"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Exercise 3: Classification and Metrics" href="../chapter_03/exercise_03.html" />
@@ -227,7 +227,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1: Exploratory Data Analysis</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 2: Regression and Bias-Variance Trade-Off</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_03/exercise_03.html">Exercise 3: Classification and Metrics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Cross-Validation for Classification and Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Validation and Cross-Validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Trees and Boosting</a></li>
@@ -442,7 +442,6 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-performance-changes-across-every-k">6. How performance changes across every k</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-k-yourself">7. Explore k yourself</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bonus">Bonus</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-feature-sets">Comparing feature sets</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-does-sample-size-change">What does sample size change?</a></li>
 </ul>
 </li>
@@ -1293,7 +1292,7 @@ idea, and its plain-language description, in the browser).</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>computed 564 values of k for 564 fitting and 189 validation points in 0.7s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>computed 564 values of k for 564 fitting and 189 validation points in 0.4s
 k=1                        fit R^2=1.000   val R^2=0.279
 k=17 (lowest validation error)  val R^2=0.634
 k=N_fit=564                fit R^2=-0.000   val R^2=-0.004
@@ -1409,50 +1408,8 @@ sent anywhere.</p>
 </section>
 <section id="bonus">
 <h2>Bonus<a class="headerlink" href="#bonus" title="Link to this heading">#</a></h2>
-<p>The two activities below extend the main lesson with two further, optional
-explorations of linear regression – they are not required for the core session.</p>
-<section id="comparing-feature-sets">
-<h3>Comparing feature sets<a class="headerlink" href="#comparing-feature-sets" title="Link to this heading">#</a></h3>
-<p>Cortical structure changes with age across most of the brain, not in one
-circumscribed system: large multi-site lifespan mapping (Bethlehem et al.,
-2022,
-<a class="reference external" href="https://doi.org/10.1038/s41586-022-04554-y">doi:10.1038/s41586-022-04554-y</a>)
-and longitudinal work on adult cortical change (Storsve et al., 2014,
-<a class="reference external" href="https://doi.org/10.1523/JNEUROSCI.0391-14.2014">doi:10.1523/JNEUROSCI.0391-14.2014</a>)
-both describe widespread, region-varying change with age rather than change
-confined to a small set of regions. So there is no single small region set
-this exercise’s own age literature prefers; the bundles below are used here
-simply as several differently sized, differently located anatomical
-comparisons.</p>
-<p>The activity compares two models at a time on <strong>one fixed cohort and one fixed
-evaluation procedure</strong>, so any difference is a real difference between feature
-sets. It shows out-of-sample scores only – never training scores.</p>
-<iframe
-  title="Interactive feature-set comparison for predicting age from brain structure"
-  src="../../_static/widgets/app/index.html?config=../configs/regression_compare.json"
-  loading="lazy"
-  width="100%"
-  height="1180"
-  class="ml-activity"
-  style="width: 100%;"
-></iframe>
-<div class="think-first admonition">
-<p class="admonition-title">Think first</p>
-<ol class="arabic simple">
-<li><p>Hold the ROI bundle fixed and change only the measurement type; then hold the
-measurement fixed and change only the bundle. Which control moves R² more?</p></li>
-<li><p>Set one model to <code class="docutils literal notranslate"><span class="pre">All</span> <span class="pre">eligible</span> <span class="pre">ROIs</span></code>. What happens to the feature count and
-to R², and why – and is that the same direction of change you would expect
-for a target with a much weaker brain-based signal than age?</p></li>
-<li><p>Find the single best-scoring configuration you can. Would you trust its R²
-as your final reported number? Why or why not?</p></li>
-</ol>
-</div>
-<p>Trying many configurations is <strong>exploratory model comparison</strong>. If you pick the
-best-looking one and quote its R² as “the” performance, that number is
-optimistic – you chose it <em>because</em> it looked good on this data. A locked
-test set or a nested procedure is needed for a trustworthy final claim.</p>
-</section>
+<p>The activity below extends the main lesson with one further, optional
+exploration of linear regression – it is not required for the core session.</p>
 <section id="what-does-sample-size-change">
 <h3>What does sample size change?<a class="headerlink" href="#what-does-sample-size-change" title="Link to this heading">#</a></h3>
 <p>Here, and only here, the feature set changes: to isolate what growing the training set does to model stability and held-out accuracy, this section fixes a small, 10-column cortical-thickness feature set – the bilateral sensorimotor strip (primary motor cortex, BA4, plus primary somatosensory cortex, BA 3a/3b/1/2) – instead of the whole-cortex set used in Sections 1-4, and varies only the number of training participants. <code class="docutils literal notranslate"><span class="pre">age</span></code>, the fixed held-out test set from Section 2, and the model family are unchanged.</p>
@@ -1612,8 +1569,6 @@ flatten as <code class="docutils literal notranslate"><span class="pre">k</span>
 and variance?</p></li>
 <li><p>Would the <code class="docutils literal notranslate"><span class="pre">k</span></code> used here necessarily generalise to a completely new scanning site? Why
 or why not?</p></li>
-<li><p>Two feature sets in the Bonus activity give different R². List three reasons other
-than “one set is biologically better” that could explain the gap.</p></li>
 <li><p>The Bonus sample-size activity uses a much smaller feature set than Sections 1-4.
 Name one thing in the plot, other than the median line itself, that tells you the
 rising trend is real and not one lucky run.</p></li>
@@ -1703,7 +1658,6 @@ point just because one run’s score happened to look good?</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-performance-changes-across-every-k">6. How performance changes across every k</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-k-yourself">7. Explore k yourself</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bonus">Bonus</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-feature-sets">Comparing feature sets</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-does-sample-size-change">What does sample size change?</a></li>
 </ul>
 </li>

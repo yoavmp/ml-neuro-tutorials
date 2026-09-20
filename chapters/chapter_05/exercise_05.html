@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=dc70b5b1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=5cd63e90" />
     <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-B2O2tOh4.css?v=592f4e85" />
   
   <!-- So that users can add custom icons -->
@@ -62,16 +62,18 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_05/exercise_05';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=dc5299d9"></script>
+    <script src="../../_static/launch-buttons.js?v=53d626a9"></script>
     <script src="../../_static/activity-resize.js?v=8e0b1445"></script>
-    <script src="../../_static/widgets/app/assets/index-Dq5i0z3g.js?v=e182aabd"></script>
+    <script src="../../_static/widgets/app/assets/index-lCZ4SDbv.js?v=0d143c57"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Exercise 6: Decision Trees" href="../chapter_06/exercise_06.html" />
-    <link rel="prev" title="Exercise 4: Cross-Validation for Classification and Regression" href="../chapter_04/exercise_04.html" />
+    <link rel="prev" title="Exercise 4: Validation and Cross-Validation" href="../chapter_04/exercise_04.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -159,6 +161,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -221,7 +227,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1: Exploratory Data Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_02/exercise_02.html">Exercise 2: Regression and Bias-Variance Trade-Off</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_03/exercise_03.html">Exercise 3: Classification and Metrics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Cross-Validation for Classification and Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Validation and Cross-Validation</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 5: Regularization and Feature Selection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Trees and Boosting</a></li>
@@ -338,7 +344,7 @@
       
       
       
-      <li><a href="../../_sources/chapters/chapter_05/exercise_05.md" target="_blank"
+      <li><a href="../../_sources/chapters/chapter_05/exercise_05.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -348,7 +354,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.ipynb</span>
 </a>
 </li>
       
@@ -401,7 +407,9 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -417,6 +425,37 @@
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-select-features">1. Why Select Features?</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#predefined-selection">Predefined selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-driven-selection">Data-driven selection</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-predefined-feature-sets">2. Compare Predefined Feature Sets</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#select-features-using-the-data">3. Select Features Using the Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#an-intuitive-first-look-correlation-with-age">An intuitive first look: correlation with age</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-leakage-safe-pipeline-selectkbest-inside-cross-validation">A leakage-safe pipeline: <code class="docutils literal notranslate"><span class="pre">SelectKBest</span></code> inside cross-validation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ridge-and-lasso-regression">4. Ridge and Lasso Regression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-regularization">5. Explore Regularization</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-reproduce-the-activity-in-python">Optional: Reproduce the Activity in Python</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-complete-regularized-regression-pipeline">6. A Complete Regularized Regression Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-feature-selection-methods">7. Other Feature-Selection Methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-we-choose-a-feature-selection-method">8. How Do We Choose a Feature-Selection Method?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-summary">In summary</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -428,7 +467,1127 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="exercise-5-regularization-and-feature-selection">
 <h1>Exercise 5: Regularization and Feature Selection<a class="headerlink" href="#exercise-5-regularization-and-feature-selection" title="Link to this heading">#</a></h1>
-<p>Materials for this exercise will be added before the practice session.</p>
+<div class="how-to-use admonition">
+<p class="admonition-title">Run or download this notebook</p>
+<p>This page is fully readable as it is, and the interactive activities work
+here in the browser. To <strong>run or change the Python code</strong>, use the portable
+version of the notebook:</p>
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_05/exercise_05_portable.ipynb">Open the portable notebook in Colab</a></strong></p></li>
+<li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_05/exercise_05_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
+for VS Code or Jupyter</p></li>
+</ul>
+<p>The portable notebook keeps every Python analysis cell and swaps each
+embedded activity for a link back to this page.</p>
+</div>
+<section id="what-this-notebook-covers">
+<h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
+<p>This is Exercise 5 of <em>Machine Learning for Neuroscience</em>. Exercise 5 examines
+how we decide which predictors to include in a model. We will compare
+predefined and data-driven feature selection, use Ridge and Lasso regression,
+and introduce stepwise selection.</p>
+<p>In this notebook you will:</p>
+<ol class="arabic simple">
+<li><p>distinguish predefined feature selection from data-driven feature
+selection;</p></li>
+<li><p>compare feature sets chosen from prior anatomical knowledge;</p></li>
+<li><p>select features using training-data correlations, inside a leakage-safe
+pipeline;</p></li>
+<li><p>examine how Ridge and Lasso change model coefficients;</p></li>
+<li><p>explore regularization strength interactively;</p></li>
+<li><p>tune regularization inside a complete nested cross-validation pipeline;</p></li>
+<li><p>introduce stepwise feature selection;</p></li>
+<li><p>reflect on how to choose a feature-selection method.</p></li>
+</ol>
+<p><strong>Prerequisites:</strong> Exercise 2’s regression material and Exercise 4’s
+validation and cross-validation material; comfort with <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>,
+and the scikit-learn <code class="docutils literal notranslate"><span class="pre">fit</span></code> / <code class="docutils literal notranslate"><span class="pre">predict</span></code> / <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> pattern.</p>
+</section>
+<section id="why-select-features">
+<h2>1. Why Select Features?<a class="headerlink" href="#why-select-features" title="Link to this heading">#</a></h2>
+<p>Exercise 2 and Exercise 4 used every one of the 360 cortical-thickness
+predictors, fixed in advance, to predict age from brain structure. More
+predictors may provide more information, but they can also add noise,
+redundancy, and opportunities to overfit. This notebook asks a question those
+two notebooks set aside: how do we decide which predictors to include?</p>
+<section id="predefined-selection">
+<h3>Predefined selection<a class="headerlink" href="#predefined-selection" title="Link to this heading">#</a></h3>
+<p>Features chosen using:</p>
+<ul class="simple">
+<li><p>anatomical hypotheses;</p></li>
+<li><p>prior literature;</p></li>
+<li><p>measurement type;</p></li>
+<li><p>a research question defined before examining the target data.</p></li>
+</ul>
+</section>
+<section id="data-driven-selection">
+<h3>Data-driven selection<a class="headerlink" href="#data-driven-selection" title="Link to this heading">#</a></h3>
+<p>Features chosen using:</p>
+<ul class="simple">
+<li><p>correlation with the target;</p></li>
+<li><p>improvement in predictive performance;</p></li>
+<li><p>model-based coefficient shrinkage.</p></li>
+</ul>
+<p>Predefined feature selection can happen before splitting the data into
+training and test sets when it is genuinely independent of the current
+target data – it comes from anatomy or prior literature, not from looking at
+this cohort’s ages. Data-driven, target-informed selection is different: it
+must be done using training data only. Selecting features by consulting all
+participants – including the ones later used for testing – before
+validation is <strong>data leakage</strong>: the test set would no longer measure
+performance on unseen participants, because it had already influenced which
+predictors the model was allowed to see.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ul class="simple">
+<li><p>Is a feature included because it is biologically plausible, predictive, or
+both?</p></li>
+<li><p>Does a strong individual correlation guarantee that a feature improves a
+multivariable model?</p></li>
+<li><p>Can several brain measurements contain mostly overlapping information?</p></li>
+<li><p>What happens if the test participants influence feature selection?</p></li>
+</ul>
+</div>
+<p>This notebook reuses Exercise 2 and Exercise 4’s exact ABIDE-II data table,
+target, feature recipe, and fixed train/test split – nothing about the data
+or the split changes here.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data loading. In the published book this cell is collapsed; it is plain,</span>
+<span class="c1"># runnable Python -- one public CSV pinned to an immutable commit. This is</span>
+<span class="c1"># the exact same ABIDE-II table Exercises 2 and 4 use, with age as a native</span>
+<span class="c1"># column.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span><span class="p">,</span> <span class="n">Lasso</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span><span class="p">,</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">KFold</span><span class="p">,</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.feature_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">SelectKBest</span><span class="p">,</span> <span class="n">f_regression</span><span class="p">,</span> <span class="n">SequentialFeatureSelector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+
+<span class="n">PIN</span> <span class="o">=</span> <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"</span>
+<span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/</span><span class="si">{</span><span class="n">PIN</span><span class="si">}</span><span class="s2">/tu-machine-learning-yarkoni/data"</span>
+
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE</span><span class="si">}</span><span class="s2">/abide2.tsv"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Unnamed"</span><span class="p">)]]</span>
+
+<span class="n">BRAIN_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data table: </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>data table: 1004 participants x 1446 columns
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The same fixed 360 cortical-thickness predictors, and the same fixed,</span>
+<span class="c1"># stratified train/test split, used throughout Exercises 2 and 4.</span>
+<span class="n">FEATURES</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">BRAIN_COLS</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)]</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES</span><span class="p">)</span>           <span class="c1"># brain-only</span>
+<span class="k">assert</span> <span class="s2">"age"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FEATURES</span>                                  <span class="c1"># no target leakage</span>
+
+<span class="n">has_age</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">groups</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>      <span class="c1"># 1 = autism, 2 = control</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">groups_train</span><span class="p">,</span> <span class="n">groups_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES</span><span class="p">)</span><span class="si">}</span><span class="s2"> predictors, e.g. </span><span class="si">{</span><span class="n">FEATURES</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_train = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_test = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_features = </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>360 predictors, e.g. ['fsCT_L_V1_ROI', 'fsCT_L_MST_ROI', 'fsCT_L_V6_ROI']
+n_train = 753   n_test = 251   n_features = 360
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="compare-predefined-feature-sets">
+<h2>2. Compare Predefined Feature Sets<a class="headerlink" href="#compare-predefined-feature-sets" title="Link to this heading">#</a></h2>
+<p>Prior knowledge can define a feature set before model fitting. Here, we
+compare feature groups based on anatomical regions and measurement types.</p>
+<p>Cortical structure changes with age across most of the brain, not in one
+circumscribed system: large multi-site lifespan mapping (Bethlehem et al.,
+2022,
+<a class="reference external" href="https://doi.org/10.1038/s41586-022-04554-y">doi:10.1038/s41586-022-04554-y</a>)
+and longitudinal work on adult cortical change (Storsve et al., 2014,
+<a class="reference external" href="https://doi.org/10.1523/JNEUROSCI.0391-14.2014">doi:10.1523/JNEUROSCI.0391-14.2014</a>)
+both describe widespread, region-varying change with age rather than change
+confined to a small set of regions. So there is no single small region set
+this exercise’s own age literature prefers; the bundles below are used here
+simply as several differently sized, differently located anatomical
+comparisons, each chosen before looking at how well it predicts age in this
+cohort.</p>
+<p>The activity compares two models at a time on <strong>one fixed cohort and one
+fixed evaluation procedure</strong>, so any difference is a real difference between
+feature sets. It shows out-of-sample scores only – never training scores.</p>
+<iframe
+  title="Interactive feature-set comparison for predicting age from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/regression_compare.json"
+  loading="lazy"
+  width="100%"
+  height="1180"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ol class="arabic simple">
+<li><p>Hold the ROI bundle fixed and change only the measurement type; then hold the
+measurement fixed and change only the bundle. Which control moves R² more?</p></li>
+<li><p>Set one model to <code class="docutils literal notranslate"><span class="pre">All</span> <span class="pre">eligible</span> <span class="pre">ROIs</span></code>. What happens to the feature count and
+to R², and why – and is that the same direction of change you would expect
+for a target with a much weaker brain-based signal than age?</p></li>
+<li><p>Find the single best-scoring configuration you can. Would you trust its R²
+as your final reported number? Why or why not?</p></li>
+</ol>
+</div>
+<p>Trying several feature sets on the same evaluation data is exploratory
+comparison. If we choose the best-looking set, that choice must be included
+inside a new validation procedure before reporting final performance.</p>
+<p>The frontal cortical-thickness set may predict age reasonably well – but are
+all of these features useful for prediction? Perhaps a smaller subset carries
+most of the signal while the remaining features add noise. The rest of this
+notebook asks that question directly.</p>
+</section>
+<section id="select-features-using-the-data">
+<h2>3. Select Features Using the Data<a class="headerlink" href="#select-features-using-the-data" title="Link to this heading">#</a></h2>
+<p>Instead of choosing a feature set from prior knowledge, we can rank features
+by how strongly each one, on its own, relates to age – and use that ranking
+to select a subset. This section shows two stages: an intuitive first look,
+and then the leakage-safe pipeline version that actually belongs inside a
+validation procedure.</p>
+<section id="an-intuitive-first-look-correlation-with-age">
+<h3>An intuitive first look: correlation with age<a class="headerlink" href="#an-intuitive-first-look-correlation-with-age" title="Link to this heading">#</a></h3>
+<p>The cell below computes each of the 360 cortical-thickness features’
+Pearson correlation with age, <strong>using the training participants only</strong> – the
+251 test participants are never read here.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">corrs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="n">j</span><span class="p">],</span> <span class="n">y_train</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+<span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">corrs</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"correlation range across all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES</span><span class="p">)</span><span class="si">}</span><span class="s2"> features: [</span><span class="si">{</span><span class="n">corrs</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">corrs</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">5 most negatively correlated with age (thinner with older age):"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">FEATURES</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> r = </span><span class="si">{</span><span class="n">corrs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">5 with the weakest correlation with age (near zero):"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">corrs</span><span class="p">))[:</span><span class="mi">5</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">FEATURES</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> r = </span><span class="si">{</span><span class="n">corrs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">5 least negative (closest to a positive relationship with age):"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="mi">5</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">FEATURES</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> r = </span><span class="si">{</span><span class="n">corrs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>correlation range across all 360 features: [-0.563, +0.087]
+
+5 most negatively correlated with age (thinner with older age):
+  fsCT_L_5mv_ROI       r = -0.563
+  fsCT_L_DVT_ROI       r = -0.557
+  fsCT_R_V2_ROI        r = -0.544
+  fsCT_L_MBelt_ROI     r = -0.538
+  fsCT_R_23c_ROI       r = -0.532
+
+5 with the weakest correlation with age (near zero):
+  fsCT_L_TGd_ROI       r = -0.001
+  fsCT_R_H_ROI         r = -0.002
+  fsCT_R_PreS_ROI      r = -0.005
+  fsCT_R_AAIC_ROI      r = +0.006
+  fsCT_L_PeEc_ROI      r = -0.006
+
+5 least negative (closest to a positive relationship with age):
+  fsCT_R_Pir_ROI       r = +0.087
+  fsCT_R_TGv_ROI       r = +0.052
+  fsCT_L_EC_ROI        r = +0.050
+  fsCT_R_TGd_ROI       r = +0.031
+  fsCT_R_PeEc_ROI      r = +0.028
+</pre></div>
+</div>
+</div>
+</div>
+<p>Almost every cortical-thickness feature correlates negatively with age here
+– consistent with the widespread cortical thinning described in the
+lifespan-mapping literature cited above – with a range from a moderate
+negative correlation down to essentially zero. None reaches a strong positive
+correlation in this cohort. A correlation this size, on its own, does not say
+whether a feature adds anything once other correlated predictors are already
+in the model: many of these 360 columns are themselves correlated with each
+other, since neighbouring cortical regions tend to thin together.</p>
+</section>
+<section id="a-leakage-safe-pipeline-selectkbest-inside-cross-validation">
+<h3>A leakage-safe pipeline: <code class="docutils literal notranslate"><span class="pre">SelectKBest</span></code> inside cross-validation<a class="headerlink" href="#a-leakage-safe-pipeline-selectkbest-inside-cross-validation" title="Link to this heading">#</a></h3>
+<p>Ranking every feature on the full training set once, then reusing that same
+ranking for every cross-validation fold, would let each fold’s training
+score benefit from information in the rows that fold was supposed to leave
+out for validation. A <strong>feature selector</strong>, like any other model-fitting
+step, must be recalculated separately inside each training fold. <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code>’s
+<code class="docutils literal notranslate"><span class="pre">SelectKBest(score_func=f_regression)</span></code> ranks features by their relationship
+with the target and keeps the <code class="docutils literal notranslate"><span class="pre">k</span></code> best; placed inside a <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code>, it is
+refit on each fold’s training rows only, exactly like <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code>.</p>
+<p>The cell below compares candidate retained-feature counts
+<code class="docutils literal notranslate"><span class="pre">5,</span> <span class="pre">10,</span> <span class="pre">20,</span> <span class="pre">40,</span> <span class="pre">80,</span> <span class="pre">160,</span> <span class="pre">all</span> <span class="pre">(360)</span></code> with 5-fold cross-validation on the
+outer-training partition. The outer test set is not read anywhere in this
+cell.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">K_GRID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">360</span><span class="p">]</span>
+
+<span class="n">select_pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"select"</span><span class="p">,</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">score_func</span><span class="o">=</span><span class="n">f_regression</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"lr"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">()),</span>
+<span class="p">])</span>
+<span class="n">select_cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">select_grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span>
+    <span class="n">select_pipe</span><span class="p">,</span> <span class="p">{</span><span class="s2">"select__k"</span><span class="p">:</span> <span class="n">K_GRID</span><span class="p">},</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">"neg_mean_squared_error"</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">select_cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">select_grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">select_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">"k"</span><span class="p">:</span> <span class="n">K_GRID</span><span class="p">,</span>
+    <span class="s2">"cv_mse"</span><span class="p">:</span> <span class="o">-</span><span class="n">select_grid</span><span class="o">.</span><span class="n">cv_results_</span><span class="p">[</span><span class="s2">"mean_test_score"</span><span class="p">],</span>
+    <span class="s2">"cv_mse_std"</span><span class="p">:</span> <span class="n">select_grid</span><span class="o">.</span><span class="n">cv_results_</span><span class="p">[</span><span class="s2">"std_test_score"</span><span class="p">],</span>
+<span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"best k by cross-validation: </span><span class="si">{</span><span class="n">select_grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">[</span><span class="s1">'select__k'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">select_results</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>best k by cross-validation: 80
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>k</th>
+      <th>cv_mse</th>
+      <th>cv_mse_std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5</td>
+      <td>49.08</td>
+      <td>9.88</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>10</td>
+      <td>44.87</td>
+      <td>9.01</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>20</td>
+      <td>41.49</td>
+      <td>6.59</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>40</td>
+      <td>40.99</td>
+      <td>5.50</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>80</td>
+      <td>40.83</td>
+      <td>4.57</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>160</td>
+      <td>44.27</td>
+      <td>4.70</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>360</td>
+      <td>63.15</td>
+      <td>4.14</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">3.8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">select_results</span><span class="p">[</span><span class="s2">"k"</span><span class="p">],</span> <span class="n">select_results</span><span class="p">[</span><span class="s2">"cv_mse"</span><span class="p">],</span> <span class="n">yerr</span><span class="o">=</span><span class="n">select_results</span><span class="p">[</span><span class="s2">"cv_mse_std"</span><span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">capsize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"retained features, k (log scale)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"cross-validation MSE (lower is better)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"SelectKBest: retained-feature count vs cross-validation MSE"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/1fd5d64f703bee45eeab0964bbf49ebb63540fa7dae5a1170afc19eed05d5912.png" src="../../_images/1fd5d64f703bee45eeab0964bbf49ebb63540fa7dae5a1170afc19eed05d5912.png" />
+</div>
+</div>
+<p>Cross-validation MSE improves as <code class="docutils literal notranslate"><span class="pre">k</span></code> grows from 5 up to roughly the low
+hundreds, then gets worse again by <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">360</span></code> (every feature) – selecting more
+features does not always improve validation performance. Somewhere in the
+middle, the selected features carry most of the usable signal; beyond that
+point, additional features mostly add redundancy and noise for this model and
+this cross-validation split.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ul class="simple">
+<li><p>Why must target correlations be recalculated in each training fold?</p></li>
+<li><p>Can a feature with weak individual correlation still help a multivariable
+model?</p></li>
+<li><p>Does selecting more features always improve validation performance?</p></li>
+<li><p>Why can two correlated predictors provide redundant information?</p></li>
+</ul>
+</div>
+</section>
+</section>
+<section id="ridge-and-lasso-regression">
+<h2>4. Ridge and Lasso Regression<a class="headerlink" href="#ridge-and-lasso-regression" title="Link to this heading">#</a></h2>
+<p>Ordinary linear regression (Exercise 2) chooses coefficients
+<span class="math notranslate nohighlight">\(\beta_1, \ldots, \beta_p\)</span> to minimize the sum of squared errors (SSE)
+between predicted and observed age, with no penalty on the coefficients’
+size. <strong>Regularization</strong> adds a penalty on the size of the coefficients to
+that fitting objective, so the model is rewarded for fitting the data well
+<em>and</em> for keeping coefficients small.</p>
+<p><strong>Ridge regression</strong> penalizes the sum of squared coefficients:</p>
+<div class="math notranslate nohighlight">
+\[
+\text{Ridge:}\quad
+\mathrm{SSE}+\alpha\sum_j\beta_j^2
+\]</div>
+<p><strong>Lasso regression</strong> penalizes the sum of absolute coefficients:</p>
+<div class="math notranslate nohighlight">
+\[
+\text{Lasso:}\quad
+\mathrm{SSE}+\alpha\sum_j|\beta_j|
+\]</div>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>What happens to coefficients?</p></th>
+<th class="head"><p>Selects features?</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linear regression</p></td>
+<td><p>No shrinkage</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ridge</p></td>
+<td><p>Coefficients shrink toward zero</p></td>
+<td><p>Usually no</p></td>
+</tr>
+<tr class="row-even"><td><p>Lasso</p></td>
+<td><p>Some coefficients become exactly zero</p></td>
+<td><p>Yes</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Ridge is regularization, not usually <strong>feature selection</strong>: it shrinks every
+coefficient toward zero but rarely sets one to exactly zero, so it keeps
+using (a shrunk version of) every predictor. Lasso is regularization <em>and</em>
+embedded feature selection: its penalty can drive individual coefficients to
+exactly zero, dropping those predictors from the fitted model entirely.</p>
+<p><span class="math notranslate nohighlight">\(\alpha\)</span> (alpha) controls the penalty’s strength for either model. A very
+small <span class="math notranslate nohighlight">\(\alpha\)</span> makes the penalty negligible, so the fit approaches ordinary
+linear regression; a very large <span class="math notranslate nohighlight">\(\alpha\)</span> can push coefficients so close to
+zero that the model badly underfits, predicting close to the same value for
+everyone regardless of their brain measurements. Because the penalty is
+applied to the coefficients’ raw size, predictors must be put on the same
+scale – standardized, as <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> already does throughout this
+course – before that penalty can compare and shrink them fairly; an
+unstandardized predictor with large numeric values would otherwise be
+penalized differently just because of its units.</p>
+<p>As in Exercise 2’s bias-variance discussion: less flexibility (a larger
+<span class="math notranslate nohighlight">\(\alpha\)</span>) tends to raise bias and lower variance, and more flexibility (a
+smaller <span class="math notranslate nohighlight">\(\alpha\)</span>, closer to unregularized linear regression) tends to lower
+bias and raise variance. Exercise 4’s validation tools – training vs.
+validation curves, and nested cross-validation – are exactly what is needed
+to choose <span class="math notranslate nohighlight">\(\alpha\)</span> well; this notebook does not reteach them from scratch.</p>
+<p>A concrete illustration uses the same idea as Exercise 4’s tuning section: a
+further split of the training partition into a fitting subset and a
+validation subset (identical split to Exercise 4’s own tune-without-touching-test
+step), so we can watch training and validation error separately while trying
+a few fixed <span class="math notranslate nohighlight">\(\alpha\)</span> values, before the interactive activity below explores a
+full range.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_fit</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups_train</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_fit = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_fit</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_val = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_val</span><span class="p">)</span><span class="si">}</span><span class="s2">   (from the </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">-row outer-training partition only)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>n_fit = 564   n_val = 189   (from the 753-row outer-training partition only)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Three fixed, illustrative configurations -- not yet tuned. StandardScaler</span>
+<span class="c1"># is fit on the fitting subset only, then applied to both subsets.</span>
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_fit</span><span class="p">)</span>
+<span class="n">Xf</span><span class="p">,</span> <span class="n">Xv</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_fit</span><span class="p">),</span> <span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_val</span><span class="p">)</span>
+
+<span class="n">illustration_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">"Linear regression"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"Ridge (alpha = 1)"</span><span class="p">,</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"Lasso (alpha = 0.1)"</span><span class="p">,</span> <span class="n">Lasso</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">20000</span><span class="p">)),</span>
+<span class="p">]:</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xf</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>
+    <span class="n">train_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_fit</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xf</span><span class="p">))</span>
+    <span class="n">val_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xv</span><span class="p">))</span>
+    <span class="n">nnz</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">))</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="p">))</span>
+    <span class="n">illustration_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"model"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">"train_mse"</span><span class="p">:</span> <span class="n">train_mse</span><span class="p">,</span> <span class="s2">"val_mse"</span><span class="p">:</span> <span class="n">val_mse</span><span class="p">,</span>
+                               <span class="s2">"nonzero_coefficients"</span><span class="p">:</span> <span class="n">nnz</span><span class="p">,</span> <span class="s2">"coefficient_norm"</span><span class="p">:</span> <span class="n">norm</span><span class="p">})</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">illustration_rows</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>model</th>
+      <th>train_mse</th>
+      <th>val_mse</th>
+      <th>nonzero_coefficients</th>
+      <th>coefficient_norm</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Linear regression</td>
+      <td>10.34</td>
+      <td>76.12</td>
+      <td>360</td>
+      <td>12.83</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Ridge (alpha = 1)</td>
+      <td>10.35</td>
+      <td>72.04</td>
+      <td>360</td>
+      <td>12.36</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Lasso (alpha = 0.1)</td>
+      <td>18.64</td>
+      <td>25.39</td>
+      <td>177</td>
+      <td>5.04</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Even at these fixed, unturned <span class="math notranslate nohighlight">\(\alpha\)</span> values, the pattern from the table
+above already shows up: Ridge’s coefficient count stays at all 360 predictors
+while its coefficient norm shrinks relative to unregularized linear
+regression; Lasso’s coefficient count drops well below 360 – some
+coefficients have become exactly zero. Whether these particular <span class="math notranslate nohighlight">\(\alpha\)</span>
+values are good choices is exactly what tuning, not guessing, should decide
+– which is what the rest of this section does.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ul class="simple">
+<li><p>What should happen to coefficient magnitudes as alpha increases?</p></li>
+<li><p>Which method can produce exactly zero coefficients?</p></li>
+<li><p>Which model should have the lowest training error?</p></li>
+<li><p>Does the lowest training error imply the best validation performance?</p></li>
+<li><p>What happens to predictions when regularization becomes extremely strong?</p></li>
+</ul>
+</div>
+</section>
+<section id="explore-regularization">
+<h2>5. Explore Regularization<a class="headerlink" href="#explore-regularization" title="Link to this heading">#</a></h2>
+<p>The activity below, “Shrink the coefficients”, lets you choose Linear
+Regression, Ridge, or Lasso and move alpha on a logarithmic scale, watching
+predictions, coefficients, and training/validation error update together on
+the same fitting and validation participants as above. Linear Regression has
+no alpha – it is shown as the unregularized baseline. Only training and
+validation numbers are shown; the test set stays locked, exactly as in
+Exercise 4.</p>
+<iframe
+  title="Interactive Ridge/Lasso regularization exploration for predicting age from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/regularization_explore.json"
+  loading="lazy"
+  width="100%"
+  height="1500"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ul class="simple">
+<li><p>Which method changes the number of retained features?</p></li>
+<li><p>Why does Ridge keep many small coefficients?</p></li>
+<li><p>When does increasing alpha begin to harm validation performance?</p></li>
+<li><p>Does Lasso retain every anatomically plausible feature?</p></li>
+<li><p>Does a zero coefficient prove biological irrelevance?</p></li>
+<li><p>Which curve should determine alpha: training or validation?</p></li>
+</ul>
+</div>
+<section id="optional-reproduce-the-activity-in-python">
+<h3>Optional: Reproduce the Activity in Python<a class="headerlink" href="#optional-reproduce-the-activity-in-python" title="Link to this heading">#</a></h3>
+<p>The interactive activity above contains the main lesson. Expand this
+optional section if you want to reproduce the alpha curves in Python.</p>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reproduces the curves behind "Shrink the coefficients": Ridge and Lasso</span>
+<span class="c1"># refit at every alpha on the fitting subset, scored on the validation</span>
+<span class="c1"># subset. The outer test set (X_test, y_test) is not read anywhere here.</span>
+<span class="n">ridge_alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">lasso_alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">alpha_curve</span><span class="p">(</span><span class="n">estimator_cls</span><span class="p">,</span> <span class="n">alphas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">alphas</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">estimator_cls</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xf</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">"alpha"</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span>
+            <span class="s2">"train_mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_fit</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xf</span><span class="p">)),</span>
+            <span class="s2">"val_mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xv</span><span class="p">)),</span>
+            <span class="s2">"nonzero_coefficients"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">)),</span>
+        <span class="p">})</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+
+<span class="n">ridge_curve</span> <span class="o">=</span> <span class="n">alpha_curve</span><span class="p">(</span><span class="n">Ridge</span><span class="p">,</span> <span class="n">ridge_alphas</span><span class="p">)</span>
+<span class="n">lasso_curve</span> <span class="o">=</span> <span class="n">alpha_curve</span><span class="p">(</span><span class="n">Lasso</span><span class="p">,</span> <span class="n">lasso_alphas</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">20000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+
+<span class="n">ridge_best</span> <span class="o">=</span> <span class="n">ridge_curve</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridge_curve</span><span class="p">[</span><span class="s2">"val_mse"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span>
+<span class="n">lasso_best</span> <span class="o">=</span> <span class="n">lasso_curve</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lasso_curve</span><span class="p">[</span><span class="s2">"val_mse"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ridge best alpha = </span><span class="si">{</span><span class="n">ridge_best</span><span class="p">[</span><span class="s1">'alpha'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">   validation MSE = </span><span class="si">{</span><span class="n">ridge_best</span><span class="p">[</span><span class="s1">'val_mse'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   "</span>
+      <span class="sa">f</span><span class="s2">"nonzero = </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">ridge_best</span><span class="p">[</span><span class="s1">'nonzero_coefficients'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"lasso best alpha = </span><span class="si">{</span><span class="n">lasso_best</span><span class="p">[</span><span class="s1">'alpha'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">   validation MSE = </span><span class="si">{</span><span class="n">lasso_best</span><span class="p">[</span><span class="s1">'val_mse'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   "</span>
+      <span class="sa">f</span><span class="s2">"nonzero = </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">lasso_best</span><span class="p">[</span><span class="s1">'nonzero_coefficients'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.4</span><span class="p">,</span> <span class="mf">3.8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ridge_curve</span><span class="p">[</span><span class="s2">"alpha"</span><span class="p">],</span> <span class="n">ridge_curve</span><span class="p">[</span><span class="s2">"val_mse"</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Ridge validation MSE"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"."</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lasso_curve</span><span class="p">[</span><span class="s2">"alpha"</span><span class="p">],</span> <span class="n">lasso_curve</span><span class="p">[</span><span class="s2">"val_mse"</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Lasso validation MSE"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"."</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xf</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xv</span><span class="p">)),</span>
+           <span class="n">color</span><span class="o">=</span><span class="s2">"0.5"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"unregularized linear regression"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"alpha (log scale)"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"validation MSE (lower is better)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ridge best alpha = 562.3   validation MSE = 22.3   nonzero = 360
+lasso best alpha = 0.2154   validation MSE = 22.7   nonzero = 101
+</pre></div>
+</div>
+<img alt="../../_images/182875f3bb233d80e68e421ed99f627aa67370297f51c0769a35723f2ce09221.png" src="../../_images/182875f3bb233d80e68e421ed99f627aa67370297f51c0769a35723f2ce09221.png" />
+</div>
+</details>
+</div>
+</section>
+</section>
+<section id="a-complete-regularized-regression-pipeline">
+<h2>6. A Complete Regularized Regression Pipeline<a class="headerlink" href="#a-complete-regularized-regression-pipeline" title="Link to this heading">#</a></h2>
+<p>Sections 4-5 tuned alpha with one fitting/validation split. As in Exercise
+4, a single split spends participants on fixed roles and reports only one
+evaluation. This section uses the same <strong>nested cross-validation</strong> workflow
+Exercise 4 introduced – an inner loop tunes alpha, an outer loop evaluates
+the complete tuning procedure – applied here to compare three models:</p>
+<ol class="arabic simple">
+<li><p>Linear Regression;</p></li>
+<li><p>Ridge, with alpha tuned by the inner loop;</p></li>
+<li><p>Lasso, with alpha tuned by the inner loop.</p></li>
+</ol>
+<p>All three use identical outer folds, so the comparison is fair, and each
+uses <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> inside its own pipeline, fit on each fold’s training
+rows only. Alpha is tuned by an inner <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> (scored by MSE) on each
+outer fold’s training data; the outer folds then evaluate the whole
+procedure – tuning included – and report MSE and <span class="math notranslate nohighlight">\(R^2\)</span> on data neither the
+scaler, nor alpha, ever saw. This runs on the full eligible cohort (1004
+participants), not only the earlier training partition.</p>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">RIDGE_ALPHAS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
+<span class="n">LASSO_ALPHAS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
+
+<span class="n">outer_cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">inner_cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">101</span><span class="p">)</span>
+
+<span class="n">pipeline_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">grid</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">"Linear Regression"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">(),</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"Ridge"</span><span class="p">,</span> <span class="n">Ridge</span><span class="p">(),</span> <span class="p">{</span><span class="s2">"ridge__alpha"</span><span class="p">:</span> <span class="n">RIDGE_ALPHAS</span><span class="p">}),</span>
+    <span class="p">(</span><span class="s2">"Lasso"</span><span class="p">,</span> <span class="n">Lasso</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">20000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">),</span> <span class="p">{</span><span class="s2">"lasso__alpha"</span><span class="p">:</span> <span class="n">LASSO_ALPHAS</span><span class="p">}),</span>
+<span class="p">]:</span>
+    <span class="n">step_name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">fold_i</span><span class="p">,</span> <span class="p">(</span><span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">outer_cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">)):</span>
+        <span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+        <span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+
+        <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="n">step_name</span><span class="p">,</span> <span class="n">estimator</span><span class="p">)])</span>
+        <span class="k">if</span> <span class="n">grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">search</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">"neg_mean_squared_error"</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">inner_cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">search</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>  <span class="c1"># only this outer fold's TRAINING data</span>
+            <span class="n">best_model</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">best_estimator_</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">best_params_</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">__alpha"</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+            <span class="n">best_model</span> <span class="o">=</span> <span class="n">pipe</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">best_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_te</span><span class="p">)</span>  <span class="c1"># the outer TEST fold, evaluated once</span>
+        <span class="n">nnz</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"ridge"</span><span class="p">,</span> <span class="s2">"lasso"</span><span class="p">):</span>
+            <span class="n">nnz</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">best_model</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">))</span>
+
+        <span class="n">pipeline_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">"model"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">"outer_fold"</span><span class="p">:</span> <span class="n">fold_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"alpha"</span><span class="p">:</span> <span class="n">alpha</span><span class="p">,</span>
+            <span class="s2">"outer_test_mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span>
+            <span class="s2">"outer_test_r2"</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span> <span class="s2">"nonzero_coefficients"</span><span class="p">:</span> <span class="n">nnz</span><span class="p">,</span>
+        <span class="p">})</span>
+
+<span class="n">pipeline_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pipeline_rows</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">pipeline_results</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"model"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">mean_outer_mse</span><span class="o">=</span><span class="p">(</span><span class="s2">"outer_test_mse"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span>
+         <span class="n">mean_outer_r2</span><span class="o">=</span><span class="p">(</span><span class="s2">"outer_test_r2"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span>
+         <span class="n">alpha_values</span><span class="o">=</span><span class="p">(</span><span class="s2">"alpha"</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">dropna</span><span class="p">()))</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">),</span>
+         <span class="n">median_nonzero</span><span class="o">=</span><span class="p">(</span><span class="s2">"nonzero_coefficients"</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">"Linear Regression"</span><span class="p">,</span> <span class="s2">"Ridge"</span><span class="p">,</span> <span class="s2">"Lasso"</span><span class="p">]]</span>
+<span class="p">)</span>
+<span class="n">summary</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean_outer_mse</th>
+      <th>mean_outer_r2</th>
+      <th>alpha_values</th>
+      <th>median_nonzero</th>
+    </tr>
+    <tr>
+      <th>model</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Linear Regression</th>
+      <td>49.136</td>
+      <td>0.427</td>
+      <td>None</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>Ridge</th>
+      <td>31.489</td>
+      <td>0.645</td>
+      <td>[316.2278, 562.3413]</td>
+      <td>360.0</td>
+    </tr>
+    <tr>
+      <th>Lasso</th>
+      <td>32.362</td>
+      <td>0.636</td>
+      <td>[0.1468, 0.2154]</td>
+      <td>118.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>The outer results estimate the performance of the complete tuning procedure.
+The inner score chooses alpha; it is not the final performance estimate.
+Ridge and Lasso both improve substantially on unregularized linear
+regression’s outer MSE here: with 360 correlated predictors, even an
+outer-training partition of roughly 800 participants is not enough for
+ordinary least squares to generalize well, and shrinking the coefficients
+helps. Ridge keeps effectively all 360 predictors at every selected alpha;
+Lasso’s median nonzero-coefficient count is well below 360, embedding real
+feature selection inside the fit – without a separate selection step.</p>
+<p>Lasso’s nonzero coefficients describe the fitted predictive model. They do
+not establish that the corresponding brain regions cause age-related
+changes.</p>
+<p>The selected alpha values above sit well inside each grid’s range, not at
+either boundary, so there was no need to extend <code class="docutils literal notranslate"><span class="pre">RIDGE_ALPHAS</span></code> or
+<code class="docutils literal notranslate"><span class="pre">LASSO_ALPHAS</span></code> further. As in Exercise 4, different outer folds are free to
+select different alpha values – and permitted to agree, too – because each
+outer training set contains different participants.</p>
+</section>
+<section id="other-feature-selection-methods">
+<h2>7. Other Feature-Selection Methods<a class="headerlink" href="#other-feature-selection-methods" title="Link to this heading">#</a></h2>
+<p>Correlation ranking (Section 3) and Lasso (Sections 4-6) are two ways to
+select features. A few other approaches are common enough to know about:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Main idea</p></th>
+<th class="head"><p>Main caution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Univariate filtering</p></td>
+<td><p>Rank features one at a time</p></td>
+<td><p>Ignores combinations among predictors</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sequential selection</p></td>
+<td><p>Add features forward or remove them backward</p></td>
+<td><p>Computationally expensive and can overfit selection decisions</p></td>
+</tr>
+<tr class="row-even"><td><p>PCA</p></td>
+<td><p>Replace features with components</p></td>
+<td><p>Feature extraction, not feature selection; covered later</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Stepwise selection</strong> refers to sequential procedures like these:</p>
+<ul class="simple">
+<li><p><strong>forward selection</strong> starts with no features and adds, one at a time, the
+feature that most improves cross-validated performance;</p></li>
+<li><p><strong>backward selection</strong> starts with all features and removes, one at a
+time, the least useful feature.</p></li>
+</ul>
+<p>Each decision must use training data only, exactly like the <code class="docutils literal notranslate"><span class="pre">SelectKBest</span></code>
+pipeline in Section 3. Classical stepwise regression, as traditionally
+taught with p-value thresholds for adding or removing a predictor, is not the
+method demonstrated here – this notebook uses cross-validated performance to
+decide, via <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code>’s <code class="docutils literal notranslate"><span class="pre">SequentialFeatureSelector</span></code>.</p>
+<p>The cell below demonstrates forward selection on a small, predefined,
+manageable candidate set – the 42 bilateral prefrontal cortical-thickness
+features (Section 2’s “Prefrontal only” bundle) – rather than all 360
+predictors, so the search stays fast and its result stays readable.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># A separate, small feature set for this section only: bilateral prefrontal</span>
+<span class="c1"># cortical thickness (Section 2's "Prefrontal only" bundle), not the 360-column</span>
+<span class="c1"># recipe used everywhere else in this notebook.</span>
+<span class="n">FRONTAL_ROIS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"46"</span><span class="p">,</span> <span class="s2">"9-46d"</span><span class="p">,</span> <span class="s2">"a9-46v"</span><span class="p">,</span> <span class="s2">"p9-46v"</span><span class="p">,</span> <span class="s2">"9a"</span><span class="p">,</span> <span class="s2">"9p"</span><span class="p">,</span> <span class="s2">"8C"</span><span class="p">,</span> <span class="s2">"8Av"</span><span class="p">,</span> <span class="s2">"8Ad"</span><span class="p">,</span> <span class="s2">"IFJa"</span><span class="p">,</span>
+    <span class="s2">"IFJp"</span><span class="p">,</span> <span class="s2">"IFSa"</span><span class="p">,</span> <span class="s2">"IFSp"</span><span class="p">,</span> <span class="s2">"p47r"</span><span class="p">,</span> <span class="s2">"a47r"</span><span class="p">,</span> <span class="s2">"8BL"</span><span class="p">,</span> <span class="s2">"a32pr"</span><span class="p">,</span> <span class="s2">"p32pr"</span><span class="p">,</span> <span class="s2">"d32"</span><span class="p">,</span> <span class="s2">"8BM"</span><span class="p">,</span> <span class="s2">"SCEF"</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">FEATURES_FRONTAL</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"fsCT_</span><span class="si">{</span><span class="n">hemi</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">roi</span><span class="si">}</span><span class="s2">_ROI"</span> <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">FRONTAL_ROIS</span> <span class="k">for</span> <span class="n">hemi</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"L"</span><span class="p">,</span> <span class="s2">"R"</span><span class="p">)]</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">BRAIN_COLS</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES_FRONTAL</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES_FRONTAL</span><span class="p">)</span>
+
+<span class="n">X_frontal</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="n">FEATURES_FRONTAL</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">X_frontal_train</span><span class="p">,</span> <span class="n">X_frontal_test</span><span class="p">,</span> <span class="n">y_frontal_train</span><span class="p">,</span> <span class="n">y_frontal_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_frontal</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups</span>
+<span class="p">)</span>
+<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">y_frontal_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">y_frontal_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES_FRONTAL</span><span class="p">)</span><span class="si">}</span><span class="s2"> predictors: bilateral prefrontal cortical thickness"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_train = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_frontal_train</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>42 predictors: bilateral prefrontal cortical thickness
+n_train = 753
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stepwise_cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">sfs</span> <span class="o">=</span> <span class="n">SequentialFeatureSelector</span><span class="p">(</span>
+    <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"lr"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">())]),</span>
+    <span class="n">n_features_to_select</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">,</span>
+    <span class="n">scoring</span><span class="o">=</span><span class="s2">"neg_mean_squared_error"</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">stepwise_cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">sfs</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_frontal_train</span><span class="p">,</span> <span class="n">y_frontal_train</span><span class="p">)</span>
+<span class="n">selected</span> <span class="o">=</span> <span class="p">[</span><span class="n">FEATURES_FRONTAL</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES_FRONTAL</span><span class="p">))</span> <span class="k">if</span> <span class="n">sfs</span><span class="o">.</span><span class="n">get_support</span><span class="p">()[</span><span class="n">i</span><span class="p">]]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SequentialFeatureSelector (forward, 17 features): </span><span class="si">{</span><span class="n">selected</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>SequentialFeatureSelector (forward, 17 features): ['fsCT_L_a9-46v_ROI', 'fsCT_R_a9-46v_ROI', 'fsCT_R_p9-46v_ROI', 'fsCT_L_9a_ROI', 'fsCT_R_9p_ROI', 'fsCT_L_8C_ROI', 'fsCT_L_8Av_ROI', 'fsCT_L_8Ad_ROI', 'fsCT_L_IFJa_ROI', 'fsCT_L_IFJp_ROI', 'fsCT_R_IFSa_ROI', 'fsCT_R_IFSp_ROI', 'fsCT_R_p47r_ROI', 'fsCT_L_a47r_ROI', 'fsCT_L_p32pr_ROI', 'fsCT_R_p32pr_ROI', 'fsCT_R_8BM_ROI']
+</pre></div>
+</div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">SequentialFeatureSelector</span></code> returns a fixed-size subset. The cell below
+performs the same greedy forward procedure step by step – add whichever
+remaining feature most improves cross-validated MSE – so we can see the
+full curve of cross-validation MSE as features are added, not just one final
+subset size.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_score</span>
+
+<span class="n">remaining</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES_FRONTAL</span><span class="p">)))</span>
+<span class="n">order_idx</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">curve_mse</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES_FRONTAL</span><span class="p">)):</span>
+    <span class="n">best_j</span><span class="p">,</span> <span class="n">best_score</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">remaining</span><span class="p">:</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="n">order_idx</span> <span class="o">+</span> <span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"lr"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">())])</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span>
+            <span class="n">pipe</span><span class="p">,</span> <span class="n">X_frontal_train</span><span class="p">[:,</span> <span class="n">candidate</span><span class="p">],</span> <span class="n">y_frontal_train</span><span class="p">,</span>
+            <span class="n">cv</span><span class="o">=</span><span class="n">stepwise_cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">"neg_mean_squared_error"</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="n">best_score</span><span class="p">:</span>
+            <span class="n">best_score</span><span class="p">,</span> <span class="n">best_j</span> <span class="o">=</span> <span class="n">score</span><span class="p">,</span> <span class="n">j</span>
+    <span class="n">order_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_j</span><span class="p">)</span>
+    <span class="n">remaining</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">best_j</span><span class="p">)</span>
+    <span class="n">curve_mse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="n">best_score</span><span class="p">)</span>
+
+<span class="n">best_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">curve_mse</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"lowest cross-validation MSE at </span><span class="si">{</span><span class="n">best_size</span><span class="si">}</span><span class="s2"> features (MSE = </span><span class="si">{</span><span class="n">curve_mse</span><span class="p">[</span><span class="n">best_size</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cross-validation MSE with all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES_FRONTAL</span><span class="p">)</span><span class="si">}</span><span class="s2"> features = </span><span class="si">{</span><span class="n">curve_mse</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>lowest cross-validation MSE at 17 features (MSE = 56.4)
+cross-validation MSE with all 42 features = 59.6
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.4</span><span class="p">,</span> <span class="mf">3.8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">curve_mse</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">curve_mse</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"."</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">best_size</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s2">"lowest MSE</span><span class="se">\n</span><span class="s2">at </span><span class="si">{</span><span class="n">best_size</span><span class="si">}</span><span class="s2"> features"</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">best_size</span><span class="p">,</span> <span class="n">curve_mse</span><span class="p">[</span><span class="n">best_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]),</span>
+            <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">best_size</span> <span class="o">+</span> <span class="mi">4</span><span class="p">,</span> <span class="n">curve_mse</span><span class="p">[</span><span class="n">best_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.5</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">"-&gt;"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.3"</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"number of features added (forward selection order)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"cross-validation MSE (lower is better)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Forward selection: cross-validation MSE as features are added"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/54c0dd040783e49fe8c0917890acf84df86fc0b316b53c22b150c2d9ca679560.png" src="../../_images/54c0dd040783e49fe8c0917890acf84df86fc0b316b53c22b150c2d9ca679560.png" />
+</div>
+</div>
+<p>Cross-validation MSE falls as the first several features are added, reaches
+a minimum, and then rises again as further features mostly add redundancy
+rather than new information – the same pattern Section 3’s <code class="docutils literal notranslate"><span class="pre">SelectKBest</span></code>
+curve showed on the full 360-feature recipe. Forward selection is
+considerably slower than <code class="docutils literal notranslate"><span class="pre">SelectKBest</span></code> or Lasso here: it retrains and
+cross-validates a growing model at every candidate feature, every step,
+compared with one ranking pass or one regularized fit.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ul class="simple">
+<li><p>When does adding another feature stop helping?</p></li>
+<li><p>Can validation performance worsen after adding a feature?</p></li>
+<li><p>Why is stepwise selection slower than Lasso?</p></li>
+<li><p>Must the sequential selection itself occur inside cross-validation?</p></li>
+</ul>
+</div>
+</section>
+<section id="how-do-we-choose-a-feature-selection-method">
+<h2>8. How Do We Choose a Feature-Selection Method?<a class="headerlink" href="#how-do-we-choose-a-feature-selection-method" title="Link to this heading">#</a></h2>
+<div class="think-first admonition">
+<p class="admonition-title">How do we choose a feature-selection method?</p>
+<p>There is no universally best method. The choice depends on the research
+question, the type and number of predictors, how strongly predictors
+overlap, whether interpretation or prediction is the main goal, the
+available sample size, and the computational cost. Features chosen using the
+target must always be selected within the training data and evaluated on
+unseen participants.</p>
+</div>
+<p>A few brief considerations:</p>
+<ul class="simple">
+<li><p><strong>prior scientific hypothesis</strong> – a predefined feature set stays
+appropriate when a genuine hypothesis, decided before looking at this
+cohort’s outcomes, motivates it;</p></li>
+<li><p><strong>prediction versus interpretability</strong> – Lasso and stepwise selection
+produce a small, readable predictor set; Ridge keeps every predictor but
+can predict just as well or better;</p></li>
+<li><p><strong>sample size relative to feature count</strong> – with few participants
+relative to predictors, as in this notebook’s 360-feature recipe,
+regularization or selection matters more, not less;</p></li>
+<li><p><strong>computational budget and validation design</strong> – univariate filtering and
+Lasso scale easily to hundreds of predictors; stepwise selection does not,
+and every method still needs a validation procedure like Exercise 4’s to
+report an honest final performance estimate.</p></li>
+</ul>
+</section>
+<section id="in-summary">
+<h2>In summary<a class="headerlink" href="#in-summary" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Predefined feature selection can use anatomy or prior literature, decided
+independently of the current target data. Data-driven feature selection
+must use training data only; consulting test participants while selecting
+features is data leakage.</p></li>
+<li><p>Comparing several predefined feature sets on the same evaluation
+procedure (Section 2) is exploratory model comparison, not a final
+performance claim, exactly as in Exercise 2’s own feature-set comparison.</p></li>
+<li><p>Correlation with the target ranks individual features, but a feature
+selector belongs inside cross-validation, refit on each training fold,
+exactly like <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> (Section 3). Selecting more features does
+not always improve validation performance.</p></li>
+<li><p>Ridge shrinks every coefficient toward zero without usually reaching
+exactly zero; Lasso can shrink coefficients to exactly zero, embedding
+feature selection inside the fit. Alpha controls the strength of either
+penalty, and predictors must be standardized before that penalty is fair
+(Section 4).</p></li>
+<li><p>Tuning alpha, or the number of retained features, inside nested
+cross-validation (Section 6) – as in Exercise 4 – keeps that tuning
+decision separate from the final performance estimate.</p></li>
+<li><p>Univariate filtering, sequential (stepwise) selection, and Lasso all
+select features by different mechanisms and at different computational
+costs; PCA replaces features with components rather than selecting among
+them, a feature-extraction idea for a later lesson (Section 7).</p></li>
+<li><p>No single feature-selection method is always best; the right choice
+depends on the research question, the predictors, the sample size, and the
+computational budget.</p></li>
+</ul>
+<p>Next practice: classification with more than two categories.</p>
+<section id="questions-to-take-away">
+<h3>Questions to take away<a class="headerlink" href="#questions-to-take-away" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Give one example of a predefined feature-selection decision and one
+example of a data-driven one.</p></li>
+<li><p>Why can predefined feature selection sometimes happen before splitting
+the data, while data-driven selection cannot?</p></li>
+<li><p>Two feature sets in Section 2’s activity give different R². List three
+reasons other than “one set is biologically better” that could explain
+the gap.</p></li>
+<li><p>Why must a feature selector be refit inside each cross-validation fold
+rather than fit once on the full training set?</p></li>
+<li><p>In Section 3, why does cross-validation MSE get worse again at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">360</span></code>?</p></li>
+<li><p>What is the key difference between what Ridge does to coefficients and
+what Lasso does?</p></li>
+<li><p>Why must predictors be standardized before comparing Ridge or Lasso
+coefficients?</p></li>
+<li><p>In Section 6, why is the inner cross-validation score not reported as the
+final performance estimate?</p></li>
+<li><p>Does a Lasso coefficient of exactly zero prove a brain region is
+unrelated to age? Why or why not?</p></li>
+<li><p>Why is forward stepwise selection slower than Lasso, even though both
+can produce a small feature subset?</p></li>
+<li><p>Name one situation where a predefined feature set would be preferred
+over a data-driven one, and one where the reverse would be true.</p></li>
+</ol>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -467,7 +1626,7 @@
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Exercise 4: Cross-Validation for Classification and Regression</p>
+        <p class="prev-next-title">Exercise 4: Validation and Cross-Validation</p>
       </div>
     </a>
     <a class="right-next"
@@ -485,6 +1644,46 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-select-features">1. Why Select Features?</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#predefined-selection">Predefined selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-driven-selection">Data-driven selection</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-predefined-feature-sets">2. Compare Predefined Feature Sets</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#select-features-using-the-data">3. Select Features Using the Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#an-intuitive-first-look-correlation-with-age">An intuitive first look: correlation with age</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-leakage-safe-pipeline-selectkbest-inside-cross-validation">A leakage-safe pipeline: <code class="docutils literal notranslate"><span class="pre">SelectKBest</span></code> inside cross-validation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ridge-and-lasso-regression">4. Ridge and Lasso Regression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explore-regularization">5. Explore Regularization</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-reproduce-the-activity-in-python">Optional: Reproduce the Activity in Python</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-complete-regularized-regression-pipeline">6. A Complete Regularized Regression Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-feature-selection-methods">7. Other Feature-Selection Methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-we-choose-a-feature-selection-method">8. How Do We Choose a Feature-Selection Method?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-summary">In summary</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
