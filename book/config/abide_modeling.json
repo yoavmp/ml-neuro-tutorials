@@ -745,6 +745,159 @@
       "tree_ensemble_compare": "book/_static/widgets/data/tree_ensemble_compare.json"
     }
   },
+  "gradient_boosting": {
+    "target": "age",
+    "canonical_recipe": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "note": "Identical to decision_tree.canonical_recipe / protocol.canonical_recipe (p=360): Exercise 7 reuses the same 360 cortical-thickness predictors as Exercises 2, 4, 5, and 6."
+    },
+    "dev_split": {
+      "test_size": 0.25,
+      "random_state": 7,
+      "stratify": "group",
+      "note": "Identical to decision_tree.dev_split / knn.dev_split / regularization.dev_split: splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189). The parameter-explorer activity (section 4) and section 6's model-selection step both use this exact reconstruction; the outer test set (251 rows, protocol.holdout_split) is touched only once, in section 6 step 6."
+    },
+    "sklearn_example": {
+      "n_estimators": 100,
+      "learning_rate": 0.05,
+      "max_depth": 2,
+      "random_state": 42,
+      "note": "Section 3's short illustrative GradientBoostingRegressor example, fit on dev_split.fit and scored on dev_split.val. Not the tuned model used later; illustrates the API only."
+    },
+    "step_by_step": {
+      "n_observations": 24,
+      "seed": 7,
+      "x_distribution": {
+        "kind": "Uniform",
+        "low": 0.0,
+        "high": 10.0
+      },
+      "formula": "y = C + A*sin(FREQ*x) + B*x + noise, noise ~ Normal(0, NOISE_SD)",
+      "coefficients": {
+        "C": 5.0,
+        "A": 4.0,
+        "FREQ": 0.9,
+        "B": 0.6,
+        "NOISE_SD": 1.2
+      },
+      "learning_rates": [
+        0.1,
+        0.3,
+        0.5,
+        1.0
+      ],
+      "n_stages": 12,
+      "stump_settings": {
+        "max_depth": 1
+      },
+      "note": "Entirely synthetic data (declared formula, fixed seed, decided before generation -- no seed search, unlike the Exercise 6 greedy-split activity, since no split-optimum 'niceness' criterion applies here). Not ABIDE observations. Stages 0..n_stages are precomputed for every learning rate in scripts/export_boosting_step_widget.py; stage 0 is always the training-target mean."
+    },
+    "parameter_explorer": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "learning_rate_grid": [
+        0.01,
+        0.03,
+        0.05,
+        0.1,
+        0.2,
+        0.5
+      ],
+      "depth_grid": [
+        1,
+        2,
+        3
+      ],
+      "n_trees_grid": [
+        1,
+        5,
+        10,
+        20,
+        30,
+        50,
+        75,
+        100,
+        150,
+        200,
+        300
+      ],
+      "default_learning_rate": 0.1,
+      "default_depth": 2,
+      "default_n_trees": 100,
+      "note": "Precomputed grid for the 'Explore the Boosting Parameters' widget (scripts/export_boosting_parameter_widget.py) on dev_split.fit/dev_split.val only. Grid values were fixed before any model was fit -- not chosen after seeing which values created the neatest story. Uses sklearn GradientBoostingRegressor.staged_predict to obtain every displayed tree-count step from one fit per (learning_rate, depth) pair rather than refitting per tree count."
+    },
+    "cv_pipeline": {
+      "full_grid": {
+        "learning_rate": [
+          0.03,
+          0.05,
+          0.1
+        ],
+        "n_estimators": [
+          50,
+          100,
+          200
+        ],
+        "max_depth": [
+          1,
+          2,
+          3
+        ]
+      },
+      "full_grid_candidate_count": 27,
+      "cv": "KFold(n_splits=5, shuffle=True, random_state=13)",
+      "cv_random_state": 13,
+      "runtime_audit": {
+        "measured_full_grid_5fold_seconds": 357.2,
+        "measured_reduced_grid_5fold_seconds": 153.3,
+        "measurement_note": "Timed on the development machine with a same-shape (600x360) synthetic proxy matrix, fitting each candidate once per fold-equivalent and multiplying by 5 folds, before running the real audit -- not the audited run itself. Rule (declared before timing): if the full 27-candidate x 5-fold grid's audited runtime is disproportionate to every other exercise's audit (all under ~35s), reduce once to a predefined balanced subset of at least 12 candidates, never pruned by score.",
+        "decision": "reduced: the full grid measured ~357s (~6 minutes) for this one step alone versus ~10-35s for every other exercise's full audit; reduced to the 12-candidate grid below (~153s), fixed by structure (all 3 depths x 4 representative (learning_rate, n_estimators) pairs spanning low/mid/high cost), not by inspecting which combinations would be omitted."
+      },
+      "reduced_grid": {
+        "learning_rate_n_estimators_pairs": [
+          [
+            0.03,
+            50
+          ],
+          [
+            0.05,
+            100
+          ],
+          [
+            0.1,
+            100
+          ],
+          [
+            0.1,
+            200
+          ]
+        ],
+        "max_depth": [
+          1,
+          2,
+          3
+        ]
+      },
+      "reduced_grid_candidate_count": 12,
+      "selection_rule": "minimum mean CV MSE across the reduced grid; ties broken by the earliest candidate in declaration order. The outer test set is never used to resolve ties or choose the grid.",
+      "comparison_cv": "KFold(n_splits=5, shuffle=True, random_state=100) on the full eligible cohort (n=1004) -- identical folds to decision_tree.fair_comparison, so section 7's table reuses decision_tree_model_audit_result.json's single_tree/random_forest numbers rather than retuning them."
+    },
+    "audit_script": "scripts/gradient_boosting_model_audit.py",
+    "audit_result": "scripts/gradient_boosting_model_audit_result.json",
+    "export_data_scripts": {
+      "boosting_step_by_step": "scripts/export_boosting_step_widget.py",
+      "boosting_parameter_explorer": "scripts/export_boosting_parameter_widget.py"
+    },
+    "export_data_artifacts": {
+      "boosting_step_by_step": "book/_static/widgets/data/boosting_step_by_step.json",
+      "boosting_parameter_explorer": "book/_static/widgets/data/boosting_parameter_explorer.json"
+    }
+  },
   "bundles": {
     "frontoparietal": {
       "label": "Frontoparietal (P-FIT)",

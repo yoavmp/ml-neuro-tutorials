@@ -30,8 +30,8 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,all}``
-(default ``all``) scopes both modes. Exercises 7-12 are placeholder pages
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,all}``
+(default ``all``) scopes both modes. Exercises 8-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
 registered here. The bare ``--write`` / ``--check`` invocations keep working
 and now cover every registered notebook.
@@ -73,6 +73,9 @@ PUBLISHED_PAGE_CH5 = (
 )
 PUBLISHED_PAGE_CH6 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html"
+)
+PUBLISHED_PAGE_CH7 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -749,6 +752,92 @@ CHAPTER_06 = NotebookSpec(
     colab_title="Exercise 6: Decision Trees",
 )
 
+_CH7_BANNER = (
+    "# Exercise 7: Boosting and Gradient Boosting - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 7 boosting and\n"
+    "gradient-boosting practice from **Machine Learning for Neuroscience**,\n"
+    "generated from the canonical course notebook by\n"
+    "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
+    "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH7 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the optional\n"
+    "reproduction of the stage-by-stage boosting calculation -- is kept and\n"
+    "runnable."
+)
+
+_CH7_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH7_STEP_BY_STEP_IFRAME_REPLACEMENT = (
+    "### Build a boosted model on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a learning rate and step through\n"
+    "squared-error gradient boosting stage by stage on a small simulated\n"
+    "dataset, watching the ensemble prediction, the residuals left before each\n"
+    "update, and the shallow tree fitted to them.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 7 page:\n"
+    "> <" + PUBLISHED_PAGE_CH7 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell reproduces the same simulated dataset and its first boosting stage\n"
+    "> directly in Python."
+)
+
+_CH7_PARAMETER_EXPLORER_IFRAME_REPLACEMENT = (
+    "### Explore the boosting parameters on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a learning rate, a tree depth,\n"
+    "and a number of trees -- or press Play to add trees sequentially -- and\n"
+    "watch training/validation MSE, a learning-rate x tree-count heatmap, and\n"
+    "observed-versus-predicted validation age update together, using the\n"
+    "development data only.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 7 page:\n"
+    "> <" + PUBLISHED_PAGE_CH7 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+CHAPTER_07 = NotebookSpec(
+    key="chapter_07",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_07" / "exercise_07.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_07" / "exercise_07_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH7,
+    banner_source=_CH7_BANNER,
+    setup_source=_CH7_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive stage-by-stage gradient boosting activity on a small simulated dataset": (
+            _CH7_STEP_BY_STEP_IFRAME_REPLACEMENT
+        ),
+        "Interactive gradient-boosting parameter explorer for predicting age from brain structure": (
+            _CH7_PARAMETER_EXPLORER_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 7: Boosting and Gradient Boosting",
+)
+
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
@@ -756,6 +845,7 @@ NOTEBOOKS = {
     CHAPTER_04.key: CHAPTER_04,
     CHAPTER_05.key: CHAPTER_05,
     CHAPTER_06.key: CHAPTER_06,
+    CHAPTER_07.key: CHAPTER_07,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).

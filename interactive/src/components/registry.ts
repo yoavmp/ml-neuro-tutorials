@@ -18,6 +18,8 @@ import { nestedCvExplorerComponent } from "./nested-cv-explorer";
 import { regularizationExploreComponent } from "./regularization-explore";
 import { treeGreedySplitComponent } from "./tree-greedy-split";
 import { treeEnsembleCompareComponent } from "./tree-ensemble-compare";
+import { boostingStepByStepComponent } from "./boosting-step-by-step";
+import { boostingParameterExplorerComponent } from "./boosting-parameter-explorer";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -35,3 +37,5 @@ registry.register(nestedCvExplorerComponent);
 registry.register(regularizationExploreComponent);
 registry.register(treeGreedySplitComponent);
 registry.register(treeEnsembleCompareComponent);
+registry.register(boostingStepByStepComponent);
+registry.register(boostingParameterExplorerComponent);

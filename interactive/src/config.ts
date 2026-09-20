@@ -367,6 +367,40 @@ const treeEnsembleCompareConfig = z
   })
   .strict();
 
+// WP32 (Exercise 7): "Build a Boosted Model" -- squared-error gradient
+// boosting walked stage by stage on a small synthetic dataset
+// (scripts/export_boosting_step_widget.py). Every stage, for every declared
+// learning rate, is precomputed; nothing is fit live in the browser.
+const boostingStepByStepConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("boosting-step-by-step"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultLearningRate: z.number().positive(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP32 (Exercise 7): "Explore the Boosting Parameters" -- learning rate,
+// tree depth, and number of trees on the real ABIDE development data
+// (scripts/export_boosting_parameter_widget.py), including a Play/Pause
+// control that steps through the committed tree-count grid at the current
+// learning rate/depth. The locked outer test set never appears in the data
+// artifact this component reads.
+const boostingParameterExplorerConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("boosting-parameter-explorer"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultLearningRate: z.number().positive(),
+    defaultDepth: z.number().int().positive(),
+    defaultNTrees: z.number().int().positive(),
+    playIntervalMs: z.number().int().positive(),
+    testSetNote: z.string().min(1, "config.testSetNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -387,6 +421,8 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   regularizationExploreConfig,
   treeGreedySplitConfig,
   treeEnsembleCompareConfig,
+  boostingStepByStepConfig,
+  boostingParameterExplorerConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -407,6 +443,8 @@ export type RegularizationExploreConfig = z.infer<typeof regularizationExploreCo
 export type TreeGreedySplitConfig = z.infer<typeof treeGreedySplitConfig>;
 export type TreeEnsembleCompareHighlight = z.infer<typeof treeEnsembleCompareHighlight>;
 export type TreeEnsembleCompareConfig = z.infer<typeof treeEnsembleCompareConfig>;
+export type BoostingStepByStepConfig = z.infer<typeof boostingStepByStepConfig>;
+export type BoostingParameterExplorerConfig = z.infer<typeof boostingParameterExplorerConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

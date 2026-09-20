@@ -83,6 +83,21 @@ const CHARTS = [
     query: "../configs/regularization_explore.json",
     plotTestId: "regularization-predictions-plot",
   },
+  {
+    activity: "boosting-step-by-step",
+    query: "../configs/boosting_step_by_step.json",
+    plotTestId: "boosting-step-observation-plot",
+  },
+  {
+    activity: "boosting-parameter-explorer (MSE plot)",
+    query: "../configs/boosting_parameter_explorer.json",
+    plotTestId: "boosting-param-mse-plot",
+  },
+  {
+    activity: "boosting-parameter-explorer (heatmap)",
+    query: "../configs/boosting_parameter_explorer.json",
+    plotTestId: "boosting-param-heatmap-plot",
+  },
 ];
 
 test.describe("shared Plotly presentation policy", () => {
