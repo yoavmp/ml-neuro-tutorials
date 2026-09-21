@@ -401,6 +401,43 @@ const boostingParameterExplorerConfig = z
   })
   .strict();
 
+// WP33 (Exercise 8): "Find the Best Projection" -- a small deterministic
+// synthetic two-dimensional point cloud (scripts/export_pca_projection_widget.py).
+// The projection onto the student's chosen angle, captured variance, and
+// reconstruction MSE are pure closed-form trigonometry computed live in the
+// browser from the fixed, precomputed point cloud -- nothing is fit here, so
+// there is no default-angle field (the slider starts at its own default).
+// The true PC1 direction stays hidden until the reveal control is used.
+const pcaProjectionConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("pca-projection"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP33 (Exercise 8): "Explore PCA and K-Means" -- a precomputed catalogue of
+// K-means fits over retained-PC count x k x seed on the real ABIDE cohort's
+// PCA scores (scripts/export_pca_kmeans_widget.py). PCA is fit once;
+// K-means uses every retained component even though the scatter always
+// shows only PC1-PC2. External variables (diagnosis, sex, site, age) are
+// joined onto cluster labels only for display, never used to cluster.
+const pcaKmeansExternalVariable = z.enum(["group", "sex", "site", "age"]);
+
+const pcaKmeansExplorerConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("pca-kmeans-explorer"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultRetainedPc: z.number().int().positive(),
+    defaultK: z.number().int().min(2),
+    defaultSeed: z.number().int(),
+    defaultExternalVariable: pcaKmeansExternalVariable,
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -423,6 +460,8 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   treeEnsembleCompareConfig,
   boostingStepByStepConfig,
   boostingParameterExplorerConfig,
+  pcaProjectionConfig,
+  pcaKmeansExplorerConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -445,6 +484,9 @@ export type TreeEnsembleCompareHighlight = z.infer<typeof treeEnsembleCompareHig
 export type TreeEnsembleCompareConfig = z.infer<typeof treeEnsembleCompareConfig>;
 export type BoostingStepByStepConfig = z.infer<typeof boostingStepByStepConfig>;
 export type BoostingParameterExplorerConfig = z.infer<typeof boostingParameterExplorerConfig>;
+export type PcaProjectionConfig = z.infer<typeof pcaProjectionConfig>;
+export type PcaKmeansExternalVariable = z.infer<typeof pcaKmeansExternalVariable>;
+export type PcaKmeansExplorerConfig = z.infer<typeof pcaKmeansExplorerConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

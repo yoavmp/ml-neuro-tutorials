@@ -20,6 +20,8 @@ import { treeGreedySplitComponent } from "./tree-greedy-split";
 import { treeEnsembleCompareComponent } from "./tree-ensemble-compare";
 import { boostingStepByStepComponent } from "./boosting-step-by-step";
 import { boostingParameterExplorerComponent } from "./boosting-parameter-explorer";
+import { pcaProjectionComponent } from "./pca-projection";
+import { pcaKmeansExplorerComponent } from "./pca-kmeans-explorer";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -39,3 +41,5 @@ registry.register(treeGreedySplitComponent);
 registry.register(treeEnsembleCompareComponent);
 registry.register(boostingStepByStepComponent);
 registry.register(boostingParameterExplorerComponent);
+registry.register(pcaProjectionComponent);
+registry.register(pcaKmeansExplorerComponent);

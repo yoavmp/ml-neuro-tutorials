@@ -898,6 +898,94 @@
       "boosting_parameter_explorer": "book/_static/widgets/data/boosting_parameter_explorer.json"
     }
   },
+  "unsupervised": {
+    "recipe": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "note": "Identical to gradient_boosting.canonical_recipe / decision_tree.canonical_recipe (p=360): Exercise 8 reuses the same 360 cortical-thickness predictors as Exercises 2, 4, 5, 6, and 7. PCA and K-means (sections 1-7) use the full 1004-participant eligible cohort; no target is required. The supervised PCA pipeline (section 8) reuses protocol.holdout_split for age, exactly as every other notebook."
+    },
+    "standardization": "sklearn StandardScaler. Sections 1-7 (unsupervised): fit once on the full 1004-participant cohort (no held-out split needed -- no target is predicted). Section 8 (supervised): the scaler is refit inside every cross-validation fold, never on the full development set before splitting.",
+    "anatomical_groups": [
+      "frontal",
+      "parietal",
+      "temporal",
+      "occipital"
+    ],
+    "loading_summary": {
+      "n_components_shown": 2,
+      "n_top_rois": 8,
+      "statistic": "mean absolute loading",
+      "note": "Individual-ROI table: the n_top_rois strongest |loading| ROIs per shown component, signed. Grouped table: mean absolute loading (never a signed sum, which can cancel) within each of anatomical_groups, using the identical bundle ROI lists book/config/abide_modeling.json#bundles already defines and scripts/abide_modeling_data.py already expands -- audited for column-order consistency with the notebook's own natural-order 360-column FEATURES list."
+    },
+    "projection_activity": {
+      "n_observations": 40,
+      "seed": 11,
+      "sigma_x": 3.0,
+      "sigma_y": 2.0,
+      "rho": 0.75,
+      "angle_slider_deg": {
+        "min": 0,
+        "max": 180,
+        "step": 1
+      },
+      "note": "Entirely synthetic 2-D data: mean-zero correlated Gaussian (sigma_x=3.0, sigma_y=2.0, rho=0.75), fixed seed, decided before generation. Sample-mean-centered so the stored cloud's own empirical mean is exactly (0, 0). Not ABIDE observations. The widget computes the projection onto the student's chosen angle, the captured variance, and the reconstruction MSE live in the browser from this fixed point cloud (pure closed-form trigonometry/linear algebra -- no model fitting, no Python runtime); the true PC1 angle and its explained-variance ratio are precomputed here for the reveal control and for the committed numeric audit."
+    },
+    "kmeans_catalog": {
+      "retained_pc_grid": [
+        2,
+        5,
+        10,
+        20,
+        50
+      ],
+      "k_grid": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_init": 10,
+      "default_retained_pc": 10,
+      "default_k": 3,
+      "default_seed": 0,
+      "default_external_variable": "group",
+      "external_variables": {
+        "group": "diagnosis (1=autism, 2=control)",
+        "sex": "sex",
+        "site": "acquisition site",
+        "age": "age"
+      },
+      "note": "PCA is fit once (n_components=50, StandardScaler'd 360-feature cohort, random_state=0) on the full 1004-participant cohort; PC1/PC2 participant scores are the same for every retained_pc value because PCA components are nested (fitting with more retained components never changes earlier components' scores). K-means is refit for every (retained_pc, k, seed) combination in the grid above on the first retained_pc columns of that same score matrix -- never on PC1-PC2 alone, even though the scatter plot always shows only PC1-PC2. External variables (diagnosis, sex, site, age) are never inputs to PCA or K-means; they are joined onto the cluster labels only afterward, for display."
+    },
+    "supervised_pipeline": {
+      "component_grid": [
+        2,
+        5,
+        10,
+        20,
+        50,
+        100,
+        200
+      ],
+      "dev_split": {
+        "test_size": 0.25,
+        "random_state": 7,
+        "stratify": "group",
+        "note": "Identical to gradient_boosting.dev_split / decision_tree.dev_split."
+      },
+      "cv_random_state": 13,
+      "cv_note": "KFold(n_splits=5, shuffle=True, random_state=13) restricted to the outer development partition (protocol.holdout_split), identical in spirit to gradient_boosting.cv_pipeline. StandardScaler and PCA are both inside the sklearn Pipeline and therefore inside every fold; the locked outer test set (n=251) is touched exactly once, after the component count is selected.",
+      "baseline_note": "Comparison model: Pipeline(StandardScaler(), LinearRegression()) on the original 360 standardized features, same outer split, no PCA step. Neither model is guaranteed to win; the committed audit records the honest result."
+    }
+  },
   "bundles": {
     "frontoparietal": {
       "label": "Frontoparietal (P-FIT)",

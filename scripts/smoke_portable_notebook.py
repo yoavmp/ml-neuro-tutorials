@@ -28,6 +28,22 @@ Notebooks and their expected strings:
   runs (its saved output is intentionally absent from the committed portable
   notebook -- see its banner cell); the nested-cross-validation cell runs and
   prints its per-fold selected k and mean outer-test MSE.
+* ``chapter_05/exercise_05_portable.ipynb`` (WP33) -- the same brain table;
+  cross-validated KNN, ridge, and lasso workflows run and print their
+  selected k / alpha and validation MSE; the frontal-bundle forward feature
+  selection cell runs and prints its selected feature count and CV MSE.
+* ``chapter_06/exercise_06_portable.ipynb`` (WP33) -- the same brain table;
+  the greedy-split search, the fixed-depth-3 tree fit, the depth-sweep
+  table, and the bagging/Random-Forest fair comparison all run and print
+  their MSE/AUC summaries.
+* ``chapter_07/exercise_07_portable.ipynb`` (WP33) -- the same brain table;
+  the stage-by-stage boosting reproduction, the CV-tuned gradient-boosting
+  pipeline, and the tree-model comparison all run and print their selected
+  settings and locked-test metrics.
+* ``chapter_08/exercise_08_portable.ipynb`` (WP33) -- the same brain table;
+  the projection-activity reproduction, the standardized-PCA fit (explained
+  variance), the research-example K-means fit, and the CV-tuned supervised
+  PCA pipeline all run and print their audited numbers.
 
 Needs network access (the notebooks download pinned public CSVs). Used by CI and
 runnable locally:
@@ -94,6 +110,49 @@ SMOKE = {
             "validation-selected  k =  25   test MSE = 32.6   test R^2 = 0.651",
             "mean outer-test MSE = 33.4   (sd 7.5)",
             "selected k per outer fold: [15, 12, 10, 18, 15]",
+        ),
+    },
+    "chapter_05": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_05" / "exercise_05_portable.ipynb",
+        "expect": (
+            "data table: 1004 participants x 1446 columns",
+            "n_train = 753   n_test = 251   n_features = 360",
+            "best k by cross-validation: 80",
+            "ridge best alpha = 562.3   validation MSE = 22.3   nonzero = 360",
+            "lowest cross-validation MSE at 17 features (MSE = 56.4)",
+        ),
+    },
+    "chapter_06": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_06" / "exercise_06_portable.ipynb",
+        "expect": (
+            "data table: 1004 participants x 1446 columns",
+            "360 predictors",
+            "n_fit = 564   n_val = 189   n_test = 251 (test set untouched in this notebook)",
+            "leaves = 8   depth = 3",
+            "best Brain measure 1 threshold = 5.92  (reduction = 38.35)",
+            "eligible = 1004   development = 753   outer test (excluded) = 251",
+        ),
+    },
+    "chapter_07": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_07" / "exercise_07_portable.ipynb",
+        "expect": (
+            "data table: 1004 participants x 1446 columns",
+            "360 predictors",
+            "n_fit = 564   n_val = 189   n_train (development) = 753   n_test = 251 (locked; read once, in section 6)",
+            "stage 0 prediction (training mean) = 8.454",
+            "selected settings: {'learning_rate': 0.1, 'n_estimators': 200, 'max_depth': 3}  (mean CV MSE = 27.2)",
+            "locked-test MSE = 32.4   locked-test R2 = 0.653  (evaluated once)",
+        ),
+    },
+    "chapter_08": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_08" / "exercise_08_portable.ipynb",
+        "expect": (
+            "data table: 1004 participants x 1446 columns",
+            "360 cortical-thickness predictors",
+            "PC1 explained variance = 36.1%   PC2 explained variance = 5.9%",
+            "cumulative explained variance through PC50 = 70.2%",
+            "selected component count = 50  (mean CV MSE = 32.7)",
+            "PCA pipeline locked-test MSE = 29.9   locked-test R2 = 0.680  (evaluated once)",
         ),
     },
 }

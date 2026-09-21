@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "type": "pca-projection",
+  "title": "Find the best projection",
+  "description": "Course activity for Exercise 8: choose a projection axis for a small simulated two-dimensional dataset and see how much variance it captures.",
+  "data": "../data/pca_projection.json",
+  "instructions": "Drag the angle slider to choose a projection axis. The plot shows the points, the current axis, and each point's position projected onto that axis; the panel below reports the variance captured by the axis and the reconstruction error left behind. Predict the best angle before pressing Show PC1 to reveal the true first principal component.",
+  "reflectionPrompts": [
+    "Which angle captures the most variation in these points?",
+    "What happens to reconstruction error as captured variance increases?",
+    "Why does the best axis not need to match either original feature axis?"
+  ]
+}

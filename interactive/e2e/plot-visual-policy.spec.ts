@@ -98,6 +98,21 @@ const CHARTS = [
     query: "../configs/boosting_parameter_explorer.json",
     plotTestId: "boosting-param-heatmap-plot",
   },
+  {
+    activity: "pca-projection",
+    query: "../configs/pca_projection.json",
+    plotTestId: "pca-projection-plot",
+  },
+  {
+    activity: "pca-kmeans-explorer (scatter)",
+    query: "../configs/pca_kmeans_explorer.json",
+    plotTestId: "pca-kmeans-scatter-plot",
+  },
+  {
+    activity: "pca-kmeans-explorer (composition, default group bars)",
+    query: "../configs/pca_kmeans_explorer.json",
+    plotTestId: "pca-kmeans-composition-plot",
+  },
 ];
 
 test.describe("shared Plotly presentation policy", () => {

@@ -7,8 +7,9 @@ Exercise 4 from a placeholder into a real notebook (see
 test_exercise_04_notebook.py); WP28 did the same for Exercise 5 (see
 test_exercise_05_notebook.py); WP29 did the same for Exercise 6 (see
 test_exercise_06_notebook.py); WP32 did the same for Exercise 7 (see
-test_exercise_07_notebook.py), so none of the four is covered here any
-more. This file confirms each remaining placeholder (8-12) exists, carries
+test_exercise_07_notebook.py); WP33 did the same for Exercise 8 (see
+test_exercise_08_notebook.py), so none of the five is covered here any
+more. This file confirms each remaining placeholder (9-12) exists, carries
 exactly its required title and one placeholder sentence, and contains none
 of the material the task explicitly excludes from a placeholder (no
 learning objectives, dates, final-project reminders, Colab/download
@@ -29,7 +30,6 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 PLACEHOLDER_TITLES = {
-    8: "Exercise 8: PCA and Clustering",
     9: "Exercise 9: Advanced Models and Model Comparison",
     10: "Exercise 10: Common Machine Learning Mistakes",
     11: "Exercise 11: Embeddings and Representational Similarity Analysis",

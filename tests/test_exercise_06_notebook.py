@@ -691,10 +691,11 @@ class LaunchButtonsAndPortable(NotebookLoads):
         )
         self.assertTrue(found)
 
-    def test_exercises_8_through_12_still_have_no_portable_notebook(self):
+    def test_exercises_9_through_12_still_have_no_portable_notebook(self):
         # Exercise 7 gained a portable notebook in WP32 (see
-        # test_exercise_07_notebook.py); only 8-12 remain placeholders.
-        for n in range(8, 13):
+        # test_exercise_07_notebook.py) and Exercise 8 gained one in WP33
+        # (see test_exercise_08_notebook.py); only 9-12 remain placeholders.
+        for n in range(9, 13):
             portable_path = (
                 REPO_ROOT / "book" / "downloads" / f"chapter_{n:02d}" / f"exercise_{n:02d}_portable.ipynb"
             )

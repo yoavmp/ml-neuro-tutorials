@@ -30,8 +30,8 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,all}``
-(default ``all``) scopes both modes. Exercises 8-12 are placeholder pages
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,all}``
+(default ``all``) scopes both modes. Exercises 9-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
 registered here. The bare ``--write`` / ``--check`` invocations keep working
 and now cover every registered notebook.
@@ -76,6 +76,9 @@ PUBLISHED_PAGE_CH6 = (
 )
 PUBLISHED_PAGE_CH7 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html"
+)
+PUBLISHED_PAGE_CH8 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -838,6 +841,92 @@ CHAPTER_07 = NotebookSpec(
     colab_title="Exercise 7: Boosting and Gradient Boosting",
 )
 
+_CH8_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH8_BANNER = (
+    "# Exercise 8: Unsupervised Learning - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 8 unsupervised-learning\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the\n"
+    "canonical course notebook by `scripts/build_portable_notebook.py`. It is\n"
+    "meant for running or editing the code in Google Colab or in a local\n"
+    "VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH8 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the optional\n"
+    "reproduction of the projection activity's math -- is kept and runnable."
+)
+
+_CH8_PROJECTION_IFRAME_REPLACEMENT = (
+    "### Find the best projection on the course website\n"
+    "\n"
+    "The interactive activity lets you drag a projection-angle slider for a\n"
+    "small simulated two-dimensional dataset and watch the variance captured\n"
+    "and the reconstruction error left behind, before revealing the true\n"
+    "first principal component.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 8 page:\n"
+    "> <" + PUBLISHED_PAGE_CH8 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell reproduces the same simulated dataset and its projection math\n"
+    "> directly in Python."
+)
+
+_CH8_KMEANS_IFRAME_REPLACEMENT = (
+    "### Explore PCA and K-means on the course website\n"
+    "\n"
+    "The interactive activity lets you choose how many principal components\n"
+    "to retain, a number of clusters k, and an initialization seed, then\n"
+    "inspect the resulting clusters against diagnosis, sex, acquisition site,\n"
+    "or age.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 8 page:\n"
+    "> <" + PUBLISHED_PAGE_CH8 + ">\n"
+    "> This portable notebook links to it instead of embedding it. Section 6\n"
+    "> above already reproduces a runnable, single-configuration version of\n"
+    "> the same PCA-then-K-means workflow."
+)
+
+CHAPTER_08 = NotebookSpec(
+    key="chapter_08",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_08" / "exercise_08.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_08" / "exercise_08_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH8,
+    banner_source=_CH8_BANNER,
+    setup_source=_CH8_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive projection-angle activity for a small simulated two-dimensional dataset": (
+            _CH8_PROJECTION_IFRAME_REPLACEMENT
+        ),
+        "Interactive PCA and K-means explorer for ABIDE-II participants": (
+            _CH8_KMEANS_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 8: Unsupervised Learning",
+)
+
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
@@ -846,6 +935,7 @@ NOTEBOOKS = {
     CHAPTER_05.key: CHAPTER_05,
     CHAPTER_06.key: CHAPTER_06,
     CHAPTER_07.key: CHAPTER_07,
+    CHAPTER_08.key: CHAPTER_08,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).
