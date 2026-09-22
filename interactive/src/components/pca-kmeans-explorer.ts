@@ -201,6 +201,13 @@ function mount(args: MountArgs<PcaKmeansExplorerConfig, PcaKmeansExplorerData>):
     const layout = buildPlotLayout(theme, {
       height: 380,
       showlegend: true,
+      // Placed outside the axes (right side, vertical) with a reserved right
+      // margin rather than the shared horizontal-top default: at the largest
+      // configured k (6, i.e. 7 legend entries including "Cluster centers"),
+      // a horizontal legend wraps and can crowd the plot area. A fixed
+      // vertical legend column stays clear of the data at every k.
+      legend: { orientation: "v", x: 1.02, xanchor: "left", y: 1, yanchor: "top" },
+      margin: { r: 150 },
       xaxis: { title: { text: "PC1" }, range: [...pc1Range] },
       yaxis: { title: { text: "PC2" }, range: [...pc2Range] },
     });

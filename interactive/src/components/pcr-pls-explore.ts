@@ -4,9 +4,9 @@
 // train/validation split. One direction explains most of the predictors'
 // own variance but only weakly relates to the target; another explains
 // less variance but relates to the target more strongly. Only the target's
-// alignment preset (weak/moderate/strong with the lower-variance direction)
-// changes which precomputed PCR/PLS fit is shown -- nothing is fit live
-// here (scripts/export_pcr_pls_widget.py).
+// alignment preset (weak/moderate/strong alignment with the
+// highest-variance direction) changes which precomputed PCR/PLS fit is
+// shown -- nothing is fit live here (scripts/export_pcr_pls_widget.py).
 
 import Plotly from "plotly.js-cartesian-dist-min";
 import type { MountArgs, MountHandle, WidgetComponent } from "./types";
@@ -106,7 +106,7 @@ function mount(args: MountArgs<PcrPlsExploreConfig, PcrPlsExploreData>): MountHa
   const presetControl = buildSelect(
     "pcr-pls-preset",
     "pcr-pls-preset-select",
-    "Target's alignment with the lower-variance direction:",
+    "Target alignment with the highest-variance direction:",
     presetKeys.map((p) => ({ value: p, label: PRESET_OPTION_LABELS[p] ?? data.presets[p]!.label })),
   );
 

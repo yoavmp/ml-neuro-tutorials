@@ -166,7 +166,7 @@ SMOKE = {
             "data table: 1004 participants x 360 cortical-thickness predictors",
             "mean outer-fold performance (5 outer folds, nested cross-validation):",
             "Standardized OLS     mean MSE = 49.1   mean R2 = +0.427",
-            "RBF SVR              mean MSE = 20.2   mean R2 = +0.774",
+            "RBF SVR              mean MSE = 20.4   mean R2 = +0.772",
         ),
     },
 }

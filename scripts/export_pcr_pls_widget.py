@@ -9,9 +9,9 @@ higher-variance direction) explains 85% of the two features' variance and
 PC2 (the lower-variance direction) explains 15%. The target is a fixed
 linear combination of the PC1 and PC2 scores plus Gaussian noise; only the
 two coefficients (``beta_pc1``, ``beta_pc2``) change across the three
-presets ("weak"/"moderate"/"strong" alignment with the lower-variance
-direction) -- the predictor cloud and the 40/20 train/validation split stay
-fixed throughout.
+presets ("weak"/"moderate"/"strong" alignment with the highest-variance
+direction, PC1) -- the predictor cloud and the 40/20 train/validation split
+stay fixed throughout.
 
 For every (method, n_components, preset) combination, this script fits
 scikit-learn's PCR (``StandardScaler`` -> ``PCA`` -> ``LinearRegression``)

@@ -92,11 +92,34 @@ class CommittedResult(unittest.TestCase):
             if model_key == "pls":
                 self.assertEqual(grid["n_components"], [2, 5, 10, 20])
             if model_key == "linear_svr":
-                self.assertEqual(grid["C"], [0.01, 0.1, 1, 10])
+                self.assertEqual(grid["C"], [0.01, 0.1, 1])
                 self.assertEqual(grid["epsilon"], [0.5, 1, 2])
             if model_key == "rbf_svr":
                 self.assertEqual(grid["C"], [1, 10, 100])
                 self.assertEqual(grid["gamma"], ["scale", 0.001, 0.01])
+
+    def test_linear_svr_grid_excludes_the_nonconvergent_c_equals_10(self):
+        # WP35 §14: C=10 never converged (even at max_iter=100000) and was
+        # never selected by any outer fold; it must not be in the grid.
+        self.assertNotIn(10, ama.MODELS["linear_svr"]["grid"]["C"])
+        for f in self.result["summary"]["linear_svr"]["folds"]:
+            for c in f["inner_candidates"]:
+                self.assertNotEqual(c["params"].get("C"), 10)
+
+    def test_no_convergence_warnings_remain(self):
+        self.assertEqual(self.result.get("convergence_warnings", []), [])
+
+    def test_rbf_svr_epsilon_is_explicit_and_not_sklearns_implicit_default(self):
+        fixed = self.result["summary"]["rbf_svr"]["fixed_params"]
+        self.assertEqual(fixed["epsilon"], 1.0)
+        # scikit-learn's SVR default is epsilon=0.1; regressing to it silently
+        # (e.g. dropping the explicit kwarg) must fail this test.
+        self.assertNotEqual(fixed["epsilon"], 0.1)
+        self.assertEqual(ama.RBF_SVR_EPSILON, 1.0)
+
+    def test_rbf_svr_pipeline_actually_sets_epsilon(self):
+        pipe = ama._make_pipeline("rbf_svr", {"C": 1, "gamma": "scale"})
+        self.assertEqual(pipe.named_steps["model"].epsilon, 1.0)
 
     def test_no_non_finite_values_anywhere(self):
         import math

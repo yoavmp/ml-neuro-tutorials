@@ -309,6 +309,62 @@ class AbideComparisonSection(unittest.TestCase):
         self.assertIn(f"LINEAR_SVR_C_GRID = {grids['linear_svr']['grid']['C']}", src)
         self.assertIn(f"LINEAR_SVR_EPSILON_GRID = {grids['linear_svr']['grid']['epsilon']}", src)
         self.assertIn(f"RBF_SVR_C_GRID = {grids['rbf_svr']['grid']['C']}", src)
+        self.assertIn(f"RBF_SVR_EPSILON = {grids['rbf_svr']['fixed_epsilon']}", src)
+
+    def test_linear_svr_grid_excludes_c_equals_10(self):
+        cell = next(c for c in self.cells if c["cell_type"] == "code" and "outer_cv = KFold" in _src(c))
+        src = _src(cell)
+        self.assertIn("LINEAR_SVR_C_GRID = [0.01, 0.1, 1]", src)
+        self.assertNotIn("LINEAR_SVR_C_GRID = [0.01, 0.1, 1, 10]", src)
+
+    def test_run_full_nested_cv_flag_defaults_false_and_gates_the_expensive_code(self):
+        flag_cell = next(c for c in self.cells if c["cell_type"] == "code" and "RUN_FULL_NESTED_CV = False" in _src(c))
+        self.assertNotIn("hide-input", flag_cell.get("metadata", {}).get("tags", []))
+        self.assertNotIn("hide-cell", flag_cell.get("metadata", {}).get("tags", []))
+        machinery_cell = next(c for c in self.cells if c["cell_type"] == "code" and "outer_cv = KFold" in _src(c))
+        src = _src(machinery_cell)
+        self.assertIn("if RUN_FULL_NESTED_CV:", src)
+        self.assertIn("EMBEDDED_SUMMARY", src)
+        # The expensive block must be gated behind the flag, not merely
+        # documented -- "outer_cv = KFold(...)" must appear only inside the
+        # conditional branch, indented under "if RUN_FULL_NESTED_CV:".
+        for line in src.splitlines():
+            if "outer_cv = KFold" in line:
+                self.assertTrue(line.startswith("    "), line)
+
+    def test_embedded_summary_matches_the_audit(self):
+        cell = next(c for c in self.cells if c["cell_type"] == "code" and "EMBEDDED_SUMMARY" in _src(c))
+        src = _src(cell)
+        summary = AUDIT_RESULT["summary"]
+        label_to_key = {
+            "Standardized OLS": "ols", "PCR": "pcr", "PLS": "pls", "Linear SVR": "linear_svr", "RBF SVR": "rbf_svr",
+        }
+        for label, key in label_to_key.items():
+            entry = summary[key]
+            self.assertIn(f'"model": "{label}"', src)
+            self.assertIn(str(entry["mean_outer_test_mse"]), src)
+            self.assertIn(str(entry["sd_outer_test_mse"]), src)
+            self.assertIn(str(entry["mean_outer_test_r2"]), src)
+
+    def test_note_explains_the_optional_full_run_takes_minutes(self):
+        idx = _index_of_cell_starting_with(
+            self.cells, "By default, the results below load instantly"
+        )
+        src = _src(self.cells[idx]).lower()
+        self.assertIn("run_full_nested_cv", src)
+        self.assertIn("minutes", src)
+
+    def test_no_notebook_or_repository_dependency_for_default_embedded_results(self):
+        # WP35 §16: the default (RUN_FULL_NESTED_CV=False) path must not
+        # read any file or network resource to obtain its results -- the
+        # values are embedded literally as EMBEDDED_SUMMARY.
+        cell = next(c for c in self.cells if c["cell_type"] == "code" and "EMBEDDED_SUMMARY" in _src(c))
+        src = _src(cell)
+        else_branch = src.split("else:", 1)[1]
+        self.assertNotIn("open(", else_branch)
+        self.assertNotIn("read_csv", else_branch)
+        self.assertNotIn("requests.", else_branch)
+        self.assertNotIn("urlopen", else_branch)
 
     def test_results_and_plot_cell_is_visible(self):
         cell = next(c for c in self.cells if c["cell_type"] == "code" and "mean outer-fold performance" in _src(c))
@@ -351,12 +407,17 @@ class AbideComparisonSection(unittest.TestCase):
         self.assertIn(f"{pcr_n} components", src)
         self.assertIn(f"{pls_n} components", src)
 
-    def test_discussion_is_honest_and_mentions_convergence_warnings(self):
+    def test_discussion_is_honest_and_no_longer_mentions_unresolved_warnings(self):
+        # WP35 §14: after removing the nonconvergent C=10 candidate and
+        # raising max_iter, the regenerated audit has zero LinearSVR
+        # convergence warnings, so the notebook must stop discussing them.
         idx = _index_of_cell_starting_with(self.cells, "On this cohort and split, RBF SVR reaches")
         src = _norm_ws(_src(self.cells[idx])).lower()
         self.assertIn("not a general ranking", src)
-        self.assertIn("did not fully converge", src)
-        self.assertIn("recorded rather than discarded", src)
+        self.assertNotIn("did not fully converge", src)
+        self.assertNotIn("convergence", src)
+        self.assertNotIn("warning", src)
+        self.assertEqual(AUDIT_RESULT.get("convergence_warnings", []), [])
 
     def test_no_third_iframe_in_this_section(self):
         idx = _index_of_cell_starting_with(self.cells, "## 8. Comparing Advanced Models on ABIDE-II")

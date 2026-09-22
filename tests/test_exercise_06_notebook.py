@@ -436,7 +436,7 @@ class ClassificationComplexityContrast(NotebookLoads):
         self.assertIn(f"{ccc['best_val_auc']:.3f}", text)
         self.assertIn(f"{ccc['depth2_val_auc']:.3f}", text)
         self.assertIn(f"{ccc['margin_over_depth2']:.3f}", text)
-        self.assertIn("development partition", text)
+        self.assertIn("training-and-validation data", text)
         self.assertIn("753", text)
         self.assertIn("251", text)
         self.assertNotIn("full eligible cohort", text)

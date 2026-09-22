@@ -41,7 +41,7 @@ SECTION_TITLES = [
     "## 5. Clustering and K-Means",
     "## 6. Research Example -- Exploring Neuroanatomical Profiles",
     "## 7. Interactive Activity -- Explore PCA and K-Means",
-    "## 8. Using PCA Before a Model We Already Know",
+    "## 8. Using PCA in a Supervised Pipeline",
     "## 9. What Should We Remember?",
 ]
 
@@ -348,18 +348,18 @@ class SupervisedPipeline(unittest.TestCase):
         cls.cells = cls.nb.cells
 
     def test_pipeline_code_block_is_shown(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA in a Supervised Pipeline")
         src = _src(self.cells[idx])
         self.assertIn('("scale", StandardScaler())', src)
         self.assertIn('("pca", PCA())', src)
         self.assertIn('("model", KNeighborsRegressor())', src)
 
     def test_teaching_points_present(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA in a Supervised Pipeline")
         src = _norm_ws(_src(self.cells[idx])).lower()
         self.assertIn("euclidean distance", src)
         self.assertIn("feature extraction, not feature selection", src)
-        self.assertIn("cross-validation on the development partition only", src)
+        self.assertIn("cross-validation on the training-and-validation data only", src)
         self.assertIn("not guaranteed to help knn", src)
 
     def test_split_cell_matches_the_manifest_holdout_split(self):
@@ -408,20 +408,20 @@ class SupervisedPipeline(unittest.TestCase):
         self.assertIn(f"raw-feature KNN selected: k={sup['selected_raw_k']}", out)
 
     def test_does_not_claim_pca_must_improve_prediction(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA in a Supervised Pipeline")
         full = _norm_ws("\n".join(_src(c) for c in self.cells[idx:]))
         self.assertIn("not a guarantee", full)
         self.assertNotIn("PCA always improves", full)
         self.assertNotIn("PCA must improve", full)
 
     def test_leakage_explanation_present(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA in a Supervised Pipeline")
         full = "\n".join(_src(c) for c in self.cells[idx:]).lower()
         self.assertIn("leaks information", full)
         self.assertIn("never sees the target", full)
 
     def test_think_first_question_present(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA in a Supervised Pipeline")
         full = "\n".join(_src(c) for c in self.cells[idx:])
         self.assertIn("```{admonition} Think first", full)
         self.assertIn(
@@ -431,13 +431,13 @@ class SupervisedPipeline(unittest.TestCase):
         )
 
     def test_only_one_think_first_in_this_section(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA in a Supervised Pipeline")
         next_idx = _index_of_cell_starting_with(self.cells, "## 9. What Should We Remember?")
         combined = "\n".join(_src(c) for c in self.cells[idx:next_idx])
         self.assertEqual(combined.count("```{admonition} Think first"), 1)
 
     def test_no_new_interactive_activity_in_this_section(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA in a Supervised Pipeline")
         next_idx = _index_of_cell_starting_with(self.cells, "## 9. What Should We Remember?")
         for c in self.cells[idx:next_idx]:
             self.assertNotIn("<iframe", _src(c))

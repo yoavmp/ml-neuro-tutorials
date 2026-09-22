@@ -45,6 +45,14 @@ CMP = ADV["abide_comparison"]
 OUTER_CFG = CMP["outer_cv"]
 INNER_CFG = CMP["inner_cv"]
 MODELS = CMP["models"]
+RBF_SVR_EPSILON: float = MODELS["rbf_svr"]["fixed_epsilon"]
+# WP35 §14: after removing the nonconvergent C=10 candidate, the new largest
+# candidate (C=1) still needs more than 5000 liblinear iterations to
+# converge on real data (measured: up to ~8,924 iterations; confirmed
+# converged cleanly by 20,000 across every (C, epsilon) pair still in the
+# grid, at negligible added runtime cost, unlike C=10's genuine
+# non-convergence even at max_iter=100000).
+LINEAR_SVR_MAX_ITER = 20000
 
 
 def _natural_order_columns(frame: Any) -> list[str]:
@@ -86,11 +94,18 @@ def _make_pipeline(model_key: str, params: dict[str, Any]) -> Any:
         return Pipeline(
             [
                 ("scale", StandardScaler()),
-                ("model", LinearSVR(C=params["C"], epsilon=params["epsilon"], max_iter=5000, random_state=0)),
+                ("model", LinearSVR(C=params["C"], epsilon=params["epsilon"], max_iter=LINEAR_SVR_MAX_ITER, random_state=0)),
             ]
         )
     if model_key == "rbf_svr":
-        return Pipeline([("scale", StandardScaler()), ("model", SVR(kernel="rbf", C=params["C"], gamma=params["gamma"]))])
+        # epsilon fixed at 1.0 (one year) rather than left at scikit-learn's
+        # implicit default (0.1) -- WP35 §15: only C and gamma are tuned, to
+        # keep this teaching grid manageable; epsilon is stated as fixed, not
+        # optimized. See MANIFEST["advanced_models"]["abide_comparison"]
+        # ["rbf_svr_epsilon_note"].
+        return Pipeline(
+            [("scale", StandardScaler()), ("model", SVR(kernel="rbf", C=params["C"], gamma=params["gamma"], epsilon=RBF_SVR_EPSILON))]
+        )
     raise ValueError(f"unknown model_key {model_key!r}")
 
 
@@ -212,6 +227,9 @@ def run_audit() -> dict[str, Any]:
             "mean_outer_test_r2": round(float(r2s.mean()), 6),
             "sd_outer_test_r2": round(float(r2s.std(ddof=0)), 6),
         }
+        if model_key == "rbf_svr":
+            # Fixed (not tuned) for this teaching comparison -- WP35 §15.
+            summary[model_key]["fixed_params"] = {"epsilon": RBF_SVR_EPSILON}
 
     results: dict[str, Any] = {
         "generated_by": "scripts/advanced_models_audit.py --run",
@@ -258,6 +276,17 @@ def validate(results: dict[str, Any]) -> list[str]:
     model_keys = results.get("models", [])
     if set(model_keys) != set(MODELS.keys()):
         problems.append(f"models must be exactly {sorted(MODELS.keys())}")
+
+    if 10 in MODELS.get("linear_svr", {}).get("grid", {}).get("C", []):
+        problems.append("linear_svr grid must not contain C=10 (WP35 §14: nonconvergent, never selected)")
+
+    rbf_fixed = results.get("summary", {}).get("rbf_svr", {}).get("fixed_params", {})
+    if rbf_fixed.get("epsilon") != RBF_SVR_EPSILON:
+        problems.append(f"summary.rbf_svr.fixed_params.epsilon must be {RBF_SVR_EPSILON} (WP35 §15), got {rbf_fixed.get('epsilon')}")
+
+    for w in results.get("convergence_warnings", []):
+        if "linear_svr" in w:
+            problems.append(f"unexpected linear_svr convergence warning after removing C=10: {w}")
 
     summary = results.get("summary", {})
     n_outer = results.get("outer_cv", {}).get("n_splits")
@@ -321,7 +350,9 @@ def cmd_check() -> int:
 def _print_summary(results: dict[str, Any]) -> None:
     for model_key in results["models"]:
         s = results["summary"][model_key]
-        print(f"{s['label']:14s} mean outer-test MSE={s['mean_outer_test_mse']:.2f} (sd {s['sd_outer_test_mse']:.2f})  R2={s['mean_outer_test_r2']:+.3f}")
+        fixed = s.get("fixed_params")
+        fixed_note = f"  fixed={fixed}" if fixed else ""
+        print(f"{s['label']:14s} mean outer-test MSE={s['mean_outer_test_mse']:.2f} (sd {s['sd_outer_test_mse']:.2f})  R2={s['mean_outer_test_r2']:+.3f}{fixed_note}")
     if results.get("convergence_warnings"):
         print(f"convergence warnings recorded: {len(results['convergence_warnings'])}")
     print(f"runtime: {results.get('runtime_seconds')}s")

@@ -99,6 +99,32 @@ class CommittedArtifact(unittest.TestCase):
             pls = self.data["catalog"][ppw._catalog_key("pls", 1, preset)]
             self.assertLessEqual(pls["valMse"], pcr["valMse"] + 1e-6)
 
+    def test_weak_moderate_strong_trend_at_one_component(self):
+        # WP35 §13: presets now encode alignment with the HIGHEST-variance
+        # direction (PC1). At one component, PCR is stuck using PC1 alone,
+        # so PLS's advantage over PCR should be largest under "weak"
+        # (target mostly explained by the lower-variance direction, PC2,
+        # which PCR's single component cannot reach) and should shrink
+        # monotonically as alignment with PC1 strengthens.
+        gaps = {}
+        for preset in ("weak", "moderate", "strong"):
+            pcr = self.data["catalog"][ppw._catalog_key("pcr", 1, preset)]
+            pls = self.data["catalog"][ppw._catalog_key("pls", 1, preset)]
+            gaps[preset] = pcr["valMse"] - pls["valMse"]
+        self.assertGreater(gaps["weak"], gaps["moderate"])
+        self.assertGreater(gaps["moderate"], gaps["strong"])
+        # Under "strong" alignment with PC1, PCR's target-blind component
+        # already points at (or very near) the target-relevant direction,
+        # so the PLS advantage should have narrowed substantially from the
+        # "weak" case, not merely decreased.
+        self.assertLess(gaps["strong"], gaps["weak"] * 0.5)
+
+    def test_presets_labelled_for_highest_variance_direction(self):
+        for preset in ppw.PRESET_KEYS:
+            label = self.data["presets"][preset]["label"].lower()
+            self.assertIn("highest-variance direction", label)
+            self.assertNotIn("lower-variance direction", label)
+
     def test_first_component_directions_are_unit_vectors(self):
         for entry in self.data["catalog"].values():
             dx, dy = entry["firstComponentDirection"]

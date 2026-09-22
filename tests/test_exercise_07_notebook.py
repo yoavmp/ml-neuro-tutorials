@@ -294,8 +294,16 @@ class CvPipelineAndComparison(unittest.TestCase):
         self.assertIn('"learning_rate": [0.03, 0.05, 0.1]', combined)
         self.assertIn('"n_estimators": [50, 100, 200]', combined)
         self.assertIn('"max_depth": [1, 2, 3]', combined)
-        self.assertIn("27 candidates", combined)
+        self.assertIn("27-candidate", combined)
         self.assertIn("12-candidate", combined)
+
+    def test_no_author_facing_grid_selection_paragraph_remains(self):
+        # WP35 §4: no "predeclared rule", target-machine, WP, or internal
+        # audit-report language in the student-facing grid-size explanation.
+        idx = _index_of_cell_starting_with(self.cells, "## 6. A Complete Gradient-Boosting Pipeline")
+        combined = "\n".join(_src(c) for c in self.cells[idx : idx + 3]).lower()
+        for phrase in ("predeclared", "audited on the target machine", "target machine", "wp report", "audit"):
+            self.assertNotIn(phrase, combined)
 
     def test_cv_fitting_cell_is_hide_input(self):
         cell = next(c for c in self.cells if c["cell_type"] == "code" and "candidate_grid = [" in _src(c))
@@ -307,10 +315,30 @@ class CvPipelineAndComparison(unittest.TestCase):
         self.assertIn("KFold(n_splits=5", src)
         self.assertIn("cv.split(X_train)", src)
 
-    def test_results_table_and_selected_settings_are_visible(self):
-        cell = next(c for c in self.cells if c["cell_type"] == "code" and "cv_results_df.round(2)" in _src(c))
-        self.assertNotIn("hide-input", cell.get("metadata", {}).get("tags", []))
-        self.assertNotIn("hide-cell", cell.get("metadata", {}).get("tags", []))
+    def test_selected_settings_are_visible_and_raw_table_is_collapsed(self):
+        # WP35 §5: the bar graph + selected-settings print stay visible; the
+        # full numeric table is available but collapsed, not a second
+        # duplicate visible table on the website.
+        bar_cell = next(c for c in self.cells if c["cell_type"] == "code" and "selected settings:" in _src(c))
+        self.assertNotIn("hide-input", bar_cell.get("metadata", {}).get("tags", []))
+        self.assertNotIn("hide-cell", bar_cell.get("metadata", {}).get("tags", []))
+        table_cell = next(c for c in self.cells if c["cell_type"] == "code" and "cv_results_df.round(2)" in _src(c))
+        self.assertIn("hide-cell", table_cell.get("metadata", {}).get("tags", []))
+
+    def test_bar_graph_encodes_depth_learning_rate_trees_and_mse(self):
+        cell = next(c for c in self.cells if c["cell_type"] == "code" and "selected settings:" in _src(c))
+        src = _src(cell)
+        self.assertIn("max_depth", src)
+        self.assertIn("learning_rate", src)
+        self.assertIn("n_est", src)
+        self.assertIn("mean_cv_mse", src)
+        self.assertIn('legend(title="Learning rate"', src)
+        self.assertIn("set_ylim(0", src)
+        self.assertIn("lower is better", src.lower())
+        self.assertIn("selected", src.lower())
+        # Exactly one plotting call in this cell -- a single bar graph, not a
+        # second duplicate chart plus a visible table.
+        self.assertEqual(src.count("plt.show()"), 1)
 
     def test_recorded_selected_settings_and_test_metrics_match_the_audit(self):
         out = _collect_output(self.nb)

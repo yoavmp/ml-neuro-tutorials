@@ -29,6 +29,32 @@ test.describe("pcr-pls-explore", () => {
     expect(failed, `unexpected network failures: ${failed.join(", ")}`).toHaveLength(0);
   });
 
+  test("the alignment control is labelled for the highest-variance direction (WP35 §13)", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    const labelText = await page.locator('[data-testid="pcr-pls-preset-select"]').locator("..").innerText();
+    expect(labelText).toContain("highest-variance direction");
+    expect(labelText).not.toContain("lower-variance direction");
+  });
+
+  test("PLS's advantage over PCR at one component shrinks from weak to strong alignment with PC1", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    async function gapFor(preset: "weak" | "moderate" | "strong"): Promise<number> {
+      await page.locator('[data-testid="pcr-pls-preset-select"]').selectOption(preset);
+      await page.locator('[data-testid="pcr-pls-method-select"]').selectOption("pcr");
+      const pcrMse = Number(await page.locator("#app").getAttribute("data-val-mse"));
+      await page.locator('[data-testid="pcr-pls-method-select"]').selectOption("pls");
+      const plsMse = Number(await page.locator("#app").getAttribute("data-val-mse"));
+      return pcrMse - plsMse;
+    }
+
+    const weakGap = await gapFor("weak");
+    const strongGap = await gapFor("strong");
+    expect(weakGap).toBeGreaterThan(strongGap);
+  });
+
   test("switching from PCR to PLS changes the reported validation MSE", async ({ page }) => {
     await page.goto(appUrl(QUERY));
     await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");

@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
 // Standalone runtime check for the production `boosting-parameter-explorer`
@@ -9,6 +12,22 @@ const QUERY = "?config=../configs/boosting_parameter_explorer.json";
 function appUrl(query = ""): string {
   return `/app/index.html${query}`;
 }
+
+// The widget's own configured Play interval (book/_static/widgets/configs/
+// boosting_parameter_explorer.json) -- read once from the same fixture the
+// widget itself loads, rather than duplicating the number as a magic
+// literal. WP35 §6.2: two of this suite's waits assert an *absence* of
+// change over real time (Pause truly stops advancement; no orphaned timer
+// fires after reload). Neither has a positive DOM/attribute event to await
+// -- "nothing happened" cannot be observed as a state transition -- so a
+// short, tightly bounded real-time wait is kept for those two cases only,
+// sized relative to the widget's own known interval instead of a
+// disconnected constant.
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const WIDGET_CONFIG = JSON.parse(
+  readFileSync(path.join(REPO_ROOT, "book", "_static", "widgets", "configs", "boosting_parameter_explorer.json"), "utf-8"),
+) as { playIntervalMs: number };
+const NO_ADVANCE_WAIT_MS = Math.round(WIDGET_CONFIG.playIntervalMs * 1.17); // > 1 interval, < 2
 
 test.describe("boosting-parameter-explorer", () => {
   test("loads with the declared defaults and no locked-test data in view", async ({ page }) => {
@@ -89,10 +108,13 @@ test.describe("boosting-parameter-explorer", () => {
     await expect(app).toHaveAttribute("data-playing", "false");
     const paused = await app.getAttribute("data-n-trees");
 
-    // A short, bounded wait (well under the configured 600ms interval x 2)
-    // to confirm the paused value genuinely stops changing, per WP32 §20:
-    // event/state observation rather than a long real-time animation wait.
-    await page.waitForTimeout(700);
+    // Confirming Pause truly stops advancement means asserting that
+    // data-n-trees does NOT change for at least one more interval tick --
+    // an absence has no event to await, so a bounded real-time wait is the
+    // only way to observe it (WP35 §6.3). Bounded to just over one interval
+    // (derived from the widget's own configured playIntervalMs, not a
+    // disconnected literal) so a still-running timer would be caught fast.
+    await page.waitForTimeout(NO_ADVANCE_WAIT_MS);
     await expect(app).toHaveAttribute("data-n-trees", paused!);
   });
 
@@ -155,8 +177,10 @@ test.describe("boosting-parameter-explorer", () => {
     await expect(page.locator("#app")).toHaveAttribute("data-playing", "false");
 
     // Give any orphaned interval from the destroyed instance a chance to fire
-    // and throw against a torn-down DOM before asserting none did.
-    await page.waitForTimeout(700);
+    // and throw against a torn-down DOM before asserting none did -- again a
+    // negative assertion with no positive event to await (WP35 §6.3), bounded
+    // to just over one of the widget's own configured intervals.
+    await page.waitForTimeout(NO_ADVANCE_WAIT_MS);
     expect(errors, `unexpected page errors: ${errors.join(", ")}`).toHaveLength(0);
   });
 
