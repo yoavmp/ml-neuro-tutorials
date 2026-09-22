@@ -109,6 +109,16 @@ const CHARTS = [
     plotTestId: "pca-kmeans-scatter-plot",
   },
   {
+    activity: "pcr-pls-explore (cloud)",
+    query: "../configs/pcr_pls_explore.json",
+    plotTestId: "pcr-pls-cloud-plot",
+  },
+  {
+    activity: "svm-explorer",
+    query: "../configs/svm_explorer.json",
+    plotTestId: "svm-explorer-plot",
+  },
+  {
     activity: "pca-kmeans-explorer (composition, default group bars)",
     query: "../configs/pca_kmeans_explorer.json",
     plotTestId: "pca-kmeans-composition-plot",

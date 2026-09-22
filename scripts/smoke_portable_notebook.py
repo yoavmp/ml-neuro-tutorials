@@ -40,10 +40,15 @@ Notebooks and their expected strings:
   the stage-by-stage boosting reproduction, the CV-tuned gradient-boosting
   pipeline, and the tree-model comparison all run and print their selected
   settings and locked-test metrics.
-* ``chapter_08/exercise_08_portable.ipynb`` (WP33) -- the same brain table;
-  the projection-activity reproduction, the standardized-PCA fit (explained
-  variance), the research-example K-means fit, and the CV-tuned supervised
-  PCA pipeline all run and print their audited numbers.
+* ``chapter_08/exercise_08_portable.ipynb`` (WP33; section 8 revised by
+  WP34) -- the same brain table; the projection-activity reproduction, the
+  standardized-PCA fit (explained variance), the research-example K-means
+  fit, and the CV-tuned PCA + KNN pipeline (with its raw-feature KNN
+  comparison) all run and print their audited numbers.
+* ``chapter_09/exercise_09_portable.ipynb`` (WP34) -- the same brain table;
+  the PCR/PLS and SVM synthetic-data reproductions, and the nested-cross-
+  validation comparison of five models (standardized OLS, PCR, PLS, linear
+  SVR, RBF SVR), all run and print their audited numbers.
 
 Needs network access (the notebooks download pinned public CSVs). Used by CI and
 runnable locally:
@@ -151,8 +156,17 @@ SMOKE = {
             "360 cortical-thickness predictors",
             "PC1 explained variance = 36.1%   PC2 explained variance = 5.9%",
             "cumulative explained variance through PC50 = 70.2%",
-            "selected component count = 50  (mean CV MSE = 32.7)",
-            "PCA pipeline locked-test MSE = 29.9   locked-test R2 = 0.680  (evaluated once)",
+            "selected: n_components=20, k=10  (mean CV MSE = 24.8)",
+            "raw-feature KNN selected: k=5  (mean CV MSE = 35.4)",
+        ),
+    },
+    "chapter_09": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_09" / "exercise_09_portable.ipynb",
+        "expect": (
+            "data table: 1004 participants x 360 cortical-thickness predictors",
+            "mean outer-fold performance (5 outer folds, nested cross-validation):",
+            "Standardized OLS     mean MSE = 49.1   mean R2 = +0.427",
+            "RBF SVR              mean MSE = 20.2   mean R2 = +0.774",
         ),
     },
 }

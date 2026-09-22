@@ -30,8 +30,8 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,all}``
-(default ``all``) scopes both modes. Exercises 9-12 are placeholder pages
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,chapter_09,all}``
+(default ``all``) scopes both modes. Exercises 10-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
 registered here. The bare ``--write`` / ``--check`` invocations keep working
 and now cover every registered notebook.
@@ -79,6 +79,9 @@ PUBLISHED_PAGE_CH7 = (
 )
 PUBLISHED_PAGE_CH8 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html"
+)
+PUBLISHED_PAGE_CH9 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -927,6 +930,90 @@ CHAPTER_08 = NotebookSpec(
     colab_title="Exercise 8: Unsupervised Learning",
 )
 
+_CH9_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH9_BANNER = (
+    "# Exercise 9: Advanced Models - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 9 advanced-models\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the\n"
+    "canonical course notebook by `scripts/build_portable_notebook.py`. It is\n"
+    "meant for running or editing the code in Google Colab or in a local\n"
+    "VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH9 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the nested-cross-\n"
+    "validation model comparison -- is kept and runnable."
+)
+
+_CH9_PCR_PLS_IFRAME_REPLACEMENT = (
+    "### PCR or PLS? on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a method (PCR or PLS), a\n"
+    "number of components, and a preset that changes how strongly the target\n"
+    "aligns with the predictors' lower-variance direction, and watch the\n"
+    "predictor cloud, the selected first component, and the observed-versus-\n"
+    "predicted validation values update together.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 9 page:\n"
+    "> <" + PUBLISHED_PAGE_CH9 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+_CH9_SVM_IFRAME_REPLACEMENT = (
+    "### Explore an SVM boundary on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a dataset (approximately\n"
+    "linear or nonlinear), a kernel, C, and gamma, and watch the decision\n"
+    "regions, support vectors, and training/validation accuracy update\n"
+    "together. This is conceptual exploration, not a model-selection\n"
+    "procedure.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 9 page:\n"
+    "> <" + PUBLISHED_PAGE_CH9 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+CHAPTER_09 = NotebookSpec(
+    key="chapter_09",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_09" / "exercise_09.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_09" / "exercise_09_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH9,
+    banner_source=_CH9_BANNER,
+    setup_source=_CH9_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive PCR-versus-PLS activity for a small simulated two-dimensional dataset": (
+            _CH9_PCR_PLS_IFRAME_REPLACEMENT
+        ),
+        "Interactive SVM decision-boundary explorer for two synthetic classification datasets": (
+            _CH9_SVM_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 9: Advanced Models",
+)
+
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
@@ -936,6 +1023,7 @@ NOTEBOOKS = {
     CHAPTER_06.key: CHAPTER_06,
     CHAPTER_07.key: CHAPTER_07,
     CHAPTER_08.key: CHAPTER_08,
+    CHAPTER_09.key: CHAPTER_09,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).

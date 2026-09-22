@@ -438,6 +438,48 @@ const pcaKmeansExplorerConfig = z
   })
   .strict();
 
+// WP34 (Exercise 9): "PCR or PLS?" -- a deterministic synthetic 2-D
+// regression example (scripts/export_pcr_pls_widget.py) where one direction
+// has high predictor variance but weak target relevance and another has
+// lower variance but stronger relevance. The train/validation split and the
+// predictor cloud stay fixed; only the target's alignment preset changes
+// which precomputed PCR/PLS fits are shown.
+const pcrPlsMethod = z.enum(["pcr", "pls"]);
+const pcrPlsPreset = z.enum(["weak", "moderate", "strong"]);
+
+const pcrPlsExploreConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("pcr-pls-explore"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultMethod: pcrPlsMethod,
+    defaultNComponents: z.number().int().positive(),
+    defaultPreset: pcrPlsPreset,
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP34 (Exercise 9): "Explore an SVM Boundary" -- two deterministic
+// synthetic 2-D classification datasets, one approximately linear and one
+// not (scripts/export_svm_explorer_widget.py). Every (dataset, kernel, C,
+// gamma) combination in the bounded grid is precomputed; gamma is
+// irrelevant (and its control disabled) for the linear kernel.
+const svmExplorerDataset = z.enum(["linear", "nonlinear"]);
+const svmExplorerKernel = z.enum(["linear", "poly", "rbf"]);
+
+const svmExplorerConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("svm-explorer"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultDataset: svmExplorerDataset,
+    defaultKernel: svmExplorerKernel,
+    defaultC: z.number().positive(),
+    defaultGamma: z.number().positive(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -462,6 +504,8 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   boostingParameterExplorerConfig,
   pcaProjectionConfig,
   pcaKmeansExplorerConfig,
+  pcrPlsExploreConfig,
+  svmExplorerConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -487,6 +531,12 @@ export type BoostingParameterExplorerConfig = z.infer<typeof boostingParameterEx
 export type PcaProjectionConfig = z.infer<typeof pcaProjectionConfig>;
 export type PcaKmeansExternalVariable = z.infer<typeof pcaKmeansExternalVariable>;
 export type PcaKmeansExplorerConfig = z.infer<typeof pcaKmeansExplorerConfig>;
+export type PcrPlsMethod = z.infer<typeof pcrPlsMethod>;
+export type PcrPlsPreset = z.infer<typeof pcrPlsPreset>;
+export type PcrPlsExploreConfig = z.infer<typeof pcrPlsExploreConfig>;
+export type SvmExplorerDataset = z.infer<typeof svmExplorerDataset>;
+export type SvmExplorerKernel = z.infer<typeof svmExplorerKernel>;
+export type SvmExplorerConfig = z.infer<typeof svmExplorerConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

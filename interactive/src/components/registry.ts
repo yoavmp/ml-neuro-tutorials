@@ -22,6 +22,8 @@ import { boostingStepByStepComponent } from "./boosting-step-by-step";
 import { boostingParameterExplorerComponent } from "./boosting-parameter-explorer";
 import { pcaProjectionComponent } from "./pca-projection";
 import { pcaKmeansExplorerComponent } from "./pca-kmeans-explorer";
+import { pcrPlsExploreComponent } from "./pcr-pls-explore";
+import { svmExplorerComponent } from "./svm-explorer";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -43,3 +45,5 @@ registry.register(boostingStepByStepComponent);
 registry.register(boostingParameterExplorerComponent);
 registry.register(pcaProjectionComponent);
 registry.register(pcaKmeansExplorerComponent);
+registry.register(pcrPlsExploreComponent);
+registry.register(svmExplorerComponent);

@@ -1,5 +1,5 @@
 """Offline tests for scripts/pca_kmeans_audit.py and its committed result
-(WP33, Exercise 8 sections 4/8).
+(WP33, Exercise 8 sections 4/8; WP34 revised section 8 to PCA + KNN).
 
 Standard-library ``unittest``; no network. Re-validates the committed audit
 JSON for self-consistency and checks the pedagogical/leakage claims the
@@ -78,31 +78,43 @@ class CommittedResult(unittest.TestCase):
         self.assertEqual(sup["n_development"], 753)
         self.assertEqual(sup["n_outer_test"], 251)
 
-    def test_supervised_pipeline_component_grid_matches_the_spec(self):
+    def test_supervised_pipeline_grids_match_the_spec(self):
         sup = self.result["supervised_pipeline"]
-        self.assertEqual(sup["component_grid"], [2, 5, 10, 20, 50, 100, 200])
-        self.assertEqual(len(sup["cv_results"]), len(sup["component_grid"]))
-        for candidate in sup["cv_results"]:
+        self.assertEqual(sup["component_grid"], [5, 10, 20, 50, 100])
+        self.assertEqual(sup["k_grid"], [5, 10, 20, 40])
+        self.assertEqual(len(sup["pca_knn_cv_results"]), len(sup["component_grid"]) * len(sup["k_grid"]))
+        for candidate in sup["pca_knn_cv_results"]:
+            self.assertEqual(len(candidate["fold_mse"]), 5)
+        self.assertEqual(len(sup["raw_knn_cv_results"]), len(sup["k_grid"]))
+        for candidate in sup["raw_knn_cv_results"]:
             self.assertEqual(len(candidate["fold_mse"]), 5)
 
-    def test_selected_component_count_matches_a_fresh_minimum_cv_mse_recomputation(self):
+    def test_selected_settings_match_a_fresh_minimum_cv_mse_recomputation(self):
         sup = self.result["supervised_pipeline"]
-        cv_results = sup["cv_results"]
+        cv_results = sup["pca_knn_cv_results"]
         best_i = min(range(len(cv_results)), key=lambda i: (cv_results[i]["mean_mse"], i))
         self.assertEqual(sup["selected_index"], best_i)
         self.assertEqual(sup["selected_n_components"], cv_results[best_i]["n_components"])
+        self.assertEqual(sup["selected_k"], cv_results[best_i]["k"])
         self.assertEqual(sup["selected_mean_cv_mse"], cv_results[best_i]["mean_mse"])
+
+        raw_results = sup["raw_knn_cv_results"]
+        best_raw_i = min(range(len(raw_results)), key=lambda i: (raw_results[i]["mean_mse"], i))
+        self.assertEqual(sup["selected_raw_index"], best_raw_i)
+        self.assertEqual(sup["selected_raw_k"], raw_results[best_raw_i]["k"])
+        self.assertEqual(sup["selected_raw_mean_cv_mse"], raw_results[best_raw_i]["mean_mse"])
 
     def test_locked_test_metrics_are_present_and_evaluated_once(self):
         sup = self.result["supervised_pipeline"]
-        self.assertIsInstance(sup["pca_pipeline_test_mse"], float)
-        self.assertIsInstance(sup["pca_pipeline_test_r2"], float)
-        self.assertIsInstance(sup["baseline_no_pca_test_mse"], float)
+        self.assertIsInstance(sup["pca_knn_test_mse"], float)
+        self.assertIsInstance(sup["pca_knn_test_r2"], float)
+        self.assertIsInstance(sup["raw_knn_test_mse"], float)
+        self.assertIsInstance(sup["raw_knn_test_r2"], float)
 
-    def test_pca_beats_baseline_flag_matches_a_fresh_comparison(self):
+    def test_pca_knn_beats_raw_knn_flag_matches_a_fresh_comparison(self):
         sup = self.result["supervised_pipeline"]
-        expected = sup["pca_pipeline_test_mse"] < sup["baseline_no_pca_test_mse"]
-        self.assertEqual(sup["pca_beats_baseline"], expected)
+        expected = sup["pca_knn_test_mse"] < sup["raw_knn_test_mse"]
+        self.assertEqual(sup["pca_knn_beats_raw_knn"], expected)
 
     def test_no_non_finite_values_anywhere(self):
         import math

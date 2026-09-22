@@ -5,9 +5,12 @@ learning: contrasting supervised/unsupervised learning, PCA (projection,
 explained variance, loadings, reconstruction), a small simulated
 projection-angle activity, PCA on the real ABIDE-II cortical-thickness
 table, K-means clustering, an exploratory research example, a combined
-PCA-and-K-means explorer, and PCA correctly used inside a supervised
-age-prediction pipeline. Hierarchical clustering, dendrograms, t-SNE, UMAP,
-DBSCAN, Gaussian-mixture models, and AdaBoost are explicitly out of scope.
+PCA-and-K-means explorer, and PCA used before KNN regression -- a model
+students already know -- in a leakage-safe supervised pipeline, compared
+against KNN on the original standardized features. Hierarchical clustering,
+dendrograms, t-SNE, UMAP, DBSCAN, Gaussian-mixture models, AdaBoost, and
+principal component regression (PCR) are explicitly out of scope (PCR first
+appears in Exercise 9).
 
 Standard-library ``unittest``; no network.
 
@@ -38,7 +41,7 @@ SECTION_TITLES = [
     "## 5. Clustering and K-Means",
     "## 6. Research Example -- Exploring Neuroanatomical Profiles",
     "## 7. Interactive Activity -- Explore PCA and K-Means",
-    "## 8. PCA Inside a Supervised Prediction Pipeline",
+    "## 8. Using PCA Before a Model We Already Know",
     "## 9. What Should We Remember?",
 ]
 
@@ -127,6 +130,15 @@ class OpeningStructure(unittest.TestCase):
     def test_no_out_of_scope_methods_anywhere(self):
         for needle in OUT_OF_SCOPE_NEEDLES:
             self.assertNotIn(needle, self.full_source_lower, needle)
+
+    def test_pcr_is_not_introduced_here(self):
+        # WP34: principal component regression must first appear in
+        # Exercise 9, not Exercise 8. Exercise 8's supervised section now
+        # pairs PCA with KNeighborsRegressor instead.
+        self.assertNotIn("pcr", self.full_source_lower)
+        self.assertNotIn("principal component regression", self.full_source_lower)
+        self.assertNotIn("linearregression", self.full_source_lower)
+        self.assertNotIn("linear regression", self.full_source_lower)
 
     def test_no_stored_error_outputs(self):
         _collect_output(self.nb)  # raises AssertionError on any error output
@@ -336,11 +348,19 @@ class SupervisedPipeline(unittest.TestCase):
         cls.cells = cls.nb.cells
 
     def test_pipeline_code_block_is_shown(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. PCA Inside a Supervised")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
         src = _src(self.cells[idx])
         self.assertIn('("scale", StandardScaler())', src)
         self.assertIn('("pca", PCA())', src)
-        self.assertIn('("model", LinearRegression())', src)
+        self.assertIn('("model", KNeighborsRegressor())', src)
+
+    def test_teaching_points_present(self):
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        src = _norm_ws(_src(self.cells[idx])).lower()
+        self.assertIn("euclidean distance", src)
+        self.assertIn("feature extraction, not feature selection", src)
+        self.assertIn("cross-validation on the development partition only", src)
+        self.assertIn("not guaranteed to help knn", src)
 
     def test_split_cell_matches_the_manifest_holdout_split(self):
         cell = next(c for c in self.cells if c["cell_type"] == "code" and "X_train, X_test, y_train, y_test, groups_train" in _src(c))
@@ -349,10 +369,12 @@ class SupervisedPipeline(unittest.TestCase):
         holdout = MANIFEST["protocol"]["holdout_split"]
         self.assertIn(f'test_size=0.25, random_state={holdout["random_state"]}', src)
 
-    def test_component_grid_matches_the_spec(self):
+    def test_component_and_k_grids_match_the_spec(self):
         cell = next(c for c in self.cells if c["cell_type"] == "code" and "component_grid = [" in _src(c))
         self.assertIn("hide-input", cell.get("metadata", {}).get("tags", []))
-        self.assertIn("[2, 5, 10, 20, 50, 100, 200]", _src(cell))
+        sup = MANIFEST["unsupervised"]["supervised_pipeline"]
+        self.assertIn(f"component_grid = {sup['component_grid']}", _src(cell))
+        self.assertIn(f"k_grid = {sup['k_grid']}", _src(cell))
 
     def test_cv_uses_5_folds_and_development_partition_only(self):
         cell = next(c for c in self.cells if c["cell_type"] == "code" and "component_grid = [" in _src(c))
@@ -368,40 +390,54 @@ class SupervisedPipeline(unittest.TestCase):
         self.assertNotIn("StandardScaler().fit(X_train)", src)
         self.assertNotIn("PCA(", src.split("Pipeline([")[0])
 
+    def test_raw_feature_knn_comparison_present_under_the_same_folds(self):
+        cell = next(c for c in self.cells if c["cell_type"] == "code" and "component_grid = [" in _src(c))
+        src = _src(cell)
+        self.assertIn("raw_knn_rows", src)
+        self.assertIn("fold_splits", src.split("raw_knn_rows")[1].split("results_df")[0])
+
     def test_results_and_selection_are_visible(self):
-        cell = next(c for c in self.cells if c["cell_type"] == "code" and "cv_results_df.round(2)" in _src(c))
+        cell = next(c for c in self.cells if c["cell_type"] == "code" and "results_df.round(3)" in _src(c))
         self.assertNotIn("hide-input", cell.get("metadata", {}).get("tags", []))
         self.assertNotIn("hide-cell", cell.get("metadata", {}).get("tags", []))
 
     def test_recorded_selected_settings_and_test_metrics_match_the_audit(self):
         out = _collect_output(self.nb)
         sup = PCA_RESULT["supervised_pipeline"]
-        self.assertIn(f"selected component count = {sup['selected_n_components']}", out)
-        self.assertIn(f"PCA pipeline locked-test MSE = {sup['pca_pipeline_test_mse']:.1f}", out)
-        self.assertIn(f"locked-test R2 = {sup['pca_pipeline_test_r2']:.3f}", out)
-        self.assertIn(f"baseline (no PCA) locked-test MSE = {sup['baseline_no_pca_test_mse']:.1f}", out)
+        self.assertIn(f"selected: n_components={sup['selected_n_components']}, k={sup['selected_k']}", out)
+        self.assertIn(f"raw-feature KNN selected: k={sup['selected_raw_k']}", out)
 
     def test_does_not_claim_pca_must_improve_prediction(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. PCA Inside a Supervised")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
         full = _norm_ws("\n".join(_src(c) for c in self.cells[idx:]))
-        self.assertIn("without implying that PCA must win", full)
+        self.assertIn("not a guarantee", full)
         self.assertNotIn("PCA always improves", full)
         self.assertNotIn("PCA must improve", full)
 
     def test_leakage_explanation_present(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. PCA Inside a Supervised")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
         full = "\n".join(_src(c) for c in self.cells[idx:]).lower()
         self.assertIn("leaks information", full)
-        self.assertIn("never sees", full)
+        self.assertIn("never sees the target", full)
 
     def test_think_first_question_present(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. PCA Inside a Supervised")
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
         full = "\n".join(_src(c) for c in self.cells[idx:])
         self.assertIn("```{admonition} Think first", full)
-        self.assertIn("greatest explained variance", full)
+        self.assertIn(
+            "Why might PCA help KNN more directly than it helps a model that does not\n"
+            "calculate distances between participants?",
+            full,
+        )
 
-    def test_no_third_iframe_in_this_section(self):
-        idx = _index_of_cell_starting_with(self.cells, "## 8. PCA Inside a Supervised")
+    def test_only_one_think_first_in_this_section(self):
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
+        next_idx = _index_of_cell_starting_with(self.cells, "## 9. What Should We Remember?")
+        combined = "\n".join(_src(c) for c in self.cells[idx:next_idx])
+        self.assertEqual(combined.count("```{admonition} Think first"), 1)
+
+    def test_no_new_interactive_activity_in_this_section(self):
+        idx = _index_of_cell_starting_with(self.cells, "## 8. Using PCA Before a Model")
         next_idx = _index_of_cell_starting_with(self.cells, "## 9. What Should We Remember?")
         for c in self.cells[idx:next_idx]:
             self.assertNotIn("<iframe", _src(c))
@@ -451,8 +487,10 @@ class LaunchButtonsAndPortable(unittest.TestCase):
             if c["cell_type"] == "code":
                 self.assertIsNone(c.get("execution_count"))
 
-    def test_exercises_9_through_12_have_no_launch_button(self):
-        for n in range(9, 13):
+    def test_exercises_10_through_12_have_no_launch_button(self):
+        # Exercise 9 gained a portable notebook and launch button in WP34
+        # (see test_exercise_09_notebook.py); only 10-12 remain placeholders.
+        for n in range(10, 13):
             page = f'"chapters/chapter_{n:02d}/exercise_{n:02d}.html"'
             self.assertNotIn(page, LAUNCH_BUTTONS_JS)
 

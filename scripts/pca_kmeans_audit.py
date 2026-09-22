@@ -11,11 +11,12 @@ notebook reads audited results rather than computing them ad hoc:
   for the strongest individual ROIs on PC1/PC2, and grouped mean-absolute
   loading within each anatomical bundle in ``unsupervised.anatomical_groups``
   (never a signed sum, which can cancel);
-* **supervised PCA pipeline** (section 8) -- cross-validation restricted to
+* **PCA before KNN regression** (section 8) -- cross-validation restricted to
   the outer development partition (never the locked outer test), a fixed
-  ``component_grid``, selection by minimum mean CV MSE, refit on all
-  development participants, one evaluation of the locked outer test set, and
-  a plain-linear-regression baseline on the same split.
+  ``component_grid`` x ``k_grid``, joint selection by minimum mean CV MSE,
+  refit on all development participants, one evaluation of the locked outer
+  test set, and a standardized raw-feature (no-PCA) KNN baseline -- with `k`
+  independently selected from the identical `k_grid` -- on the same split.
 
 The two interactive activities ("Find the Best Projection" and "Explore PCA
 and K-Means") are audited separately by their own export scripts
@@ -140,9 +141,9 @@ def _outer_dev_split(cols: list[str], X: Any, y: Any, groups: Any):
 def _supervised_pipeline(frame: Any, cols: list[str], X: Any) -> dict[str, Any]:
     import numpy as np
     from sklearn.decomposition import PCA
-    from sklearn.linear_model import LinearRegression
     from sklearn.metrics import mean_squared_error, r2_score
     from sklearn.model_selection import KFold, train_test_split
+    from sklearn.neighbors import KNeighborsRegressor
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import StandardScaler
 
@@ -164,28 +165,48 @@ def _supervised_pipeline(frame: Any, cols: list[str], X: Any) -> dict[str, Any]:
     if (dev_subjects | test_subjects) != set(subjects.tolist()):
         raise RuntimeError("development + outer-test union does not equal the eligible-with-target cohort")
 
-    grid = SUP["component_grid"]
+    component_grid = SUP["component_grid"]
+    k_grid = SUP["k_grid"]
     cv = KFold(n_splits=5, shuffle=True, random_state=SUP["cv_random_state"])
     fold_splits = list(cv.split(X_train))
 
     t0 = time.time()
-    cv_results = []
-    for n in grid:
+    pca_knn_cv_results = []
+    for n in component_grid:
+        for k in k_grid:
+            fold_mse = []
+            for tr, va in fold_splits:
+                pipe = Pipeline(
+                    [
+                        ("scale", StandardScaler()),
+                        ("pca", PCA(n_components=n, random_state=0)),
+                        ("model", KNeighborsRegressor(n_neighbors=k)),
+                    ]
+                )
+                pipe.fit(X_train[tr], y_train[tr])
+                pred = pipe.predict(X_train[va])
+                fold_mse.append(mean_squared_error(y_train[va], pred))
+            pca_knn_cv_results.append(
+                {
+                    "n_components": n,
+                    "k": k,
+                    "fold_mse": [round(float(v), 4) for v in fold_mse],
+                    "mean_mse": round(float(np.mean(fold_mse)), 4),
+                    "sd_mse": round(float(np.std(fold_mse)), 4),
+                }
+            )
+
+    raw_knn_cv_results = []
+    for k in k_grid:
         fold_mse = []
         for tr, va in fold_splits:
-            pipe = Pipeline(
-                [
-                    ("scale", StandardScaler()),
-                    ("pca", PCA(n_components=n, random_state=0)),
-                    ("model", LinearRegression()),
-                ]
-            )
+            pipe = Pipeline([("scale", StandardScaler()), ("model", KNeighborsRegressor(n_neighbors=k))])
             pipe.fit(X_train[tr], y_train[tr])
             pred = pipe.predict(X_train[va])
             fold_mse.append(mean_squared_error(y_train[va], pred))
-        cv_results.append(
+        raw_knn_cv_results.append(
             {
-                "n_components": n,
+                "k": k,
                 "fold_mse": [round(float(v), 4) for v in fold_mse],
                 "mean_mse": round(float(np.mean(fold_mse)), 4),
                 "sd_mse": round(float(np.std(fold_mse)), 4),
@@ -193,25 +214,31 @@ def _supervised_pipeline(frame: Any, cols: list[str], X: Any) -> dict[str, Any]:
         )
     cv_runtime = round(time.time() - t0, 1)
 
-    best_i = int(min(range(len(cv_results)), key=lambda i: (cv_results[i]["mean_mse"], i)))
-    best = cv_results[best_i]
-    selected_n = best["n_components"]
+    best_i = int(min(range(len(pca_knn_cv_results)), key=lambda i: (pca_knn_cv_results[i]["mean_mse"], i)))
+    best = pca_knn_cv_results[best_i]
+    selected_n, selected_k = best["n_components"], best["k"]
 
-    final_pipe = Pipeline(
+    best_raw_i = int(min(range(len(raw_knn_cv_results)), key=lambda i: (raw_knn_cv_results[i]["mean_mse"], i)))
+    best_raw = raw_knn_cv_results[best_raw_i]
+    selected_raw_k = best_raw["k"]
+
+    pca_knn_pipe = Pipeline(
         [
             ("scale", StandardScaler()),
             ("pca", PCA(n_components=selected_n, random_state=0)),
-            ("model", LinearRegression()),
+            ("model", KNeighborsRegressor(n_neighbors=selected_k)),
         ]
     ).fit(X_train, y_train)
-    test_pred = final_pipe.predict(X_test)
-    test_mse = round(float(mean_squared_error(y_test, test_pred)), 4)
-    test_r2 = round(float(r2_score(y_test, test_pred)), 6)
+    pca_knn_pred = pca_knn_pipe.predict(X_test)
+    pca_knn_test_mse = round(float(mean_squared_error(y_test, pca_knn_pred)), 4)
+    pca_knn_test_r2 = round(float(r2_score(y_test, pca_knn_pred)), 6)
 
-    baseline_pipe = Pipeline([("scale", StandardScaler()), ("model", LinearRegression())]).fit(X_train, y_train)
-    baseline_pred = baseline_pipe.predict(X_test)
-    baseline_mse = round(float(mean_squared_error(y_test, baseline_pred)), 4)
-    baseline_r2 = round(float(r2_score(y_test, baseline_pred)), 6)
+    raw_knn_pipe = Pipeline(
+        [("scale", StandardScaler()), ("model", KNeighborsRegressor(n_neighbors=selected_raw_k))]
+    ).fit(X_train, y_train)
+    raw_knn_pred = raw_knn_pipe.predict(X_test)
+    raw_knn_test_mse = round(float(mean_squared_error(y_test, raw_knn_pred)), 4)
+    raw_knn_test_r2 = round(float(r2_score(y_test, raw_knn_pred)), 6)
 
     return {
         "target": target,
@@ -220,18 +247,24 @@ def _supervised_pipeline(frame: Any, cols: list[str], X: Any) -> dict[str, Any]:
         "n_outer_test": int(len(y_test)),
         "development_test_disjoint": True,
         "development_test_union_equals_cohort": True,
-        "component_grid": grid,
+        "component_grid": component_grid,
+        "k_grid": k_grid,
         "cv": f"KFold(n_splits=5, shuffle=True, random_state={SUP['cv_random_state']})",
         "cv_runtime_seconds": cv_runtime,
-        "cv_results": cv_results,
+        "pca_knn_cv_results": pca_knn_cv_results,
+        "raw_knn_cv_results": raw_knn_cv_results,
         "selected_index": best_i,
         "selected_n_components": selected_n,
+        "selected_k": selected_k,
         "selected_mean_cv_mse": best["mean_mse"],
-        "pca_pipeline_test_mse": test_mse,
-        "pca_pipeline_test_r2": test_r2,
-        "baseline_no_pca_test_mse": baseline_mse,
-        "baseline_no_pca_test_r2": baseline_r2,
-        "pca_beats_baseline": test_mse < baseline_mse,
+        "selected_raw_index": best_raw_i,
+        "selected_raw_k": selected_raw_k,
+        "selected_raw_mean_cv_mse": best_raw["mean_mse"],
+        "pca_knn_test_mse": pca_knn_test_mse,
+        "pca_knn_test_r2": pca_knn_test_r2,
+        "raw_knn_test_mse": raw_knn_test_mse,
+        "raw_knn_test_r2": raw_knn_test_r2,
+        "pca_knn_beats_raw_knn": pca_knn_test_mse < raw_knn_test_mse,
     }
 
 
@@ -306,25 +339,45 @@ def validate(results: dict[str, Any]) -> list[str]:
         problems.append("supervised_pipeline: development_test_disjoint must be true")
     if not sup.get("development_test_union_equals_cohort"):
         problems.append("supervised_pipeline: development_test_union_equals_cohort must be true")
-    cv_results = sup.get("cv_results", [])
-    grid = sup.get("component_grid", [])
-    if len(cv_results) != len(grid):
-        problems.append("supervised_pipeline: cv_results length must match component_grid length")
+
+    cv_results = sup.get("pca_knn_cv_results", [])
+    component_grid = sup.get("component_grid", [])
+    k_grid = sup.get("k_grid", [])
+    if len(cv_results) != len(component_grid) * len(k_grid):
+        problems.append("supervised_pipeline: pca_knn_cv_results length must match component_grid x k_grid")
     for r in cv_results:
         if len(r.get("fold_mse", [])) != 5:
-            problems.append(f"supervised_pipeline: n_components={r.get('n_components')} does not have exactly 5 fold MSE values")
+            problems.append(
+                f"supervised_pipeline: n_components={r.get('n_components')}, k={r.get('k')} does not have exactly 5 fold MSE values"
+            )
     selected_index = sup.get("selected_index")
     if isinstance(selected_index, int) and cv_results:
         recomputed_best = min(range(len(cv_results)), key=lambda i: (cv_results[i]["mean_mse"], i))
         if recomputed_best != selected_index:
             problems.append("supervised_pipeline: selected_index does not match a fresh minimum-mean-CV-MSE recomputation")
-        if cv_results[selected_index]["n_components"] != sup.get("selected_n_components"):
-            problems.append("supervised_pipeline: selected_n_components does not match cv_results[selected_index].n_components")
-    if sup.get("pca_pipeline_test_mse") is None:
-        problems.append("supervised_pipeline: pca_pipeline_test_mse missing (locked test must be evaluated exactly once)")
-    expected_beats = sup.get("pca_pipeline_test_mse", float("inf")) < sup.get("baseline_no_pca_test_mse", float("-inf"))
-    if sup.get("pca_beats_baseline") != expected_beats:
-        problems.append("supervised_pipeline: pca_beats_baseline does not match a fresh MSE comparison")
+        chosen = cv_results[selected_index]
+        if chosen["n_components"] != sup.get("selected_n_components") or chosen["k"] != sup.get("selected_k"):
+            problems.append("supervised_pipeline: selected_n_components/selected_k do not match cv_results[selected_index]")
+
+    raw_cv_results = sup.get("raw_knn_cv_results", [])
+    if len(raw_cv_results) != len(k_grid):
+        problems.append("supervised_pipeline: raw_knn_cv_results length must match k_grid length")
+    for r in raw_cv_results:
+        if len(r.get("fold_mse", [])) != 5:
+            problems.append(f"supervised_pipeline: raw KNN k={r.get('k')} does not have exactly 5 fold MSE values")
+    selected_raw_index = sup.get("selected_raw_index")
+    if isinstance(selected_raw_index, int) and raw_cv_results:
+        recomputed_raw_best = min(range(len(raw_cv_results)), key=lambda i: (raw_cv_results[i]["mean_mse"], i))
+        if recomputed_raw_best != selected_raw_index:
+            problems.append("supervised_pipeline: selected_raw_index does not match a fresh minimum-mean-CV-MSE recomputation")
+        if raw_cv_results[selected_raw_index]["k"] != sup.get("selected_raw_k"):
+            problems.append("supervised_pipeline: selected_raw_k does not match raw_knn_cv_results[selected_raw_index].k")
+
+    if sup.get("pca_knn_test_mse") is None:
+        problems.append("supervised_pipeline: pca_knn_test_mse missing (locked test must be evaluated exactly once)")
+    expected_beats = sup.get("pca_knn_test_mse", float("inf")) < sup.get("raw_knn_test_mse", float("-inf"))
+    if sup.get("pca_knn_beats_raw_knn") != expected_beats:
+        problems.append("supervised_pipeline: pca_knn_beats_raw_knn does not match a fresh MSE comparison")
 
     return problems
 
@@ -349,10 +402,11 @@ def _print_summary(results: dict[str, Any]) -> None:
     print(f"=== PCA: cumulative EV at 2/5/10/20/50 = {pca['cumulative_at']} ===")
     sup = results["supervised_pipeline"]
     print(
-        f"=== supervised pipeline: selected n_components={sup['selected_n_components']} "
+        f"=== supervised pipeline: selected n_components={sup['selected_n_components']}, k={sup['selected_k']} "
         f"(mean CV MSE={sup['selected_mean_cv_mse']:.1f}) -- "
-        f"PCA test MSE={sup['pca_pipeline_test_mse']:.1f} R2={sup['pca_pipeline_test_r2']:+.3f}; "
-        f"baseline test MSE={sup['baseline_no_pca_test_mse']:.1f} R2={sup['baseline_no_pca_test_r2']:+.3f} ==="
+        f"PCA+KNN test MSE={sup['pca_knn_test_mse']:.1f} R2={sup['pca_knn_test_r2']:+.3f}; "
+        f"raw-feature KNN (k={sup['selected_raw_k']}) test MSE={sup['raw_knn_test_mse']:.1f} "
+        f"R2={sup['raw_knn_test_r2']:+.3f} ==="
     )
     print(f"runtime: {results.get('runtime_seconds')}s")
 

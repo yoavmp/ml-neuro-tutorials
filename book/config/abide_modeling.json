@@ -904,7 +904,7 @@
       "measures": [
         "CT"
       ],
-      "note": "Identical to gradient_boosting.canonical_recipe / decision_tree.canonical_recipe (p=360): Exercise 8 reuses the same 360 cortical-thickness predictors as Exercises 2, 4, 5, 6, and 7. PCA and K-means (sections 1-7) use the full 1004-participant eligible cohort; no target is required. The supervised PCA pipeline (section 8) reuses protocol.holdout_split for age, exactly as every other notebook."
+      "note": "Identical to gradient_boosting.canonical_recipe / decision_tree.canonical_recipe (p=360): Exercise 8 reuses the same 360 cortical-thickness predictors as Exercises 2, 4, 5, 6, and 7. PCA and K-means (sections 1-7) use the full 1004-participant eligible cohort; no target is required. Section 8 (PCA before KNN regression) reuses protocol.holdout_split for age, exactly as every other notebook."
     },
     "standardization": "sklearn StandardScaler. Sections 1-7 (unsupervised): fit once on the full 1004-participant cohort (no held-out split needed -- no target is predicted). Section 8 (supervised): the scaler is refit inside every cross-validation fold, never on the full development set before splitting.",
     "anatomical_groups": [
@@ -966,24 +966,77 @@
       "note": "PCA is fit once (n_components=50, StandardScaler'd 360-feature cohort, random_state=0) on the full 1004-participant cohort; PC1/PC2 participant scores are the same for every retained_pc value because PCA components are nested (fitting with more retained components never changes earlier components' scores). K-means is refit for every (retained_pc, k, seed) combination in the grid above on the first retained_pc columns of that same score matrix -- never on PC1-PC2 alone, even though the scatter plot always shows only PC1-PC2. External variables (diagnosis, sex, site, age) are never inputs to PCA or K-means; they are joined onto the cluster labels only afterward, for display."
     },
     "supervised_pipeline": {
+      "model": "KNeighborsRegressor",
       "component_grid": [
-        2,
         5,
         10,
         20,
         50,
-        100,
-        200
+        100
+      ],
+      "k_grid": [
+        5,
+        10,
+        20,
+        40
       ],
       "dev_split": {
         "test_size": 0.25,
-        "random_state": 7,
+        "random_state": 42,
         "stratify": "group",
-        "note": "Identical to gradient_boosting.dev_split / decision_tree.dev_split."
+        "note": "protocol.holdout_split, reused unchanged; identical to gradient_boosting.dev_split / decision_tree.dev_split in spirit (same 0.25 test_size / group-stratification convention), but this is literally the single outer split shared by every ABIDE-II age-prediction notebook, not a separate one."
       },
       "cv_random_state": 13,
-      "cv_note": "KFold(n_splits=5, shuffle=True, random_state=13) restricted to the outer development partition (protocol.holdout_split), identical in spirit to gradient_boosting.cv_pipeline. StandardScaler and PCA are both inside the sklearn Pipeline and therefore inside every fold; the locked outer test set (n=251) is touched exactly once, after the component count is selected.",
-      "baseline_note": "Comparison model: Pipeline(StandardScaler(), LinearRegression()) on the original 360 standardized features, same outer split, no PCA step. Neither model is guaranteed to win; the committed audit records the honest result."
+      "cv_note": "KFold(n_splits=5, shuffle=True, random_state=13) restricted to the outer development partition (protocol.holdout_split), identical in spirit to gradient_boosting.cv_pipeline. StandardScaler and PCA are both inside the sklearn Pipeline and therefore inside every fold. Both n_components and k are selected together by minimum mean cross-validation MSE over component_grid x k_grid; the locked outer test set (n=251) is touched exactly once, after that joint selection.",
+      "baseline_note": "Comparison model: Pipeline(StandardScaler(), KNeighborsRegressor()) on the original 360 standardized features (no PCA step), with k selected from the identical k_grid under the identical CV folds. Neither model is guaranteed to win; the committed audit records the honest result."
+    }
+  },
+  "advanced_models": {
+    "recipe": {
+      "bundle": "all-eligible",
+      "measures": ["CT"],
+      "note": "Identical to unsupervised.recipe / gradient_boosting.canonical_recipe (p=360, n=1004, all with a non-null age): Exercise 9's ABIDE comparison (section 8) reuses the same participants, features, and target as every other exercise. The two interactive activities (PCR-or-PLS, SVM-boundary) use entirely synthetic, non-ABIDE data instead."
+    },
+    "pcr_pls_activity": {
+      "n_observations": 60,
+      "n_train": 40,
+      "seed": 21,
+      "rho": 0.7,
+      "noise_sd": 0.6,
+      "component_grid": [1, 2],
+      "presets": {
+        "weak": {"label": "Weak alignment with the lower-variance direction", "beta_pc1": 0.85, "beta_pc2": 0.3},
+        "moderate": {"label": "Moderate alignment with the lower-variance direction", "beta_pc1": 0.6, "beta_pc2": 0.6},
+        "strong": {"label": "Strong alignment with the lower-variance direction", "beta_pc1": 0.3, "beta_pc2": 0.85}
+      },
+      "note": "Entirely synthetic, deterministic 2-D predictor cloud: two standardized, correlated (rho=0.7) features f1/f2, seed fixed before generation. In their own standardized PCA space, PC1 (direction (1,1)/sqrt(2)) explains 85% of predictor variance and PC2 (direction (1,-1)/sqrt(2)) explains 15%. The target is y = beta_pc1*PC1_score + beta_pc2*PC2_score + Gaussian noise(sd=noise_sd); the preset changes only (beta_pc1, beta_pc2), never the fixed predictor cloud or the fixed 40/20 train/validation split. PCR's component is chosen from PC1's own variance-only construction (never sees y); PLS's component is chosen using the covariance between the predictors and y."
+    },
+    "svm_activity": {
+      "n_observations": 80,
+      "n_train": 60,
+      "seed": 33,
+      "linear_dataset_note": "Two Gaussian blobs (mean-separated along one axis, shared covariance), linearly separable up to a small overlap.",
+      "nonlinear_dataset_note": "Two concentric-ish classes (an inner class surrounded by an outer ring, plus noise) -- not linearly separable.",
+      "kernel_options": ["linear", "poly", "rbf"],
+      "poly_degree": 3,
+      "c_grid": [0.1, 1, 10, 100],
+      "gamma_grid": [0.1, 1, 10],
+      "decision_grid_resolution": 60,
+      "note": "Two entirely synthetic, deterministic, fixed-split 2-D binary classification datasets (never ABIDE observations). Every (dataset, kernel, C, gamma) combination in the declared bounded grid is precomputed with scikit-learn's SVC; gamma is ignored (and its control disabled) for the linear kernel. Support vectors are always training-set indices; the stored decision grid is a fixed decision_grid_resolution x decision_grid_resolution mesh over a fixed, padded bounding box, sufficient for a smooth but compact Plotly contour."
+    },
+    "abide_comparison": {
+      "outer_cv": {"n_splits": 5, "shuffle": true, "random_state": 100, "note": "Identical outer folds for every compared model; same (n_splits, random_state) convention as knn.nested cross-validation in Exercise 4."},
+      "inner_cv": {"n_splits": 5, "shuffle": true, "random_state": 101, "note": "Identical inner-fold assignments reused across every candidate of every model within a given outer fold, wherever a model has a hyperparameter to select; the standardized-OLS reference has none, so no inner loop applies to it."},
+      "models": {
+        "ols": {"label": "Standardized OLS (reference)", "pipeline": "StandardScaler() -> LinearRegression()", "tuned": false},
+        "pcr": {"label": "PCR", "pipeline": "StandardScaler() -> PCA(n_components) -> LinearRegression()", "tuned": true, "grid": {"n_components": [5, 10, 20, 50, 100, 200]}},
+        "pls": {"label": "PLS", "pipeline": "StandardScaler() -> PLSRegression(n_components, scale=False)", "tuned": true, "grid": {"n_components": [2, 5, 10, 20]}},
+        "linear_svr": {"label": "Linear SVR", "pipeline": "StandardScaler() -> LinearSVR(C, epsilon, max_iter=5000)", "tuned": true, "grid": {"C": [0.01, 0.1, 1, 10], "epsilon": [0.5, 1, 2]}},
+        "rbf_svr": {"label": "RBF SVR", "pipeline": "StandardScaler() -> SVR(kernel='rbf', C, gamma)", "tuned": true, "grid": {"C": [1, 10, 100], "gamma": ["scale", 0.001, 0.01]}}
+      },
+      "gamma_grid_justification": "For standardized 360-feature inputs (per-feature variance 1), sklearn's gamma='scale' equals 1/(n_features * X.var()) = 1/360 = 0.00278; the two numeric candidates (0.001, 0.01) bracket that value by roughly a factor of 2.8x below and 3.6x above.",
+      "linear_svr_solver_note": "WP34: measured directly on one real outer-training fold (n=803, p=360), a single SVR(kernel='linear', C=10) fit took 65s (libsvm's SMO solver); the full nested-CV grid needs roughly 800 such fits, an infeasible runtime. LinearSVR (liblinear coordinate descent) solves the identical epsilon-insensitive linear objective and is scikit-learn's own documented recommendation for this n/p regime; every fit completes in under 2s. At C=10 (the grid's largest value), LinearSVR still does not fully converge within max_iter=5000 on real data (confirmed: still non-convergent even at max_iter=100000, taking 22s) -- an intrinsic conditioning property of this large-C, correlated-360-feature problem, not a solver artifact. This is a documented runtime/numerical adjustment, made before viewing any outer-fold comparison result, and any resulting convergence warnings are recorded (never silently discarded) in the committed audit result's convergence_warnings list.",
+      "note": "Inner selection always uses mean inner-fold MSE (never R^2); every model is refit on the complete outer-training fold at its selected hyperparameter(s) and evaluated exactly once on that outer-test fold. No grid was adjusted after viewing any outer-fold result."
     }
   },
   "bundles": {
