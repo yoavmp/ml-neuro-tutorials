@@ -25,6 +25,11 @@
 
   var MIN_HEIGHT = 200;
   var MAX_HEIGHT = 8000;
+  // WP35 §17.5: skip a write that would change the on-screen height by less
+  // than this -- the child already coalesces/filters (resize-report.ts), but
+  // guarding here too means a stray duplicate or near-duplicate message can
+  // never itself become a source of layout jitter on the parent page.
+  var IGNORE_DELTA_PX = 2;
 
   function onMessage(event) {
     if (event.origin !== window.location.origin) return;
@@ -35,6 +40,8 @@
     for (var i = 0; i < iframes.length; i += 1) {
       if (iframes[i].contentWindow === event.source) {
         var height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, Math.round(data.height)));
+        var current = parseInt(iframes[i].style.height, 10);
+        if (!isNaN(current) && Math.abs(height - current) < IGNORE_DELTA_PX) break;
         iframes[i].style.height = height + "px";
         break;
       }

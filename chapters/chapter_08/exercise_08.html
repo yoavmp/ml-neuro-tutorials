@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Exercise 8: PCA and Clustering &#8212; Machine Learning for Neuroscience</title>
+    <title>Exercise 8: Unsupervised Learning &#8212; Machine Learning for Neuroscience</title>
   
   
   
@@ -65,13 +65,13 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_08/exercise_08';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=53d626a9"></script>
-    <script src="../../_static/activity-resize.js?v=8e0b1445"></script>
-    <script src="../../_static/widgets/app/assets/index-lCZ4SDbv.js?v=0d143c57"></script>
+    <script src="../../_static/launch-buttons.js?v=936dd70a"></script>
+    <script src="../../_static/activity-resize.js?v=c493a16f"></script>
+    <script src="../../_static/widgets/app/assets/index-CNfQFOuV.js?v=a8c4087a"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Exercise 9: Advanced Models and Model Comparison" href="../chapter_09/exercise_09.html" />
-    <link rel="prev" title="Exercise 7: Trees and Boosting" href="../chapter_07/exercise_07.html" />
+    <link rel="next" title="Exercise 9: Advanced Models" href="../chapter_09/exercise_09.html" />
+    <link rel="prev" title="Exercise 7: Boosting and Gradient Boosting" href="../chapter_07/exercise_07.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -159,6 +159,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -224,9 +228,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Validation and Cross-Validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Trees and Boosting</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 8: PCA and Clustering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_09/exercise_09.html">Exercise 9: Advanced Models and Model Comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Boosting and Gradient Boosting</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 8: Unsupervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_09/exercise_09.html">Exercise 9: Advanced Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_10/exercise_10.html">Exercise 10: Common Machine Learning Mistakes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_11/exercise_11.html">Exercise 11: Embeddings and Representational Similarity Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_12/exercise_12.html">Exercise 12: Review and Exam-Style Questions</a></li>
@@ -338,7 +342,7 @@
       
       
       
-      <li><a href="../../_sources/chapters/chapter_08/exercise_08.md" target="_blank"
+      <li><a href="../../_sources/chapters/chapter_08/exercise_08.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -348,7 +352,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.ipynb</span>
 </a>
 </li>
       
@@ -401,7 +405,9 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -412,11 +418,37 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Exercise 8: PCA and Clustering</h1>
+    <h1>Exercise 8: Unsupervised Learning</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-without-a-target">1. Learning Without a Target</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pca-representing-many-features-with-fewer-dimensions">2. PCA: Representing Many Features with Fewer Dimensions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-find-the-best-projection">3. Interactive Activity – Find the Best Projection</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pca-with-abide-ii-neuroimaging-data">4. PCA with ABIDE-II Neuroimaging Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-the-components">Interpreting the components</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clustering-and-k-means">5. Clustering and K-Means</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#research-example-exploring-neuroanatomical-profiles">6. Research Example – Exploring Neuroanatomical Profiles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-explore-pca-and-k-means">7. Interactive Activity – Explore PCA and K-Means</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-guided-look-at-choosing-k">A guided look at choosing <code class="docutils literal notranslate"><span class="pre">k</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-pca-in-a-supervised-pipeline">8. Using PCA in a Supervised Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-should-we-remember">9. What Should We Remember?</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -426,9 +458,875 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="exercise-8-pca-and-clustering">
-<h1>Exercise 8: PCA and Clustering<a class="headerlink" href="#exercise-8-pca-and-clustering" title="Link to this heading">#</a></h1>
-<p>Materials for this exercise will be added before the practice session.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-8-unsupervised-learning">
+<h1>Exercise 8: Unsupervised Learning<a class="headerlink" href="#exercise-8-unsupervised-learning" title="Link to this heading">#</a></h1>
+<div class="how-to-use admonition">
+<p class="admonition-title">Run or download this notebook</p>
+<p>This page is fully readable as it is, and the interactive activities work
+here in the browser. To <strong>run or change the Python code</strong>, use the portable
+version of the notebook:</p>
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_08/exercise_08_portable.ipynb">Open the portable notebook in Colab</a></strong></p></li>
+<li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_08/exercise_08_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
+for VS Code or Jupyter</p></li>
+</ul>
+<p>The portable notebook keeps every Python analysis cell and swaps each
+embedded activity for a link back to this page.</p>
+</div>
+<section id="what-this-notebook-covers">
+<h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
+<p>This is Exercise 8 of <em>Machine Learning for Neuroscience</em>. Every earlier
+exercise predicted a target from labeled examples. This notebook asks a
+different question:</p>
+<p><strong>What can we learn from brain measurements when no target is supplied at
+all?</strong></p>
+<p>In this notebook you will:</p>
+<ol class="arabic simple">
+<li><p>reduce many brain measurements to a smaller set of principal components;</p></li>
+<li><p>examine what those components represent;</p></li>
+<li><p>group participants with K-means without using a target label;</p></li>
+<li><p>use PCA correctly inside a supervised prediction pipeline.</p></li>
+</ol>
+<p><strong>Prerequisites:</strong> Exercise 2 (regression) and Exercise 6 or 7 (any
+tree-based exercise, for held-out validation habits).</p>
+</section>
+<section id="learning-without-a-target">
+<h2>1. Learning Without a Target<a class="headerlink" href="#learning-without-a-target" title="Link to this heading">#</a></h2>
+<p>Every earlier exercise was <strong>supervised</strong>: each participant had a target
+value (age, diagnosis) that the model learned to predict, and we judged
+success by held-out prediction accuracy. <strong>Unsupervised</strong> methods receive
+only the input measurements – no target column – and instead describe
+structure that already exists in the data.</p>
+<p>Unsupervised methods can help researchers:</p>
+<ul class="simple">
+<li><p>summarize many related measurements with a much smaller set of numbers;</p></li>
+<li><p>visualize participants in a lower-dimensional space;</p></li>
+<li><p>explore whether participants with similar measurement profiles form
+groups;</p></li>
+<li><p>generate hypotheses for later validation on independent data.</p></li>
+</ul>
+<p>Nothing here replaces held-out testing. An unsupervised result is a
+starting point for a hypothesis, not a confirmed finding.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>With no target column supplied, what information can an unsupervised
+algorithm actually use to group or summarize participants?</p>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data loading. In the published book this cell is collapsed; it is plain,</span>
+<span class="c1"># runnable Python -- one public CSV pinned to an immutable commit. This is</span>
+<span class="c1"># the exact same ABIDE-II table Exercises 2, 4, 5, 6, and 7 use.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.ticker</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mticker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">silhouette_score</span><span class="p">,</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neighbors</span><span class="w"> </span><span class="kn">import</span> <span class="n">KNeighborsRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">KFold</span>
+
+<span class="n">PIN</span> <span class="o">=</span> <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"</span>
+<span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/</span><span class="si">{</span><span class="n">PIN</span><span class="si">}</span><span class="s2">/tu-machine-learning-yarkoni/data"</span>
+
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE</span><span class="si">}</span><span class="s2">/abide2.tsv"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Unnamed"</span><span class="p">)]]</span>
+
+<span class="n">BRAIN_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)]</span>
+<span class="n">FEATURES</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">BRAIN_COLS</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)]</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES</span><span class="p">)</span>
+<span class="k">assert</span> <span class="s2">"age"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FEATURES</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data table: </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES</span><span class="p">)</span><span class="si">}</span><span class="s2"> cortical-thickness predictors"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>data table: 1004 participants x 1446 columns
+360 cortical-thickness predictors
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="pca-representing-many-features-with-fewer-dimensions">
+<h2>2. PCA: Representing Many Features with Fewer Dimensions<a class="headerlink" href="#pca-representing-many-features-with-fewer-dimensions" title="Link to this heading">#</a></h2>
+<p>Principal component analysis (PCA) builds new axes – <strong>principal
+components</strong> – as combinations of the original features:</p>
+<ul class="simple">
+<li><p><strong>PC1</strong> captures the greatest available variance in the data;</p></li>
+<li><p><strong>PC2</strong> captures the greatest <em>remaining</em> variance, subject to being
+orthogonal (at a right angle) to PC1;</p></li>
+<li><p>each further component continues the same pattern, always orthogonal to
+every earlier one.</p></li>
+</ul>
+<p>Every participant gets a <strong>score</strong> on each component – its coordinate
+along that new axis. Every original feature gets a <strong>loading</strong> on each
+component – how strongly, and in which direction, that feature contributes
+to it. The <strong>explained variance</strong> of a component is the share of the total
+variability in the data it captures; keeping only the first few components
+means some information is discarded, and the <strong>reconstruction loss</strong> is a
+direct measure of how much.</p>
+<p><strong>PCA is dimensionality reduction and feature extraction, not feature
+selection.</strong> It never keeps a subset of the original measurements as-is –
+every component is a new combination of all of them. We will not derive
+the underlying matrix algebra here; the activity below builds the same
+intuition visually.</p>
+</section>
+<section id="interactive-activity-find-the-best-projection">
+<h2>3. Interactive Activity – Find the Best Projection<a class="headerlink" href="#interactive-activity-find-the-best-projection" title="Link to this heading">#</a></h2>
+<p>The activity below uses a small, <strong>simulated</strong> two-dimensional dataset with
+a clear but imperfect correlation between its two variables – these are not
+brain measurements. Choose a projection angle with the slider and watch how
+much variance that axis captures and how much reconstruction error is left
+behind; predict the best angle before revealing the true first principal
+component.</p>
+<iframe
+  title="Interactive projection-angle activity for a small simulated two-dimensional dataset"
+  src="../../_static/widgets/app/index.html?config=../configs/pca_projection.json"
+  loading="lazy"
+  width="100%"
+  height="1400"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional: a compact Python reproduction of the activity's math, using the</span>
+<span class="c1"># exact same fixed distribution and seed as the widget's own committed data</span>
+<span class="c1"># artifact. The projection at any angle is closed-form trigonometry -- no</span>
+<span class="c1"># model is fit.</span>
+<span class="n">PROJ_SEED</span> <span class="o">=</span> <span class="mi">11</span>
+<span class="n">PROJ_N</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">SIGMA_X</span><span class="p">,</span> <span class="n">SIGMA_Y</span><span class="p">,</span> <span class="n">RHO</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.75</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">PROJ_SEED</span><span class="p">)</span>
+<span class="n">cov</span> <span class="o">=</span> <span class="p">[[</span><span class="n">SIGMA_X</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">RHO</span> <span class="o">*</span> <span class="n">SIGMA_X</span> <span class="o">*</span> <span class="n">SIGMA_Y</span><span class="p">],</span> <span class="p">[</span><span class="n">RHO</span> <span class="o">*</span> <span class="n">SIGMA_X</span> <span class="o">*</span> <span class="n">SIGMA_Y</span><span class="p">,</span> <span class="n">SIGMA_Y</span><span class="o">**</span><span class="mi">2</span><span class="p">]]</span>
+<span class="n">pts</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">cov</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">PROJ_N</span><span class="p">)</span>
+<span class="n">pts</span> <span class="o">=</span> <span class="n">pts</span> <span class="o">-</span> <span class="n">pts</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">demo_angle_deg</span> <span class="o">=</span> <span class="mf">30.0</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">demo_angle_deg</span><span class="p">)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)])</span>
+<span class="n">projected</span> <span class="o">=</span> <span class="n">pts</span> <span class="o">@</span> <span class="n">u</span>
+<span class="n">total_variance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pts</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pts</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">captured</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">projected</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"angle = </span><span class="si">{</span><span class="n">demo_angle_deg</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> deg   captured variance = </span><span class="si">{</span><span class="n">captured</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">   "</span>
+      <span class="sa">f</span><span class="s2">"reconstruction MSE = </span><span class="si">{</span><span class="n">total_variance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">captured</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">   (of </span><span class="si">{</span><span class="n">total_variance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> total)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>angle = 30 deg   captured variance = 9.26   reconstruction MSE = 1.23   (of 10.48 total)
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+</section>
+<section id="pca-with-abide-ii-neuroimaging-data">
+<h2>4. PCA with ABIDE-II Neuroimaging Data<a class="headerlink" href="#pca-with-abide-ii-neuroimaging-data" title="Link to this heading">#</a></h2>
+<p>Now we apply PCA to the real cortical-thickness table: the same 1004
+participants and 360 regions used throughout this course. We standardize
+every feature first, even though all 360 are the same measurement type
+(cortical thickness in millimeters): some regions are naturally thicker and
+more variable than others, and without standardization PCA would be
+dominated by whichever regions happen to have the largest raw variance
+rather than by genuine shared patterns of thickness.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Xs</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+<span class="n">pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xs</span><span class="p">)</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">Xs</span><span class="p">)</span>
+<span class="n">evr</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span>
+<span class="n">cumvar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">evr</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PCA fit on </span><span class="si">{</span><span class="n">Xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="n">Xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> standardized features"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PC1 explained variance = </span><span class="si">{</span><span class="n">evr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">   PC2 explained variance = </span><span class="si">{</span><span class="n">evr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cumulative explained variance through PC</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">cumvar</span><span class="p">[</span><span class="n">k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PCA fit on 1004 participants x 360 standardized features
+PC1 explained variance = 36.1%   PC2 explained variance = 5.9%
+cumulative explained variance through PC2 = 42.0%
+cumulative explained variance through PC5 = 49.4%
+cumulative explained variance through PC10 = 54.3%
+cumulative explained variance through PC20 = 60.1%
+cumulative explained variance through PC50 = 70.2%
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">n_show</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_show</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">evr</span><span class="p">[:</span><span class="n">n_show</span><span class="p">])</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Principal component"</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Explained variance ratio"</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Scree plot (first 15 components)"</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">51</span><span class="p">),</span> <span class="n">cumvar</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"."</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">cumvar</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"crimson"</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"PC1 alone: </span><span class="si">{</span><span class="n">cumvar</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cumvar</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="n">textcoords</span><span class="o">=</span><span class="s2">"offset points"</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"crimson"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.5"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">mticker</span><span class="o">.</span><span class="n">PercentFormatter</span><span class="p">(</span><span class="n">decimals</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Number of components retained"</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Cumulative explained variance"</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Cumulative explained variance (first 50 components)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/c3e9bcb31203a4d476aca1e345f6accf8eee764531c120dd64ce11bf221b3791.png" src="../../_images/c3e9bcb31203a4d476aca1e345f6accf8eee764531c120dd64ce11bf221b3791.png" />
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">5.5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">scores</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">scores</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"PC1"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"PC2"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Every participant, PC1 vs. PC2"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/c296bd4182573617eefda101c7aa857d84d2f74eb440feb808b6ae4db5b028bc.png" src="../../_images/c296bd4182573617eefda101c7aa857d84d2f74eb440feb808b6ae4db5b028bc.png" />
+</div>
+</div>
+<section id="interpreting-the-components">
+<h3>Interpreting the components<a class="headerlink" href="#interpreting-the-components" title="Link to this heading">#</a></h3>
+<p>The bars below show the individual regions with the strongest (positive or
+negative) loading on PC1 and PC2 – the <em>direction</em> of each region’s
+contribution is preserved here, unlike the grouped summary further down.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loadings</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">components_</span>  <span class="c1"># (50, 360)</span>
+<span class="n">N_TOP</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">loadings</span><span class="p">[</span><span class="n">i</span><span class="p">]))[:</span><span class="n">N_TOP</span><span class="p">]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">FEATURES</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"_ROI"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">order</span><span class="p">]</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">loadings</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">order</span><span class="p">]</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"#4c72b0"</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">"#c44e52"</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N_TOP</span><span class="p">),</span> <span class="n">values</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N_TOP</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">labels</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Loading"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Strongest individual ROIs, PC</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PC1 loadings: </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">loadings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="si">}</span><span class="s2">% positive "</span>
+      <span class="s2">"(a uniform, whole-cortex pattern)"</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">loadings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">loadings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="k">else</span> <span class="s2">"PC1 loadings are mixed in sign"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/6eaa3b5fd56ab0d06d430bcfdd92ee675808712bbcfc4ce954aa209d9a5d8c0a.png" src="../../_images/6eaa3b5fd56ab0d06d430bcfdd92ee675808712bbcfc4ce954aa209d9a5d8c0a.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PC1 loadings: 100% positive (a uniform, whole-cortex pattern)
+</pre></div>
+</div>
+</div>
+</div>
+<p>The grouped view below summarizes loading <strong>magnitude</strong> within familiar
+anatomical groups – frontal, parietal, temporal, and occipital, using the
+same bundle definitions as Exercise 5’s feature-selection activity. We
+compute the <strong>mean absolute loading</strong> within each group, never a signed
+sum: positive and negative loadings within the same group would otherwise
+cancel and hide real structure.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Same anatomical bundle ROI lists Exercise 5's feature-selection activity</span>
+<span class="c1"># uses (book/config/abide_modeling.json bundles.{frontal,parietal,temporal,</span>
+<span class="c1"># occipital}), inlined here -- like Exercise 5 -- rather than imported from</span>
+<span class="c1"># the repository, so this cell stays runnable in the portable notebook.</span>
+<span class="n">ANATOMICAL_ROIS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"frontal"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"46"</span><span class="p">,</span> <span class="s2">"9-46d"</span><span class="p">,</span> <span class="s2">"a9-46v"</span><span class="p">,</span> <span class="s2">"p9-46v"</span><span class="p">,</span> <span class="s2">"9a"</span><span class="p">,</span> <span class="s2">"9p"</span><span class="p">,</span> <span class="s2">"8C"</span><span class="p">,</span> <span class="s2">"8Av"</span><span class="p">,</span> <span class="s2">"8Ad"</span><span class="p">,</span>
+        <span class="s2">"IFJa"</span><span class="p">,</span> <span class="s2">"IFJp"</span><span class="p">,</span> <span class="s2">"IFSa"</span><span class="p">,</span> <span class="s2">"IFSp"</span><span class="p">,</span> <span class="s2">"p47r"</span><span class="p">,</span> <span class="s2">"a47r"</span><span class="p">,</span> <span class="s2">"8BL"</span><span class="p">,</span> <span class="s2">"a32pr"</span><span class="p">,</span>
+        <span class="s2">"p32pr"</span><span class="p">,</span> <span class="s2">"d32"</span><span class="p">,</span> <span class="s2">"8BM"</span><span class="p">,</span> <span class="s2">"SCEF"</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">"parietal"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"PGs"</span><span class="p">,</span> <span class="s2">"PGi"</span><span class="p">,</span> <span class="s2">"PGp"</span><span class="p">,</span> <span class="s2">"PFm"</span><span class="p">,</span> <span class="s2">"PF"</span><span class="p">,</span> <span class="s2">"PFt"</span><span class="p">,</span> <span class="s2">"PFop"</span><span class="p">,</span> <span class="s2">"IP0"</span><span class="p">,</span> <span class="s2">"IP1"</span><span class="p">,</span> <span class="s2">"IP2"</span><span class="p">,</span>
+        <span class="s2">"IPS1"</span><span class="p">,</span> <span class="s2">"LIPv"</span><span class="p">,</span> <span class="s2">"LIPd"</span><span class="p">,</span> <span class="s2">"MIP"</span><span class="p">,</span> <span class="s2">"VIP"</span><span class="p">,</span> <span class="s2">"AIP"</span><span class="p">,</span> <span class="s2">"7PC"</span><span class="p">,</span> <span class="s2">"7PL"</span><span class="p">,</span> <span class="s2">"7Pm"</span><span class="p">,</span>
+        <span class="s2">"7AL"</span><span class="p">,</span> <span class="s2">"7Am"</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">"temporal"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"STGa"</span><span class="p">,</span> <span class="s2">"STSda"</span><span class="p">,</span> <span class="s2">"STSdp"</span><span class="p">,</span> <span class="s2">"STSva"</span><span class="p">,</span> <span class="s2">"STSvp"</span><span class="p">,</span> <span class="s2">"TE1a"</span><span class="p">,</span> <span class="s2">"TE1m"</span><span class="p">,</span> <span class="s2">"TE1p"</span><span class="p">,</span>
+        <span class="s2">"TE2a"</span><span class="p">,</span> <span class="s2">"TE2p"</span><span class="p">,</span> <span class="s2">"TGd"</span><span class="p">,</span> <span class="s2">"TGv"</span><span class="p">,</span> <span class="s2">"TF"</span><span class="p">,</span> <span class="s2">"PHT"</span><span class="p">,</span> <span class="s2">"TA2"</span><span class="p">,</span> <span class="s2">"A5"</span><span class="p">,</span> <span class="s2">"STV"</span><span class="p">,</span> <span class="s2">"PSL"</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">"occipital"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"V1"</span><span class="p">,</span> <span class="s2">"V2"</span><span class="p">,</span> <span class="s2">"V3"</span><span class="p">,</span> <span class="s2">"V4"</span><span class="p">,</span> <span class="s2">"V3A"</span><span class="p">,</span> <span class="s2">"V3B"</span><span class="p">,</span> <span class="s2">"V6"</span><span class="p">,</span> <span class="s2">"V6A"</span><span class="p">,</span> <span class="s2">"V7"</span><span class="p">,</span> <span class="s2">"V8"</span><span class="p">,</span> <span class="s2">"VVC"</span><span class="p">,</span>
+        <span class="s2">"VMV1"</span><span class="p">,</span> <span class="s2">"VMV2"</span><span class="p">,</span> <span class="s2">"VMV3"</span><span class="p">,</span> <span class="s2">"LO1"</span><span class="p">,</span> <span class="s2">"LO2"</span><span class="p">,</span> <span class="s2">"LO3"</span><span class="p">,</span> <span class="s2">"PIT"</span><span class="p">,</span> <span class="s2">"FST"</span><span class="p">,</span> <span class="s2">"V4t"</span><span class="p">,</span>
+        <span class="s2">"V3CD"</span><span class="p">,</span> <span class="s2">"DVT"</span><span class="p">,</span> <span class="s2">"ProS"</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">ANATOMICAL_GROUPS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ANATOMICAL_ROIS</span><span class="p">)</span>
+<span class="n">group_mean_abs_loading</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">ANATOMICAL_GROUPS</span><span class="p">:</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"fsCT_</span><span class="si">{</span><span class="n">hemi</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">roi</span><span class="si">}</span><span class="s2">_ROI"</span> <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">ANATOMICAL_ROIS</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="k">for</span> <span class="n">hemi</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"L"</span><span class="p">,</span> <span class="s2">"R"</span><span class="p">)]</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">FEATURES</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+    <span class="n">group_mean_abs_loading</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">loadings</span><span class="p">[</span><span class="n">pc</span><span class="p">][</span><span class="n">idx</span><span class="p">])))</span> <span class="k">for</span> <span class="n">pc</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ANATOMICAL_GROUPS</span><span class="p">))</span>
+<span class="n">width</span> <span class="o">=</span> <span class="mf">0.35</span>
+<span class="n">pc1_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">group_mean_abs_loading</span><span class="p">[</span><span class="n">g</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">ANATOMICAL_GROUPS</span><span class="p">]</span>
+<span class="n">pc2_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">group_mean_abs_loading</span><span class="p">[</span><span class="n">g</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">ANATOMICAL_GROUPS</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pc1_vals</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"PC1"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pc2_vals</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"PC2"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="n">g</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">ANATOMICAL_GROUPS</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Mean absolute loading"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Grouped loading magnitude by anatomical region"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">ANATOMICAL_GROUPS</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">group</span><span class="si">:</span><span class="s2">10s</span><span class="si">}</span><span class="s2"> PC1=</span><span class="si">{</span><span class="n">group_mean_abs_loading</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">  PC2=</span><span class="si">{</span><span class="n">group_mean_abs_loading</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/82a0f85ca40577950816af95fe1c1165d3c45bd02b44c6d1b618c6cd1757458d.png" src="../../_images/82a0f85ca40577950816af95fe1c1165d3c45bd02b44c6d1b618c6cd1757458d.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>frontal    PC1=0.0577  PC2=0.0453
+parietal   PC1=0.0594  PC2=0.0390
+temporal   PC1=0.0516  PC2=0.0622
+occipital  PC1=0.0489  PC2=0.0402
+</pre></div>
+</div>
+</div>
+</div>
+<p>A few questions worth sitting with before moving on:</p>
+<ul class="simple">
+<li><p>Does PC1 describe a global cortical-thickness pattern, or a more regional
+one? Look back at the sign of its loadings.</p></li>
+<li><p>Can a component with less explained variance than PC1 still be
+scientifically useful?</p></li>
+<li><p>What information is hidden when 360 dimensions are shown using only PC1
+and PC2?</p></li>
+</ul>
+</section>
+</section>
+<section id="clustering-and-k-means">
+<h2>5. Clustering and K-Means<a class="headerlink" href="#clustering-and-k-means" title="Link to this heading">#</a></h2>
+<p><strong>Clustering</strong> groups observations so that members of the same group are
+more similar to each other than to members of other groups – without using
+any target label. In this notebook, we use <strong>K-means</strong> as one practical example for
+understanding how clustering works. It repeats four steps:</p>
+<ol class="arabic simple">
+<li><p>initialize <code class="docutils literal notranslate"><span class="pre">k</span></code> cluster centers;</p></li>
+<li><p>assign each participant to its nearest center;</p></li>
+<li><p>update each center to the mean of the participants currently assigned to
+it;</p></li>
+<li><p>repeat steps 2-3 until assignments stop changing or a stopping rule is
+reached.</p></li>
+</ol>
+<p>K-means finds a partition that minimizes the sum of squared distances from
+each participant to its assigned center – it does not discover a
+guaranteed biological truth. A visible group of points in a PC1-PC2 plot is
+not automatically a clinical subtype.</p>
+<p><strong>Choosing <code class="docutils literal notranslate"><span class="pre">k</span></code>.</strong> Three considerations, together, guide the choice:</p>
+<ul class="simple">
+<li><p><strong>inertia and the elbow</strong>: inertia (the quantity K-means minimizes)
+always decreases as <code class="docutils literal notranslate"><span class="pre">k</span></code> grows; look for where adding another cluster
+stops helping much;</p></li>
+<li><p><strong>silhouette score</strong>: how well-separated the clusters are, on a scale
+from -1 to 1;</p></li>
+<li><p><strong>scientific usability</strong>: whether the resulting cluster sizes and any
+interpretation are actually useful for the question being asked.</p></li>
+</ul>
+<p>There is often no single objectively correct <code class="docutils literal notranslate"><span class="pre">k</span></code>. A higher silhouette score
+alone does not establish a biological subtype – it only describes how
+cleanly the <em>chosen</em> features separate into groups.</p>
+</section>
+<section id="research-example-exploring-neuroanatomical-profiles">
+<h2>6. Research Example – Exploring Neuroanatomical Profiles<a class="headerlink" href="#research-example-exploring-neuroanatomical-profiles" title="Link to this heading">#</a></h2>
+<p>Neuroimaging research has used PCA followed by clustering as an
+<strong>exploratory</strong> step: summarize many structural measurements with a handful
+of components, group participants in that reduced space, and only <em>then</em>
+compare the resulting groups against external characteristics such as
+diagnosis. This generates hypotheses about possible subgroups; it does not,
+by itself, confirm that they exist as a distinct biological category –
+that requires independent validation this notebook does not attempt.</p>
+<p>The workflow, in order:</p>
+<ol class="arabic simple">
+<li><p>standardize the cortical-thickness features;</p></li>
+<li><p>fit PCA without using diagnosis or any other target;</p></li>
+<li><p>retain a chosen number of components;</p></li>
+<li><p>fit K-means in that retained component space;</p></li>
+<li><p>only then compare the resulting clusters with external participant
+characteristics.</p></li>
+</ol>
+<p>Diagnosis, sex, site, and age never enter steps 1-4.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Step 1-2 (already fit above): Xs, pca, scores.</span>
+<span class="c1"># Step 3: retain 10 components.</span>
+<span class="n">RETAINED_PC</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">RESEARCH_K</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">demo_scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[:,</span> <span class="p">:</span><span class="n">RETAINED_PC</span><span class="p">]</span>
+
+<span class="c1"># Step 4: fit K-means -- explicit n_init and random_state, as required for</span>
+<span class="c1"># every K-means fit in this notebook.</span>
+<span class="n">demo_kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">RESEARCH_K</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">demo_scores</span><span class="p">)</span>
+<span class="n">demo_labels</span> <span class="o">=</span> <span class="n">demo_kmeans</span><span class="o">.</span><span class="n">labels_</span>
+<span class="n">demo_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">demo_labels</span><span class="p">)</span>
+<span class="n">demo_silhouette</span> <span class="o">=</span> <span class="n">silhouette_score</span><span class="p">(</span><span class="n">demo_scores</span><span class="p">,</span> <span class="n">demo_labels</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"retained components = </span><span class="si">{</span><span class="n">RETAINED_PC</span><span class="si">}</span><span class="s2">   k = </span><span class="si">{</span><span class="n">RESEARCH_K</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cluster sizes: </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">demo_sizes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"silhouette score = </span><span class="si">{</span><span class="n">demo_silhouette</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="c1"># Step 5: only now compare with an external characteristic (diagnosis).</span>
+<span class="n">demo_group</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">RESEARCH_K</span><span class="p">):</span>
+    <span class="n">in_cluster</span> <span class="o">=</span> <span class="n">demo_group</span><span class="p">[</span><span class="n">demo_labels</span> <span class="o">==</span> <span class="n">c</span><span class="p">]</span>
+    <span class="n">autism_share</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">in_cluster</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cluster </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">: n=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">in_cluster</span><span class="p">)</span><span class="si">}</span><span class="s2">  autism share=</span><span class="si">{</span><span class="n">autism_share</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>retained components = 10   k = 3
+cluster sizes: {0: 397, 1: 412, 2: 195}
+silhouette score = 0.265
+cluster 0: n=397  autism share=0.45
+cluster 1: n=412  autism share=0.45
+cluster 2: n=195  autism share=0.51
+</pre></div>
+</div>
+</div>
+</div>
+<div class="think-first admonition">
+<p class="admonition-title">Cluster labels are arbitrary</p>
+<p>Cluster labels 0, 1, and 2 above carry no inherent order or meaning – a
+different run could label the same groups 2, 0, 1. Even if the clusters
+differ somewhat in their diagnosis proportions, that alone does not make
+them autism subtypes: confirming a genuine subtype would require
+independent replication and clinical validation this exploratory analysis
+does not attempt.</p>
+</div>
+</section>
+<section id="interactive-activity-explore-pca-and-k-means">
+<h2>7. Interactive Activity – Explore PCA and K-Means<a class="headerlink" href="#interactive-activity-explore-pca-and-k-means" title="Link to this heading">#</a></h2>
+<p>The activity below combines everything in this section into one explorer.
+Choose how many principal components to retain, a number of clusters <code class="docutils literal notranslate"><span class="pre">k</span></code>,
+and an initialization seed; then pick an external characteristic to inspect
+<em>after</em> clustering. Clustering always uses every retained component you
+select, even though the scatter plot shows only PC1 and PC2.</p>
+<iframe
+  title="Interactive PCA and K-means explorer for ABIDE-II participants"
+  src="../../_static/widgets/app/index.html?config=../configs/pca_kmeans_explorer.json"
+  loading="lazy"
+  width="100%"
+  height="1900"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<section id="a-guided-look-at-choosing-k">
+<h3>A guided look at choosing <code class="docutils literal notranslate"><span class="pre">k</span></code><a class="headerlink" href="#a-guided-look-at-choosing-k" title="Link to this heading">#</a></h3>
+<p>Try this sequence in the activity above, using the retained-component count
+and seed already selected:</p>
+<ol class="arabic simple">
+<li><p>compare inertia and silhouette score across every candidate <code class="docutils literal notranslate"><span class="pre">k</span></code>;</p></li>
+<li><p>select <strong>Age</strong> as the external characteristic;</p></li>
+<li><p>compare <code class="docutils literal notranslate"><span class="pre">k=2</span></code>, <code class="docutils literal notranslate"><span class="pre">k=3</span></code>, and at least one larger <code class="docutils literal notranslate"><span class="pre">k</span></code>;</p></li>
+<li><p>ask: does a larger <code class="docutils literal notranslate"><span class="pre">k</span></code> reveal genuinely new structure, or does it mainly
+split an existing pattern into more, smaller bins?</p></li>
+</ol>
+<p>With this cohort, silhouette scores stay similar across candidate <code class="docutils literal notranslate"><span class="pre">k</span></code>, and
+inertia has no strong elbow, although <code class="docutils literal notranslate"><span class="pre">k=3</span></code> is a plausible bend. Coloring by
+<strong>Age</strong>, <code class="docutils literal notranslate"><span class="pre">k=2</span></code> and <code class="docutils literal notranslate"><span class="pre">k=3</span></code> divide participants into visibly different age
+ranges; larger <code class="docutils literal notranslate"><span class="pre">k</span></code> mostly subdivides those same ranges rather than
+producing a clearly stronger or more meaningful separation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">k=3</span></code> is a defensible exploratory summary here – it is not an objectively
+proven or uniquely correct number of clusters. The age comparison suggests
+K-means may be discretizing a continuous developmental, age-related
+cortical-thickness pattern into a small number of bins; age separation does
+not prove that natural biological categories exist, and <strong>these clusters
+must not be called autism subtypes</strong>. Inertia, silhouette, visualization,
+an external characteristic, and scientific judgment all have to be weighed
+together – no single number picks <code class="docutils literal notranslate"><span class="pre">k</span></code> for you.</p>
+</section>
+</section>
+<section id="using-pca-in-a-supervised-pipeline">
+<h2>8. Using PCA in a Supervised Pipeline<a class="headerlink" href="#using-pca-in-a-supervised-pipeline" title="Link to this heading">#</a></h2>
+<p>K-nearest neighbours predicts a participant’s age from the ages of the
+training participants whose cortical-thickness profiles are closest to
+theirs – literally, the Euclidean distance between two participants’ 360
+brain measurements. In a space with hundreds of dimensions, many directions
+carry little information about age, and those directions still count in
+every distance calculation, making “closest” less informative than it would
+be in a smaller, more relevant space.</p>
+<p>PCA can replace the 360 original cortical-thickness features with a smaller
+set of component scores before KNN ever calculates a distance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"pca"</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">()),</span>
+<span class="p">])</span>
+</pre></div>
+</div>
+<p>PCA here is still <strong>feature extraction, not feature selection</strong> – every
+retained component is a combination of all 360 original measurements, not a
+subset of them. The number of retained components and <code class="docutils literal notranslate"><span class="pre">k</span></code> are both model
+parameters: we choose them the same way we choose any other model
+parameter, using cross-validation on the training-and-validation data only, with
+<code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> and <code class="docutils literal notranslate"><span class="pre">PCA</span></code> refit inside every fold. PCA is not guaranteed to
+help KNN – it keeps the directions that explain the most variation in the
+cortical-thickness features themselves, which were never chosen with age in
+mind.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">has_age</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">groups</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">groups_train</span><span class="p">,</span> <span class="n">groups_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_train (development) = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_test = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span><span class="si">}</span><span class="s2"> (locked; read once, below)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>n_train (development) = 753   n_test = 251 (locked; read once, below)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Candidate component counts: <code class="docutils literal notranslate"><span class="pre">[5,</span> <span class="pre">10,</span> <span class="pre">20,</span> <span class="pre">50,</span> <span class="pre">100]</span></code>; candidate <code class="docutils literal notranslate"><span class="pre">k</span></code> values:
+<code class="docutils literal notranslate"><span class="pre">[5,</span> <span class="pre">10,</span> <span class="pre">20,</span> <span class="pre">40]</span></code>. Every (components, <code class="docutils literal notranslate"><span class="pre">k</span></code>) combination is scored by 5-fold
+cross-validation restricted to the training-and-validation data – <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code>
+and <code class="docutils literal notranslate"><span class="pre">PCA</span></code> are refit inside every fold, never once on the full
+training-and-validation set before splitting, so no fold’s validation rows can leak into its own
+preprocessing. The identical <code class="docutils literal notranslate"><span class="pre">k</span></code> grid, evaluated under the identical folds,
+also selects a standardized KNN model on the original 360 features (no PCA
+step), for a fair comparison.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">component_grid</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+<span class="n">k_grid</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fold_splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span>
+
+<span class="n">pca_knn_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">component_grid</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">k_grid</span><span class="p">:</span>
+        <span class="n">fold_mse</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">val_idx</span> <span class="ow">in</span> <span class="n">fold_splits</span><span class="p">:</span>
+            <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+                <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+                <span class="p">(</span><span class="s2">"pca"</span><span class="p">,</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">)),</span>
+            <span class="p">])</span>
+            <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_train</span><span class="p">[</span><span class="n">train_idx</span><span class="p">])</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">val_idx</span><span class="p">])</span>
+            <span class="n">fold_mse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_train</span><span class="p">[</span><span class="n">val_idx</span><span class="p">],</span> <span class="n">pred</span><span class="p">))</span>
+        <span class="n">pca_knn_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"n_components"</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span> <span class="s2">"k"</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s2">"mean_cv_mse"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_mse</span><span class="p">))})</span>
+
+<span class="n">pca_knn_cv_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pca_knn_rows</span><span class="p">)</span>
+<span class="n">best_pca_knn</span> <span class="o">=</span> <span class="n">pca_knn_cv_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pca_knn_cv_df</span><span class="p">[</span><span class="s2">"mean_cv_mse"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span>
+<span class="n">selected_n</span><span class="p">,</span> <span class="n">selected_k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">best_pca_knn</span><span class="p">[</span><span class="s2">"n_components"</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">best_pca_knn</span><span class="p">[</span><span class="s2">"k"</span><span class="p">])</span>
+
+<span class="n">raw_knn_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">k_grid</span><span class="p">:</span>
+    <span class="n">fold_mse</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">val_idx</span> <span class="ow">in</span> <span class="n">fold_splits</span><span class="p">:</span>
+        <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+            <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+            <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">)),</span>
+        <span class="p">])</span>
+        <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_train</span><span class="p">[</span><span class="n">train_idx</span><span class="p">])</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">val_idx</span><span class="p">])</span>
+        <span class="n">fold_mse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_train</span><span class="p">[</span><span class="n">val_idx</span><span class="p">],</span> <span class="n">pred</span><span class="p">))</span>
+    <span class="n">raw_knn_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"k"</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s2">"mean_cv_mse"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_mse</span><span class="p">))})</span>
+
+<span class="n">raw_knn_cv_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">raw_knn_rows</span><span class="p">)</span>
+<span class="n">best_raw_knn</span> <span class="o">=</span> <span class="n">raw_knn_cv_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">raw_knn_cv_df</span><span class="p">[</span><span class="s2">"mean_cv_mse"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span>
+<span class="n">selected_raw_k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">best_raw_knn</span><span class="p">[</span><span class="s2">"k"</span><span class="p">])</span>
+
+<span class="n">pca_knn_pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"pca"</span><span class="p">,</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">selected_n</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">selected_k</span><span class="p">)),</span>
+<span class="p">])</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">pca_knn_test_pred</span> <span class="o">=</span> <span class="n">pca_knn_pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">pca_knn_test_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pca_knn_test_pred</span><span class="p">)</span>
+<span class="n">pca_knn_test_r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pca_knn_test_pred</span><span class="p">)</span>
+
+<span class="n">raw_knn_pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">selected_raw_k</span><span class="p">)),</span>
+<span class="p">])</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">raw_knn_test_pred</span> <span class="o">=</span> <span class="n">raw_knn_pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">raw_knn_test_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">raw_knn_test_pred</span><span class="p">)</span>
+<span class="n">raw_knn_test_r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">raw_knn_test_pred</span><span class="p">)</span>
+
+<span class="n">results_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span>
+    <span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"PCA(</span><span class="si">{</span><span class="n">selected_n</span><span class="si">}</span><span class="s2">) + KNN(k=</span><span class="si">{</span><span class="n">selected_k</span><span class="si">}</span><span class="s2">)"</span><span class="p">,</span> <span class="s2">"test_MSE"</span><span class="p">:</span> <span class="n">pca_knn_test_mse</span><span class="p">,</span> <span class="s2">"test_R2"</span><span class="p">:</span> <span class="n">pca_knn_test_r2</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"KNN(k=</span><span class="si">{</span><span class="n">selected_raw_k</span><span class="si">}</span><span class="s2">), 360 raw features"</span><span class="p">,</span> <span class="s2">"test_MSE"</span><span class="p">:</span> <span class="n">raw_knn_test_mse</span><span class="p">,</span> <span class="s2">"test_R2"</span><span class="p">:</span> <span class="n">raw_knn_test_r2</span><span class="p">},</span>
+<span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"cross-validation results (training-and-validation data only), best 5 of "</span>
+      <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pca_knn_cv_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> (n_components, k) combinations:"</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">pca_knn_cv_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"mean_cv_mse"</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">selected: n_components=</span><span class="si">{</span><span class="n">selected_n</span><span class="si">}</span><span class="s2">, k=</span><span class="si">{</span><span class="n">selected_k</span><span class="si">}</span><span class="s2">  "</span>
+      <span class="sa">f</span><span class="s2">"(mean CV MSE = </span><span class="si">{</span><span class="n">best_pca_knn</span><span class="p">[</span><span class="s1">'mean_cv_mse'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"raw-feature KNN selected: k=</span><span class="si">{</span><span class="n">selected_raw_k</span><span class="si">}</span><span class="s2">  "</span>
+      <span class="sa">f</span><span class="s2">"(mean CV MSE = </span><span class="si">{</span><span class="n">best_raw_knn</span><span class="p">[</span><span class="s1">'mean_cv_mse'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">results_df</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>cross-validation results (training-and-validation data only), best 5 of 20 (n_components, k) combinations:
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>n_components</th>
+      <th>k</th>
+      <th>mean_cv_mse</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>20</td>
+      <td>10</td>
+      <td>24.83</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20</td>
+      <td>5</td>
+      <td>25.06</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>10</td>
+      <td>10</td>
+      <td>25.41</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>10</td>
+      <td>5</td>
+      <td>26.10</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>10</td>
+      <td>20</td>
+      <td>27.11</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>selected: n_components=20, k=10  (mean CV MSE = 24.8)
+raw-feature KNN selected: k=5  (mean CV MSE = 35.4)
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>model</th>
+      <th>test_MSE</th>
+      <th>test_R2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>PCA(20) + KNN(k=10)</td>
+      <td>21.049</td>
+      <td>0.775</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>KNN(k=5), 360 raw features</td>
+      <td>32.045</td>
+      <td>0.657</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>On this cohort and split, PCA improves KNN: PCA(20) + KNN(k=10) reaches
+locked-test MSE=21.0 (R2=+0.775), compared with MSE=32.0 (R2=+0.657) for
+standardized KNN on the original 360 features. This is reported here as the
+observed result for this dataset, not a guarantee – PCA keeps the
+directions of greatest variation in the cortical-thickness features, which
+were never chosen using age, so a dataset whose informative direction sits
+at lower variance could see PCA discard exactly the direction KNN needed.</p>
+<p>A few things worth remembering from this section:</p>
+<ul class="simple">
+<li><p>Fitting <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> and <code class="docutils literal notranslate"><span class="pre">PCA</span></code> before splitting into cross-validation
+folds leaks information about validation rows into preprocessing, even
+though PCA never sees the target <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p></li>
+<li><p>PCA remains feature extraction: the retained components are still
+combinations of all 360 original measurements, never a subset of them.</p></li>
+<li><p>Reducing dimensionality before computing distances is a different reason
+to use PCA than reducing dimensionality before fitting a linear
+coefficient – the two models are affected differently by the same
+irrelevant directions.</p></li>
+</ul>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>Why might PCA help KNN more directly than it helps a model that does not
+calculate distances between participants?</p>
+</div>
+</section>
+<section id="what-should-we-remember">
+<h2>9. What Should We Remember?<a class="headerlink" href="#what-should-we-remember" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>PCA creates lower-dimensional combinations of the original features –
+never a subset of the original measurements.</p></li>
+<li><p>Loadings help interpret what a component represents; grouped magnitude
+summaries use absolute values so opposite-signed regions cannot cancel.</p></li>
+<li><p>K-means groups similar observations but does not prove natural or
+biological categories.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">k</span></code> is judged using quantitative evidence (inertia, silhouette) <em>and</em>
+scientific usefulness – not one universal rule.</p></li>
+<li><p>In supervised work, preprocessing and PCA must be fitted inside the
+validation pipeline, never before it.</p></li>
+</ul>
+<section id="questions-to-take-away">
+<h3>Questions to take away<a class="headerlink" href="#questions-to-take-away" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>What is the difference between feature extraction and feature selection?</p></li>
+<li><p>Why must PC2 be orthogonal to PC1?</p></li>
+<li><p>What does a K-means cluster center represent geometrically?</p></li>
+<li><p>Why is mean absolute loading used instead of a signed sum when
+summarizing a group of regions?</p></li>
+<li><p>Could two different, equally reasonable choices of <code class="docutils literal notranslate"><span class="pre">k</span></code> both be
+defensible for the same dataset?</p></li>
+<li><p>Why does fitting PCA outside a cross-validation loop leak information,
+even though PCA does not use the target?</p></li>
+</ol>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -467,7 +1365,7 @@
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Exercise 7: Trees and Boosting</p>
+        <p class="prev-next-title">Exercise 7: Boosting and Gradient Boosting</p>
       </div>
     </a>
     <a class="right-next"
@@ -475,7 +1373,7 @@
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Exercise 9: Advanced Models and Model Comparison</p>
+        <p class="prev-next-title">Exercise 9: Advanced Models</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -485,6 +1383,41 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-without-a-target">1. Learning Without a Target</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pca-representing-many-features-with-fewer-dimensions">2. PCA: Representing Many Features with Fewer Dimensions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-find-the-best-projection">3. Interactive Activity – Find the Best Projection</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pca-with-abide-ii-neuroimaging-data">4. PCA with ABIDE-II Neuroimaging Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interpreting-the-components">Interpreting the components</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clustering-and-k-means">5. Clustering and K-Means</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#research-example-exploring-neuroanatomical-profiles">6. Research Example – Exploring Neuroanatomical Profiles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-explore-pca-and-k-means">7. Interactive Activity – Explore PCA and K-Means</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-guided-look-at-choosing-k">A guided look at choosing <code class="docutils literal notranslate"><span class="pre">k</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-pca-in-a-supervised-pipeline">8. Using PCA in a Supervised Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-should-we-remember">9. What Should We Remember?</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

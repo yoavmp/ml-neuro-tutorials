@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "type": "pca-kmeans-explorer",
+  "title": "Explore PCA and K-means",
+  "description": "Course activity for Exercise 8: cluster ABIDE participants with K-means in retained-PCA space and inspect the clusters against an external characteristic.",
+  "data": "../data/pca_kmeans_explorer.json",
+  "instructions": "Choose how many principal components to retain, a number of clusters k, and an initialization seed. The scatter plot always shows only PC1 and PC2, but clustering uses every retained component you selected. The inertia and silhouette panels compare every candidate k at the current retained-component count and seed; the composition panel shows how the resulting clusters relate to the external characteristic you pick -- diagnosis, sex, acquisition site, or age -- inspected only after clustering, never used to create the clusters.",
+  "defaultRetainedPc": 10,
+  "defaultK": 3,
+  "defaultSeed": 0,
+  "defaultExternalVariable": "group",
+  "reflectionPrompts": [
+    "Do the elbow and silhouette score suggest the same k?",
+    "Does changing the seed change the result? What does that imply?",
+    "Do clusters mostly reproduce acquisition site, diagnosis, age, or none of them?",
+    "If clusters differ in diagnosis proportions, does that prove they are autism subtypes?",
+    "Could structure exist in higher PCs even when PC1-PC2 looks overlapping?"
+  ]
+}

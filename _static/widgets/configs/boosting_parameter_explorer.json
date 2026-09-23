@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "type": "boosting-parameter-explorer",
+  "title": "Explore the boosting parameters",
+  "description": "Course activity for Exercise 7: examine learning rate, tree depth, and number of trees for gradient boosting on the ABIDE development data, including a Play control that adds trees sequentially.",
+  "data": "../data/boosting_parameter_explorer.json",
+  "instructions": "Choose a learning rate and a tree depth, then use the number-of-trees slider -- or press Play to add trees sequentially -- to see how training and validation MSE change. The heatmap shows validation MSE across every learning rate and tree count at the selected depth; the bottom panel shows observed-versus-predicted validation age for the selected configuration.",
+  "defaultLearningRate": 0.1,
+  "defaultDepth": 2,
+  "defaultNTrees": 100,
+  "playIntervalMs": 600,
+  "testSetNote": "This activity uses development data only (the fitting and validation subsets). The locked test set remains unavailable while these settings are explored, and lower training MSE does not automatically mean better validation performance.",
+  "reflectionPrompts": [
+    "Which learning rate reduces training error fastest?",
+    "Does the fastest reduction give the best validation MSE?",
+    "Why does a smaller learning rate need more trees?",
+    "Where does validation performance stop improving?",
+    "Can different learning-rate/tree-count pairs perform similarly?",
+    "Why should the test set remain hidden here?"
+  ]
+}

@@ -67,12 +67,12 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_06/exercise_06';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=53d626a9"></script>
-    <script src="../../_static/activity-resize.js?v=8e0b1445"></script>
-    <script src="../../_static/widgets/app/assets/index-lCZ4SDbv.js?v=0d143c57"></script>
+    <script src="../../_static/launch-buttons.js?v=936dd70a"></script>
+    <script src="../../_static/activity-resize.js?v=c493a16f"></script>
+    <script src="../../_static/widgets/app/assets/index-CNfQFOuV.js?v=a8c4087a"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Exercise 7: Trees and Boosting" href="../chapter_07/exercise_07.html" />
+    <link rel="next" title="Exercise 7: Boosting and Gradient Boosting" href="../chapter_07/exercise_07.html" />
     <link rel="prev" title="Exercise 5: Regularization and Feature Selection" href="../chapter_05/exercise_05.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -230,9 +230,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Validation and Cross-Validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 6: Decision Trees</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Trees and Boosting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: PCA and Clustering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_09/exercise_09.html">Exercise 9: Advanced Models and Model Comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Boosting and Gradient Boosting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: Unsupervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_09/exercise_09.html">Exercise 9: Advanced Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_10/exercise_10.html">Exercise 10: Common Machine Learning Mistakes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_11/exercise_11.html">Exercise 11: Embeddings and Representational Similarity Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_12/exercise_12.html">Exercise 12: Review and Exam-Style Questions</a></li>
@@ -1018,9 +1018,8 @@ the training set?</p></li>
 <p class="expanded admonition-title">Hide code cell source</p>
 </summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Bounded, conditional audit (WP30, corrected by WP30R): does a</span>
-<span class="c1"># classification tree predicting autism diagnosis usefully contrast with</span>
-<span class="c1"># the age-regression complexity curve above? Cohort, target coding, and</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Does a classification tree predicting autism diagnosis usefully</span>
+<span class="c1"># contrast with the age-regression complexity curve above? Cohort, target coding, and</span>
 <span class="c1"># feature recipe are identical to Exercise 3 (group recoded autism=1 /</span>
 <span class="c1"># control=0; all-eligible x CT, p=360); min_samples_leaf matches this</span>
 <span class="c1"># section's own regression curve for consistency, fixed before viewing</span>
@@ -1028,7 +1027,7 @@ the training set?</p></li>
 <span class="c1"># its locked test participants are excluded by participant-set membership</span>
 <span class="c1"># before any cross-validation fold is formed -- not merely by never</span>
 <span class="c1"># reading a saved index -- so every tree below is fit and scored only on</span>
-<span class="c1"># the development partition.</span>
+<span class="c1"># the training-and-validation data.</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">roc_auc_score</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">StratifiedKFold</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span> <span class="k">as</span> <span class="n">cls_train_test_split</span>
@@ -1074,7 +1073,7 @@ the training set?</p></li>
 
 <span class="c1"># Ties at the displayed (2-decimal) precision prefer the shallower depth --</span>
 <span class="c1"># the same tie-break rule used to decide, offline, whether this figure</span>
-<span class="c1"># would be shown at all (scripts/decision_tree_model_audit.py).</span>
+<span class="c1"># would be shown at all.</span>
 <span class="n">_rounded_val_auc</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cls_val_auc</span><span class="p">]</span>
 <span class="n">_best_rounded</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">_rounded_val_auc</span><span class="p">)</span>
 <span class="n">cls_best_depth_index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_rounded_val_auc</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">_best_rounded</span><span class="p">)</span>
@@ -1123,10 +1122,10 @@ diagnosis – each fit at every <code class="docutils literal notranslate"><span
 <code class="docutils literal notranslate"><span class="pre">min_samples_leaf</span></code>, but scored differently: the regression curve above uses
 one fixed training/validation split (Section 1’s dev split), while this
 classification curve uses 5-fold stratified cross-validation <em>within
-Exercise 3’s development partition</em> (753 of the 1004 eligible
+Exercise 3’s training-and-validation data</em> (753 of the 1004 eligible
 participants) – Exercise 3’s own locked 251-participant outer test set is
 excluded before any fold is formed and is never used to compare depths. On
-this audited configuration, validation ROC AUC is highest at <code class="docutils literal notranslate"><span class="pre">max_depth=5</span></code>
+this configuration, validation ROC AUC is highest at <code class="docutils literal notranslate"><span class="pre">max_depth=5</span></code>
 (0.567), 0.034 above <code class="docutils literal notranslate"><span class="pre">max_depth=2</span></code>’s validation ROC AUC (0.534). Two things
 are worth being explicit about:</p>
 <ul class="simple">
@@ -1261,7 +1260,7 @@ different sample of participants, not just a different model seed on
 identical data. Every model within a replicate trains on the identical
 subset and is scored on the identical, fixed validation participants;
 bagging and Random Forest additionally perform their own internal bootstrap
-sampling. The top two panels aggregate across all five audited training
+sampling. The top two panels aggregate across all five training
 replicates; the observed-versus-predicted panel below them uses one fixed
 training sample, so it stays comparable across the models and tree counts
 you choose.</p>
@@ -1288,8 +1287,8 @@ the average?</p></li>
 <section id="a-fair-model-comparison">
 <h2>6. A Fair Model Comparison<a class="headerlink" href="#a-fair-model-comparison" title="Link to this heading">#</a></h2>
 <p>As one further check, the three models are compared using identical
-cross-validation folds over the full eligible cohort, with fixed,
-predeclared complexity settings for every model – no scaling (trees do not
+cross-validation folds over the full eligible cohort, with fixed
+complexity settings for every model – no scaling (trees do not
 need it), the same tree complexity for the single tree and for every tree
 inside bagging and the Random Forest, the same number of trees for bagging
 and Random Forest, and an explicit feature-subsampling size for the Random
@@ -1305,7 +1304,7 @@ setting here was chosen by looking at the test set.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">tree_settings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">50</span>
-<span class="n">random_forest_max_features</span> <span class="o">=</span> <span class="mi">19</span>  <span class="c1"># round(sqrt(360)); an alternative, p/3=120, was also audited</span>
+<span class="n">random_forest_max_features</span> <span class="o">=</span> <span class="mi">19</span>  <span class="c1"># round(sqrt(360)); an alternative, p/3=120, was also considered</span>
 
 <span class="n">models</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"Single tree"</span><span class="p">:</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="o">**</span><span class="n">tree_settings</span><span class="p">),</span>
@@ -1477,7 +1476,7 @@ sequential approach to differ?</p></li>
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Exercise 7: Trees and Boosting</p>
+        <p class="prev-next-title">Exercise 7: Boosting and Gradient Boosting</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

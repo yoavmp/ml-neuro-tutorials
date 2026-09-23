@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Exercise 7: Trees and Boosting &#8212; Machine Learning for Neuroscience</title>
+    <title>Exercise 7: Boosting and Gradient Boosting &#8212; Machine Learning for Neuroscience</title>
   
   
   
@@ -62,15 +62,17 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_07/exercise_07';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=53d626a9"></script>
-    <script src="../../_static/activity-resize.js?v=8e0b1445"></script>
-    <script src="../../_static/widgets/app/assets/index-lCZ4SDbv.js?v=0d143c57"></script>
+    <script src="../../_static/launch-buttons.js?v=936dd70a"></script>
+    <script src="../../_static/activity-resize.js?v=c493a16f"></script>
+    <script src="../../_static/widgets/app/assets/index-CNfQFOuV.js?v=a8c4087a"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Exercise 8: PCA and Clustering" href="../chapter_08/exercise_08.html" />
+    <link rel="next" title="Exercise 8: Unsupervised Learning" href="../chapter_08/exercise_08.html" />
     <link rel="prev" title="Exercise 6: Decision Trees" href="../chapter_06/exercise_06.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -159,6 +161,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -224,9 +230,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Validation and Cross-Validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 7: Trees and Boosting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: PCA and Clustering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_09/exercise_09.html">Exercise 9: Advanced Models and Model Comparison</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 7: Boosting and Gradient Boosting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: Unsupervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_09/exercise_09.html">Exercise 9: Advanced Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_10/exercise_10.html">Exercise 10: Common Machine Learning Mistakes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_11/exercise_11.html">Exercise 11: Embeddings and Representational Similarity Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_12/exercise_12.html">Exercise 12: Review and Exam-Style Questions</a></li>
@@ -338,7 +344,7 @@
       
       
       
-      <li><a href="../../_sources/chapters/chapter_07/exercise_07.md" target="_blank"
+      <li><a href="../../_sources/chapters/chapter_07/exercise_07.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -348,7 +354,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.ipynb</span>
 </a>
 </li>
       
@@ -401,7 +407,9 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -412,11 +420,36 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Exercise 7: Trees and Boosting</h1>
+    <h1>Exercise 7: Boosting and Gradient Boosting</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-bagging-to-boosting">1. From Bagging to Boosting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-a-model-one-tree-at-a-time">2. Building a Model One Tree at a Time</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-1-build-a-boosted-model">Interactive Activity 1: Build a Boosted Model</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gradient-boosting-with-scikit-learn">3. Gradient Boosting with Scikit-Learn</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-rate-and-number-of-trees">4. Learning Rate and Number of Trees</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-2-explore-the-boosting-parameters">Interactive Activity 2: Explore the Boosting Parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-when-to-stop">5. Choosing When to Stop</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-complete-gradient-boosting-pipeline">6. A Complete Gradient-Boosting Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-tree-based-models">7. Comparing Tree-Based Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-should-we-remember">8. What Should We Remember?</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -426,9 +459,871 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="exercise-7-trees-and-boosting">
-<h1>Exercise 7: Trees and Boosting<a class="headerlink" href="#exercise-7-trees-and-boosting" title="Link to this heading">#</a></h1>
-<p>Materials for this exercise will be added before the practice session.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-7-boosting-and-gradient-boosting">
+<h1>Exercise 7: Boosting and Gradient Boosting<a class="headerlink" href="#exercise-7-boosting-and-gradient-boosting" title="Link to this heading">#</a></h1>
+<div class="how-to-use admonition">
+<p class="admonition-title">Run or download this notebook</p>
+<p>This page is fully readable as it is, and the interactive activities work
+here in the browser. To <strong>run or change the Python code</strong>, use the portable
+version of the notebook:</p>
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_07/exercise_07_portable.ipynb">Open the portable notebook in Colab</a></strong></p></li>
+<li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_07/exercise_07_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
+for VS Code or Jupyter</p></li>
+</ul>
+<p>The portable notebook keeps every Python analysis cell and swaps each
+embedded activity for a link back to this page.</p>
+</div>
+<section id="what-this-notebook-covers">
+<h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
+<p>This is Exercise 7 of <em>Machine Learning for Neuroscience</em>. Exercise 6 compared
+one tree with ensembles built by averaging many <strong>independently</strong> trained
+trees (bagging and Random Forest). Exercise 7 asks what happens when trees
+are instead built <strong>sequentially</strong>, with each new tree correcting errors
+left by the existing model – <strong>boosting</strong>.</p>
+<p>In this notebook you will:</p>
+<ol class="arabic simple">
+<li><p>distinguish boosting from bagging;</p></li>
+<li><p>follow residual correction tree by tree;</p></li>
+<li><p>explore learning rate, number of trees, and tree depth;</p></li>
+<li><p>choose settings using development data and evaluate a locked test set once;</p></li>
+<li><p>compare a single tree, Random Forest, and gradient boosting.</p></li>
+</ol>
+<p>Gradient boosting is not guaranteed to outperform Random Forest – both are
+strong tree-ensemble methods, and which one validates better depends on the
+task and dataset.</p>
+<p><strong>Prerequisites:</strong> Exercise 6 (regression trees, bagging, and Random Forest).</p>
+</section>
+<section id="from-bagging-to-boosting">
+<h2>1. From Bagging to Boosting<a class="headerlink" href="#from-bagging-to-boosting" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>How trees are trained</p></th>
+<th class="head"><p>Combined prediction</p></th>
+<th class="head"><p>Main idea</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Single tree</p></td>
+<td><p>One tree</p></td>
+<td><p>One prediction</p></td>
+<td><p>Simple model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bagging</p></td>
+<td><p>Independently on resampled data</p></td>
+<td><p>Average</p></td>
+<td><p>Reduce variance</p></td>
+</tr>
+<tr class="row-even"><td><p>Random Forest</p></td>
+<td><p>Independently with row and feature randomness</p></td>
+<td><p>Average</p></td>
+<td><p>Decorrelate trees</p></td>
+</tr>
+<tr class="row-odd"><td><p>Gradient boosting</p></td>
+<td><p>Sequentially to correct current errors</p></td>
+<td><p>Weighted sum</p></td>
+<td><p>Improve the model step by step</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A few key points:</p>
+<ul class="simple">
+<li><p>bagging trees can be trained independently, and in any order – boosting
+trees cannot, because each one depends on the predictions of every tree
+fitted before it;</p></li>
+<li><p>individual boosting trees are usually shallow (often just a few splits, or
+even a single split);</p></li>
+<li><p>a long sequence of shallow trees can nonetheless combine into a complex,
+nonlinear model;</p></li>
+<li><p>sequential correction also creates its own overfitting risk: nothing stops
+the sequence from eventually fitting noise specific to the training data.</p></li>
+</ul>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ul class="simple">
+<li><p>Bagging averages many independently trained trees. Why does averaging not
+necessarily correct a bias every one of those trees shares?</p></li>
+<li><p>What risk arises from adding corrective trees indefinitely?</p></li>
+</ul>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data loading. In the published book this cell is collapsed; it is plain,</span>
+<span class="c1"># runnable Python -- one public CSV pinned to an immutable commit. This is</span>
+<span class="c1"># the exact same ABIDE-II table Exercises 2, 4, 5, and 6 use, with age as a</span>
+<span class="c1"># native column.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span><span class="p">,</span> <span class="n">RandomForestRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">KFold</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeRegressor</span><span class="p">,</span> <span class="n">DecisionTreeRegressor</span> <span class="k">as</span> <span class="n">_DTR</span>
+
+<span class="n">PIN</span> <span class="o">=</span> <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"</span>
+<span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/</span><span class="si">{</span><span class="n">PIN</span><span class="si">}</span><span class="s2">/tu-machine-learning-yarkoni/data"</span>
+
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE</span><span class="si">}</span><span class="s2">/abide2.tsv"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Unnamed"</span><span class="p">)]]</span>
+
+<span class="n">BRAIN_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data table: </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>data table: 1004 participants x 1446 columns
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The same fixed 360 cortical-thickness predictors and fixed, stratified</span>
+<span class="c1"># train/test split used throughout Exercises 2, 4, 5, and 6. The further</span>
+<span class="c1"># split of the training partition below (identical to Exercise 6's own</span>
+<span class="c1"># fitting/validation split) is reused for every development-only step in</span>
+<span class="c1"># this notebook; the test set is read exactly once, in section 6.</span>
+<span class="n">FEATURES</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">BRAIN_COLS</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)]</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES</span><span class="p">)</span>
+<span class="k">assert</span> <span class="s2">"age"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FEATURES</span>
+
+<span class="n">has_age</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">groups</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_age</span><span class="p">,</span> <span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">groups_train</span><span class="p">,</span> <span class="n">groups_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups</span>
+<span class="p">)</span>
+<span class="n">X_fit</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">y_val</span><span class="p">,</span> <span class="n">groups_fit</span><span class="p">,</span> <span class="n">groups_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">groups_train</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">groups_train</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES</span><span class="p">)</span><span class="si">}</span><span class="s2"> predictors"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_fit = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_fit</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_val = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_val</span><span class="p">)</span><span class="si">}</span><span class="s2">   "</span>
+      <span class="sa">f</span><span class="s2">"n_train (development) = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span><span class="si">}</span><span class="s2">   n_test = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span><span class="si">}</span><span class="s2"> (locked; read once, in section 6)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>360 predictors
+n_fit = 564   n_val = 189   n_train (development) = 753   n_test = 251 (locked; read once, in section 6)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="building-a-model-one-tree-at-a-time">
+<h2>2. Building a Model One Tree at a Time<a class="headerlink" href="#building-a-model-one-tree-at-a-time" title="Link to this heading">#</a></h2>
+<p>Squared-error gradient boosting builds its prediction <span class="math notranslate nohighlight">\(\hat y\)</span> in stages.
+The first stage predicts the training-target mean for every observation:</p>
+<div class="math notranslate nohighlight">
+\[
+\hat y_i^{(0)} = \bar y
+\]</div>
+<p>Before adding stage <span class="math notranslate nohighlight">\(m\)</span>, the <strong>residual</strong> left by the current model is</p>
+<div class="math notranslate nohighlight">
+\[
+r_i^{(m)} = y_i - \hat y_i^{(m-1)}
+\]</div>
+<p>A new shallow tree <span class="math notranslate nohighlight">\(f_m\)</span> is fitted to predict these residuals, and the
+model is updated by adding a <strong>learning-rate-scaled</strong> copy of that tree:</p>
+<div class="math notranslate nohighlight">
+\[
+\hat y_i^{(m)} = \hat y_i^{(m-1)} + \eta \, f_m(x_i)
+\]</div>
+<p>In plain language:</p>
+<ul class="simple">
+<li><p>the first model predicts the training-target mean;</p></li>
+<li><p>the next shallow tree predicts the current <strong>residuals</strong> – not the
+target itself;</p></li>
+<li><p>the learning rate <span class="math notranslate nohighlight">\(\eta\)</span> controls how much of that correction is added at
+each step;</p></li>
+<li><p>residuals are recalculated after every update, so the next tree always
+targets whatever error remains.</p></li>
+</ul>
+<p>We will not derive this update in general; it is enough to know that, for
+squared error specifically, the negative gradient of the loss with respect
+to the current prediction is exactly the residual above – which is why
+this procedure is called <em>gradient</em> boosting.</p>
+<section id="interactive-activity-1-build-a-boosted-model">
+<h3>Interactive Activity 1: Build a Boosted Model<a class="headerlink" href="#interactive-activity-1-build-a-boosted-model" title="Link to this heading">#</a></h3>
+<p>The activity below uses a small, <strong>simulated</strong> dataset – 24 observations on
+one continuous predictor, generated from a fixed formula and seed so the
+relationship is visible but noisy, not a clean curve. These are simulated
+values used to understand the algorithm, not ABIDE observations. Choose a
+learning rate, then step through the boosting stages: the top panel shows
+the observations and the current ensemble prediction; the middle panel
+shows the residuals left before this update and the shallow regression
+stump (a tree with a single split) fitted to them; the bottom panel tracks
+training MSE across every stage.</p>
+<iframe
+  title="Interactive stage-by-stage gradient boosting activity on a small simulated dataset"
+  src="../../_static/widgets/app/index.html?config=../configs/boosting_step_by_step.json"
+  loading="lazy"
+  width="100%"
+  height="1500"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional: a compact Python reproduction of the activity's simulated</span>
+<span class="c1"># dataset and its first boosting stage, computed from the exact same fixed</span>
+<span class="c1"># formula and seed as the widget's own committed data artifact.</span>
+<span class="n">STEP_SEED</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">STEP_N</span> <span class="o">=</span> <span class="mi">24</span>
+<span class="n">C</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">FREQ</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">NOISE_SD</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.2</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">STEP_SEED</span><span class="p">)</span>
+<span class="n">step_x</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">STEP_N</span><span class="p">)</span>
+<span class="n">step_noise</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">NOISE_SD</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">STEP_N</span><span class="p">)</span>
+<span class="n">step_y</span> <span class="o">=</span> <span class="n">C</span> <span class="o">+</span> <span class="n">A</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">FREQ</span> <span class="o">*</span> <span class="n">step_x</span><span class="p">)</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">step_x</span> <span class="o">+</span> <span class="n">step_noise</span>
+
+<span class="n">stage0_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">STEP_N</span><span class="p">,</span> <span class="n">step_y</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="n">residual_before_stage1</span> <span class="o">=</span> <span class="n">step_y</span> <span class="o">-</span> <span class="n">stage0_prediction</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"stage 0 prediction (training mean) = </span><span class="si">{</span><span class="n">stage0_prediction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"stage 0 training MSE = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residual_before_stage1</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">stump</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">stump</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">step_x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">residual_before_stage1</span><span class="p">)</span>
+<span class="n">eta</span> <span class="o">=</span> <span class="mf">0.3</span>
+<span class="n">stage1_prediction</span> <span class="o">=</span> <span class="n">stage0_prediction</span> <span class="o">+</span> <span class="n">eta</span> <span class="o">*</span> <span class="n">stump</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">step_x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"stage 1 training MSE (eta=</span><span class="si">{</span><span class="n">eta</span><span class="si">}</span><span class="s2">) = </span><span class="si">{</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">step_y</span><span class="p">,</span><span class="w"> </span><span class="n">stage1_prediction</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>stage 0 prediction (training mean) = 8.454
+stage 0 training MSE = 16.20
+stage 1 training MSE (eta=0.3) = 10.42
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+</section>
+</section>
+<section id="gradient-boosting-with-scikit-learn">
+<h2>3. Gradient Boosting with Scikit-Learn<a class="headerlink" href="#gradient-boosting-with-scikit-learn" title="Link to this heading">#</a></h2>
+<p>Scikit-learn’s <code class="docutils literal notranslate"><span class="pre">GradientBoostingRegressor</span></code> implements the same procedure
+directly:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gb_model</span> <span class="o">=</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span>
+    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">gb_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_fit</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">gb_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_val</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"validation MSE = </span><span class="si">{</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span><span class="w"> </span><span class="n">predictions</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   "</span>
+      <span class="sa">f</span><span class="s2">"validation R2 = </span><span class="si">{</span><span class="n">r2_score</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span><span class="w"> </span><span class="n">predictions</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>validation MSE = 18.2   validation R2 = 0.747
+</pre></div>
+</div>
+</div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Meaning</p></th>
+<th class="head"><p>Effect of increasing it</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">n_estimators</span></code></p></td>
+<td><p>Number of sequential trees</p></td>
+<td><p>More corrections and greater overfitting risk</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">learning_rate</span></code></p></td>
+<td><p>Contribution of each new tree</p></td>
+<td><p>Faster, less cautious updates</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_depth</span></code></p></td>
+<td><p>Complexity of each tree</p></td>
+<td><p>More complex corrections</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">subsample</span></code></p></td>
+<td><p>Fraction of training rows per tree</p></td>
+<td><p>Adds randomness below 1</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The first three matter most for this exercise. Like every tree-based model
+in this course, gradient boosting does <strong>not</strong> require feature scaling.</p>
+</section>
+<section id="learning-rate-and-number-of-trees">
+<h2>4. Learning Rate and Number of Trees<a class="headerlink" href="#learning-rate-and-number-of-trees" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">n_estimators</span></code> and <code class="docutils literal notranslate"><span class="pre">learning_rate</span></code> interact: a smaller learning rate makes
+each individual correction more cautious, so it typically needs more trees
+to reach a comparable fit. <code class="docutils literal notranslate"><span class="pre">max_depth</span></code> changes how complex each individual
+correction can be.</p>
+<section id="interactive-activity-2-explore-the-boosting-parameters">
+<h3>Interactive Activity 2: Explore the Boosting Parameters<a class="headerlink" href="#interactive-activity-2-explore-the-boosting-parameters" title="Link to this heading">#</a></h3>
+<p>This activity uses only the fixed 564-participant fitting subset and
+189-participant validation subset from the training-and-validation data –
+the same split used above. <strong>The locked outer test set is never
+part of this activity</strong>, and lower training MSE does not automatically mean
+better validation performance. Choose a learning rate and a tree depth,
+then use the number-of-trees control – or press <strong>Play</strong> to add trees
+sequentially – and watch training/validation MSE, the learning-rate x
+tree-count heatmap, and the observed-versus-predicted plot update together.</p>
+<iframe
+  title="Interactive gradient-boosting parameter explorer for predicting age from brain structure"
+  src="../../_static/widgets/app/index.html?config=../configs/boosting_parameter_explorer.json"
+  loading="lazy"
+  width="100%"
+  height="1700"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+</section>
+</section>
+<section id="choosing-when-to-stop">
+<h2>5. Choosing When to Stop<a class="headerlink" href="#choosing-when-to-stop" title="Link to this heading">#</a></h2>
+<p>The curve below refits one configuration from the activity above (learning
+rate 0.1, depth 2) across every tree count up to 300, using scikit-learn’s
+<code class="docutils literal notranslate"><span class="pre">staged_predict</span></code> so only one model needs to be fit.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stop_model</span> <span class="o">=</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">stop_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_fit</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">)</span>
+
+<span class="n">stop_n_trees</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">]</span>
+<span class="n">stop_train_pred</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">stop_model</span><span class="o">.</span><span class="n">staged_predict</span><span class="p">(</span><span class="n">X_fit</span><span class="p">))</span>
+<span class="n">stop_val_pred</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">stop_model</span><span class="o">.</span><span class="n">staged_predict</span><span class="p">(</span><span class="n">X_val</span><span class="p">))</span>
+<span class="n">stop_train_mse</span> <span class="o">=</span> <span class="p">[</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_fit</span><span class="p">,</span> <span class="n">stop_train_pred</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">stop_n_trees</span><span class="p">]</span>
+<span class="n">stop_val_mse</span> <span class="o">=</span> <span class="p">[</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">stop_val_pred</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">stop_n_trees</span><span class="p">]</span>
+<span class="n">best_i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">stop_val_mse</span><span class="p">))</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stop_n_trees</span><span class="p">,</span> <span class="n">stop_train_mse</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"."</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"training MSE"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stop_n_trees</span><span class="p">,</span> <span class="n">stop_val_mse</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"."</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"validation MSE"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">stop_n_trees</span><span class="p">[</span><span class="n">best_i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"best validation point"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"number of trees"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"MSE (lower is better)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Training vs. validation MSE as trees are added (learning_rate=0.1, depth=2)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">va</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">stop_n_trees</span><span class="p">,</span> <span class="n">stop_train_mse</span><span class="p">,</span> <span class="n">stop_val_mse</span><span class="p">):</span>
+    <span class="n">marker</span> <span class="o">=</span> <span class="s2">"  &lt;- lowest validation MSE"</span> <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="n">stop_n_trees</span><span class="p">[</span><span class="n">best_i</span><span class="p">]</span> <span class="k">else</span> <span class="s2">""</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_trees=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">4d</span><span class="si">}</span><span class="s2">  train MSE=</span><span class="si">{</span><span class="n">tr</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2">  val MSE=</span><span class="si">{</span><span class="n">va</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}{</span><span class="n">marker</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/19677c7c22062d8d1b75a5472dbda528e1b9f3b27ef5fd3709f2d680e3202fb7.png" src="../../_images/19677c7c22062d8d1b75a5472dbda528e1b9f3b27ef5fd3709f2d680e3202fb7.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>n_trees=   1  train MSE= 83.55  val MSE= 64.88
+n_trees=   5  train MSE= 59.56  val MSE= 47.90
+n_trees=  10  train MSE= 41.75  val MSE= 34.05
+n_trees=  20  train MSE= 24.26  val MSE= 24.67
+n_trees=  30  train MSE= 16.45  val MSE= 20.97
+n_trees=  50  train MSE= 10.47  val MSE= 19.61
+n_trees=  75  train MSE=  7.16  val MSE= 19.27
+n_trees= 100  train MSE=  5.37  val MSE= 19.13
+n_trees= 150  train MSE=  3.17  val MSE= 19.02  &lt;- lowest validation MSE
+n_trees= 200  train MSE=  1.96  val MSE= 19.33
+n_trees= 300  train MSE=  0.81  val MSE= 19.58
+</pre></div>
+</div>
+</div>
+</div>
+<p>Training MSE keeps falling as more trees are added – it reaches a small
+fraction of its starting value by 300 trees. Validation MSE instead falls
+quickly at first, flattens out, and then rises slightly: past that point,
+additional trees keep correcting residuals specific to the training
+participants rather than improving the underlying fit. This is the same
+underfitting-then-overfitting pattern Exercise 6 showed for tree depth –
+here it plays out across the number of boosting stages instead. Validation
+performance, not minimum training error, is what should guide how many
+trees to keep. This is the basic idea behind <strong>early stopping</strong>: monitoring
+validation error and halting once it stops improving, rather than always
+training the full requested number of trees.</p>
+<p><strong>Question:</strong> if 300 trees have lower training MSE but higher validation
+MSE than 120 trees, which model should be selected, and why?</p>
+</section>
+<section id="a-complete-gradient-boosting-pipeline">
+<h2>6. A Complete Gradient-Boosting Pipeline<a class="headerlink" href="#a-complete-gradient-boosting-pipeline" title="Link to this heading">#</a></h2>
+<p>We now apply Exercise 4’s validation logic, without reteaching it: preserve
+the locked test set, tune only on the training-and-validation data, and
+touch the test set exactly once.</p>
+<ol class="arabic simple">
+<li><p>preserve the locked test set;</p></li>
+<li><p>run cross-validation only within the training-and-validation data;</p></li>
+<li><p>compare a small parameter grid;</p></li>
+<li><p>select one configuration by mean CV MSE;</p></li>
+<li><p>refit it on all training-and-validation participants;</p></li>
+<li><p>evaluate the locked test set exactly once.</p></li>
+</ol>
+<p>The grid we intended to compare was:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parameter_grid</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"learning_rate"</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+    <span class="s2">"n_estimators"</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+    <span class="s2">"max_depth"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Computational cost is also part of model design. This full 27-candidate
+grid takes roughly ten times longer to cross-validate than most model runs
+in these practice notebooks, so here we evaluate a smaller 12-candidate
+grid instead. It still represents shallow and deeper trees, combined with
+low, medium, and high learning rates and numbers of trees. In your own
+work, define a manageable search before you evaluate any candidates,
+rather than removing settings after seeing their scores.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reduced 12-candidate grid (see the markdown above for why).</span>
+<span class="n">lr_n_estimators_pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">200</span><span class="p">)]</span>
+<span class="n">depth_grid</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="n">candidate_grid</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">"learning_rate"</span><span class="p">:</span> <span class="n">lr</span><span class="p">,</span> <span class="s2">"n_estimators"</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span> <span class="s2">"max_depth"</span><span class="p">:</span> <span class="n">d</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">depth_grid</span>
+    <span class="k">for</span> <span class="n">lr</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lr_n_estimators_pairs</span>
+<span class="p">]</span>
+
+<span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fold_splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span>
+
+<span class="n">cv_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">candidate_grid</span><span class="p">:</span>
+    <span class="n">fold_mse</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">val_idx</span> <span class="ow">in</span> <span class="n">fold_splits</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="o">**</span><span class="n">candidate</span><span class="p">)</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_train</span><span class="p">[</span><span class="n">train_idx</span><span class="p">])</span>
+        <span class="n">fold_mse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_train</span><span class="p">[</span><span class="n">val_idx</span><span class="p">],</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">val_idx</span><span class="p">])))</span>
+    <span class="n">cv_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+        <span class="o">**</span><span class="n">candidate</span><span class="p">,</span>
+        <span class="s2">"mean_cv_mse"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_mse</span><span class="p">)),</span>
+        <span class="s2">"std_cv_mse"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">fold_mse</span><span class="p">)),</span>
+    <span class="p">})</span>
+
+<span class="n">cv_results_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">cv_rows</span><span class="p">)</span>
+<span class="n">best_row</span> <span class="o">=</span> <span class="n">cv_results_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">cv_results_df</span><span class="p">[</span><span class="s2">"mean_cv_mse"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span>
+<span class="n">selected_params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">best_row</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">"learning_rate"</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">best_row</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"learning_rate"</span><span class="p">,</span> <span class="s2">"n_estimators"</span><span class="p">,</span> <span class="s2">"max_depth"</span><span class="p">]}</span>
+
+<span class="n">final_gb_model</span> <span class="o">=</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="o">**</span><span class="n">selected_params</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">gb_test_pred</span> <span class="o">=</span> <span class="n">final_gb_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">gb_test_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">gb_test_pred</span><span class="p">)</span>
+<span class="n">gb_test_r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">gb_test_pred</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Grouped bar graph: one group per max_depth, four bars per group (the</span>
+<span class="c1"># fixed (learning_rate, n_estimators) pairs), colored by learning rate.</span>
+<span class="c1"># Lower bars are better (lower cross-validation MSE). n_estimators is</span>
+<span class="c1"># printed above each bar; the selected candidate is starred.</span>
+<span class="n">learning_rates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">lr_n_estimators_pairs</span><span class="p">})</span>
+<span class="n">bar_colors</span> <span class="o">=</span> <span class="p">{</span><span class="n">lr</span><span class="p">:</span> <span class="n">c</span> <span class="k">for</span> <span class="n">lr</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">learning_rates</span><span class="p">,</span> <span class="p">[</span><span class="s2">"#4c72b0"</span><span class="p">,</span> <span class="s2">"#55a868"</span><span class="p">,</span> <span class="s2">"#c44e52"</span><span class="p">])}</span>
+<span class="n">n_pairs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lr_n_estimators_pairs</span><span class="p">)</span>
+<span class="n">bar_width</span> <span class="o">=</span> <span class="mf">0.8</span> <span class="o">/</span> <span class="n">n_pairs</span>
+<span class="n">group_centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">depth_grid</span><span class="p">))</span>
+<span class="n">max_top</span> <span class="o">=</span> <span class="p">(</span><span class="n">cv_results_df</span><span class="p">[</span><span class="s2">"mean_cv_mse"</span><span class="p">]</span> <span class="o">+</span> <span class="n">cv_results_df</span><span class="p">[</span><span class="s2">"std_cv_mse"</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">seen_labels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">pair_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">n_est</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lr_n_estimators_pairs</span><span class="p">):</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">group_centers</span> <span class="o">-</span> <span class="mf">0.4</span> <span class="o">+</span> <span class="n">bar_width</span> <span class="o">*</span> <span class="p">(</span><span class="n">pair_idx</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">heights</span><span class="p">,</span> <span class="n">errs</span><span class="p">,</span> <span class="n">is_selected</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">depth</span> <span class="ow">in</span> <span class="n">depth_grid</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">cv_results_df</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">cv_results_df</span><span class="p">[</span><span class="s2">"learning_rate"</span><span class="p">]</span> <span class="o">==</span> <span class="n">lr</span><span class="p">)</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">cv_results_df</span><span class="p">[</span><span class="s2">"n_estimators"</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_est</span><span class="p">)</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">cv_results_df</span><span class="p">[</span><span class="s2">"max_depth"</span><span class="p">]</span> <span class="o">==</span> <span class="n">depth</span><span class="p">)</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">heights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"mean_cv_mse"</span><span class="p">])</span>
+        <span class="n">errs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"std_cv_mse"</span><span class="p">])</span>
+        <span class="n">is_selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">lr</span> <span class="o">==</span> <span class="n">selected_params</span><span class="p">[</span><span class="s2">"learning_rate"</span><span class="p">]</span>
+            <span class="ow">and</span> <span class="n">n_est</span> <span class="o">==</span> <span class="n">selected_params</span><span class="p">[</span><span class="s2">"n_estimators"</span><span class="p">]</span>
+            <span class="ow">and</span> <span class="n">depth</span> <span class="o">==</span> <span class="n">selected_params</span><span class="p">[</span><span class="s2">"max_depth"</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lr</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">lr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_labels</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">seen_labels</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
+    <span class="n">bars</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+        <span class="n">offsets</span><span class="p">,</span> <span class="n">heights</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">bar_width</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">errs</span><span class="p">,</span> <span class="n">capsize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">bar_colors</span><span class="p">[</span><span class="n">lr</span><span class="p">],</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"white"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">bar</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">selected</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bars</span><span class="p">,</span> <span class="n">heights</span><span class="p">,</span> <span class="n">errs</span><span class="p">,</span> <span class="n">is_selected</span><span class="p">):</span>
+        <span class="n">label_y</span> <span class="o">=</span> <span class="n">height</span> <span class="o">+</span> <span class="n">err</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n_est</span><span class="si">}</span><span class="s2"> trees"</span><span class="p">,</span> <span class="p">(</span><span class="n">bar</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">bar</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">label_y</span><span class="p">),</span>
+            <span class="n">textcoords</span><span class="o">=</span><span class="s2">"offset points"</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">"bottom"</span><span class="p">,</span>
+            <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">selected</span><span class="p">:</span>
+            <span class="n">bar</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">(</span><span class="s2">"black"</span><span class="p">)</span>
+            <span class="n">bar</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                <span class="s2">"</span><span class="se">\u2605</span><span class="s2"> selected"</span><span class="p">,</span> <span class="p">(</span><span class="n">bar</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">bar</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">label_y</span><span class="p">),</span>
+                <span class="n">textcoords</span><span class="o">=</span><span class="s2">"offset points"</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">26</span><span class="p">),</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">"bottom"</span><span class="p">,</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span>
+            <span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_top</span> <span class="o">*</span> <span class="mf">1.35</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">group_centers</span><span class="p">,</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"depth </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">depth_grid</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Maximum tree depth"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Mean cross-validation MSE (lower is better)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Cross-validation results (training-and-validation data only)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Learning rate"</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">"upper left"</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.02</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"selected settings: </span><span class="si">{</span><span class="n">selected_params</span><span class="si">}</span><span class="s2">  (mean CV MSE = </span><span class="si">{</span><span class="n">best_row</span><span class="p">[</span><span class="s1">'mean_cv_mse'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"locked-test MSE = </span><span class="si">{</span><span class="n">gb_test_mse</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   locked-test R2 = </span><span class="si">{</span><span class="n">gb_test_r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  (evaluated once)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/59253fec53c71d7154a308cb9000c8d368b74da2bf1f4757b3d9f4d0bb440af2.png" src="../../_images/59253fec53c71d7154a308cb9000c8d368b74da2bf1f4757b3d9f4d0bb440af2.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>selected settings: {'learning_rate': 0.1, 'n_estimators': 200, 'max_depth': 3}  (mean CV MSE = 27.2)
+locked-test MSE = 32.4   locked-test R2 = 0.653  (evaluated once)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Full 12-candidate cross-validation results (training-and-validation data only):"</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">cv_results_df</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Full 12-candidate cross-validation results (training-and-validation data only):
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learning_rate</th>
+      <th>n_estimators</th>
+      <th>max_depth</th>
+      <th>mean_cv_mse</th>
+      <th>std_cv_mse</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.03</td>
+      <td>50</td>
+      <td>1</td>
+      <td>55.04</td>
+      <td>11.73</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.05</td>
+      <td>100</td>
+      <td>1</td>
+      <td>36.54</td>
+      <td>5.31</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.10</td>
+      <td>100</td>
+      <td>1</td>
+      <td>31.26</td>
+      <td>3.69</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.10</td>
+      <td>200</td>
+      <td>1</td>
+      <td>28.67</td>
+      <td>3.30</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.03</td>
+      <td>50</td>
+      <td>2</td>
+      <td>43.63</td>
+      <td>9.60</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0.05</td>
+      <td>100</td>
+      <td>2</td>
+      <td>29.64</td>
+      <td>5.13</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0.10</td>
+      <td>100</td>
+      <td>2</td>
+      <td>28.54</td>
+      <td>5.49</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>0.10</td>
+      <td>200</td>
+      <td>2</td>
+      <td>27.64</td>
+      <td>5.81</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>0.03</td>
+      <td>50</td>
+      <td>3</td>
+      <td>39.12</td>
+      <td>7.96</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>0.05</td>
+      <td>100</td>
+      <td>3</td>
+      <td>28.98</td>
+      <td>5.54</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>0.10</td>
+      <td>100</td>
+      <td>3</td>
+      <td>27.61</td>
+      <td>6.11</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>0.10</td>
+      <td>200</td>
+      <td>3</td>
+      <td>27.21</td>
+      <td>6.07</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</details>
+</div>
+<p>The selected configuration is the one with the lowest mean cross-validation
+MSE on training-and-validation data alone; the test set played no part in
+choosing it, and is read here for the first and only time in this notebook.
+The graph above shows every candidate’s cross-validation MSE; the starred
+bar is the one selected.</p>
+</section>
+<section id="comparing-tree-based-models">
+<h2>7. Comparing Tree-Based Models<a class="headerlink" href="#comparing-tree-based-models" title="Link to this heading">#</a></h2>
+<p>Finally, we compare a single regression tree, a Random Forest, and the
+selected gradient-boosting model above, all on the <strong>identical</strong> participant
+split (this notebook’s training-and-validation data and locked test set),
+the same 360 features, and the same target. The single tree and Random
+Forest use Exercise 6’s own complexity settings, carried forward unchanged
+rather than retuned for this comparison.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fair_tree_settings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">fair_n_estimators</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">fair_max_features</span> <span class="o">=</span> <span class="mi">19</span>  <span class="c1"># carried forward from Exercise 6, not retuned here</span>
+
+<span class="n">single_tree</span> <span class="o">=</span> <span class="n">_DTR</span><span class="p">(</span><span class="o">**</span><span class="n">fair_tree_settings</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">single_tree_pred</span> <span class="o">=</span> <span class="n">single_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="n">random_forest</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
+    <span class="n">n_estimators</span><span class="o">=</span><span class="n">fair_n_estimators</span><span class="p">,</span>
+    <span class="n">max_features</span><span class="o">=</span><span class="n">fair_max_features</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="n">fair_tree_settings</span><span class="p">[</span><span class="s2">"random_state"</span><span class="p">],</span>
+    <span class="n">max_depth</span><span class="o">=</span><span class="n">fair_tree_settings</span><span class="p">[</span><span class="s2">"max_depth"</span><span class="p">],</span>
+    <span class="n">min_samples_leaf</span><span class="o">=</span><span class="n">fair_tree_settings</span><span class="p">[</span><span class="s2">"min_samples_leaf"</span><span class="p">],</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">random_forest_pred</span> <span class="o">=</span> <span class="n">random_forest</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">comparison_rows</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">"Model"</span><span class="p">:</span> <span class="s2">"Single tree"</span><span class="p">,</span> <span class="s2">"Locked-test MSE"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">single_tree_pred</span><span class="p">),</span>
+     <span class="s2">"Locked-test R2"</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">single_tree_pred</span><span class="p">)},</span>
+    <span class="p">{</span><span class="s2">"Model"</span><span class="p">:</span> <span class="s2">"Random Forest"</span><span class="p">,</span> <span class="s2">"Locked-test MSE"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">random_forest_pred</span><span class="p">),</span>
+     <span class="s2">"Locked-test R2"</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">random_forest_pred</span><span class="p">)},</span>
+    <span class="p">{</span><span class="s2">"Model"</span><span class="p">:</span> <span class="s2">"Gradient boosting"</span><span class="p">,</span> <span class="s2">"Locked-test MSE"</span><span class="p">:</span> <span class="n">gb_test_mse</span><span class="p">,</span> <span class="s2">"Locked-test R2"</span><span class="p">:</span> <span class="n">gb_test_r2</span><span class="p">},</span>
+<span class="p">]</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">comparison_rows</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"Model"</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Locked-test MSE</th>
+      <th>Locked-test R2</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Single tree</th>
+      <td>70.132</td>
+      <td>0.249</td>
+    </tr>
+    <tr>
+      <th>Random Forest</th>
+      <td>38.199</td>
+      <td>0.591</td>
+    </tr>
+    <tr>
+      <th>Gradient boosting</th>
+      <td>32.368</td>
+      <td>0.653</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>On this cohort, this split, and these settings, gradient boosting achieves
+the lowest locked-test MSE of the three, followed by the Random Forest, with
+the single tree well behind both – a <strong>consistent held-out comparison</strong>,
+not proof that gradient boosting universally wins: a different task,
+cohort, or set of settings could easily favor the Random Forest instead.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Where does XGBoost fit?</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">XGBoost is an efficient, regularized implementation of gradient-boosted
+trees. It follows the same broad sequential-correction principle taught in
+this notebook, but adds computational optimizations and extra
+regularization terms that are especially useful for tabular data.
+Understanding ordinary gradient boosting, as covered here, is the right
+place to start before reaching for XGBoost.</p>
+<p class="sd-card-text">A minimal example, for reference only – this notebook does not install,
+import, or execute <code class="docutils literal notranslate"><span class="pre">xgboost</span></code>:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>from xgboost import XGBRegressor
+
+xgb_model = XGBRegressor(n_estimators=100, learning_rate=0.05, max_depth=2, random_state=42)
+xgb_model.fit(X_fit, y_fit)
+</pre></div>
+</div>
+</div>
+</details></section>
+<section id="what-should-we-remember">
+<h2>8. What Should We Remember?<a class="headerlink" href="#what-should-we-remember" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Boosting builds trees sequentially, unlike bagging and Random Forest,
+which build trees independently.</p></li>
+<li><p>Each shallow tree corrects the residuals left by the current model.</p></li>
+<li><p>The learning rate controls the size of each correction.</p></li>
+<li><p>Learning rate and number of trees must be considered together: a smaller
+learning rate usually needs more trees.</p></li>
+<li><p>Validation data, not training error, guides both when to stop adding
+trees and which settings to choose.</p></li>
+<li><p>The test set is used exactly once, after every choice has already been
+fixed from development data alone.</p></li>
+</ul>
+<section id="questions-to-take-away">
+<h3>Questions to take away<a class="headerlink" href="#questions-to-take-away" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>How does boosting differ from bagging?</p></li>
+<li><p>What does each new tree predict for squared-error gradient boosting?</p></li>
+<li><p>Why does a smaller learning rate usually require more trees?</p></li>
+<li><p>Why can training MSE improve while validation MSE becomes worse?</p></li>
+<li><p>Why must the test set remain hidden while choosing the learning rate and
+number of trees?</p></li>
+<li><p>Is XGBoost a completely different principle, or an extension of
+gradient boosting?</p></li>
+</ol>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -475,7 +1370,7 @@
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Exercise 8: PCA and Clustering</p>
+        <p class="prev-next-title">Exercise 8: Unsupervised Learning</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -485,6 +1380,40 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-bagging-to-boosting">1. From Bagging to Boosting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-a-model-one-tree-at-a-time">2. Building a Model One Tree at a Time</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-1-build-a-boosted-model">Interactive Activity 1: Build a Boosted Model</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gradient-boosting-with-scikit-learn">3. Gradient Boosting with Scikit-Learn</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-rate-and-number-of-trees">4. Learning Rate and Number of Trees</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-2-explore-the-boosting-parameters">Interactive Activity 2: Explore the Boosting Parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-when-to-stop">5. Choosing When to Stop</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-complete-gradient-boosting-pipeline">6. A Complete Gradient-Boosting Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-tree-based-models">7. Comparing Tree-Based Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-should-we-remember">8. What Should We Remember?</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions-to-take-away">Questions to take away</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

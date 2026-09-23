@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Exercise 9: Advanced Models and Model Comparison &#8212; Machine Learning for Neuroscience</title>
+    <title>Exercise 9: Advanced Models &#8212; Machine Learning for Neuroscience</title>
   
   
   
@@ -65,13 +65,13 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_09/exercise_09';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=53d626a9"></script>
-    <script src="../../_static/activity-resize.js?v=8e0b1445"></script>
-    <script src="../../_static/widgets/app/assets/index-lCZ4SDbv.js?v=0d143c57"></script>
+    <script src="../../_static/launch-buttons.js?v=936dd70a"></script>
+    <script src="../../_static/activity-resize.js?v=c493a16f"></script>
+    <script src="../../_static/widgets/app/assets/index-CNfQFOuV.js?v=a8c4087a"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Exercise 10: Common Machine Learning Mistakes" href="../chapter_10/exercise_10.html" />
-    <link rel="prev" title="Exercise 8: PCA and Clustering" href="../chapter_08/exercise_08.html" />
+    <link rel="prev" title="Exercise 8: Unsupervised Learning" href="../chapter_08/exercise_08.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -159,6 +159,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -224,9 +228,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Validation and Cross-Validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Trees and Boosting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: PCA and Clustering</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 9: Advanced Models and Model Comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Boosting and Gradient Boosting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: Unsupervised Learning</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 9: Advanced Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_10/exercise_10.html">Exercise 10: Common Machine Learning Mistakes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_11/exercise_11.html">Exercise 11: Embeddings and Representational Similarity Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_12/exercise_12.html">Exercise 12: Review and Exam-Style Questions</a></li>
@@ -338,7 +342,7 @@
       
       
       
-      <li><a href="../../_sources/chapters/chapter_09/exercise_09.md" target="_blank"
+      <li><a href="../../_sources/chapters/chapter_09/exercise_09.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -348,7 +352,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.ipynb</span>
 </a>
 </li>
       
@@ -401,7 +405,9 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -412,11 +418,33 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Exercise 9: Advanced Models and Model Comparison</h1>
+    <h1>Exercise 9: Advanced Models</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-consider-more-advanced-models">1. Why Consider More Advanced Models?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#principal-component-regression">2. Principal Component Regression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#partial-least-squares">3. Partial Least Squares</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-pcr-or-pls">4. Interactive Activity – PCR or PLS?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#support-vector-machines">5. Support Vector Machines</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kernels-and-nonlinear-boundaries">6. Kernels and Nonlinear Boundaries</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-explore-an-svm-boundary">7. Interactive Activity – Explore an SVM Boundary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-advanced-models-on-abide-ii">8. Comparing Advanced Models on ABIDE-II</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#strengths-weaknesses-and-appropriate-uses">9. Strengths, Weaknesses, and Appropriate Uses</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-oriented-thinking-questions">10. Test-Oriented Thinking Questions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-your-reasoning-for-the-central-concepts">Check your reasoning for the central concepts</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-takeaways">11. Main Takeaways</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -426,9 +454,808 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="exercise-9-advanced-models-and-model-comparison">
-<h1>Exercise 9: Advanced Models and Model Comparison<a class="headerlink" href="#exercise-9-advanced-models-and-model-comparison" title="Link to this heading">#</a></h1>
-<p>Materials for this exercise will be added before the practice session.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-9-advanced-models">
+<h1>Exercise 9: Advanced Models<a class="headerlink" href="#exercise-9-advanced-models" title="Link to this heading">#</a></h1>
+<div class="how-to-use admonition">
+<p class="admonition-title">Run or download this notebook</p>
+<p>This page is fully readable as it is, and the interactive activities work
+here in the browser. To <strong>run or change the Python code</strong>, use the portable
+version of the notebook:</p>
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_09/exercise_09_portable.ipynb">Open the portable notebook in Colab</a></strong></p></li>
+<li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_09/exercise_09_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
+for VS Code or Jupyter</p></li>
+</ul>
+<p>The portable notebook keeps every Python analysis cell and swaps each
+embedded activity for a link back to this page.</p>
+</div>
+<section id="what-this-notebook-covers">
+<h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
+<p>This is Exercise 9 of <em>Machine Learning for Neuroscience</em>. A complete
+prediction pipeline has already appeared several times in this course, so
+this notebook focuses on what is new: four additional models and the ideas
+behind them.</p>
+<p>In this notebook you will:</p>
+<ol class="arabic simple">
+<li><p>compare principal component regression (PCR) with partial least squares (PLS);</p></li>
+<li><p>connect SVM margins and support vectors to classification and regression;</p></li>
+<li><p>explore how kernels create nonlinear models;</p></li>
+<li><p>compare advanced models on the same ABIDE-II age-prediction task.</p></li>
+</ol>
+</section>
+<section id="why-consider-more-advanced-models">
+<h2>1. Why Consider More Advanced Models?<a class="headerlink" href="#why-consider-more-advanced-models" title="Link to this heading">#</a></h2>
+<p>Neuroimaging predictors are numerous and correlated, so the information
+that actually predicts an outcome may live in a much lower-dimensional
+structure than the raw feature count suggests. That structure is not always
+linear, and different models preserve and use information from the same
+predictors differently – one model’s useful signal can be another model’s
+discarded noise.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<p>If two models receive the same participants and features, why can they
+produce different predictions even when both are evaluated correctly?</p>
+</div>
+</section>
+<section id="principal-component-regression">
+<h2>2. Principal Component Regression<a class="headerlink" href="#principal-component-regression" title="Link to this heading">#</a></h2>
+<p><strong>Principal component regression (PCR)</strong> means ordinary linear regression
+using principal-component scores as predictors, in place of the original
+features:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"pca"</span><span class="p">,</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=...</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">()),</span>
+<span class="p">])</span>
+</pre></div>
+</div>
+<p>Exercise 8 already used PCA before a model; PCR is the same idea before
+linear regression specifically, so it inherits PCA’s own properties:</p>
+<ul class="simple">
+<li><p>PCA chooses directions that explain variation in <code class="docutils literal notranslate"><span class="pre">X</span></code>, without ever seeing
+the target.</p></li>
+<li><p>The number of retained components is a model parameter, chosen the same
+way any other model parameter is chosen.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> and <code class="docutils literal notranslate"><span class="pre">PCA</span></code> must both be fitted inside each validation
+fold, never once on the full dataset beforehand.</p></li>
+<li><p>PCR can reduce noise and collinearity in highly correlated predictors, but
+it can also discard a low-variance direction that happens to predict the
+target well – PCA has no way to know that in advance.</p></li>
+</ul>
+</section>
+<section id="partial-least-squares">
+<h2>3. Partial Least Squares<a class="headerlink" href="#partial-least-squares" title="Link to this heading">#</a></h2>
+<p><strong>Partial least squares (PLS) regression</strong> also builds a small number of
+components from many correlated predictors, but constructs them
+differently: PCR’s components summarize variation in the predictors alone,
+while PLS’s components are constructed using the relationship between the
+predictors and the target. As a result, PLS can prioritize a direction that
+explains relatively little variance in <code class="docutils literal notranslate"><span class="pre">X</span></code> but relates strongly to the
+target – exactly the direction PCR is at risk of discarding.</p>
+<p>Because PLS’s components are built using the target, fitting PLS is
+supervised: the complete PLS fit – not just the final linear step – must
+happen inside each training fold, never before a train/validation split.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="c1"># scale=False: the outer StandardScaler already standardized the</span>
+    <span class="c1"># predictors, so PLSRegression's own internal scaling is turned off</span>
+    <span class="c1"># here to avoid silently scaling twice.</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=...</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span>
+<span class="p">])</span>
+</pre></div>
+</div>
+<p>The number of PLS components is chosen using training/development data
+only, the same way as any other model parameter.</p>
+</section>
+<section id="interactive-activity-pcr-or-pls">
+<h2>4. Interactive Activity – PCR or PLS?<a class="headerlink" href="#interactive-activity-pcr-or-pls" title="Link to this heading">#</a></h2>
+<p>All three presets below share the same signal strength and the same
+noise level; only the <em>direction</em> of the predictive signal changes.
+That keeps validation performance directly comparable across presets:
+PCR does best when that direction lines up closely with PC1, and PLS
+can help most when the predictive information lies away from the
+highest-variance direction.</p>
+<iframe
+  title="Interactive PCR-versus-PLS activity for a small simulated two-dimensional dataset"
+  src="../../_static/widgets/app/index.html?config=../configs/pcr_pls_explore.json"
+  loading="lazy"
+  width="100%"
+  height="1500"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional: a compact, self-contained illustration of PCR-versus-PLS on a</span>
+<span class="c1"># small simulated two-predictor example, built the same way as the</span>
+<span class="c1"># activity's own committed data (standardized, mutually orthogonal</span>
+<span class="c1"># component directions with equal signal strength and noise level across</span>
+<span class="c1"># presets; not reproducing one specific preset's exact stored numbers --</span>
+<span class="c1"># this cell picks its own illustrative setting).</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cross_decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PLSRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span>
+
+<span class="n">demo_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">rho</span> <span class="o">=</span> <span class="mf">0.7</span>
+<span class="n">n_obs</span><span class="p">,</span> <span class="n">n_train</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">40</span>
+<span class="n">X_demo</span> <span class="o">=</span> <span class="n">demo_rng</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[[</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">rho</span><span class="p">],</span> <span class="p">[</span><span class="n">rho</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]],</span> <span class="n">size</span><span class="o">=</span><span class="n">n_obs</span><span class="p">)</span>
+
+<span class="c1"># Closed-form PC1/PC2 directions for this fixed correlation (equal marginal</span>
+<span class="c1"># variances): PC1 = (1, 1)/sqrt(2) explains 85% of predictor variance,</span>
+<span class="c1"># PC2 = (1, -1)/sqrt(2) explains 15%.</span>
+<span class="n">pc1_demo</span> <span class="o">=</span> <span class="n">X_demo</span> <span class="o">@</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">pc2_demo</span> <span class="o">=</span> <span class="n">X_demo</span> <span class="o">@</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="c1"># Standardize each axis score, then make them exactly uncorrelated in this</span>
+<span class="c1"># sample -- their raw correlation is a small but real finite-sample</span>
+<span class="c1"># artifact, not exactly zero -- so any unit-length combination of them has</span>
+<span class="c1"># identical signal variance regardless of preset.</span>
+<span class="n">z1</span> <span class="o">=</span> <span class="p">(</span><span class="n">pc1_demo</span> <span class="o">-</span> <span class="n">pc1_demo</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">pc1_demo</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+<span class="n">z2_raw</span> <span class="o">=</span> <span class="p">(</span><span class="n">pc2_demo</span> <span class="o">-</span> <span class="n">pc2_demo</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">pc2_demo</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+<span class="n">z2</span> <span class="o">=</span> <span class="n">z2_raw</span> <span class="o">-</span> <span class="p">(</span><span class="n">z2_raw</span> <span class="o">@</span> <span class="n">z1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">z1</span> <span class="o">@</span> <span class="n">z1</span><span class="p">)</span> <span class="o">*</span> <span class="n">z1</span>
+<span class="n">z2</span> <span class="o">=</span> <span class="p">(</span><span class="n">z2</span> <span class="o">-</span> <span class="n">z2</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">z2</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="c1"># The predictive direction favors z2 (the LOWER-variance axis) much more</span>
+<span class="c1"># than z1 -- the setting where PLS has the biggest one-component advantage</span>
+<span class="c1"># over PCR. w1**2 + w2**2 == 1, so this has the same signal variance as any</span>
+<span class="c1"># other unit-length direction over (z1, z2).</span>
+<span class="n">w1</span><span class="p">,</span> <span class="n">w2</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">0.25</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">signal_demo</span> <span class="o">=</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">w2</span> <span class="o">*</span> <span class="n">z2</span>
+
+<span class="c1"># A single noise draw, orthogonalized against both standardized axes so it</span>
+<span class="c1"># cannot covary with any preset's signal direction, then rescaled to a</span>
+<span class="c1"># fixed noise level.</span>
+<span class="n">noise_demo</span> <span class="o">=</span> <span class="n">demo_rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_obs</span><span class="p">)</span>
+<span class="n">noise_demo</span> <span class="o">=</span> <span class="n">noise_demo</span> <span class="o">-</span> <span class="p">(</span><span class="n">noise_demo</span> <span class="o">@</span> <span class="n">z1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">z1</span> <span class="o">@</span> <span class="n">z1</span><span class="p">)</span> <span class="o">*</span> <span class="n">z1</span>
+<span class="n">noise_demo</span> <span class="o">=</span> <span class="n">noise_demo</span> <span class="o">-</span> <span class="p">(</span><span class="n">noise_demo</span> <span class="o">@</span> <span class="n">z2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">z2</span> <span class="o">@</span> <span class="n">z2</span><span class="p">)</span> <span class="o">*</span> <span class="n">z2</span>
+<span class="n">noise_demo</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="p">(</span><span class="n">noise_demo</span> <span class="o">-</span> <span class="n">noise_demo</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">noise_demo</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="n">y_demo</span> <span class="o">=</span> <span class="n">signal_demo</span> <span class="o">+</span> <span class="n">noise_demo</span>
+<span class="n">y_demo</span> <span class="o">=</span> <span class="n">y_demo</span> <span class="o">-</span> <span class="n">y_demo</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="n">train_idx</span> <span class="o">=</span> <span class="n">demo_rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">n_obs</span><span class="p">)[:</span><span class="n">n_train</span><span class="p">]</span>
+<span class="n">val_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_obs</span><span class="p">),</span> <span class="n">train_idx</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span> <span class="o">=</span> <span class="n">X_demo</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X_demo</span><span class="p">[</span><span class="n">val_idx</span><span class="p">]</span>
+<span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">y_demo</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_demo</span><span class="p">[</span><span class="n">val_idx</span><span class="p">]</span>
+
+<span class="n">pcr_demo</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"pca"</span><span class="p">,</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">()),</span>
+<span class="p">])</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">pls_demo</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span>
+<span class="p">])</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">pcr_val_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">pcr_demo</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_val</span><span class="p">))</span>
+<span class="n">pls_val_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">pls_demo</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_val</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"1-component validation MSE (illustrative): PCR=</span><span class="si">{</span><span class="n">pcr_val_mse</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">   PLS=</span><span class="si">{</span><span class="n">pls_val_mse</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1-component validation MSE (illustrative): PCR=0.68   PLS=0.54
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<p>A few questions worth exploring with the controls above (predict your
+answer, then check it against what the activity shows):</p>
+<ul class="simple">
+<li><p>With one component, why can PLS outperform PCR?</p></li>
+<li><p>Why do PCR and PLS become more similar after both original directions are
+retained?</p></li>
+<li><p>Does a component that explains more predictor variance necessarily
+predict the target better?</p></li>
+<li><p>Why would fitting PLS before the train/validation split be especially
+problematic?</p></li>
+</ul>
+</section>
+<section id="support-vector-machines">
+<h2>5. Support Vector Machines<a class="headerlink" href="#support-vector-machines" title="Link to this heading">#</a></h2>
+<p>A <strong>support vector machine (SVM)</strong> for classification looks for a
+separating boundary between classes with the largest possible <strong>margin</strong> –
+the distance from the boundary to the closest training observations on
+either side. Those closest observations are the <strong>support vectors</strong>: they
+are the only training points that determine where the boundary sits: moving
+any other observation, as long as it stays on the correct side of the
+margin, would not change the fitted boundary at all. <code class="docutils literal notranslate"><span class="pre">SVC</span></code> fits this
+boundary for classification; <code class="docutils literal notranslate"><span class="pre">SVR</span></code> fits a regression version, where instead
+of a class margin, predictions within an <strong>epsilon-insensitive tube</strong> around
+the observed value are not penalized at all. Because both depend on
+distances and margins, scaling the predictors first is a requirement, not
+an option, exactly as it was for KNN.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Student-facing meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">C</span></code></p></td>
+<td><p>How strongly the model penalizes errors or margin violations</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">epsilon</span></code></p></td>
+<td><p>How much regression error is tolerated before a penalty is applied</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">kernel</span></code></p></td>
+<td><p>The type of relationship the model can represent</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gamma</span></code></p></td>
+<td><p>How local and flexible an RBF relationship can become</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Direct interpretations:</p>
+<ul class="simple">
+<li><p>smaller <code class="docutils literal notranslate"><span class="pre">C</span></code>: more regularization and greater tolerance for margin
+violations or training errors;</p></li>
+<li><p>larger <code class="docutils literal notranslate"><span class="pre">C</span></code>: stronger pressure to fit every training observation, even at
+the cost of a narrower margin;</p></li>
+<li><p>larger RBF <code class="docutils literal notranslate"><span class="pre">gamma</span></code>: a more local, potentially more complex boundary.</p></li>
+</ul>
+</section>
+<section id="kernels-and-nonlinear-boundaries">
+<h2>6. Kernels and Nonlinear Boundaries<a class="headerlink" href="#kernels-and-nonlinear-boundaries" title="Link to this heading">#</a></h2>
+<p>A <strong>kernel</strong> acts like a similarity rule that lets an SVM represent a richer
+boundary without explicitly constructing every transformed feature. Three
+kernels matter here:</p>
+<ul class="simple">
+<li><p><strong>linear</strong>: the boundary is a straight line (or, in more than two
+dimensions, a flat plane);</p></li>
+<li><p><strong>polynomial</strong>: a brief mention – curves the boundary using a fixed
+polynomial degree;</p></li>
+<li><p><strong>radial basis function (RBF)</strong>: the main nonlinear kernel used in
+practice, capable of representing boundaries with no fixed shape at all.</p></li>
+</ul>
+</section>
+<section id="interactive-activity-explore-an-svm-boundary">
+<h2>7. Interactive Activity – Explore an SVM Boundary<a class="headerlink" href="#interactive-activity-explore-an-svm-boundary" title="Link to this heading">#</a></h2>
+<iframe
+  title="Interactive SVM decision-boundary explorer for two synthetic classification datasets"
+  src="../../_static/widgets/app/index.html?config=../configs/svm_explorer.json"
+  loading="lazy"
+  width="100%"
+  height="1500"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional: a compact Python reproduction of one configuration from the</span>
+<span class="c1"># activity's own nonlinear synthetic dataset (same generating process and</span>
+<span class="c1"># seed as the widget's committed data artifact).</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.svm</span><span class="w"> </span><span class="kn">import</span> <span class="n">SVC</span>
+
+<span class="n">SVM_SEED</span> <span class="o">=</span> <span class="mi">33</span>
+<span class="n">n_obs</span><span class="p">,</span> <span class="n">n_train</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">60</span>
+<span class="n">n_per_class</span> <span class="o">=</span> <span class="n">n_obs</span> <span class="o">//</span> <span class="mi">2</span>
+
+<span class="n">repro_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">SVM_SEED</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># dataset index 1 = nonlinear</span>
+<span class="n">inner</span> <span class="o">=</span> <span class="n">repro_rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_per_class</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_obs</span> <span class="o">-</span> <span class="n">n_per_class</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">radius</span> <span class="o">=</span> <span class="mf">2.6</span> <span class="o">+</span> <span class="n">repro_rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">))</span>
+<span class="n">outer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angles</span><span class="p">),</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angles</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">outer</span> <span class="o">=</span> <span class="n">outer</span> <span class="o">+</span> <span class="n">repro_rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">outer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">X_svm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="p">])</span>
+<span class="n">y_svm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_per_class</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_obs</span> <span class="o">-</span> <span class="n">n_per_class</span><span class="p">))</span>
+<span class="n">flip_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X_svm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">))[:</span><span class="mi">4</span><span class="p">]</span>
+<span class="n">y_svm</span><span class="p">[</span><span class="n">flip_ids</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">y_svm</span><span class="p">[</span><span class="n">flip_ids</span><span class="p">]</span>
+
+<span class="n">split_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">SVM_SEED</span> <span class="o">+</span> <span class="mi">101</span><span class="p">)</span>
+<span class="n">idx0</span> <span class="o">=</span> <span class="n">split_rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_obs</span><span class="p">)</span> <span class="k">if</span> <span class="n">y_svm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">idx1</span> <span class="o">=</span> <span class="n">split_rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_obs</span><span class="p">)</span> <span class="k">if</span> <span class="n">y_svm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">n_train_per_class</span> <span class="o">=</span> <span class="n">n_train</span> <span class="o">//</span> <span class="mi">2</span>
+<span class="n">train_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">idx0</span><span class="p">[:</span><span class="n">n_train_per_class</span><span class="p">],</span> <span class="n">idx1</span><span class="p">[:</span><span class="n">n_train_per_class</span><span class="p">]])</span>
+<span class="n">val_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">idx0</span><span class="p">[</span><span class="n">n_train_per_class</span><span class="p">:],</span> <span class="n">idx1</span><span class="p">[</span><span class="n">n_train_per_class</span><span class="p">:]])</span>
+
+<span class="n">svm_demo</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"svc"</span><span class="p">,</span> <span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s2">"rbf"</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mi">1</span><span class="p">))])</span>
+<span class="n">svm_demo</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_svm</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_svm</span><span class="p">[</span><span class="n">train_idx</span><span class="p">])</span>
+<span class="n">train_acc</span> <span class="o">=</span> <span class="n">svm_demo</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_svm</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_svm</span><span class="p">[</span><span class="n">train_idx</span><span class="p">])</span>
+<span class="n">val_acc</span> <span class="o">=</span> <span class="n">svm_demo</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_svm</span><span class="p">[</span><span class="n">val_idx</span><span class="p">],</span> <span class="n">y_svm</span><span class="p">[</span><span class="n">val_idx</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"RBF SVC (C=1, gamma=1): training accuracy=</span><span class="si">{</span><span class="n">train_acc</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">   validation accuracy=</span><span class="si">{</span><span class="n">val_acc</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">   "</span>
+      <span class="sa">f</span><span class="s2">"support vectors=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">svm_demo</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">'svc'</span><span class="p">]</span><span class="o">.</span><span class="n">support_</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>RBF SVC (C=1, gamma=1): training accuracy=0.93   validation accuracy=0.95   support vectors=30
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<p>This activity is conceptual exploration, not a final model-selection
+procedure – a few questions worth exploring with the controls above:</p>
+<ul class="simple">
+<li><p>Why can the linear kernel not separate the nonlinear dataset well?</p></li>
+<li><p>What happens when <code class="docutils literal notranslate"><span class="pre">C</span></code> becomes very large?</p></li>
+<li><p>What happens when RBF <code class="docutils literal notranslate"><span class="pre">gamma</span></code> becomes very large?</p></li>
+<li><p>Which settings create a boundary that follows individual training
+observations too closely?</p></li>
+<li><p>Why does perfect training accuracy not establish that the model is
+better?</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">SVR</span></code> uses the same ideas for a continuous outcome such as age, replacing
+the classification margin with an epsilon-insensitive regression
+objective.</p>
+</section>
+<section id="comparing-advanced-models-on-abide-ii">
+<h2>8. Comparing Advanced Models on ABIDE-II<a class="headerlink" href="#comparing-advanced-models-on-abide-ii" title="Link to this heading">#</a></h2>
+<p>We return to the familiar ABIDE-II age-prediction task – the same 1,004
+eligible participants and 360 cortical-thickness features every other
+exercise uses – and compare five models under one shared, reproducible
+<strong>nested cross-validation</strong> structure: identical outer folds for every
+model’s generalization estimate, identical inner-fold assignments wherever
+a model has a hyperparameter to select, all preprocessing inside each
+model’s pipeline, inner selection by mean cross-validation MSE, and
+outer-fold MSE/R-squared as the only reported generalization estimate. This
+reuses Exercise 4’s own nested-cross-validation procedure rather than
+reteaching it here – an inner loop selects hyperparameters using only the
+outer-training data, and the outer loop evaluates that complete procedure
+on data the inner loop never saw.</p>
+<p>The five models:</p>
+<ol class="arabic simple">
+<li><p>standardized ordinary linear regression, as a familiar reference;</p></li>
+<li><p>PCR;</p></li>
+<li><p>PLS regression;</p></li>
+<li><p>linear SVR;</p></li>
+<li><p>RBF SVR.</p></li>
+</ol>
+<p>No test-set result is selected after viewing these comparisons – the
+outer-fold numbers below are exactly what nested cross-validation produced.</p>
+<p>Before looking at the results below, it is worth predicting them:</p>
+<ul class="simple">
+<li><p>Which method do you expect to perform best?</p></li>
+<li><p>Is the RBF model guaranteed to improve performance?</p></li>
+<li><p>What would it mean if several models have overlapping fold-to-fold
+results?</p></li>
+</ul>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data loading. In the published book this cell is collapsed; it is plain,</span>
+<span class="c1"># runnable Python -- one public CSV pinned to an immutable commit. This is</span>
+<span class="c1"># the exact same ABIDE-II table every other exercise uses.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cross_decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PLSRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.svm</span><span class="w"> </span><span class="kn">import</span> <span class="n">SVR</span><span class="p">,</span> <span class="n">LinearSVR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+
+<span class="n">PIN</span> <span class="o">=</span> <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"</span>
+<span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/</span><span class="si">{</span><span class="n">PIN</span><span class="si">}</span><span class="s2">/tu-machine-learning-yarkoni/data"</span>
+
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE</span><span class="si">}</span><span class="s2">/abide2.tsv"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Unnamed"</span><span class="p">)]]</span>
+
+<span class="n">BRAIN_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">)]</span>
+<span class="n">FEATURES</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">BRAIN_COLS</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)]</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">FEATURES</span><span class="p">)</span>
+<span class="k">assert</span> <span class="s2">"age"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FEATURES</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">FEATURES</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">model_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data table: </span><span class="si">{</span><span class="n">model_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> participants x </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">FEATURES</span><span class="p">)</span><span class="si">}</span><span class="s2"> cortical-thickness predictors"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>data table: 1004 participants x 360 cortical-thickness predictors
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># By default this notebook loads the already-computed nested</span>
+<span class="c1"># cross-validation results below instantly. Set this to True and rerun</span>
+<span class="c1"># the notebook to reproduce the full comparison from scratch, which</span>
+<span class="c1"># typically takes a few minutes.</span>
+<span class="n">RUN_FULL_NESTED_CV</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The reusable nested-cross-validation comparison machinery. In the</span>
+<span class="c1"># published book this cell is collapsed; it is plain, runnable Python.</span>
+<span class="c1"># When RUN_FULL_NESTED_CV is False (the default), it skips straight to</span>
+<span class="c1"># the already-computed summary below -- identical procedure, computed</span>
+<span class="c1"># once and embedded here, with no dependency on any file or repository.</span>
+<span class="c1"># Identical outer folds and, within each outer fold, identical inner</span>
+<span class="c1"># folds are shared across every model whenever it does run. Every</span>
+<span class="c1"># pipeline step is refit inside every inner and outer training</span>
+<span class="c1"># partition -- nothing is fit on the full dataset beforehand.</span>
+<span class="n">PCR_GRID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">]</span>
+<span class="n">PLS_GRID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+<span class="n">LINEAR_SVR_C_GRID</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">LINEAR_SVR_EPSILON_GRID</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">RBF_SVR_C_GRID</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+<span class="n">RBF_SVR_GAMMA_GRID</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"scale"</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">]</span>
+<span class="n">RBF_SVR_EPSILON</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># fixed, not tuned -- keeps this teaching grid manageable</span>
+
+<span class="n">LABELS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"ols"</span><span class="p">:</span> <span class="s2">"Standardized OLS"</span><span class="p">,</span> <span class="s2">"pcr"</span><span class="p">:</span> <span class="s2">"PCR"</span><span class="p">,</span> <span class="s2">"pls"</span><span class="p">:</span> <span class="s2">"PLS"</span><span class="p">,</span> <span class="s2">"linear_svr"</span><span class="p">:</span> <span class="s2">"Linear SVR"</span><span class="p">,</span> <span class="s2">"rbf_svr"</span><span class="p">:</span> <span class="s2">"RBF SVR"</span><span class="p">}</span>
+
+<span class="c1"># Already-computed nested cross-validation summary, from a prior run of</span>
+<span class="c1"># the identical procedure below.</span>
+<span class="n">EMBEDDED_SUMMARY</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="s2">"Standardized OLS"</span><span class="p">,</span> <span class="s2">"mean_mse"</span><span class="p">:</span> <span class="mf">49.1359</span><span class="p">,</span> <span class="s2">"sd_mse"</span><span class="p">:</span> <span class="mf">6.3116</span><span class="p">,</span> <span class="s2">"mean_r2"</span><span class="p">:</span> <span class="mf">0.426566</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="s2">"PCR"</span><span class="p">,</span> <span class="s2">"mean_mse"</span><span class="p">:</span> <span class="mf">31.7446</span><span class="p">,</span> <span class="s2">"sd_mse"</span><span class="p">:</span> <span class="mf">7.04</span><span class="p">,</span> <span class="s2">"mean_r2"</span><span class="p">:</span> <span class="mf">0.637911</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="s2">"PLS"</span><span class="p">,</span> <span class="s2">"mean_mse"</span><span class="p">:</span> <span class="mf">32.42</span><span class="p">,</span> <span class="s2">"sd_mse"</span><span class="p">:</span> <span class="mf">7.7086</span><span class="p">,</span> <span class="s2">"mean_r2"</span><span class="p">:</span> <span class="mf">0.632333</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="s2">"Linear SVR"</span><span class="p">,</span> <span class="s2">"mean_mse"</span><span class="p">:</span> <span class="mf">40.2761</span><span class="p">,</span> <span class="s2">"sd_mse"</span><span class="p">:</span> <span class="mf">12.4427</span><span class="p">,</span> <span class="s2">"mean_r2"</span><span class="p">:</span> <span class="mf">0.551726</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="s2">"RBF SVR"</span><span class="p">,</span> <span class="s2">"mean_mse"</span><span class="p">:</span> <span class="mf">20.3783</span><span class="p">,</span> <span class="s2">"sd_mse"</span><span class="p">:</span> <span class="mf">5.796</span><span class="p">,</span> <span class="s2">"mean_r2"</span><span class="p">:</span> <span class="mf">0.771626</span><span class="p">},</span>
+<span class="p">]</span>
+
+<span class="k">if</span> <span class="n">RUN_FULL_NESTED_CV</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_pipeline</span><span class="p">(</span><span class="n">model_key</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">model_key</span> <span class="o">==</span> <span class="s2">"ols"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">())])</span>
+        <span class="k">if</span> <span class="n">model_key</span> <span class="o">==</span> <span class="s2">"pcr"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Pipeline</span><span class="p">([</span>
+                <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+                <span class="p">(</span><span class="s2">"pca"</span><span class="p">,</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"n_components"</span><span class="p">],</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">()),</span>
+            <span class="p">])</span>
+        <span class="k">if</span> <span class="n">model_key</span> <span class="o">==</span> <span class="s2">"pls"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Pipeline</span><span class="p">([</span>
+                <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+                <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"n_components"</span><span class="p">],</span> <span class="n">scale</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span>
+            <span class="p">])</span>
+        <span class="k">if</span> <span class="n">model_key</span> <span class="o">==</span> <span class="s2">"linear_svr"</span><span class="p">:</span>
+            <span class="c1"># LinearSVR (liblinear), not SVR(kernel="linear") (libsvm): the</span>
+            <span class="c1"># identical epsilon-insensitive linear objective, but dramatically</span>
+            <span class="c1"># faster on this n=803, p=360 training fold -- SVR(kernel="linear")</span>
+            <span class="c1"># measured 65s for a single C=10 fit; the full grid needs roughly</span>
+            <span class="c1"># 800 such fits across the nested-CV loop, an infeasible runtime.</span>
+            <span class="c1"># C=10 itself never converged even at a much larger iteration</span>
+            <span class="c1"># limit and was never selected by any outer fold, so it has been</span>
+            <span class="c1"># removed from the grid; max_iter is raised to 20000 so every</span>
+            <span class="c1"># remaining (C, epsilon) candidate converges cleanly.</span>
+            <span class="k">return</span> <span class="n">Pipeline</span><span class="p">([</span>
+                <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+                <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">LinearSVR</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"C"</span><span class="p">],</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"epsilon"</span><span class="p">],</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">20000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+            <span class="p">])</span>
+        <span class="c1"># rbf_svr: epsilon fixed at RBF_SVR_EPSILON (one year) rather than</span>
+        <span class="c1"># left at scikit-learn's implicit default -- only C and gamma are</span>
+        <span class="c1"># tuned, to keep this teaching grid manageable.</span>
+        <span class="k">return</span> <span class="n">Pipeline</span><span class="p">([</span>
+            <span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+            <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s2">"rbf"</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"C"</span><span class="p">],</span> <span class="n">gamma</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"gamma"</span><span class="p">],</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">RBF_SVR_EPSILON</span><span class="p">)),</span>
+        <span class="p">])</span>
+
+    <span class="n">PARAM_GRIDS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"ols"</span><span class="p">:</span> <span class="p">[{}],</span>
+        <span class="s2">"pcr"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"n_components"</span><span class="p">:</span> <span class="n">n</span><span class="p">}</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">PCR_GRID</span><span class="p">],</span>
+        <span class="s2">"pls"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"n_components"</span><span class="p">:</span> <span class="n">n</span><span class="p">}</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">PLS_GRID</span><span class="p">],</span>
+        <span class="s2">"linear_svr"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"C"</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span> <span class="s2">"epsilon"</span><span class="p">:</span> <span class="n">e</span><span class="p">}</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">LINEAR_SVR_C_GRID</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">LINEAR_SVR_EPSILON_GRID</span><span class="p">],</span>
+        <span class="s2">"rbf_svr"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"C"</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span> <span class="s2">"gamma"</span><span class="p">:</span> <span class="n">g</span><span class="p">}</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">RBF_SVR_C_GRID</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">RBF_SVR_GAMMA_GRID</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">TUNED</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"ols"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"pcr"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"pls"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"linear_svr"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"rbf_svr"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+    <span class="n">outer_cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">inner_cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">101</span><span class="p">)</span>
+
+    <span class="n">fold_rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">outer_fold</span><span class="p">,</span> <span class="p">(</span><span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">outer_cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">)):</span>
+        <span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+        <span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+        <span class="n">inner_splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">inner_cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_tr</span><span class="p">))</span>  <span class="c1"># identical for every model, this outer fold</span>
+
+        <span class="k">for</span> <span class="n">model_key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"ols"</span><span class="p">,</span> <span class="s2">"pcr"</span><span class="p">,</span> <span class="s2">"pls"</span><span class="p">,</span> <span class="s2">"linear_svr"</span><span class="p">,</span> <span class="s2">"rbf_svr"</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">TUNED</span><span class="p">[</span><span class="n">model_key</span><span class="p">]:</span>
+                <span class="n">candidates</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">PARAM_GRIDS</span><span class="p">[</span><span class="n">model_key</span><span class="p">]:</span>
+                    <span class="n">fold_mse</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">tr</span><span class="p">,</span> <span class="n">va</span> <span class="ow">in</span> <span class="n">inner_splits</span><span class="p">:</span>
+                        <span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">model_key</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+                        <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">[</span><span class="n">tr</span><span class="p">],</span> <span class="n">y_tr</span><span class="p">[</span><span class="n">tr</span><span class="p">])</span>
+                        <span class="n">pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tr</span><span class="p">[</span><span class="n">va</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="n">fold_mse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_tr</span><span class="p">[</span><span class="n">va</span><span class="p">],</span> <span class="n">pred</span><span class="p">))</span>
+                    <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"params"</span><span class="p">:</span> <span class="n">params</span><span class="p">,</span> <span class="s2">"mean_mse"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fold_mse</span><span class="p">))})</span>
+                <span class="n">best</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"mean_mse"</span><span class="p">])</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="n">best</span><span class="p">[</span><span class="s2">"params"</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">model_key</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+            <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_te</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">fold_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">"model"</span><span class="p">:</span> <span class="n">model_key</span><span class="p">,</span>
+                <span class="s2">"outer_fold"</span><span class="p">:</span> <span class="n">outer_fold</span><span class="p">,</span>
+                <span class="s2">"selected_params"</span><span class="p">:</span> <span class="n">params</span><span class="p">,</span>
+                <span class="s2">"outer_test_mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span>
+                <span class="s2">"outer_test_r2"</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span>
+            <span class="p">})</span>
+
+    <span class="n">fold_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fold_rows</span><span class="p">)</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">fold_results</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"model"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">mean_mse</span><span class="o">=</span><span class="p">(</span><span class="s2">"outer_test_mse"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span> <span class="n">sd_mse</span><span class="o">=</span><span class="p">(</span><span class="s2">"outer_test_mse"</span><span class="p">,</span> <span class="s2">"std"</span><span class="p">),</span> <span class="n">mean_r2</span><span class="o">=</span><span class="p">(</span><span class="s2">"outer_test_r2"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">reindex</span><span class="p">([</span><span class="s2">"ols"</span><span class="p">,</span> <span class="s2">"pcr"</span><span class="p">,</span> <span class="s2">"pls"</span><span class="p">,</span> <span class="s2">"linear_svr"</span><span class="p">,</span> <span class="s2">"rbf_svr"</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="n">summary</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">LABELS</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">summary</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">fold_results</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">EMBEDDED_SUMMARY</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"model"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<p>By default, the results below load instantly from an already-computed
+run of the identical procedure; rerunning it from scratch (set
+<code class="docutils literal notranslate"><span class="pre">RUN_FULL_NESTED_CV</span> <span class="pre">=</span> <span class="pre">True</span></code> above) typically takes a few minutes.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"mean outer-fold performance (5 outer folds, nested cross-validation):"</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">summary</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">summary</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> mean MSE = </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">'mean_mse'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">   mean R2 = </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">'mean_r2'</span><span class="p">]</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.5</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">summary</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="s2">"mean_mse"</span><span class="p">],</span> <span class="n">yerr</span><span class="o">=</span><span class="n">summary</span><span class="p">[</span><span class="s2">"sd_mse"</span><span class="p">],</span> <span class="n">capsize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#4c72b0"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Outer-fold MSE (mean +/- 1 SD)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">summary</span><span class="o">.</span><span class="n">index</span><span class="p">)))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">summary</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>mean outer-fold performance (5 outer folds, nested cross-validation):
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean_mse</th>
+      <th>sd_mse</th>
+      <th>mean_r2</th>
+    </tr>
+    <tr>
+      <th>model</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Standardized OLS</th>
+      <td>49.136</td>
+      <td>6.312</td>
+      <td>0.427</td>
+    </tr>
+    <tr>
+      <th>PCR</th>
+      <td>31.745</td>
+      <td>7.040</td>
+      <td>0.638</td>
+    </tr>
+    <tr>
+      <th>PLS</th>
+      <td>32.420</td>
+      <td>7.709</td>
+      <td>0.632</td>
+    </tr>
+    <tr>
+      <th>Linear SVR</th>
+      <td>40.276</td>
+      <td>12.443</td>
+      <td>0.552</td>
+    </tr>
+    <tr>
+      <th>RBF SVR</th>
+      <td>20.378</td>
+      <td>5.796</td>
+      <td>0.772</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Standardized OLS     mean MSE = 49.1   mean R2 = +0.427
+PCR                  mean MSE = 31.7   mean R2 = +0.638
+PLS                  mean MSE = 32.4   mean R2 = +0.632
+Linear SVR           mean MSE = 40.3   mean R2 = +0.552
+RBF SVR              mean MSE = 20.4   mean R2 = +0.772
+</pre></div>
+</div>
+<img alt="../../_images/dd8c49f06808f304a6904b3b15a19b47fd3141765abbd81374b2d408cee0987e.png" src="../../_images/dd8c49f06808f304a6904b3b15a19b47fd3141765abbd81374b2d408cee0987e.png" />
+</div>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Selected hyperparameters per outer fold</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">The exact hyperparameter(s) inner cross-validation selected for each tuned
+model, per outer fold, are available by setting <code class="docutils literal notranslate"><span class="pre">RUN_FULL_NESTED_CV</span> <span class="pre">=</span> <span class="pre">True</span></code>
+above and rerunning the notebook (<code class="docutils literal notranslate"><span class="pre">fold_results[[&quot;model&quot;,</span> <span class="pre">&quot;outer_fold&quot;,</span> <span class="pre">&quot;selected_params&quot;]]</span></code>) – kept out of the main page to keep this section
+readable, but never hidden from the runnable code. On this cohort and
+split, the selection was stable across every outer fold: PCR consistently
+chose 50 components, PLS consistently chose 5 components, linear SVR chose
+<code class="docutils literal notranslate"><span class="pre">C=0.1,</span> <span class="pre">epsilon=2</span></code> (from the corrected <code class="docutils literal notranslate"><span class="pre">C</span></code> grid <code class="docutils literal notranslate"><span class="pre">[0.01,</span> <span class="pre">0.1,</span> <span class="pre">1]</span></code>, with the
+nonconvergent <code class="docutils literal notranslate"><span class="pre">C=10</span></code> removed), and RBF SVR chose <code class="docutils literal notranslate"><span class="pre">C=100,</span> <span class="pre">gamma=&quot;scale&quot;</span></code>
+with <code class="docutils literal notranslate"><span class="pre">epsilon</span></code> fixed at 1 year throughout.</p>
+</div>
+</details><p>On this cohort and split, RBF SVR reaches the lowest outer-fold error
+(mean MSE=20.4, R-squared=+0.77) and clearly separates from every other
+model across all 5 outer folds. PCR (mean MSE=31.7, R-squared=+0.64) and
+PLS (mean MSE=32.4, R-squared=+0.63) perform almost identically here – a
+concrete instance of the earlier guiding question about overlapping
+fold-to-fold results: neither method meaningfully beats the other on this
+task, even though they construct their components differently. Linear SVR
+(mean MSE=40.3, R-squared=+0.55) does better than plain standardized OLS
+(mean MSE=49.1, R-squared=+0.43) but worse than either dimensionality-
+reduction method, and OLS on the full 360 correlated features remains the
+weakest model, consistent with Exercise 8’s own supervised-pipeline result.</p>
+<p>This is reported as the observed result for this cohort and split, not a
+general ranking – a different dataset or a different feature set could
+change which model wins, and RBF’s advantage here does not establish that
+kernel methods always outperform linear ones.</p>
+</section>
+<section id="strengths-weaknesses-and-appropriate-uses">
+<h2>9. Strengths, Weaknesses, and Appropriate Uses<a class="headerlink" href="#strengths-weaknesses-and-appropriate-uses" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Useful when</p></th>
+<th class="head"><p>Main limitation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PCR</p></td>
+<td><p>Features are numerous and correlated</p></td>
+<td><p>Components ignore the target</p></td>
+</tr>
+<tr class="row-odd"><td><p>PLS</p></td>
+<td><p>Predictive information may not follow the highest-variance directions</p></td>
+<td><p>Target-aware components can overfit</p></td>
+</tr>
+<tr class="row-even"><td><p>Linear SVM/SVR</p></td>
+<td><p>Many features and an approximately linear relationship</p></td>
+<td><p>Scaling and parameter selection matter</p></td>
+</tr>
+<tr class="row-odd"><td><p>Kernel SVM/SVR</p></td>
+<td><p>A nonlinear relationship is plausible and the sample is not enormous</p></td>
+<td><p>Less interpretable and increasingly expensive as the sample grows</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Model choice also depends on interpretability, sample size, computational
+cost, and the scientific question being asked – not on validation score
+alone.</p>
+</section>
+<section id="test-oriented-thinking-questions">
+<h2>10. Test-Oriented Thinking Questions<a class="headerlink" href="#test-oriented-thinking-questions" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>Why must PCA and PLS be fitted inside each validation fold?</p></li>
+<li><p>When might PLS outperform PCR?</p></li>
+<li><p>Why can PCR discard a direction useful for prediction?</p></li>
+<li><p>What generally happens when <code class="docutils literal notranslate"><span class="pre">C</span></code> increases?</p></li>
+<li><p>How can a very large RBF <code class="docutils literal notranslate"><span class="pre">gamma</span></code> lead to overfitting?</p></li>
+<li><p>Why does an RBF kernel not guarantee better validation performance?</p></li>
+<li><p>What makes a training observation a support vector?</p></li>
+<li><p>Why must all compared models use the same outer folds?</p></li>
+<li><p>If two models have similar scores, what other considerations guide the
+choice?</p></li>
+<li><p>Why is selecting and evaluating a model on the same validation results
+optimistic?</p></li>
+</ol>
+<section id="check-your-reasoning-for-the-central-concepts">
+<h3>Check your reasoning for the central concepts<a class="headerlink" href="#check-your-reasoning-for-the-central-concepts" title="Link to this heading">#</a></h3>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">1. Why must PCA and PLS be fitted inside each validation fold?</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Fitting either one on the full dataset before splitting lets information
+from validation rows leak into preprocessing – the components would be
+built partly from data the model is later “tested” on, making the
+validation estimate optimistic even though neither method directly uses the
+target during prediction.</p>
+</div>
+</details><details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">4. What generally happens when C increases?</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">The model is pushed to fit training observations more closely, tolerating
+fewer margin violations or regression errors – training error typically
+falls, but an excessively large <code class="docutils literal notranslate"><span class="pre">C</span></code> can overfit noise in the training data
+and hurt validation performance.</p>
+</div>
+</details><details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">6. Why does an RBF kernel not guarantee better validation performance?</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">A more flexible boundary can fit the training data’s actual structure
+better, or it can fit noise specific to that training sample. Whether RBF
+helps depends on whether the true relationship is nonlinear and whether
+enough data supports the extra flexibility – neither is guaranteed just
+because the kernel is available.</p>
+</div>
+</details><details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">7. What makes a training observation a support vector?</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">A training observation is a support vector if it lies on or inside the
+margin (or, for a soft margin, is misclassified or violates the margin) –
+these are the only points whose position actually constrains where the
+boundary sits.</p>
+</div>
+</details><details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">10. Why is selecting and evaluating a model on the same validation results optimistic?</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Choosing whichever candidate looks best on a set of scores capitalizes on
+that set’s own particular noise, so the chosen model’s reported score
+reflects a small amount of favorable luck on that split, not only genuine
+generalization – the same reasoning nested cross-validation’s outer loop
+exists to correct for.</p>
+</div>
+</details></section>
+</section>
+<section id="main-takeaways">
+<h2>11. Main Takeaways<a class="headerlink" href="#main-takeaways" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>PCR uses PCA components without allowing the target to influence them.</p></li>
+<li><p>PLS constructs components using the predictor-target relationship.</p></li>
+<li><p>SVMs base their solution on support vectors and regularized margins.</p></li>
+<li><p>Kernels let SVMs represent nonlinear relationships.</p></li>
+<li><p>Greater flexibility can help, but it can also overfit.</p></li>
+<li><p>Fair model comparison requires the same nested validation procedure for
+every model compared.</p></li>
+</ul>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -467,7 +1294,7 @@
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Exercise 8: PCA and Clustering</p>
+        <p class="prev-next-title">Exercise 8: Unsupervised Learning</p>
       </div>
     </a>
     <a class="right-next"
@@ -485,6 +1312,37 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-consider-more-advanced-models">1. Why Consider More Advanced Models?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#principal-component-regression">2. Principal Component Regression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#partial-least-squares">3. Partial Least Squares</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-pcr-or-pls">4. Interactive Activity – PCR or PLS?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#support-vector-machines">5. Support Vector Machines</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kernels-and-nonlinear-boundaries">6. Kernels and Nonlinear Boundaries</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-activity-explore-an-svm-boundary">7. Interactive Activity – Explore an SVM Boundary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-advanced-models-on-abide-ii">8. Comparing Advanced Models on ABIDE-II</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#strengths-weaknesses-and-appropriate-uses">9. Strengths, Weaknesses, and Appropriate Uses</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-oriented-thinking-questions">10. Test-Oriented Thinking Questions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-your-reasoning-for-the-central-concepts">Check your reasoning for the central concepts</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-takeaways">11. Main Takeaways</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
