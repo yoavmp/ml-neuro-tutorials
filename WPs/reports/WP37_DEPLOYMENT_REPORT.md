@@ -2,7 +2,12 @@
 
 ## 1. Overall result
 
-**FAILURE** (bounded stop condition reached during workflow monitoring).
+**FAILURE at the time of the original WP37 run** (bounded stop condition reached during workflow
+monitoring). **See the WP37V addendum at the end of this report (dated 2026-09-23): the workflow
+in fact completed successfully shortly after WP37 stopped watching it, and full production
+verification of Exercises 7–9 has since passed.** The narrative below is preserved exactly as
+written at the time of the original stop, for an accurate record of what was and was not known
+at each point.
 
 The merge to `main` and the single push to `origin/main` both succeeded, and every bounded
 pre-deployment validation gate passed with no failures. However, the single foreground GitHub
@@ -252,3 +257,64 @@ ba11f3f WP36: correct PCR/PLS alignment activity to a variance-controlled target
 
 (The two WP37 report files below are committed locally on `main`, on top of `f792ad5`, as one
 documentation-only commit — `DOCUMENTATION_SHA` — which is **not pushed**, per WP37 §10.)
+
+---
+
+## Addendum — WP37V production-status verification (2026-09-23, dated)
+
+A follow-up work package, WP37V, queried the same run exactly once
+(`gh run view 35881835065 --json status,conclusion,url,jobs`) and found it had in fact reached
+**`status: completed`, `conclusion: success`** — all 20 steps succeeded, including the previously
+in-progress "Execute the portable notebook outside the repository" (completed
+`2026-09-23T15:46:16Z`) and "Publish website" (completed `2026-09-23T15:46:21Z`). Total run
+duration: 17m43s (`15:28:38Z` → `15:46:21Z`).
+
+WP37V then performed full Section 8 production verification against
+`https://yoavmp.github.io/ml-neuro-tutorials/` and confirmed:
+
+- **Site structure (§8.1):** Exercises 1–6 titles unregressed; Exercises 7/8/9 live with their
+  intended titles (no placeholder text); Exercises 10–12 still placeholders with correct topic
+  titles; Exercise 13 absent (HTTP 404); Syllabus present (HTTP 200, title "Syllabus"); Word
+  course overview unchanged (confirmed via the repository release diff in the original WP37 run —
+  this file is not part of the GitHub Pages build).
+- **Exercise 7 (§8.2):** title/structure, both activities loading and updating (config/data
+  HTTP 200, controls change plots/metrics), narrow-viewport (390px), and dark-mode/reload-while
+  -dark theme sync all reused unmodified against production via `chapter07.spec.ts` and
+  `chapter07-dark-mode.spec.ts` (which also already asserts zero unexpected console errors) — all
+  passed. The "computational cost is also part of model design" framing is present verbatim.
+- **Exercise 8 (§8.3):** title/structure and both activities (PCA-projection, PCA/K-means) verified
+  via `chapter08.spec.ts` and `chapter08-dark-mode.spec.ts` reused against production — all passed.
+  Confirmed present verbatim: the Section 8 title "Using PCA in a Supervised Pipeline"; cumulative
+  explained-variance reporting; the K-means framing ("we use K-means as one practical example for
+  understanding how clustering works" — not the only possible method); and inertia/silhouette
+  guidance text.
+- **Exercise 9 (§8.4):** title/structure and both activities (PCR/PLS, SVM boundary) verified via
+  `chapter09.spec.ts` and `chapter09-dark-mode.spec.ts` reused against production — all passed.
+  Confirmed present verbatim: the "highest-variance direction" framing; the "same signal strength
+  and the same noise level; only the direction of the predictive signal changes" framing; and the
+  real ABIDE-II five-model comparison, with all five committed MSE values
+  (OLS 49.14, PCR 31.74, PLS 32.42, Linear SVR 40.28, RBF SVR 20.38) appearing verbatim on the live
+  page, rendered immediately (not gated behind the expensive nested-CV audit).
+- **Theme/responsive/iframe/runtime (§8.5):** `iframe-height-contract.spec.ts` (Exercises 1–9,
+  including dark mode at 390px) and `launch-buttons.spec.ts` (all chapters, incl. 7–9 Colab/download
+  links) both reused unmodified against production — all passed. A small throwaway console-error
+  sweep (light mode + toggled dark mode) covering Exercises 7–9 — needed because only
+  `chapter07-dark-mode.spec.ts` already asserted this; Exercises 8 and 9 had no equivalent existing
+  check — found **zero unexpected console/runtime errors** on any of the three pages, distinguishing
+  correctly from the two known pre-existing Thebe/theme-bootstrap messages (neither of which
+  appeared at all in this sweep).
+
+**Method:** per WP37 §8's preference for "existing production-capable Playwright specs," all
+checks above reused the repository's own `interactive/e2e-book/*.spec.ts` files unmodified, run
+against `https://yoavmp.github.io` via a temporary Playwright config and one small temporary
+throwaway spec (console sweep), both created only inside a `mktemp -d` directory and deleted
+immediately after use — never committed, confirmed via `git status --short --branch` showing a
+clean tree throughout and after. No implementation file was edited, no rerun/repush occurred, and
+WP38 was not started.
+
+**Revised overall result: SUCCESS.** Exercises 7, 8, and 9 are confirmed live in production at
+`https://yoavmp.github.io/ml-neuro-tutorials/`, matching the merged `RELEASE_SHA`
+(`f792ad55f34342e627ed1fe3b85ff60777507d85`) content exactly.
+
+See `WPs/reports/WP37V_REPORT.md` and `WPs/reports/WP37V_EXACT_CHANGELOG.md` for the full,
+self-contained WP37V record.
