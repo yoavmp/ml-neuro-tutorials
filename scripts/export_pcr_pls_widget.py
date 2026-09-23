@@ -1,17 +1,39 @@
 #!/usr/bin/env python3
 """Deterministic synthetic 2-D regression dataset for Exercise 9's
-"PCR or PLS?" activity (WP34).
+"PCR or PLS?" activity (WP34; variance-controlled target construction
+corrected by WP36).
 
 The dataset is entirely synthetic -- 60 observations on two continuous,
 standardized, correlated features (``advanced_models.pcr_pls_activity`` in
 ``book/config/abide_modeling.json``). In their own PCA space, PC1 (the
 higher-variance direction) explains 85% of the two features' variance and
-PC2 (the lower-variance direction) explains 15%. The target is a fixed
-linear combination of the PC1 and PC2 scores plus Gaussian noise; only the
-two coefficients (``beta_pc1``, ``beta_pc2``) change across the three
-presets ("weak"/"moderate"/"strong" alignment with the highest-variance
-direction, PC1) -- the predictor cloud and the 40/20 train/validation split
-stay fixed throughout.
+PC2 (the lower-variance direction) explains 15%.
+
+WP36 correction: the target is built from *standardized, mutually
+orthogonal* component scores rather than raw PC coefficients. Raw PC1 and
+PC2 scores have very different variances (rho fixed, so var(PC1) != var(PC2)
+in general), so swapping which raw axis carries the larger coefficient
+across presets silently changed the target's total variance -- confounding
+"alignment direction" with "signal strength" and breaking the intended
+monotonic PCR/PLS teaching pattern. The fix:
+
+1. each axis score is centered and divided by its own standard deviation
+   (``z_pc1``, ``z_pc2``), then ``z_pc2`` is orthogonalized against ``z_pc1``
+   (Gram-Schmidt) and re-standardized, so the two are *exactly* uncorrelated
+   in this finite sample (their raw PC1/PC2 correlation is a real, non-
+   negligible ~0.11 here, not zero);
+2. each preset is a unit-length direction ``(w1, w2)`` with ``w1**2 +
+   w2**2 == 1`` over these standardized, orthogonal scores, so every
+   preset's signal has identical unit variance before the shared
+   ``signal_sd`` multiplier is applied;
+3. a single fixed noise draw is orthogonalized against *both* standardized
+   scores (so it cannot covary with any preset's signal direction) and
+   re-standardized to ``noise_sd``, then added -- with the same realized
+   values -- to every preset.
+
+Total target variance and signal-to-noise ratio are therefore equal across
+presets by construction, so raw validation MSE/R^2 is directly comparable
+across presets, unlike WP35's construction.
 
 For every (method, n_components, preset) combination, this script fits
 scikit-learn's PCR (``StandardScaler`` -> ``PCA`` -> ``LinearRegression``)
@@ -50,6 +72,7 @@ N_OBSERVATIONS: int = _CFG["n_observations"]
 N_TRAIN: int = _CFG["n_train"]
 SEED: int = _CFG["seed"]
 RHO: float = _CFG["rho"]
+SIGNAL_SD: float = _CFG["signal_sd"]
 NOISE_SD: float = _CFG["noise_sd"]
 COMPONENT_GRID: list[int] = _CFG["component_grid"]
 PRESETS: dict[str, dict[str, Any]] = _CFG["presets"]
@@ -78,11 +101,41 @@ def _pc_scores(pts: Any) -> tuple[Any, Any, Any]:
     return pc1, pc2, np.stack([u1, u2])
 
 
-def _targets_for_preset(pc1: Any, pc2: Any, preset: str, noise_rng: Any) -> Any:
+def _standardize(v: Any) -> Any:
+    return (v - v.mean()) / v.std(ddof=0)
+
+
+def _orthogonalize(v: Any, against: Any) -> Any:
+    """Remove the component of ``v`` along ``against`` (vector projection)."""
+    return v - (v @ against) / (against @ against) * against
+
+
+def _standardized_orthogonal_scores(pc1: Any, pc2: Any) -> tuple[Any, Any]:
+    """z_pc1, z_pc2: centered, unit-variance, and mutually uncorrelated in
+    this exact finite sample. Raw PC1/PC2 are population-uncorrelated, but
+    their *sample* correlation here is a real ~0.11, not negligible -- left
+    uncorrected, it would make signal variance depend on (w1, w2) rather
+    than being fixed at 1 for every unit-length preset direction."""
+    z1 = _standardize(pc1)
+    z2 = _standardize(_orthogonalize(_standardize(pc2), z1))
+    return z1, z2
+
+
+def _unit_noise(z1: Any, z2: Any, noise_rng: Any) -> Any:
+    """A single fixed N(0, 1) draw, orthogonalized against both standardized
+    component scores and re-standardized to unit variance, so it cannot
+    covary with any preset's signal direction (which is always some linear
+    combination of z1 and z2)."""
+    raw = noise_rng.normal(0.0, 1.0, size=len(z1))
+    residual = _orthogonalize(_orthogonalize(raw, z1), z2)
+    return _standardize(residual)
+
+
+def _targets_for_preset(z1: Any, z2: Any, noise_unit: Any, preset: str) -> Any:
     p = PRESETS[preset]
-    signal = p["beta_pc1"] * pc1 + p["beta_pc2"] * pc2
-    noise = noise_rng.normal(0.0, NOISE_SD, size=len(pc1))
-    return signal + noise
+    signal = SIGNAL_SD * (p["w1"] * z1 + p["w2"] * z2)
+    y = signal + NOISE_SD * noise_unit
+    return y - y.mean()
 
 
 def _train_val_indices() -> tuple[list[int], list[int]]:
@@ -132,17 +185,20 @@ def _catalog_key(method: str, n_components: int, preset: str) -> str:
 
 def build_data() -> dict[str, Any]:
     import numpy as np
-    from sklearn.metrics import mean_squared_error
+    from sklearn.metrics import mean_squared_error, r2_score
 
     pts = _generate_points()
     pc1, pc2, directions = _pc_scores(pts)
+    z1, z2 = _standardized_orthogonal_scores(pc1, pc2)
     train_idx, val_idx = _train_val_indices()
     X = pts
 
     noise_rng = np.random.RandomState(SEED + 2)
+    noise_unit = _unit_noise(z1, z2, noise_rng)
+
     targets: dict[str, list[float]] = {}
     for preset in PRESET_KEYS:
-        y = _targets_for_preset(pc1, pc2, preset, noise_rng)
+        y = _targets_for_preset(z1, z2, noise_unit, preset)
         targets[preset] = [round(float(v), 4) for v in y]
 
     catalog: dict[str, Any] = {}
@@ -155,15 +211,15 @@ def build_data() -> dict[str, Any]:
                 if method == "pcr":
                     pipe, direction = _fit_pcr(X_tr, y_tr, n_components)
                     construction_note = (
-                        "PCR's component(s) are chosen to explain the most variance in the two predictors "
-                        "themselves, without ever looking at the target."
+                        "PCR's component(s) are chosen to explain the most variance in the two standardized "
+                        "predictor directions, without ever looking at the target."
                     )
                 else:
                     pipe, direction = _fit_pls(X_tr, y_tr, n_components)
                     construction_note = (
-                        "PLS's component(s) are chosen using the covariance between the predictors and the "
-                        "target, so a direction that predicts well can be favored even if it explains less "
-                        "predictor variance."
+                        "PLS's component(s) are chosen using the covariance between the standardized predictor "
+                        "directions and the target, so a direction that predicts well can be favored even if it "
+                        "explains less predictor variance."
                     )
                 pred_tr = np.asarray(pipe.predict(X_tr)).reshape(-1)
                 pred_va = np.asarray(pipe.predict(X_va)).reshape(-1)
@@ -174,7 +230,9 @@ def build_data() -> dict[str, Any]:
                     "preset": preset,
                     "firstComponentDirection": [round(float(direction[0]), 4), round(float(direction[1]), 4)],
                     "trainMse": round(float(mean_squared_error(y_tr, pred_tr)), 4),
+                    "trainR2": round(float(r2_score(y_tr, pred_tr)), 4),
                     "valMse": round(float(mean_squared_error(y_va, pred_va)), 4),
+                    "valR2": round(float(r2_score(y_va, pred_va)), 4),
                     "valPredictions": [round(float(v), 4) for v in pred_va],
                     "constructionNote": construction_note,
                 }
@@ -187,11 +245,13 @@ def build_data() -> dict[str, Any]:
             "fixed distribution and seed. It is used to build intuition for how PCR and PLS construct "
             "components differently, not to reproduce a real measurement -- these are not ABIDE observations."
         ),
+        "fixedSignalNoiseNote": "Signal strength and noise are held constant; only the target's direction changes.",
         "generatingProcess": {
             "nObservations": N_OBSERVATIONS,
             "nTrain": N_TRAIN,
             "nVal": N_OBSERVATIONS - N_TRAIN,
             "rho": RHO,
+            "signalSd": SIGNAL_SD,
             "noiseSd": NOISE_SD,
             "seed": SEED,
             "seedNote": "Fixed before generation; no seed search.",
@@ -204,7 +264,7 @@ def build_data() -> dict[str, Any]:
         "trainIds": train_idx,
         "valIds": val_idx,
         "presets": {
-            key: {"label": PRESETS[key]["label"], "betaPc1": PRESETS[key]["beta_pc1"], "betaPc2": PRESETS[key]["beta_pc2"]}
+            key: {"label": PRESETS[key]["label"], "weightPc1": PRESETS[key]["w1"], "weightPc2": PRESETS[key]["w2"]}
             for key in PRESET_KEYS
         },
         "targets": targets,
@@ -243,6 +303,17 @@ def validate(data: dict[str, Any]) -> list[str]:
         if len(data.get("targets", {}).get(preset, [])) != N_OBSERVATIONS:
             problems.append(f"targets[{preset}] must have exactly {N_OBSERVATIONS} entries")
 
+    presets = data.get("presets", {})
+    for preset in PRESET_KEYS:
+        w1 = presets.get(preset, {}).get("weightPc1")
+        w2 = presets.get(preset, {}).get("weightPc2")
+        if w1 is None or w2 is None:
+            problems.append(f"presets[{preset}] missing weightPc1/weightPc2")
+            continue
+        norm = (w1**2 + w2**2) ** 0.5
+        if abs(norm - 1.0) > 1e-6:
+            problems.append(f"presets[{preset}] direction must be unit-length, got norm {norm:.6f}")
+
     catalog = data.get("catalog", {})
     expected_keys = {_catalog_key(m, n, p) for m in METHODS for n in COMPONENT_GRID for p in PRESET_KEYS}
     got_keys = set(catalog.keys())
@@ -266,6 +337,8 @@ def validate(data: dict[str, Any]) -> list[str]:
                 problems.append(f"catalog[{key}].firstComponentDirection must be a unit vector, got norm {norm:.4f}")
         if entry.get("trainMse", -1) < 0 or entry.get("valMse", -1) < 0:
             problems.append(f"catalog[{key}]: MSE must be non-negative")
+        if "trainR2" not in entry or "valR2" not in entry:
+            problems.append(f"catalog[{key}]: missing trainR2/valR2")
 
     return problems
 
@@ -300,7 +373,7 @@ def _print_summary(data: dict[str, Any]) -> None:
     for preset in PRESET_KEYS:
         for method in METHODS:
             e1 = data["catalog"][_catalog_key(method, 1, preset)]
-            print(f"  preset={preset:9s} method={method:3s} ncomp=1  valMSE={e1['valMse']:.3f}")
+            print(f"  preset={preset:9s} method={method:3s} ncomp=1  valMSE={e1['valMse']:.3f}  valR2={e1['valR2']:.3f}")
 
 
 def main(argv: list[str] | None = None) -> int:

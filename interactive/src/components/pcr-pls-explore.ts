@@ -61,6 +61,15 @@ function mount(args: MountArgs<PcrPlsExploreConfig, PcrPlsExploreData>): MountHa
   syntheticNote.textContent = data.syntheticDataNote;
   container.appendChild(syntheticNote);
 
+  // WP36: presets differ only in the target's signal *direction* -- signal
+  // strength and noise are identical across all three, so raw MSE/R^2 are
+  // directly comparable. Shown once, independent of the current preset.
+  const fixedSignalNoiseNote = document.createElement("p");
+  fixedSignalNoiseNote.className = "widget-note";
+  fixedSignalNoiseNote.setAttribute("data-testid", "pcr-pls-fixed-signal-noise-note");
+  fixedSignalNoiseNote.textContent = data.fixedSignalNoiseNote;
+  container.appendChild(fixedSignalNoiseNote);
+
   // --- controls ---------------------------------------------------------
   const controls = document.createElement("div");
   controls.className = "widget-controls";
@@ -252,13 +261,15 @@ function mount(args: MountArgs<PcrPlsExploreConfig, PcrPlsExploreData>): MountHa
     const entry = currentEntry();
     stats.textContent =
       `Method = ${method.toUpperCase()}  ·  components = ${nComponents}  ·  ` +
-      `training MSE = ${entry.trainMse.toFixed(2)}  ·  validation MSE = ${entry.valMse.toFixed(2)}.`;
+      `training MSE = ${entry.trainMse.toFixed(2)}  ·  validation MSE = ${entry.valMse.toFixed(2)}  ·  ` +
+      `validation R² = ${entry.valR2.toFixed(2)}.`;
     constructionNote.textContent = entry.constructionNote;
     container.dataset.method = method;
     container.dataset.nComponents = String(nComponents);
     container.dataset.preset = preset;
     container.dataset.trainMse = entry.trainMse.toFixed(4);
     container.dataset.valMse = entry.valMse.toFixed(4);
+    container.dataset.valR2 = entry.valR2.toFixed(4);
   }
 
   async function draw(): Promise<void> {

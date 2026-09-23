@@ -1002,14 +1002,15 @@
       "n_train": 40,
       "seed": 21,
       "rho": 0.7,
-      "noise_sd": 0.6,
+      "signal_sd": 1.0,
+      "noise_sd": 0.3,
       "component_grid": [1, 2],
       "presets": {
-        "weak": {"label": "Weak alignment with the highest-variance direction", "beta_pc1": 0.3, "beta_pc2": 0.85},
-        "moderate": {"label": "Moderate alignment with the highest-variance direction", "beta_pc1": 0.6, "beta_pc2": 0.6},
-        "strong": {"label": "Strong alignment with the highest-variance direction", "beta_pc1": 0.85, "beta_pc2": 0.3}
+        "weak": {"label": "Weak alignment with the highest-variance direction", "w1": 0.25, "w2": 0.9682458365518543},
+        "moderate": {"label": "Moderate alignment with the highest-variance direction", "w1": 0.7071067811865476, "w2": 0.7071067811865476},
+        "strong": {"label": "Strong alignment with the highest-variance direction", "w1": 0.9682458365518543, "w2": 0.25}
       },
-      "note": "Entirely synthetic, deterministic 2-D predictor cloud: two standardized, correlated (rho=0.7) features f1/f2, seed fixed before generation. In their own standardized PCA space, PC1 (direction (1,1)/sqrt(2)) explains 85% of predictor variance and PC2 (direction (1,-1)/sqrt(2)) explains 15%. The target is y = beta_pc1*PC1_score + beta_pc2*PC2_score + Gaussian noise(sd=noise_sd); the preset changes only (beta_pc1, beta_pc2), never the fixed predictor cloud or the fixed 40/20 train/validation split. PCR's component is chosen from PC1's own variance-only construction (never sees y); PLS's component is chosen using the covariance between the predictors and y."
+      "note": "WP36: corrected from WP35's raw-coefficient construction (which changed total target variance across presets because PC1 and PC2 have unequal raw variance). Entirely synthetic, deterministic 2-D predictor cloud: two standardized, correlated (rho=0.7) features f1/f2, seed fixed before generation. PC1 (direction (1,1)/sqrt(2)) is the high-variance axis, PC2 (direction (1,-1)/sqrt(2)) the low-variance axis; each is centered and divided by its own standard deviation to a unit-variance score, then PC2's standardized score is orthogonalized against PC1's (Gram-Schmidt) and re-standardized, so the two are exactly uncorrelated in-sample regardless of finite-sample PC1/PC2 correlation. Each preset defines a unit-length signal direction (w1, w2) with w1^2+w2^2=1 over these standardized, orthogonal scores, so every preset's signal has identical unit variance before scaling by the shared signal_sd. A single fixed noise draw is likewise orthogonalized against both standardized scores (so it cannot covary with any preset's signal direction) and re-standardized to noise_sd, then added identically (same realized values) to every preset. Total target variance and signal-to-noise ratio are therefore equal across presets by construction. PCR's component is chosen from PC1's own variance-only construction (never sees y); PLS's component is chosen using the covariance between the predictors and y."
     },
     "svm_activity": {
       "n_observations": 80,

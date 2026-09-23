@@ -25,7 +25,9 @@ function validData(): PcrPlsExploreData {
           preset,
           firstComponentDirection: [0.7071, 0.7071],
           trainMse: 0.3,
+          trainR2: 0.5,
           valMse: 0.4,
+          valR2: 0.4,
           valPredictions: [0.1, 0.2],
           constructionNote: "note",
         };
@@ -36,12 +38,14 @@ function validData(): PcrPlsExploreData {
     schemaVersion: 1,
     activity: "pcr-pls-explore",
     syntheticDataNote: "note",
+    fixedSignalNoiseNote: "Signal strength and noise are held constant; only the target's direction changes.",
     generatingProcess: {
       nObservations: 4,
       nTrain: 2,
       nVal: 2,
       rho: 0.7,
-      noiseSd: 0.6,
+      signalSd: 1.0,
+      noiseSd: 0.3,
       seed: 21,
       seedNote: "note",
       pc1ExplainedVarianceRatio: 0.85,
@@ -53,9 +57,9 @@ function validData(): PcrPlsExploreData {
     trainIds: [0, 1],
     valIds: [2, 3],
     presets: {
-      weak: { label: "Weak alignment", betaPc1: 0.85, betaPc2: 0.3 },
-      moderate: { label: "Moderate alignment", betaPc1: 0.6, betaPc2: 0.6 },
-      strong: { label: "Strong alignment", betaPc1: 0.3, betaPc2: 0.85 },
+      weak: { label: "Weak alignment", weightPc1: 0.25, weightPc2: 0.9682458365518543 },
+      moderate: { label: "Moderate alignment", weightPc1: 0.7071067811865476, weightPc2: 0.7071067811865476 },
+      strong: { label: "Strong alignment", weightPc1: 0.9682458365518543, weightPc2: 0.25 },
     },
     targets: {
       weak: [0.1, 0.2, 0.3, 0.4],

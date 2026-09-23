@@ -184,6 +184,28 @@ class PcrPlsSection(unittest.TestCase):
         repro = next(c for c in self.cells if c["cell_type"] == "code" and "PLSRegression" in _src(c) and "demo_rng" in _src(c))
         self.assertIn("hide-cell", repro.get("metadata", {}).get("tags", []))
 
+    def test_reproduction_cell_uses_the_variance_controlled_construction(self):
+        # WP36: the hidden reproduction must use the same standardized,
+        # mutually orthogonal construction as the real activity data, not
+        # WP35's raw-coefficient construction.
+        repro = next(c for c in self.cells if c["cell_type"] == "code" and "PLSRegression" in _src(c) and "demo_rng" in _src(c))
+        src = _src(repro)
+        self.assertIn("z1 = (pc1_demo - pc1_demo.mean())", src)
+        self.assertIn("z2_raw - (z2_raw @ z1) / (z1 @ z1) * z1", src)
+        self.assertIn("w1**2 + w2**2 == 1", src)
+        self.assertNotIn("0.3 * pc1_demo + 0.85 * pc2_demo", src)
+
+    def test_intro_explains_fixed_signal_and_noise_across_presets(self):
+        idx = _index_of_cell_starting_with(self.cells, "## 4. Interactive Activity -- PCR or PLS?")
+        iframe_idx = next(i for i in range(idx, idx + 4) if "<iframe" in _src(self.cells[i]))
+        intro = "\n".join(_src(c) for c in self.cells[idx:iframe_idx])
+        low = _norm_ws(intro).lower()
+        self.assertIn("same signal strength", low)
+        self.assertIn("same", low)
+        self.assertIn("noise level", low)
+        self.assertIn("pcr does best", low)
+        self.assertIn("pls can help most", low)
+
     def test_guiding_questions_present_and_do_not_reveal_the_answer(self):
         idx = _index_of_cell_starting_with(self.cells, "## 4. Interactive Activity -- PCR or PLS?")
         next_idx = _index_of_cell_starting_with(self.cells, "## 5. Support Vector Machines")

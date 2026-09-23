@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
 // Standalone runtime check for the production `pcr-pls-explore` activity
@@ -7,6 +10,23 @@ const QUERY = "?config=../configs/pcr_pls_explore.json";
 
 function appUrl(query = ""): string {
   return `/app/index.html${query}`;
+}
+
+// The committed, Python-generated artifact -- read directly (not through the
+// widget) so WP36 §7's requirement ("compare the actual values shown in the
+// browser with the committed Python-generated artifact rather than checking
+// only that text changes") has an independent source of truth.
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const ARTIFACT = JSON.parse(
+  readFileSync(path.join(REPO_ROOT, "book", "_static", "widgets", "data", "pcr_pls_explore.json"), "utf-8"),
+) as {
+  catalog: Record<string, { valMse: number; valR2: number }>;
+};
+
+function committedEntry(method: "pcr" | "pls", nComponents: number, preset: "weak" | "moderate" | "strong") {
+  const entry = ARTIFACT.catalog[`${method}|${nComponents}|${preset}`];
+  if (!entry) throw new Error(`no committed catalog entry for ${method}|${nComponents}|${preset}`);
+  return entry;
 }
 
 test.describe("pcr-pls-explore", () => {
@@ -53,6 +73,38 @@ test.describe("pcr-pls-explore", () => {
     const weakGap = await gapFor("weak");
     const strongGap = await gapFor("strong");
     expect(weakGap).toBeGreaterThan(strongGap);
+  });
+
+  test("the fixed signal/noise note is visible", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    await expect(page.locator('[data-testid="pcr-pls-fixed-signal-noise-note"]')).toHaveText(
+      "Signal strength and noise are held constant; only the target's direction changes.",
+    );
+  });
+
+  test("validation R² is shown and matches the committed artifact for every preset/method/component combination", async ({
+    page,
+  }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    const app = page.locator("#app");
+    const stats = page.locator('[data-testid="pcr-pls-stats"]');
+    for (const method of ["pcr", "pls"] as const) {
+      for (const nComponents of [1, 2]) {
+        for (const preset of ["weak", "moderate", "strong"] as const) {
+          await page.locator('[data-testid="pcr-pls-method-select"]').selectOption(method);
+          await page.locator('[data-testid="pcr-pls-ncomponents-select"]').selectOption(String(nComponents));
+          await page.locator('[data-testid="pcr-pls-preset-select"]').selectOption(preset);
+
+          const expected = committedEntry(method, nComponents, preset);
+          await expect(app).toHaveAttribute("data-val-mse", expected.valMse.toFixed(4));
+          expect(Number(await app.getAttribute("data-val-r2"))).toBeCloseTo(expected.valR2, 4);
+          await expect(stats).toContainText(`validation R² = ${expected.valR2.toFixed(2)}`);
+        }
+      }
+    }
   });
 
   test("switching from PCR to PLS changes the reported validation MSE", async ({ page }) => {

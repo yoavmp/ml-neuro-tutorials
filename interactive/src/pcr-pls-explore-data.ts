@@ -23,7 +23,9 @@ const catalogEntry = z
     preset: presetName,
     firstComponentDirection: z.tuple([z.number().finite(), z.number().finite()]),
     trainMse: z.number().finite().nonnegative(),
+    trainR2: z.number().finite(),
     valMse: z.number().finite().nonnegative(),
+    valR2: z.number().finite(),
     valPredictions: z.array(z.number().finite()).min(1),
     constructionNote: z.string().min(1),
   })
@@ -34,12 +36,14 @@ export const pcrPlsExploreDataSchema = z
     schemaVersion: z.literal(1),
     activity: z.literal("pcr-pls-explore"),
     syntheticDataNote: z.string().min(1),
+    fixedSignalNoiseNote: z.string().min(1),
     generatingProcess: z
       .object({
         nObservations: z.number().int().positive(),
         nTrain: z.number().int().positive(),
         nVal: z.number().int().positive(),
         rho: z.number().min(-1).max(1),
+        signalSd: z.number().positive(),
         noiseSd: z.number().positive(),
         seed: z.number().int(),
         seedNote: z.string().min(1),
@@ -52,7 +56,7 @@ export const pcrPlsExploreDataSchema = z
     points: z.array(point).min(1),
     trainIds: z.array(z.number().int().nonnegative()).min(1),
     valIds: z.array(z.number().int().nonnegative()).min(1),
-    presets: z.record(presetName, z.object({ label: z.string().min(1), betaPc1: z.number(), betaPc2: z.number() }).strict()),
+    presets: z.record(presetName, z.object({ label: z.string().min(1), weightPc1: z.number(), weightPc2: z.number() }).strict()),
     targets: z.record(presetName, z.array(z.number().finite())),
     methods: z.array(methodName).min(1),
     componentGrid: z.array(z.number().int().positive()).min(1),

@@ -443,8 +443,12 @@ const pcaKmeansExplorerConfig = z
 // has high predictor variance but weak target relevance and another has
 // lower variance but stronger relevance. The train/validation split and the
 // predictor cloud stay fixed; only the target's alignment preset (weak/
-// moderate/strong alignment with the highest-variance direction, WP35 §13)
-// changes which precomputed PCR/PLS fits are shown.
+// moderate/strong alignment with the highest-variance direction) changes
+// which precomputed PCR/PLS fits are shown. WP36: each preset is a
+// unit-length direction over standardized, mutually orthogonal component
+// scores, with identical signal strength and noise level across presets --
+// only the signal's direction changes, so validation MSE/R^2 are directly
+// comparable across presets.
 const pcrPlsMethod = z.enum(["pcr", "pls"]);
 const pcrPlsPreset = z.enum(["weak", "moderate", "strong"]);
 
