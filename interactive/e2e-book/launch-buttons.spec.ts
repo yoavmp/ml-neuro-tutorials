@@ -45,6 +45,27 @@ const CHAPTERS = [
     url: "/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html",
     portable: "book/downloads/chapter_06/exercise_06_portable.ipynb",
   },
+  {
+    // WP32 §6: Exercise 7 is now a complete notebook, with its own portable
+    // notebook and Colab button.
+    name: "Chapter 7",
+    url: "/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html",
+    portable: "book/downloads/chapter_07/exercise_07_portable.ipynb",
+  },
+  {
+    // WP33 §6: Exercise 8 is now a complete notebook, with its own portable
+    // notebook and Colab button.
+    name: "Chapter 8",
+    url: "/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html",
+    portable: "book/downloads/chapter_08/exercise_08_portable.ipynb",
+  },
+  {
+    // WP34 §6: Exercise 9 is now a complete notebook, with its own portable
+    // notebook and Colab button.
+    name: "Chapter 9",
+    url: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html",
+    portable: "book/downloads/chapter_09/exercise_09_portable.ipynb",
+  },
 ];
 
 for (const { name, url, portable } of CHAPTERS) {
@@ -100,9 +121,11 @@ test("a page with no portable-notebook mapping (Introduction) gets no Colab butt
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });
 
-// WP29 §6: Exercises 7-12 remain placeholders after WP29. This replaces the
-// earlier stale assertion (WP28 §6) that Exercise 6 had no Colab button.
-test("a placeholder exercise page (Exercise 7) gets no Colab button", async ({ page }) => {
-  await page.goto("/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html");
+// WP34 §6: Exercises 10-12 remain placeholders after WP34 (Exercise 9 is now
+// a complete notebook -- see the Chapter 9 case in CHAPTERS above). This
+// replaces the earlier stale assertion (WP33 §6) that Exercise 9 had no
+// Colab button.
+test("a placeholder exercise page (Exercise 10) gets no Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });

@@ -436,7 +436,7 @@ class ClassificationComplexityContrast(NotebookLoads):
         self.assertIn(f"{ccc['best_val_auc']:.3f}", text)
         self.assertIn(f"{ccc['depth2_val_auc']:.3f}", text)
         self.assertIn(f"{ccc['margin_over_depth2']:.3f}", text)
-        self.assertIn("development partition", text)
+        self.assertIn("training-and-validation data", text)
         self.assertIn("753", text)
         self.assertIn("251", text)
         self.assertNotIn("full eligible cohort", text)
@@ -691,8 +691,12 @@ class LaunchButtonsAndPortable(NotebookLoads):
         )
         self.assertTrue(found)
 
-    def test_exercises_7_through_12_still_have_no_portable_notebook(self):
-        for n in range(7, 13):
+    def test_exercises_10_through_12_still_have_no_portable_notebook(self):
+        # Exercise 7 gained a portable notebook in WP32, Exercise 8 in WP33
+        # (see test_exercise_07_notebook.py, test_exercise_08_notebook.py),
+        # and Exercise 9 in WP34 (see test_exercise_09_notebook.py); only
+        # 10-12 remain placeholders.
+        for n in range(10, 13):
             portable_path = (
                 REPO_ROOT / "book" / "downloads" / f"chapter_{n:02d}" / f"exercise_{n:02d}_portable.ipynb"
             )

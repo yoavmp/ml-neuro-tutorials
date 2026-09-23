@@ -1,0 +1,174 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { expect, test } from "@playwright/test";
+
+// Standalone runtime check for the production `pcr-pls-explore` activity
+// ("PCR or PLS?"), served from book/_static/widgets/. The built-Jupyter-Book
+// check lives in ../e2e-book/chapter09.spec.ts.
+const QUERY = "?config=../configs/pcr_pls_explore.json";
+
+function appUrl(query = ""): string {
+  return `/app/index.html${query}`;
+}
+
+// The committed, Python-generated artifact -- read directly (not through the
+// widget) so WP36 §7's requirement ("compare the actual values shown in the
+// browser with the committed Python-generated artifact rather than checking
+// only that text changes") has an independent source of truth.
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const ARTIFACT = JSON.parse(
+  readFileSync(path.join(REPO_ROOT, "book", "_static", "widgets", "data", "pcr_pls_explore.json"), "utf-8"),
+) as {
+  catalog: Record<string, { valMse: number; valR2: number }>;
+};
+
+function committedEntry(method: "pcr" | "pls", nComponents: number, preset: "weak" | "moderate" | "strong") {
+  const entry = ARTIFACT.catalog[`${method}|${nComponents}|${preset}`];
+  if (!entry) throw new Error(`no committed catalog entry for ${method}|${nComponents}|${preset}`);
+  return entry;
+}
+
+test.describe("pcr-pls-explore", () => {
+  test("loads with the configured defaults and both panels rendered", async ({ page }) => {
+    const failed: string[] = [];
+    page.on("requestfailed", (r) => failed.push(r.url()));
+
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    const app = page.locator("#app");
+    await expect(app).toHaveAttribute("data-method", "pcr");
+    await expect(app).toHaveAttribute("data-n-components", "1");
+    await expect(app).toHaveAttribute("data-preset", "moderate");
+
+    for (const testId of ["pcr-pls-cloud-plot", "pcr-pls-pred-plot"]) {
+      await expect(page.locator(`[data-testid="${testId}"]`)).toHaveAttribute("data-render-count", /[1-9]/);
+    }
+
+    expect(failed, `unexpected network failures: ${failed.join(", ")}`).toHaveLength(0);
+  });
+
+  test("the alignment control is labelled for the highest-variance direction (WP35 §13)", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    const labelText = await page.locator('[data-testid="pcr-pls-preset-select"]').locator("..").innerText();
+    expect(labelText).toContain("highest-variance direction");
+    expect(labelText).not.toContain("lower-variance direction");
+  });
+
+  test("PLS's advantage over PCR at one component shrinks from weak to strong alignment with PC1", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    async function gapFor(preset: "weak" | "moderate" | "strong"): Promise<number> {
+      await page.locator('[data-testid="pcr-pls-preset-select"]').selectOption(preset);
+      await page.locator('[data-testid="pcr-pls-method-select"]').selectOption("pcr");
+      const pcrMse = Number(await page.locator("#app").getAttribute("data-val-mse"));
+      await page.locator('[data-testid="pcr-pls-method-select"]').selectOption("pls");
+      const plsMse = Number(await page.locator("#app").getAttribute("data-val-mse"));
+      return pcrMse - plsMse;
+    }
+
+    const weakGap = await gapFor("weak");
+    const strongGap = await gapFor("strong");
+    expect(weakGap).toBeGreaterThan(strongGap);
+  });
+
+  test("the fixed signal/noise note is visible", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    await expect(page.locator('[data-testid="pcr-pls-fixed-signal-noise-note"]')).toHaveText(
+      "Signal strength and noise are held constant; only the target's direction changes.",
+    );
+  });
+
+  test("validation R² is shown and matches the committed artifact for every preset/method/component combination", async ({
+    page,
+  }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    const app = page.locator("#app");
+    const stats = page.locator('[data-testid="pcr-pls-stats"]');
+    for (const method of ["pcr", "pls"] as const) {
+      for (const nComponents of [1, 2]) {
+        for (const preset of ["weak", "moderate", "strong"] as const) {
+          await page.locator('[data-testid="pcr-pls-method-select"]').selectOption(method);
+          await page.locator('[data-testid="pcr-pls-ncomponents-select"]').selectOption(String(nComponents));
+          await page.locator('[data-testid="pcr-pls-preset-select"]').selectOption(preset);
+
+          const expected = committedEntry(method, nComponents, preset);
+          await expect(app).toHaveAttribute("data-val-mse", expected.valMse.toFixed(4));
+          expect(Number(await app.getAttribute("data-val-r2"))).toBeCloseTo(expected.valR2, 4);
+          await expect(stats).toContainText(`validation R² = ${expected.valR2.toFixed(2)}`);
+        }
+      }
+    }
+  });
+
+  test("switching from PCR to PLS changes the reported validation MSE", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    await page.locator('[data-testid="pcr-pls-preset-select"]').selectOption("strong");
+    await expect(page.locator("#app")).toHaveAttribute("data-preset", "strong");
+    const pcrValMse = await page.locator("#app").getAttribute("data-val-mse");
+
+    await page.locator('[data-testid="pcr-pls-method-select"]').selectOption("pls");
+    await expect(page.locator("#app")).toHaveAttribute("data-method", "pls");
+    const plsValMse = await page.locator("#app").getAttribute("data-val-mse");
+
+    expect(plsValMse).not.toEqual(pcrValMse);
+  });
+
+  test("PCR and PLS converge once both components are retained", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    await page.locator('[data-testid="pcr-pls-preset-select"]').selectOption("strong");
+    await page.locator('[data-testid="pcr-pls-ncomponents-select"]').selectOption("2");
+    await page.locator('[data-testid="pcr-pls-method-select"]').selectOption("pcr");
+    const pcrValMse = await page.locator("#app").getAttribute("data-val-mse");
+
+    await page.locator('[data-testid="pcr-pls-method-select"]').selectOption("pls");
+    const plsValMse = await page.locator("#app").getAttribute("data-val-mse");
+
+    expect(plsValMse).toEqual(pcrValMse);
+  });
+
+  test("the predictor cloud's own point positions stay fixed across every control change", async ({ page }) => {
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+
+    const readCloudX = () =>
+      page.evaluate(() => {
+        const el = document.querySelector('[data-testid="pcr-pls-cloud-plot"]') as HTMLElement & { data?: { x?: number[] }[] };
+        return el.data?.[0]?.x ?? null;
+      });
+
+    const before = await readCloudX();
+    await page.locator('[data-testid="pcr-pls-preset-select"]').selectOption("strong");
+    await expect(page.locator('[data-testid="pcr-pls-cloud-plot"]')).toHaveAttribute("data-render-count", /[2-9]/);
+    const after = await readCloudX();
+
+    expect(after).toEqual(before);
+  });
+
+  test("is usable at a narrow (390 px) viewport without horizontal document scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto(appUrl(QUERY));
+    await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    await expect(page.locator('[data-testid="pcr-pls-cloud-plot"]')).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test("shows the error panel when pointed at a nonexistent config", async ({ page }) => {
+    await page.goto(appUrl("?config=../configs/pcr_pls_explore_missing.json"));
+    await expect(page.locator('[data-testid="widget-error"]')).toBeVisible();
+    await expect(page.locator('[data-testid="widget-error-message"]')).toContainText("HTTP 404");
+  });
+});

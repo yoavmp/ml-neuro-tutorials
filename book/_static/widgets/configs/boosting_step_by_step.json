@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "type": "boosting-step-by-step",
+  "title": "Build a boosted model",
+  "description": "Course activity for Exercise 7: follow squared-error gradient boosting one shallow tree at a time on a small simulated dataset.",
+  "data": "../data/boosting_step_by_step.json",
+  "instructions": "Choose a learning rate, then step through the boosting stages with the slider or the Previous/Next buttons. The top panel shows the observed points and the current ensemble prediction; the middle panel shows the residuals left before this update and the shallow tree fitted to them; the bottom panel shows training MSE across every stage, with the current stage highlighted.",
+  "defaultLearningRate": 0.3,
+  "reflectionPrompts": [
+    "What does the model predict before adding a tree?",
+    "Does the new tree predict age directly or the current residuals?",
+    "What changes when the learning rate decreases?",
+    "Why does a smaller learning rate usually require more trees?",
+    "Can training error continue falling after the model has started overfitting?"
+  ]
+}

@@ -83,6 +83,46 @@ const CHARTS = [
     query: "../configs/regularization_explore.json",
     plotTestId: "regularization-predictions-plot",
   },
+  {
+    activity: "boosting-step-by-step",
+    query: "../configs/boosting_step_by_step.json",
+    plotTestId: "boosting-step-observation-plot",
+  },
+  {
+    activity: "boosting-parameter-explorer (MSE plot)",
+    query: "../configs/boosting_parameter_explorer.json",
+    plotTestId: "boosting-param-mse-plot",
+  },
+  {
+    activity: "boosting-parameter-explorer (heatmap)",
+    query: "../configs/boosting_parameter_explorer.json",
+    plotTestId: "boosting-param-heatmap-plot",
+  },
+  {
+    activity: "pca-projection",
+    query: "../configs/pca_projection.json",
+    plotTestId: "pca-projection-plot",
+  },
+  {
+    activity: "pca-kmeans-explorer (scatter)",
+    query: "../configs/pca_kmeans_explorer.json",
+    plotTestId: "pca-kmeans-scatter-plot",
+  },
+  {
+    activity: "pcr-pls-explore (cloud)",
+    query: "../configs/pcr_pls_explore.json",
+    plotTestId: "pcr-pls-cloud-plot",
+  },
+  {
+    activity: "svm-explorer",
+    query: "../configs/svm_explorer.json",
+    plotTestId: "svm-explorer-plot",
+  },
+  {
+    activity: "pca-kmeans-explorer (composition, default group bars)",
+    query: "../configs/pca_kmeans_explorer.json",
+    plotTestId: "pca-kmeans-composition-plot",
+  },
 ];
 
 test.describe("shared Plotly presentation policy", () => {

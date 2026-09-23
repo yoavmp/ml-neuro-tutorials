@@ -121,7 +121,44 @@ In this notebook, you will:
   never reach student-facing material verbatim — describe the outcome and, if
   relevant, the general method in plain language instead.
 
-## 8. Before you start a notebook-editing WP
+## 8. Interactive iframe height (WP35)
+
+Every activity iframe embeds a widget built from the shared `interactive/`
+bootstrap (`main.ts`), which already calls `startHeightReporting()`
+(`interactive/src/resize-report.ts`) once per widget. This is the
+**reusable, future-proof mechanism** for iframe sizing:
+
+- the widget observes its own `document.documentElement` with a
+  `ResizeObserver` and posts its real rendered height to the parent page
+  whenever it changes (Plotly render/relayout, a control change, a
+  reveal/collapse, a theme change, a viewport-width reflow -- anything that
+  changes the page's actual height), batched to at most once per animation
+  frame and ignoring sub-2px oscillations;
+- the parent page (`book/_static/activity-resize.js`) listens for these
+  messages, validates the sender (`event.source` must be the exact
+  `iframe.contentWindow`, `event.origin` must match the page's own origin),
+  and updates only that one iframe's height.
+
+**Do not build a per-widget resize mechanism, and do not hand-calibrate a
+new fixed pixel height for a new activity.** A new activity gets correct,
+self-adjusting sizing automatically as long as it goes through the normal
+`interactive/src/main.ts` bootstrap -- nothing further to wire up.
+
+The `<iframe>`'s HTML `height` attribute in the notebook is only the
+**pre-JavaScript fallback** shown for the instant before the first resize
+message arrives (and the size used if JavaScript is unavailable). Pick a
+reasonable estimate of the activity's typical rendered height; it does not
+need to be exact, and it is not the mechanism responsible for the final,
+settled size. Leave only ordinary book spacing below the card (about
+8-24px) -- do not add extra bottom padding to compensate for a fallback
+height guess.
+
+Any new interactive activity must be covered by the shared, reusable test
+in `interactive/e2e-book/iframe-height-contract.spec.ts` rather than a new
+one-off height test: add its chapter URL and iframe `title` to that spec's
+`CASES` list.
+
+## 9. Before you start a notebook-editing WP
 
 1. Read this file.
 2. Inspect the current cell-tag convention with a rendered build — don't assume.

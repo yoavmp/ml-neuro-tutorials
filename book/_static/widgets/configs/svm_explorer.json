@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "type": "svm-explorer",
+  "title": "Explore an SVM boundary",
+  "description": "Course activity for Exercise 9: choose a synthetic dataset, kernel, C, and gamma, and see how the decision boundary, support vectors, and accuracy change.",
+  "data": "../data/svm_explorer.json",
+  "instructions": "Choose a dataset (approximately linear or nonlinear), a kernel, C, and (for the polynomial/RBF kernels) gamma. The plot shows the decision regions, the training and validation points, and the support vectors -- training points close enough to the margin to shape it.",
+  "defaultDataset": "linear",
+  "defaultKernel": "linear",
+  "defaultC": 1,
+  "defaultGamma": 1,
+  "reflectionPrompts": [
+    "Why can the linear kernel not separate the nonlinear dataset well?",
+    "What happens when C becomes very large?",
+    "What happens when RBF gamma becomes very large?",
+    "Which settings create a boundary that follows individual training observations too closely?",
+    "Why does perfect training accuracy not establish that the model is better?"
+  ]
+}

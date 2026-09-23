@@ -49,11 +49,11 @@ parse:
     - dollarmath
     - amsmath
 
-# WP27: the Exercise 4 nested-cross-validation diagram is a plain ```mermaid
-# fenced code block (renders the same way on GitHub and in the portable
-# notebook, where MyST directives cannot). `myst_fence_as_directive` tells
-# MyST to hand that fence to the `mermaid` Sphinx directive registered by
-# `sphinxcontrib.mermaid` instead of rendering it as an inert code block.
+# WP32: the Exercise 4 nested-cross-validation diagram is hand-built
+# HTML/CSS, not a ```mermaid fenced code block -- it never used this
+# extension. `sphinxcontrib.mermaid` and `myst_fence_as_directive` are kept
+# enabled here for future or other Mermaid content elsewhere in the book,
+# not for that diagram.
 sphinx:
   extra_extensions:
     - sphinxcontrib.mermaid

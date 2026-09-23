@@ -367,6 +367,124 @@ const treeEnsembleCompareConfig = z
   })
   .strict();
 
+// WP32 (Exercise 7): "Build a Boosted Model" -- squared-error gradient
+// boosting walked stage by stage on a small synthetic dataset
+// (scripts/export_boosting_step_widget.py). Every stage, for every declared
+// learning rate, is precomputed; nothing is fit live in the browser.
+const boostingStepByStepConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("boosting-step-by-step"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultLearningRate: z.number().positive(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP32 (Exercise 7): "Explore the Boosting Parameters" -- learning rate,
+// tree depth, and number of trees on the real ABIDE development data
+// (scripts/export_boosting_parameter_widget.py), including a Play/Pause
+// control that steps through the committed tree-count grid at the current
+// learning rate/depth. The locked outer test set never appears in the data
+// artifact this component reads.
+const boostingParameterExplorerConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("boosting-parameter-explorer"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultLearningRate: z.number().positive(),
+    defaultDepth: z.number().int().positive(),
+    defaultNTrees: z.number().int().positive(),
+    playIntervalMs: z.number().int().positive(),
+    testSetNote: z.string().min(1, "config.testSetNote must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP33 (Exercise 8): "Find the Best Projection" -- a small deterministic
+// synthetic two-dimensional point cloud (scripts/export_pca_projection_widget.py).
+// The projection onto the student's chosen angle, captured variance, and
+// reconstruction MSE are pure closed-form trigonometry computed live in the
+// browser from the fixed, precomputed point cloud -- nothing is fit here, so
+// there is no default-angle field (the slider starts at its own default).
+// The true PC1 direction stays hidden until the reveal control is used.
+const pcaProjectionConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("pca-projection"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP33 (Exercise 8): "Explore PCA and K-Means" -- a precomputed catalogue of
+// K-means fits over retained-PC count x k x seed on the real ABIDE cohort's
+// PCA scores (scripts/export_pca_kmeans_widget.py). PCA is fit once;
+// K-means uses every retained component even though the scatter always
+// shows only PC1-PC2. External variables (diagnosis, sex, site, age) are
+// joined onto cluster labels only for display, never used to cluster.
+const pcaKmeansExternalVariable = z.enum(["group", "sex", "site", "age"]);
+
+const pcaKmeansExplorerConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("pca-kmeans-explorer"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultRetainedPc: z.number().int().positive(),
+    defaultK: z.number().int().min(2),
+    defaultSeed: z.number().int(),
+    defaultExternalVariable: pcaKmeansExternalVariable,
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP34 (Exercise 9): "PCR or PLS?" -- a deterministic synthetic 2-D
+// regression example (scripts/export_pcr_pls_widget.py) where one direction
+// has high predictor variance but weak target relevance and another has
+// lower variance but stronger relevance. The train/validation split and the
+// predictor cloud stay fixed; only the target's alignment preset (weak/
+// moderate/strong alignment with the highest-variance direction) changes
+// which precomputed PCR/PLS fits are shown. WP36: each preset is a
+// unit-length direction over standardized, mutually orthogonal component
+// scores, with identical signal strength and noise level across presets --
+// only the signal's direction changes, so validation MSE/R^2 are directly
+// comparable across presets.
+const pcrPlsMethod = z.enum(["pcr", "pls"]);
+const pcrPlsPreset = z.enum(["weak", "moderate", "strong"]);
+
+const pcrPlsExploreConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("pcr-pls-explore"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultMethod: pcrPlsMethod,
+    defaultNComponents: z.number().int().positive(),
+    defaultPreset: pcrPlsPreset,
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP34 (Exercise 9): "Explore an SVM Boundary" -- two deterministic
+// synthetic 2-D classification datasets, one approximately linear and one
+// not (scripts/export_svm_explorer_widget.py). Every (dataset, kernel, C,
+// gamma) combination in the bounded grid is precomputed; gamma is
+// irrelevant (and its control disabled) for the linear kernel.
+const svmExplorerDataset = z.enum(["linear", "nonlinear"]);
+const svmExplorerKernel = z.enum(["linear", "poly", "rbf"]);
+
+const svmExplorerConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("svm-explorer"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    defaultDataset: svmExplorerDataset,
+    defaultKernel: svmExplorerKernel,
+    defaultC: z.number().positive(),
+    defaultGamma: z.number().positive(),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -387,6 +505,12 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   regularizationExploreConfig,
   treeGreedySplitConfig,
   treeEnsembleCompareConfig,
+  boostingStepByStepConfig,
+  boostingParameterExplorerConfig,
+  pcaProjectionConfig,
+  pcaKmeansExplorerConfig,
+  pcrPlsExploreConfig,
+  svmExplorerConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -407,6 +531,17 @@ export type RegularizationExploreConfig = z.infer<typeof regularizationExploreCo
 export type TreeGreedySplitConfig = z.infer<typeof treeGreedySplitConfig>;
 export type TreeEnsembleCompareHighlight = z.infer<typeof treeEnsembleCompareHighlight>;
 export type TreeEnsembleCompareConfig = z.infer<typeof treeEnsembleCompareConfig>;
+export type BoostingStepByStepConfig = z.infer<typeof boostingStepByStepConfig>;
+export type BoostingParameterExplorerConfig = z.infer<typeof boostingParameterExplorerConfig>;
+export type PcaProjectionConfig = z.infer<typeof pcaProjectionConfig>;
+export type PcaKmeansExternalVariable = z.infer<typeof pcaKmeansExternalVariable>;
+export type PcaKmeansExplorerConfig = z.infer<typeof pcaKmeansExplorerConfig>;
+export type PcrPlsMethod = z.infer<typeof pcrPlsMethod>;
+export type PcrPlsPreset = z.infer<typeof pcrPlsPreset>;
+export type PcrPlsExploreConfig = z.infer<typeof pcrPlsExploreConfig>;
+export type SvmExplorerDataset = z.infer<typeof svmExplorerDataset>;
+export type SvmExplorerKernel = z.infer<typeof svmExplorerKernel>;
+export type SvmExplorerConfig = z.infer<typeof svmExplorerConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

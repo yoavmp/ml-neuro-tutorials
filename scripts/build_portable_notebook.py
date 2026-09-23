@@ -30,8 +30,8 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,all}``
-(default ``all``) scopes both modes. Exercises 7-12 are placeholder pages
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,chapter_09,all}``
+(default ``all``) scopes both modes. Exercises 10-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
 registered here. The bare ``--write`` / ``--check`` invocations keep working
 and now cover every registered notebook.
@@ -73,6 +73,15 @@ PUBLISHED_PAGE_CH5 = (
 )
 PUBLISHED_PAGE_CH6 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html"
+)
+PUBLISHED_PAGE_CH7 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html"
+)
+PUBLISHED_PAGE_CH8 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html"
+)
+PUBLISHED_PAGE_CH9 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -190,8 +199,7 @@ _CH1_BANNER = (
     "# Exercise 1: Exploratory Data Analysis - portable notebook\n"
     "\n"
     "This is the **portable version** of the Chapter 1 EDA practice from\n"
-    "**Machine Learning for Neuroscience**, generated from the canonical\n"
-    "course notebook by `scripts/build_portable_notebook.py`. It is meant for\n"
+    "**Machine Learning for Neuroscience**, generated from the full interactive course notebook. It is meant for\n"
     "running or editing the code in Google Colab or in a local VS Code /\n"
     "Jupyter setup.\n"
     "\n"
@@ -225,8 +233,7 @@ _CH2_BANNER = (
     "\n"
     "This is the **portable version** of the Exercise 2 regression and KNN\n"
     "bias-variance practice from **Machine Learning for Neuroscience**,\n"
-    "generated from the canonical course notebook by\n"
-    "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
+    "generated from the full interactive course notebook. It is meant for running or editing\n"
     "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
     "\n"
     "The richer version -- with the k-exploration activity embedded and\n"
@@ -385,8 +392,7 @@ _CH3_BANNER = (
     "# Exercise 3: Classification and Metrics - portable notebook\n"
     "\n"
     "This is the **portable version** of the Exercise 3 classification\n"
-    "practice from **Machine Learning for Neuroscience**, generated from the\n"
-    "canonical course notebook by `scripts/build_portable_notebook.py`. It is\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the full interactive course notebook. It is\n"
     "meant for running or editing the code in Google Colab or in a local\n"
     "VS Code / Jupyter setup.\n"
     "\n"
@@ -482,8 +488,7 @@ _CH4_BANNER = (
     "\n"
     "This is the **portable version** of the Exercise 4 validation and\n"
     "cross-validation practice from **Machine Learning for Neuroscience**,\n"
-    "generated from the canonical course notebook by\n"
-    "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
+    "generated from the full interactive course notebook. It is meant for running or editing\n"
     "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
     "\n"
     "The richer version -- with the three embedded activities running in the\n"
@@ -586,8 +591,7 @@ _CH5_BANNER = (
     "\n"
     "This is the **portable version** of the Exercise 5 regularization and\n"
     "feature-selection practice from **Machine Learning for Neuroscience**,\n"
-    "generated from the canonical course notebook by\n"
-    "`scripts/build_portable_notebook.py`. It is meant for running or editing\n"
+    "generated from the full interactive course notebook. It is meant for running or editing\n"
     "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
     "\n"
     "The richer version -- with the two embedded activities running in the\n"
@@ -670,8 +674,7 @@ _CH6_BANNER = (
     "# Exercise 6: Decision Trees - portable notebook\n"
     "\n"
     "This is the **portable version** of the Exercise 6 decision-trees\n"
-    "practice from **Machine Learning for Neuroscience**, generated from the\n"
-    "canonical course notebook by `scripts/build_portable_notebook.py`. It is\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the full interactive course notebook. It is\n"
     "meant for running or editing the code in Google Colab or in a local\n"
     "VS Code / Jupyter setup.\n"
     "\n"
@@ -749,6 +752,259 @@ CHAPTER_06 = NotebookSpec(
     colab_title="Exercise 6: Decision Trees",
 )
 
+_CH7_BANNER = (
+    "# Exercise 7: Boosting and Gradient Boosting - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 7 boosting and\n"
+    "gradient-boosting practice from **Machine Learning for Neuroscience**,\n"
+    "generated from the full interactive course notebook. It is meant for running or editing\n"
+    "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH7 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the optional\n"
+    "reproduction of the stage-by-stage boosting calculation -- is kept and\n"
+    "runnable."
+)
+
+_CH7_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH7_STEP_BY_STEP_IFRAME_REPLACEMENT = (
+    "### Build a boosted model on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a learning rate and step through\n"
+    "squared-error gradient boosting stage by stage on a small simulated\n"
+    "dataset, watching the ensemble prediction, the residuals left before each\n"
+    "update, and the shallow tree fitted to them.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 7 page:\n"
+    "> <" + PUBLISHED_PAGE_CH7 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell reproduces the same simulated dataset and its first boosting stage\n"
+    "> directly in Python."
+)
+
+_CH7_PARAMETER_EXPLORER_IFRAME_REPLACEMENT = (
+    "### Explore the boosting parameters on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a learning rate, a tree depth,\n"
+    "and a number of trees -- or press Play to add trees sequentially -- and\n"
+    "watch training/validation MSE, a learning-rate x tree-count heatmap, and\n"
+    "observed-versus-predicted validation age update together, using the\n"
+    "development data only.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 7 page:\n"
+    "> <" + PUBLISHED_PAGE_CH7 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+CHAPTER_07 = NotebookSpec(
+    key="chapter_07",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_07" / "exercise_07.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_07" / "exercise_07_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH7,
+    banner_source=_CH7_BANNER,
+    setup_source=_CH7_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive stage-by-stage gradient boosting activity on a small simulated dataset": (
+            _CH7_STEP_BY_STEP_IFRAME_REPLACEMENT
+        ),
+        "Interactive gradient-boosting parameter explorer for predicting age from brain structure": (
+            _CH7_PARAMETER_EXPLORER_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 7: Boosting and Gradient Boosting",
+)
+
+_CH8_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH8_BANNER = (
+    "# Exercise 8: Unsupervised Learning - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 8 unsupervised-learning\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the full interactive course notebook. It is\n"
+    "meant for running or editing the code in Google Colab or in a local\n"
+    "VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH8 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the optional\n"
+    "reproduction of the projection activity's math -- is kept and runnable."
+)
+
+_CH8_PROJECTION_IFRAME_REPLACEMENT = (
+    "### Find the best projection on the course website\n"
+    "\n"
+    "The interactive activity lets you drag a projection-angle slider for a\n"
+    "small simulated two-dimensional dataset and watch the variance captured\n"
+    "and the reconstruction error left behind, before revealing the true\n"
+    "first principal component.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 8 page:\n"
+    "> <" + PUBLISHED_PAGE_CH8 + ">\n"
+    "> This portable notebook links to it instead of embedding it. The next\n"
+    "> cell reproduces the same simulated dataset and its projection math\n"
+    "> directly in Python."
+)
+
+_CH8_KMEANS_IFRAME_REPLACEMENT = (
+    "### Explore PCA and K-means on the course website\n"
+    "\n"
+    "The interactive activity lets you choose how many principal components\n"
+    "to retain, a number of clusters k, and an initialization seed, then\n"
+    "inspect the resulting clusters against diagnosis, sex, acquisition site,\n"
+    "or age.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 8 page:\n"
+    "> <" + PUBLISHED_PAGE_CH8 + ">\n"
+    "> This portable notebook links to it instead of embedding it. Section 6\n"
+    "> above already reproduces a runnable, single-configuration version of\n"
+    "> the same PCA-then-K-means workflow."
+)
+
+CHAPTER_08 = NotebookSpec(
+    key="chapter_08",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_08" / "exercise_08.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_08" / "exercise_08_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH8,
+    banner_source=_CH8_BANNER,
+    setup_source=_CH8_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive projection-angle activity for a small simulated two-dimensional dataset": (
+            _CH8_PROJECTION_IFRAME_REPLACEMENT
+        ),
+        "Interactive PCA and K-means explorer for ABIDE-II participants": (
+            _CH8_KMEANS_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 8: Unsupervised Learning",
+)
+
+_CH9_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
+    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
+    "typical scientific-Python environment, so there is normally nothing to\n"
+    "do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH9_BANNER = (
+    "# Exercise 9: Advanced Models - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 9 advanced-models\n"
+    "practice from **Machine Learning for Neuroscience**, generated from the full interactive course notebook. It is\n"
+    "meant for running or editing the code in Google Colab or in a local\n"
+    "VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the two embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH9 + ">\n"
+    "\n"
+    "In this notebook both interactive activities are replaced by links to\n"
+    "that page; every Python analysis cell -- including the nested-cross-\n"
+    "validation model comparison -- is kept and runnable."
+)
+
+_CH9_PCR_PLS_IFRAME_REPLACEMENT = (
+    "### PCR or PLS? on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a method (PCR or PLS), a\n"
+    "number of components, and a preset that changes how strongly the target\n"
+    "aligns with the predictors' lower-variance direction, and watch the\n"
+    "predictor cloud, the selected first component, and the observed-versus-\n"
+    "predicted validation values update together.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 9 page:\n"
+    "> <" + PUBLISHED_PAGE_CH9 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+_CH9_SVM_IFRAME_REPLACEMENT = (
+    "### Explore an SVM boundary on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a dataset (approximately\n"
+    "linear or nonlinear), a kernel, C, and gamma, and watch the decision\n"
+    "regions, support vectors, and training/validation accuracy update\n"
+    "together. This is conceptual exploration, not a model-selection\n"
+    "procedure.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 9 page:\n"
+    "> <" + PUBLISHED_PAGE_CH9 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+CHAPTER_09 = NotebookSpec(
+    key="chapter_09",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_09" / "exercise_09.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_09" / "exercise_09_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH9,
+    banner_source=_CH9_BANNER,
+    setup_source=_CH9_SETUP,
+    lesson_packages="numpy pandas matplotlib scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive PCR-versus-PLS activity for a small simulated two-dimensional dataset": (
+            _CH9_PCR_PLS_IFRAME_REPLACEMENT
+        ),
+        "Interactive SVM decision-boundary explorer for two synthetic classification datasets": (
+            _CH9_SVM_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    colab_title="Exercise 9: Advanced Models",
+)
+
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
@@ -756,6 +1012,9 @@ NOTEBOOKS = {
     CHAPTER_04.key: CHAPTER_04,
     CHAPTER_05.key: CHAPTER_05,
     CHAPTER_06.key: CHAPTER_06,
+    CHAPTER_07.key: CHAPTER_07,
+    CHAPTER_08.key: CHAPTER_08,
+    CHAPTER_09.key: CHAPTER_09,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).
@@ -798,8 +1057,8 @@ def _rewrite_data_loading(source: str, columns: list[str]) -> str:
         r"# Curated column subset for this exercise\..*?"
         r"CURATED_COLUMNS = json\.loads\(\s*"
         r'Path\("\.\./\.\./config/eda_phenotype_columns\.json"\)\.read_text\(\)\s*\)',
-        "# Curated column subset, embedded so this notebook needs no repository\n"
-        "# files (the canonical Jupyter Book notebook reads it from book/config/).\n"
+        "# Curated column subset, embedded here so this notebook needs no\n"
+        "# repository files to run.\n"
         + col_block,
         source,
         count=1,

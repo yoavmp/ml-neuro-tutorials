@@ -745,6 +745,303 @@
       "tree_ensemble_compare": "book/_static/widgets/data/tree_ensemble_compare.json"
     }
   },
+  "gradient_boosting": {
+    "target": "age",
+    "canonical_recipe": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "note": "Identical to decision_tree.canonical_recipe / protocol.canonical_recipe (p=360): Exercise 7 reuses the same 360 cortical-thickness predictors as Exercises 2, 4, 5, and 6."
+    },
+    "dev_split": {
+      "test_size": 0.25,
+      "random_state": 7,
+      "stratify": "group",
+      "note": "Identical to decision_tree.dev_split / knn.dev_split / regularization.dev_split: splits the outer-TRAINING partition (753 rows) into a fitting subset (n_fit=564) and a validation subset (n_val=189). The parameter-explorer activity (section 4) and section 6's model-selection step both use this exact reconstruction; the outer test set (251 rows, protocol.holdout_split) is touched only once, in section 6 step 6."
+    },
+    "sklearn_example": {
+      "n_estimators": 100,
+      "learning_rate": 0.05,
+      "max_depth": 2,
+      "random_state": 42,
+      "note": "Section 3's short illustrative GradientBoostingRegressor example, fit on dev_split.fit and scored on dev_split.val. Not the tuned model used later; illustrates the API only."
+    },
+    "step_by_step": {
+      "n_observations": 24,
+      "seed": 7,
+      "x_distribution": {
+        "kind": "Uniform",
+        "low": 0.0,
+        "high": 10.0
+      },
+      "formula": "y = C + A*sin(FREQ*x) + B*x + noise, noise ~ Normal(0, NOISE_SD)",
+      "coefficients": {
+        "C": 5.0,
+        "A": 4.0,
+        "FREQ": 0.9,
+        "B": 0.6,
+        "NOISE_SD": 1.2
+      },
+      "learning_rates": [
+        0.1,
+        0.3,
+        0.5,
+        1.0
+      ],
+      "n_stages": 12,
+      "stump_settings": {
+        "max_depth": 1
+      },
+      "note": "Entirely synthetic data (declared formula, fixed seed, decided before generation -- no seed search, unlike the Exercise 6 greedy-split activity, since no split-optimum 'niceness' criterion applies here). Not ABIDE observations. Stages 0..n_stages are precomputed for every learning rate in scripts/export_boosting_step_widget.py; stage 0 is always the training-target mean."
+    },
+    "parameter_explorer": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "learning_rate_grid": [
+        0.01,
+        0.03,
+        0.05,
+        0.1,
+        0.2,
+        0.5
+      ],
+      "depth_grid": [
+        1,
+        2,
+        3
+      ],
+      "n_trees_grid": [
+        1,
+        5,
+        10,
+        20,
+        30,
+        50,
+        75,
+        100,
+        150,
+        200,
+        300
+      ],
+      "default_learning_rate": 0.1,
+      "default_depth": 2,
+      "default_n_trees": 100,
+      "note": "Precomputed grid for the 'Explore the Boosting Parameters' widget (scripts/export_boosting_parameter_widget.py) on dev_split.fit/dev_split.val only. Grid values were fixed before any model was fit -- not chosen after seeing which values created the neatest story. Uses sklearn GradientBoostingRegressor.staged_predict to obtain every displayed tree-count step from one fit per (learning_rate, depth) pair rather than refitting per tree count."
+    },
+    "cv_pipeline": {
+      "full_grid": {
+        "learning_rate": [
+          0.03,
+          0.05,
+          0.1
+        ],
+        "n_estimators": [
+          50,
+          100,
+          200
+        ],
+        "max_depth": [
+          1,
+          2,
+          3
+        ]
+      },
+      "full_grid_candidate_count": 27,
+      "cv": "KFold(n_splits=5, shuffle=True, random_state=13)",
+      "cv_random_state": 13,
+      "runtime_audit": {
+        "measured_full_grid_5fold_seconds": 357.2,
+        "measured_reduced_grid_5fold_seconds": 153.3,
+        "measurement_note": "Timed on the development machine with a same-shape (600x360) synthetic proxy matrix, fitting each candidate once per fold-equivalent and multiplying by 5 folds, before running the real audit -- not the audited run itself. Rule (declared before timing): if the full 27-candidate x 5-fold grid's audited runtime is disproportionate to every other exercise's audit (all under ~35s), reduce once to a predefined balanced subset of at least 12 candidates, never pruned by score.",
+        "decision": "reduced: the full grid measured ~357s (~6 minutes) for this one step alone versus ~10-35s for every other exercise's full audit; reduced to the 12-candidate grid below (~153s), fixed by structure (all 3 depths x 4 representative (learning_rate, n_estimators) pairs spanning low/mid/high cost), not by inspecting which combinations would be omitted."
+      },
+      "reduced_grid": {
+        "learning_rate_n_estimators_pairs": [
+          [
+            0.03,
+            50
+          ],
+          [
+            0.05,
+            100
+          ],
+          [
+            0.1,
+            100
+          ],
+          [
+            0.1,
+            200
+          ]
+        ],
+        "max_depth": [
+          1,
+          2,
+          3
+        ]
+      },
+      "reduced_grid_candidate_count": 12,
+      "selection_rule": "minimum mean CV MSE across the reduced grid; ties broken by the earliest candidate in declaration order. The outer test set is never used to resolve ties or choose the grid.",
+      "comparison_cv": "KFold(n_splits=5, shuffle=True, random_state=100) on the full eligible cohort (n=1004) -- identical folds to decision_tree.fair_comparison, so section 7's table reuses decision_tree_model_audit_result.json's single_tree/random_forest numbers rather than retuning them."
+    },
+    "audit_script": "scripts/gradient_boosting_model_audit.py",
+    "audit_result": "scripts/gradient_boosting_model_audit_result.json",
+    "export_data_scripts": {
+      "boosting_step_by_step": "scripts/export_boosting_step_widget.py",
+      "boosting_parameter_explorer": "scripts/export_boosting_parameter_widget.py"
+    },
+    "export_data_artifacts": {
+      "boosting_step_by_step": "book/_static/widgets/data/boosting_step_by_step.json",
+      "boosting_parameter_explorer": "book/_static/widgets/data/boosting_parameter_explorer.json"
+    }
+  },
+  "unsupervised": {
+    "recipe": {
+      "bundle": "all-eligible",
+      "measures": [
+        "CT"
+      ],
+      "note": "Identical to gradient_boosting.canonical_recipe / decision_tree.canonical_recipe (p=360): Exercise 8 reuses the same 360 cortical-thickness predictors as Exercises 2, 4, 5, 6, and 7. PCA and K-means (sections 1-7) use the full 1004-participant eligible cohort; no target is required. Section 8 (PCA before KNN regression) reuses protocol.holdout_split for age, exactly as every other notebook."
+    },
+    "standardization": "sklearn StandardScaler. Sections 1-7 (unsupervised): fit once on the full 1004-participant cohort (no held-out split needed -- no target is predicted). Section 8 (supervised): the scaler is refit inside every cross-validation fold, never on the full development set before splitting.",
+    "anatomical_groups": [
+      "frontal",
+      "parietal",
+      "temporal",
+      "occipital"
+    ],
+    "loading_summary": {
+      "n_components_shown": 2,
+      "n_top_rois": 8,
+      "statistic": "mean absolute loading",
+      "note": "Individual-ROI table: the n_top_rois strongest |loading| ROIs per shown component, signed. Grouped table: mean absolute loading (never a signed sum, which can cancel) within each of anatomical_groups, using the identical bundle ROI lists book/config/abide_modeling.json#bundles already defines and scripts/abide_modeling_data.py already expands -- audited for column-order consistency with the notebook's own natural-order 360-column FEATURES list."
+    },
+    "projection_activity": {
+      "n_observations": 40,
+      "seed": 11,
+      "sigma_x": 3.0,
+      "sigma_y": 2.0,
+      "rho": 0.75,
+      "angle_slider_deg": {
+        "min": 0,
+        "max": 180,
+        "step": 1
+      },
+      "note": "Entirely synthetic 2-D data: mean-zero correlated Gaussian (sigma_x=3.0, sigma_y=2.0, rho=0.75), fixed seed, decided before generation. Sample-mean-centered so the stored cloud's own empirical mean is exactly (0, 0). Not ABIDE observations. The widget computes the projection onto the student's chosen angle, the captured variance, and the reconstruction MSE live in the browser from this fixed point cloud (pure closed-form trigonometry/linear algebra -- no model fitting, no Python runtime); the true PC1 angle and its explained-variance ratio are precomputed here for the reveal control and for the committed numeric audit."
+    },
+    "kmeans_catalog": {
+      "retained_pc_grid": [
+        2,
+        5,
+        10,
+        20,
+        50
+      ],
+      "k_grid": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_init": 10,
+      "default_retained_pc": 10,
+      "default_k": 3,
+      "default_seed": 0,
+      "default_external_variable": "group",
+      "external_variables": {
+        "group": "diagnosis (1=autism, 2=control)",
+        "sex": "sex",
+        "site": "acquisition site",
+        "age": "age"
+      },
+      "note": "PCA is fit once (n_components=50, StandardScaler'd 360-feature cohort, random_state=0) on the full 1004-participant cohort; PC1/PC2 participant scores are the same for every retained_pc value because PCA components are nested (fitting with more retained components never changes earlier components' scores). K-means is refit for every (retained_pc, k, seed) combination in the grid above on the first retained_pc columns of that same score matrix -- never on PC1-PC2 alone, even though the scatter plot always shows only PC1-PC2. External variables (diagnosis, sex, site, age) are never inputs to PCA or K-means; they are joined onto the cluster labels only afterward, for display."
+    },
+    "supervised_pipeline": {
+      "model": "KNeighborsRegressor",
+      "component_grid": [
+        5,
+        10,
+        20,
+        50,
+        100
+      ],
+      "k_grid": [
+        5,
+        10,
+        20,
+        40
+      ],
+      "dev_split": {
+        "test_size": 0.25,
+        "random_state": 42,
+        "stratify": "group",
+        "note": "protocol.holdout_split, reused unchanged; identical to gradient_boosting.dev_split / decision_tree.dev_split in spirit (same 0.25 test_size / group-stratification convention), but this is literally the single outer split shared by every ABIDE-II age-prediction notebook, not a separate one."
+      },
+      "cv_random_state": 13,
+      "cv_note": "KFold(n_splits=5, shuffle=True, random_state=13) restricted to the outer development partition (protocol.holdout_split), identical in spirit to gradient_boosting.cv_pipeline. StandardScaler and PCA are both inside the sklearn Pipeline and therefore inside every fold. Both n_components and k are selected together by minimum mean cross-validation MSE over component_grid x k_grid; the locked outer test set (n=251) is touched exactly once, after that joint selection.",
+      "baseline_note": "Comparison model: Pipeline(StandardScaler(), KNeighborsRegressor()) on the original 360 standardized features (no PCA step), with k selected from the identical k_grid under the identical CV folds. Neither model is guaranteed to win; the committed audit records the honest result."
+    }
+  },
+  "advanced_models": {
+    "recipe": {
+      "bundle": "all-eligible",
+      "measures": ["CT"],
+      "note": "Identical to unsupervised.recipe / gradient_boosting.canonical_recipe (p=360, n=1004, all with a non-null age): Exercise 9's ABIDE comparison (section 8) reuses the same participants, features, and target as every other exercise. The two interactive activities (PCR-or-PLS, SVM-boundary) use entirely synthetic, non-ABIDE data instead."
+    },
+    "pcr_pls_activity": {
+      "n_observations": 60,
+      "n_train": 40,
+      "seed": 21,
+      "rho": 0.7,
+      "signal_sd": 1.0,
+      "noise_sd": 0.3,
+      "component_grid": [1, 2],
+      "presets": {
+        "weak": {"label": "Weak alignment with the highest-variance direction", "w1": 0.25, "w2": 0.9682458365518543},
+        "moderate": {"label": "Moderate alignment with the highest-variance direction", "w1": 0.7071067811865476, "w2": 0.7071067811865476},
+        "strong": {"label": "Strong alignment with the highest-variance direction", "w1": 0.9682458365518543, "w2": 0.25}
+      },
+      "note": "WP36: corrected from WP35's raw-coefficient construction (which changed total target variance across presets because PC1 and PC2 have unequal raw variance). Entirely synthetic, deterministic 2-D predictor cloud: two standardized, correlated (rho=0.7) features f1/f2, seed fixed before generation. PC1 (direction (1,1)/sqrt(2)) is the high-variance axis, PC2 (direction (1,-1)/sqrt(2)) the low-variance axis; each is centered and divided by its own standard deviation to a unit-variance score, then PC2's standardized score is orthogonalized against PC1's (Gram-Schmidt) and re-standardized, so the two are exactly uncorrelated in-sample regardless of finite-sample PC1/PC2 correlation. Each preset defines a unit-length signal direction (w1, w2) with w1^2+w2^2=1 over these standardized, orthogonal scores, so every preset's signal has identical unit variance before scaling by the shared signal_sd. A single fixed noise draw is likewise orthogonalized against both standardized scores (so it cannot covary with any preset's signal direction) and re-standardized to noise_sd, then added identically (same realized values) to every preset. Total target variance and signal-to-noise ratio are therefore equal across presets by construction. PCR's component is chosen from PC1's own variance-only construction (never sees y); PLS's component is chosen using the covariance between the predictors and y."
+    },
+    "svm_activity": {
+      "n_observations": 80,
+      "n_train": 60,
+      "seed": 33,
+      "linear_dataset_note": "Two Gaussian blobs (mean-separated along one axis, shared covariance), linearly separable up to a small overlap.",
+      "nonlinear_dataset_note": "Two concentric-ish classes (an inner class surrounded by an outer ring, plus noise) -- not linearly separable.",
+      "kernel_options": ["linear", "poly", "rbf"],
+      "poly_degree": 3,
+      "c_grid": [0.1, 1, 10, 100],
+      "gamma_grid": [0.1, 1, 10],
+      "decision_grid_resolution": 60,
+      "note": "Two entirely synthetic, deterministic, fixed-split 2-D binary classification datasets (never ABIDE observations). Every (dataset, kernel, C, gamma) combination in the declared bounded grid is precomputed with scikit-learn's SVC; gamma is ignored (and its control disabled) for the linear kernel. Support vectors are always training-set indices; the stored decision grid is a fixed decision_grid_resolution x decision_grid_resolution mesh over a fixed, padded bounding box, sufficient for a smooth but compact Plotly contour."
+    },
+    "abide_comparison": {
+      "outer_cv": {"n_splits": 5, "shuffle": true, "random_state": 100, "note": "Identical outer folds for every compared model; same (n_splits, random_state) convention as knn.nested cross-validation in Exercise 4."},
+      "inner_cv": {"n_splits": 5, "shuffle": true, "random_state": 101, "note": "Identical inner-fold assignments reused across every candidate of every model within a given outer fold, wherever a model has a hyperparameter to select; the standardized-OLS reference has none, so no inner loop applies to it."},
+      "models": {
+        "ols": {"label": "Standardized OLS (reference)", "pipeline": "StandardScaler() -> LinearRegression()", "tuned": false},
+        "pcr": {"label": "PCR", "pipeline": "StandardScaler() -> PCA(n_components) -> LinearRegression()", "tuned": true, "grid": {"n_components": [5, 10, 20, 50, 100, 200]}},
+        "pls": {"label": "PLS", "pipeline": "StandardScaler() -> PLSRegression(n_components, scale=False)", "tuned": true, "grid": {"n_components": [2, 5, 10, 20]}},
+        "linear_svr": {"label": "Linear SVR", "pipeline": "StandardScaler() -> LinearSVR(C, epsilon, max_iter=20000)", "tuned": true, "grid": {"C": [0.01, 0.1, 1], "epsilon": [0.5, 1, 2]}},
+        "rbf_svr": {"label": "RBF SVR", "pipeline": "StandardScaler() -> SVR(kernel='rbf', C, gamma, epsilon=1.0 fixed)", "tuned": true, "fixed_epsilon": 1.0, "grid": {"C": [1, 10, 100], "gamma": ["scale", 0.001, 0.01]}}
+      },
+      "gamma_grid_justification": "For standardized 360-feature inputs (per-feature variance 1), sklearn's gamma='scale' equals 1/(n_features * X.var()) = 1/360 = 0.00278; the two numeric candidates (0.001, 0.01) bracket that value by roughly a factor of 2.8x below and 3.6x above.",
+      "linear_svr_solver_note": "WP34: measured directly on one real outer-training fold (n=803, p=360), a single SVR(kernel='linear', C=10) fit took 65s (libsvm's SMO solver); the full nested-CV grid needs roughly 800 such fits, an infeasible runtime. LinearSVR (liblinear coordinate descent) solves the identical epsilon-insensitive linear objective and is scikit-learn's own documented recommendation for this n/p regime; every fit completes in under 2s.",
+      "linear_svr_grid_note": "WP35: the WP34 audit found LinearSVR(C=10) did not converge within max_iter=5000, and remained non-convergent even at max_iter=100000 (an intrinsic conditioning property of this large-C, correlated-360-feature problem, not a solver artifact) -- while every outer fold selected C=0.1 regardless. C=10 was removed from the grid (now C in [0.01, 0.1, 1]). With C=10 gone, the new largest candidate (C=1) still needed more than 5000 iterations on real data (measured: up to ~8,924); max_iter was raised to 20000, at which every remaining (C, epsilon) pair converges cleanly (confirmed by direct per-fit timing, unlike C=10's genuine non-convergence). The audit was rerun; no LinearSVR convergence warning remains in the regenerated result.",
+      "rbf_svr_epsilon_note": "WP35: RBF SVR's epsilon (the width of the no-penalty band around each prediction) was previously left at scikit-learn's implicit default (0.1) and was not reported. It is now fixed explicitly at epsilon=1.0 (one year) for this teaching comparison and stated in the compact grid/parameter summary as fixed, not tuned -- only C and gamma are still tuned by inner cross-validation, to keep the teaching grid manageable. The full nested comparison was rerun after this change.",
+      "note": "Inner selection always uses mean inner-fold MSE (never R^2); every model is refit on the complete outer-training fold at its selected hyperparameter(s) and evaluated exactly once on that outer-test fold. No grid was adjusted after viewing any outer-fold result."
+    }
+  },
   "bundles": {
     "frontoparietal": {
       "label": "Frontoparietal (P-FIT)",

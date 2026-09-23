@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "type": "pcr-pls-explore",
+  "title": "PCR or PLS?",
+  "description": "Course activity for Exercise 9: compare how PCR and PLS construct a component differently when the target relates more or less strongly to the predictors' highest-variance direction.",
+  "data": "../data/pcr_pls_explore.json",
+  "instructions": "Choose a method (PCR or PLS), a number of components, and a preset that changes how strongly the target aligns with the predictors' highest-variance direction. The predictor cloud and the training/validation split stay fixed throughout; only the underlying target and the selected fit change.",
+  "defaultMethod": "pcr",
+  "defaultNComponents": 1,
+  "defaultPreset": "moderate",
+  "reflectionPrompts": [
+    "With one component, why can PLS outperform PCR?",
+    "Why do PCR and PLS become more similar after both original directions are retained?",
+    "Does a component that explains more predictor variance necessarily predict the target better?",
+    "Why would fitting PLS before the split be especially problematic?"
+  ]
+}

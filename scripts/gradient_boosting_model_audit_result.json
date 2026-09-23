@@ -1,0 +1,329 @@
+{
+  "cv_pipeline": {
+    "candidate_count": 12,
+    "candidate_grid": [
+      {
+        "learning_rate": 0.03,
+        "max_depth": 1,
+        "n_estimators": 50
+      },
+      {
+        "learning_rate": 0.05,
+        "max_depth": 1,
+        "n_estimators": 100
+      },
+      {
+        "learning_rate": 0.1,
+        "max_depth": 1,
+        "n_estimators": 100
+      },
+      {
+        "learning_rate": 0.1,
+        "max_depth": 1,
+        "n_estimators": 200
+      },
+      {
+        "learning_rate": 0.03,
+        "max_depth": 2,
+        "n_estimators": 50
+      },
+      {
+        "learning_rate": 0.05,
+        "max_depth": 2,
+        "n_estimators": 100
+      },
+      {
+        "learning_rate": 0.1,
+        "max_depth": 2,
+        "n_estimators": 100
+      },
+      {
+        "learning_rate": 0.1,
+        "max_depth": 2,
+        "n_estimators": 200
+      },
+      {
+        "learning_rate": 0.03,
+        "max_depth": 3,
+        "n_estimators": 50
+      },
+      {
+        "learning_rate": 0.05,
+        "max_depth": 3,
+        "n_estimators": 100
+      },
+      {
+        "learning_rate": 0.1,
+        "max_depth": 3,
+        "n_estimators": 100
+      },
+      {
+        "learning_rate": 0.1,
+        "max_depth": 3,
+        "n_estimators": 200
+      }
+    ],
+    "cv": "KFold(n_splits=5, shuffle=True, random_state=13)",
+    "cv_results": [
+      {
+        "fold_mse": [
+          34.592,
+          52.7994,
+          70.3109,
+          57.3841,
+          60.1259
+        ],
+        "mean_mse": 55.0424,
+        "params": {
+          "learning_rate": 0.03,
+          "max_depth": 1,
+          "n_estimators": 50
+        },
+        "sd_mse": 11.7278
+      },
+      {
+        "fold_mse": [
+          29.7061,
+          35.2151,
+          45.4427,
+          38.7206,
+          33.6356
+        ],
+        "mean_mse": 36.544,
+        "params": {
+          "learning_rate": 0.05,
+          "max_depth": 1,
+          "n_estimators": 100
+        },
+        "sd_mse": 5.3086
+      },
+      {
+        "fold_mse": [
+          26.3927,
+          32.3539,
+          36.575,
+          33.1219,
+          27.878
+        ],
+        "mean_mse": 31.2643,
+        "params": {
+          "learning_rate": 0.1,
+          "max_depth": 1,
+          "n_estimators": 100
+        },
+        "sd_mse": 3.6889
+      },
+      {
+        "fold_mse": [
+          24.06,
+          30.9118,
+          32.4244,
+          30.5249,
+          25.4136
+        ],
+        "mean_mse": 28.6669,
+        "params": {
+          "learning_rate": 0.1,
+          "max_depth": 1,
+          "n_estimators": 200
+        },
+        "sd_mse": 3.299
+      },
+      {
+        "fold_mse": [
+          27.0854,
+          40.9098,
+          54.8778,
+          50.8935,
+          44.3824
+        ],
+        "mean_mse": 43.6298,
+        "params": {
+          "learning_rate": 0.03,
+          "max_depth": 2,
+          "n_estimators": 50
+        },
+        "sd_mse": 9.6017
+      },
+      {
+        "fold_mse": [
+          22.3622,
+          30.312,
+          36.247,
+          33.799,
+          25.4852
+        ],
+        "mean_mse": 29.6411,
+        "params": {
+          "learning_rate": 0.05,
+          "max_depth": 2,
+          "n_estimators": 100
+        },
+        "sd_mse": 5.1309
+      },
+      {
+        "fold_mse": [
+          21.6432,
+          29.8708,
+          35.4002,
+          33.0509,
+          22.7278
+        ],
+        "mean_mse": 28.5386,
+        "params": {
+          "learning_rate": 0.1,
+          "max_depth": 2,
+          "n_estimators": 100
+        },
+        "sd_mse": 5.4869
+      },
+      {
+        "fold_mse": [
+          19.9641,
+          29.7781,
+          34.9675,
+          31.7497,
+          21.7611
+        ],
+        "mean_mse": 27.6441,
+        "params": {
+          "learning_rate": 0.1,
+          "max_depth": 2,
+          "n_estimators": 200
+        },
+        "sd_mse": 5.8075
+      },
+      {
+        "fold_mse": [
+          25.1459,
+          38.5396,
+          47.0589,
+          46.6767,
+          38.1725
+        ],
+        "mean_mse": 39.1187,
+        "params": {
+          "learning_rate": 0.03,
+          "max_depth": 3,
+          "n_estimators": 50
+        },
+        "sd_mse": 7.9579
+      },
+      {
+        "fold_mse": [
+          20.3565,
+          33.0288,
+          33.549,
+          33.5725,
+          24.4133
+        ],
+        "mean_mse": 28.984,
+        "params": {
+          "learning_rate": 0.05,
+          "max_depth": 3,
+          "n_estimators": 100
+        },
+        "sd_mse": 5.5422
+      },
+      {
+        "fold_mse": [
+          19.3464,
+          33.0916,
+          32.747,
+          31.8865,
+          20.9894
+        ],
+        "mean_mse": 27.6122,
+        "params": {
+          "learning_rate": 0.1,
+          "max_depth": 3,
+          "n_estimators": 100
+        },
+        "sd_mse": 6.113
+      },
+      {
+        "fold_mse": [
+          18.7514,
+          32.8346,
+          32.3012,
+          31.2169,
+          20.9382
+        ],
+        "mean_mse": 27.2085,
+        "params": {
+          "learning_rate": 0.1,
+          "max_depth": 3,
+          "n_estimators": 200
+        },
+        "sd_mse": 6.0744
+      }
+    ],
+    "cv_runtime_seconds": 140.6,
+    "development_test_disjoint": true,
+    "development_test_union_equals_cohort": true,
+    "n_development": 753,
+    "n_outer_test": 251,
+    "p": 360,
+    "selected_index": 11,
+    "selected_mean_cv_mse": 27.2085,
+    "selected_params": {
+      "learning_rate": 0.1,
+      "max_depth": 3,
+      "n_estimators": 200
+    },
+    "test_mse": 32.3679,
+    "test_r2": 0.653261
+  },
+  "generated_by": "scripts/gradient_boosting_model_audit.py --run",
+  "model_comparison": {
+    "gradient_boosting": {
+      "mean_mse": 32.3679,
+      "mean_r2": 0.653261,
+      "protocol": "single locked outer-test evaluation"
+    },
+    "note": "All three models below use the identical participant split (outer development partition -> locked outer test, protocol.holdout_split, n_test=251) and the identical 360-feature recipe and target as the gradient-boosting model. single_tree and random_forest use Exercise 6's own complexity settings (decision_tree.fair_comparison), carried forward unchanged rather than retuned -- this table is a consistent held-out comparison, not proof that one algorithm universally wins.",
+    "random_forest": {
+      "mean_mse": 38.1994,
+      "mean_r2": 0.590791,
+      "protocol": "single locked outer-test evaluation",
+      "settings": {
+        "max_depth": 6,
+        "max_features": 19,
+        "min_samples_leaf": 5,
+        "n_estimators": 50,
+        "random_state": 42
+      }
+    },
+    "settings_source": "decision_tree.fair_comparison (carried forward, not retuned)",
+    "single_tree": {
+      "mean_mse": 70.1318,
+      "mean_r2": 0.248718,
+      "protocol": "single locked outer-test evaluation",
+      "settings": {
+        "max_depth": 6,
+        "min_samples_leaf": 5,
+        "random_state": 42
+      }
+    }
+  },
+  "runtime_seconds": 154.9,
+  "sklearn_example": {
+    "n_fit": 564,
+    "n_val": 189,
+    "p": 360,
+    "settings": {
+      "learning_rate": 0.05,
+      "max_depth": 2,
+      "n_estimators": 100,
+      "note": "Section 3's short illustrative GradientBoostingRegressor example, fit on dev_split.fit and scored on dev_split.val. Not the tuned model used later; illustrates the API only.",
+      "random_state": 42
+    },
+    "val_mse": 18.2258,
+    "val_r2": 0.746733
+  },
+  "source": {
+    "brainTableSha256": "ad0db42f85c77cbb8b4e023df288d34b29f1a63870a0cf1955c5b3b0d357579e",
+    "phenotypeTableSha256": "537e541114884f63a2e736ba4d223a816dd013f701e56fb223ebe42e219e06f6",
+    "pinnedCommit": "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"
+  }
+}
