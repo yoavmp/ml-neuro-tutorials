@@ -88,7 +88,7 @@ const CASES: ActivityCase[] = [
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive multiple-selection question on which preprocessing and modelling steps must not use the final test participants") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive leakage-lab comparing correct and leaky preprocessing pipelines on ABIDE-II cortical thickness and age") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive comparison of random-window and participant-grouped cross-validation on UCI HAR smartphone sensor windows") },
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive comparison of ordinary and class-weighted logistic regression for imbalanced autism classification") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive comparison of ordinary and class-weighted logistic regression across five class balances for autism classification") },
 ];
 
 async function waitForBookReady(page: Page): Promise<void> {

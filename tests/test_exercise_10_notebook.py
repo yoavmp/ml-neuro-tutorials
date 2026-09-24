@@ -40,7 +40,7 @@ IFRAME_TITLES = [
     "Interactive multiple-selection question on which preprocessing and modelling steps must not use the final test participants",
     "Interactive leakage-lab comparing correct and leaky preprocessing pipelines on ABIDE-II cortical thickness and age",
     "Interactive comparison of random-window and participant-grouped cross-validation on UCI HAR smartphone sensor windows",
-    "Interactive comparison of ordinary and class-weighted logistic regression for imbalanced autism classification",
+    "Interactive comparison of ordinary and class-weighted logistic regression across five class balances for autism classification",
 ]
 
 ENGINEERING_VOCAB = ("schema", "payload", "artifact", "manifest", "wp38", "fixture", "canonical recipe")
@@ -97,7 +97,7 @@ class ExerciseTenNotebook(unittest.TestCase):
         self.assertEqual(self.joined.count("<iframe"), 4)
 
     def test_iframe_src_paths_point_at_expected_configs(self):
-        for name in ("leakage_quiz", "leakage_lab", "har_fold_compare", "imbalance_threshold"):
+        for name in ("leakage_quiz", "leakage_lab", "har_fold_compare", "class_balance_compare"):
             self.assertIn(f"configs/{name}.json", self.joined)
 
     def test_quiz_options_and_only_metric_choice_is_incorrect(self):
@@ -174,6 +174,25 @@ class ExerciseTenNotebook(unittest.TestCase):
             src = _src(c)
             if "StratifiedGroupKFold" in src or "class_weight" in src:
                 self.assertIn("hide-cell", c.get("metadata", {}).get("tags", []))
+
+    def test_class_balance_activity_has_five_balances_and_no_threshold_language(self):
+        # WP38R sec 5/9.3: the threshold-comparison activity was replaced
+        # entirely -- no threshold slider/control framing, no stale "High
+        # Accuracy Can Still Miss the Minority Class" title, and exactly the
+        # five required balance levels (95:5 excluded) appear.
+        idx = next(i for i, c in enumerate(self.cells) if "## 5. Class Imbalance" in _src(c))
+        section_five = "\n".join(_src(c) for c in self.cells[idx:])
+        for balance in ("50:50", "60:40", "70:30", "80:20", "90:10"):
+            self.assertIn(balance, section_five)
+        self.assertNotIn("95:5", section_five)
+        for stale in (
+            "classification threshold you choose",
+            "threshold slider",
+            "High Accuracy Can Still Miss the Minority Class",
+        ):
+            self.assertNotIn(stale, section_five)
+        self.assertIn("class_balance_compare.json", section_five)
+        self.assertIn("not guaranteed", section_five.lower())
 
     def test_uci_har_attribution_present(self):
         self.assertIn("archive.ics.uci.edu/dataset/240", self.joined)

@@ -1,10 +1,11 @@
 import { expect, test, type Frame } from "@playwright/test";
 
 // Proof that all four embedded Exercise 10 activities (WP38: "Examples and
-// Common Mistakes") -- the multiple-selection quiz, the leakage lab, the
-// UCI HAR fold-comparison, and the imbalance-threshold activity -- work on
-// the *final built* Exercise 10 HTML page, not just the standalone widget
-// page.
+// Common Mistakes"; WP38R replaced the fourth, threshold-based activity with
+// a class-balance comparison) -- the multiple-selection quiz, the leakage
+// lab, the UCI HAR fold-comparison, and the class-balance-compare activity --
+// work on the *final built* Exercise 10 HTML page, not just the standalone
+// widget page.
 
 const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html";
 const QUIZ_IFRAME_SELECTOR =
@@ -13,8 +14,8 @@ const LEAKAGE_LAB_IFRAME_SELECTOR =
   'iframe[title="Interactive leakage-lab comparing correct and leaky preprocessing pipelines on ABIDE-II cortical thickness and age"]';
 const HAR_IFRAME_SELECTOR =
   'iframe[title="Interactive comparison of random-window and participant-grouped cross-validation on UCI HAR smartphone sensor windows"]';
-const IMBALANCE_IFRAME_SELECTOR =
-  'iframe[title="Interactive comparison of ordinary and class-weighted logistic regression for imbalanced autism classification"]';
+const CLASS_BALANCE_IFRAME_SELECTOR =
+  'iframe[title="Interactive comparison of ordinary and class-weighted logistic regression across five class balances for autism classification"]';
 
 async function frameFor(page: import("@playwright/test").Page, selector: string): Promise<Frame> {
   await page.locator(selector).scrollIntoViewIfNeeded();
@@ -39,7 +40,7 @@ test.describe("Chapter 10 built page — title and structure", () => {
     await expect(page.locator(QUIZ_IFRAME_SELECTOR)).toHaveCount(1);
     await expect(page.locator(LEAKAGE_LAB_IFRAME_SELECTOR)).toHaveCount(1);
     await expect(page.locator(HAR_IFRAME_SELECTOR)).toHaveCount(1);
-    await expect(page.locator(IMBALANCE_IFRAME_SELECTOR)).toHaveCount(1);
+    await expect(page.locator(CLASS_BALANCE_IFRAME_SELECTOR)).toHaveCount(1);
     await expect(page.locator("iframe")).toHaveCount(4);
 
     await expect(page.locator('[data-testid="colab-launch-button"]')).toBeVisible();
@@ -111,23 +112,27 @@ test.describe("Chapter 10 built page — embedded UCI HAR fold comparison", () =
   });
 });
 
-test.describe("Chapter 10 built page — embedded imbalance-threshold activity", () => {
-  test("iframe loads, config+data are 200, switching model updates the confusion matrix", async ({ page }) => {
+test.describe("Chapter 10 built page — embedded class-balance-compare activity", () => {
+  test("iframe loads, config+data are 200, no threshold control, switching balance updates both models", async ({
+    page,
+  }) => {
     const responses: { url: string; status: number }[] = [];
     page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
 
     await page.goto(CHAPTER_URL);
-    const frame = await frameFor(page, IMBALANCE_IFRAME_SELECTOR);
+    const frame = await frameFor(page, CLASS_BALANCE_IFRAME_SELECTOR);
     await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
 
-    const configResp = responses.find((r) => r.url.endsWith("/configs/imbalance_threshold.json"));
-    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_imbalance_threshold.json"));
+    const configResp = responses.find((r) => r.url.endsWith("/configs/class_balance_compare.json"));
+    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_class_balance_compare.json"));
     expect(configResp?.status, "config HTTP status").toBe(200);
     expect(dataResp?.status, "data HTTP status").toBe(200);
 
-    await expect(frame.locator('[data-testid="imb-accuracy"]')).toHaveText("85.0%");
-    await frame.locator('[data-testid="imb-model-select"]').selectOption("classWeighted");
-    await expect(frame.locator('[data-testid="imb-accuracy"]')).toHaveText("81.0%");
+    await expect(frame.locator('input[type="range"]')).toHaveCount(0);
+
+    await frame.locator('[data-testid="cbc-ratio-select"]').selectOption("90:10");
+    await expect(frame.locator('[data-testid="cbc-accuracy-ordinary"]')).toHaveText("85.0%");
+    await expect(frame.locator('[data-testid="cbc-accuracy-weighted"]')).toHaveText("81.0%");
   });
 });
 
@@ -140,7 +145,7 @@ test.describe("Chapter 10 built page — narrow-viewport layout", () => {
       QUIZ_IFRAME_SELECTOR,
       LEAKAGE_LAB_IFRAME_SELECTOR,
       HAR_IFRAME_SELECTOR,
-      IMBALANCE_IFRAME_SELECTOR,
+      CLASS_BALANCE_IFRAME_SELECTOR,
     ]) {
       const frame = await frameFor(page, selector);
       await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
