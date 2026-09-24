@@ -966,33 +966,33 @@ describe("har-fold-compare config", () => {
   });
 });
 
-const validImbalanceThreshold = {
+const validClassBalanceCompare = {
   schemaVersion: CONFIG_SCHEMA_VERSION,
-  type: "imbalance-threshold",
-  title: "High accuracy can still miss the minority class",
-  data: "../data/abide_imbalance_threshold.json",
+  type: "class-balance-compare",
+  title: "Does higher accuracy mean a better classifier?",
+  data: "../data/abide_class_balance_compare.json",
   instructions: "instructions",
   reflectionPrompts: ["one"],
 };
 
-describe("imbalance-threshold config", () => {
+describe("class-balance-compare config", () => {
   it("accepts a well-formed config", () => {
-    expect(parseActivityConfig(validImbalanceThreshold).ok).toBe(true);
+    expect(parseActivityConfig(validClassBalanceCompare).ok).toBe(true);
   });
 
   it("rejects an unknown extra field (strict)", () => {
-    expect(parseActivityConfig({ ...validImbalanceThreshold, extra: 1 }).ok).toBe(false);
+    expect(parseActivityConfig({ ...validClassBalanceCompare, extra: 1 }).ok).toBe(false);
   });
 
-  it("accepts the shipped configs/imbalance_threshold.json", async () => {
+  it("accepts the shipped configs/class_balance_compare.json", async () => {
     const fs = await import("node:fs/promises");
     const url = new URL(
-      "../../book/_static/widgets/configs/imbalance_threshold.json",
+      "../../book/_static/widgets/configs/class_balance_compare.json",
       import.meta.url,
     );
     const text = await fs.readFile(url, "utf-8");
     const r = parseActivityConfigJson(text);
     expect(r.ok, r.ok ? "" : r.error).toBe(true);
-    if (r.ok) expect(r.config.type).toBe("imbalance-threshold");
+    if (r.ok) expect(r.config.type).toBe("class-balance-compare");
   });
 });
