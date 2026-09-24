@@ -128,6 +128,23 @@ class ExerciseTenNotebook(unittest.TestCase):
             self.assertIn(f"**Fragment {i}**", self.joined)
         self.assertEqual(self.joined.count("```{dropdown} Answer"), 5)
 
+    def test_fragment_four_identifies_the_smartphone_window_dataset(self):
+        # WP38R sec 6/9.4: Fragment 4 must not read as an independent,
+        # generic "split some rows" scenario -- it must explicitly name the
+        # Section 4 UCI HAR smartphone-window dataset, name repeated windows
+        # per participant, name participant-grouped evaluation as the fix,
+        # and preserve the known-user/new-user distinction rather than
+        # declaring row-wise splitting universally invalid.
+        start = self.joined.index("**Fragment 4**")
+        end = self.joined.index("**Fragment 5**")
+        fragment_four = " ".join(self.joined[start:end].split())
+        self.assertIn("Section 4", fragment_four)
+        self.assertIn("participant", fragment_four.lower())
+        self.assertIn("StratifiedGroupKFold", fragment_four)
+        self.assertIn("not *universally* invalid", fragment_four)
+        self.assertIn("new participants", fragment_four)
+        self.assertIn("window", fragment_four.lower())
+
     def test_final_checklist_present_with_nine_items(self):
         idx = next(i for i, c in enumerate(self.cells) if _src(c).strip().startswith("## Final Checklist"))
         text = _src(self.cells[idx])
