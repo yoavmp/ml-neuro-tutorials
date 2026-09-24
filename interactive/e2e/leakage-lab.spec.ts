@@ -42,17 +42,35 @@ for (const { name, prefix } of BASES) {
       const leakyWorkflow = await page.locator('[data-testid="leak-workflow-leaky"]').innerText();
       expect(leakyWorkflow).toMatch(/SelectKBest/);
 
+      // The estimator is KNeighborsRegressor(n_neighbors=15) in every
+      // scenario (WP38R sec 4); the workflow text should describe it, not
+      // the old LinearRegression.
+      expect(correctWorkflow).toMatch(/KNeighborsRegressor\(n_neighbors=15\)/);
+
       await expect(page.locator('[data-testid="leak-pair-plot"] svg.main-svg').first()).toBeVisible();
       await expect(page.locator('[data-testid="leak-aggregate-plot"] svg.main-svg').first()).toBeVisible();
+
+      // Paired signed-difference readouts (WP38R sec 4.2) are present with a
+      // labeled direction for the default selection.
+      const r2Diff = await page.locator('[data-testid="leak-r2-diff"]').innerText();
+      expect(r2Diff).toMatch(/ΔR² \(leaky − correct\) = [+-]?\d/);
+      const mseDiff = await page.locator('[data-testid="leak-mse-diff"]').innerText();
+      expect(mseDiff).toMatch(/ΔMSE \(leaky − correct\) = [+-]?\d/);
 
       expect(sockets).toEqual([]);
       expect(failed).toEqual([]);
       expect(consoleErrors, consoleErrors.join("; ")).toEqual([]);
     });
 
-    test("scaling at sample size 60, split 1 renders an identical correct/leaky gap without hiding it", async ({
+    test("scaling at sample size 60, split 1 shows a real, non-hidden correct/leaky gap (KNN is scale-sensitive)", async ({
       page,
     }) => {
+      // Historical note: under the old LinearRegression estimator this gap
+      // was mathematically zero (OLS is scale-invariant). The estimator is
+      // now KNeighborsRegressor(n_neighbors=15) (WP38R sec 4), which IS
+      // scale-sensitive, so correct and leaky no longer match here -- values
+      // below are read from the freshly recomputed
+      // book/_static/widgets/data/abide_leakage_lab.json, not fabricated.
       await page.goto(appUrl(prefix, QUERY));
       await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
 
@@ -62,8 +80,14 @@ for (const { name, prefix } of BASES) {
 
       const correctMetrics = await page.locator('[data-testid="leak-correct-metrics"]').innerText();
       const leakyMetrics = await page.locator('[data-testid="leak-leaky-metrics"]').innerText();
-      expect(correctMetrics).toEqual(leakyMetrics);
-      expect(correctMetrics).toMatch(/Test MSE = 108\.89/);
+      expect(correctMetrics).not.toEqual(leakyMetrics);
+      expect(correctMetrics).toMatch(/Test MSE = 133\.07/);
+      expect(leakyMetrics).toMatch(/Test MSE = 132\.06/);
+
+      const r2Diff = await page.locator('[data-testid="leak-r2-diff"]').innerText();
+      expect(r2Diff).toMatch(/ΔR² \(leaky − correct\) = \+0\.008/);
+      const mseDiff = await page.locator('[data-testid="leak-mse-diff"]').innerText();
+      expect(mseDiff).toMatch(/ΔMSE \(leaky − correct\) = -1\.01/);
     });
 
     test("changing the sample size and split updates the underlying split statistics", async ({ page }) => {

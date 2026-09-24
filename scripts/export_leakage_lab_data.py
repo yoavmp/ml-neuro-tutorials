@@ -20,6 +20,15 @@ for both the correct and leaky variant of that entry, so the comparison is
 paired (WP38 sec 6.3). No seed, sample size, or feature count is chosen after
 seeing a result.
 
+Every scenario uses the same estimator, ``KNeighborsRegressor(n_neighbors=15)``
+(WP38R sec 4): unlike ordinary least squares, KNN's distance-based predictions
+are sensitive to feature scale and to which features/components are present,
+so the scaling and PCA scenarios are not guaranteed to show a zero gap the way
+they would under linear regression. ``n_neighbors=15`` is a fixed,
+predeclared course-design value, not tuned from these results, and is valid
+at every predeclared sample size (comfortably below the smallest training
+fold of 45 rows at ``sample_size=60``).
+
 Output: ``book/_static/widgets/data/abide_leakage_lab.json``.
 Ships only aggregated per-entry metrics (MSE, R2, row counts) -- no brain
 features, no participant identifiers.
@@ -89,19 +98,19 @@ def _mse_r2(y_true: Any, y_pred: Any) -> tuple[float, float]:
 
 def _scaling_entry(X: Any, y: Any, train_idx: Any, test_idx: Any) -> dict[str, Any]:
     import numpy as np
-    from sklearn.linear_model import LinearRegression
+    from sklearn.neighbors import KNeighborsRegressor
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import StandardScaler
 
     # correct: split first, fit the scaler on training rows only.
-    correct = Pipeline([("scaler", StandardScaler()), ("model", LinearRegression())])
+    correct = Pipeline([("scaler", StandardScaler()), ("model", KNeighborsRegressor(n_neighbors=15))])
     correct.fit(X[train_idx], y[train_idx])
     correct_mse, correct_r2 = _mse_r2(y[test_idx], correct.predict(X[test_idx]))
 
     # leaky: fit the scaler on every sampled row (train+test) before splitting.
     leaky_scaler = StandardScaler().fit(X)
     X_scaled = leaky_scaler.transform(X)
-    leaky_model = LinearRegression().fit(X_scaled[train_idx], y[train_idx])
+    leaky_model = KNeighborsRegressor(n_neighbors=15).fit(X_scaled[train_idx], y[train_idx])
     leaky_mse, leaky_r2 = _mse_r2(y[test_idx], leaky_model.predict(X_scaled[test_idx]))
 
     return {
@@ -112,7 +121,7 @@ def _scaling_entry(X: Any, y: Any, train_idx: Any, test_idx: Any) -> dict[str, A
 
 def _feature_selection_entry(X: Any, y: Any, train_idx: Any, test_idx: Any, k: int) -> dict[str, Any]:
     from sklearn.feature_selection import SelectKBest, f_regression
-    from sklearn.linear_model import LinearRegression
+    from sklearn.neighbors import KNeighborsRegressor
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import StandardScaler
 
@@ -122,7 +131,7 @@ def _feature_selection_entry(X: Any, y: Any, train_idx: Any, test_idx: Any, k: i
         [
             ("select", SelectKBest(f_regression, k=k)),
             ("scaler", StandardScaler()),
-            ("model", LinearRegression()),
+            ("model", KNeighborsRegressor(n_neighbors=15)),
         ]
     )
     correct.fit(X[train_idx], y[train_idx])
@@ -133,7 +142,7 @@ def _feature_selection_entry(X: Any, y: Any, train_idx: Any, test_idx: Any, k: i
     # model are still fit on training rows only.
     leaky_selector = SelectKBest(f_regression, k=k).fit(X, y)
     X_selected = leaky_selector.transform(X)
-    leaky_model = Pipeline([("scaler", StandardScaler()), ("model", LinearRegression())])
+    leaky_model = Pipeline([("scaler", StandardScaler()), ("model", KNeighborsRegressor(n_neighbors=15))])
     leaky_model.fit(X_selected[train_idx], y[train_idx])
     leaky_mse, leaky_r2 = _mse_r2(y[test_idx], leaky_model.predict(X_selected[test_idx]))
 
@@ -145,7 +154,7 @@ def _feature_selection_entry(X: Any, y: Any, train_idx: Any, test_idx: Any, k: i
 
 def _pca_entry(X: Any, y: Any, train_idx: Any, test_idx: Any, n_components: int) -> dict[str, Any]:
     from sklearn.decomposition import PCA
-    from sklearn.linear_model import LinearRegression
+    from sklearn.neighbors import KNeighborsRegressor
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import StandardScaler
 
@@ -153,7 +162,7 @@ def _pca_entry(X: Any, y: Any, train_idx: Any, test_idx: Any, n_components: int)
         [
             ("scaler", StandardScaler()),
             ("pca", PCA(n_components=n_components, random_state=0)),
-            ("model", LinearRegression()),
+            ("model", KNeighborsRegressor(n_neighbors=15)),
         ]
     )
     correct.fit(X[train_idx], y[train_idx])
@@ -162,7 +171,7 @@ def _pca_entry(X: Any, y: Any, train_idx: Any, test_idx: Any, n_components: int)
     leaky_prep = Pipeline([("scaler", StandardScaler()), ("pca", PCA(n_components=n_components, random_state=0))])
     leaky_prep.fit(X)
     X_pca = leaky_prep.transform(X)
-    leaky_model = LinearRegression().fit(X_pca[train_idx], y[train_idx])
+    leaky_model = KNeighborsRegressor(n_neighbors=15).fit(X_pca[train_idx], y[train_idx])
     leaky_mse, leaky_r2 = _mse_r2(y[test_idx], leaky_model.predict(X_pca[test_idx]))
 
     return {
