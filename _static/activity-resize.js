@@ -39,7 +39,20 @@
     var iframes = document.querySelectorAll('iframe[src*="/widgets/app/"]');
     for (var i = 0; i < iframes.length; i += 1) {
       if (iframes[i].contentWindow === event.source) {
-        var height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, Math.round(data.height)));
+        // WP38R sec 7/9.5: `data.height` is the CHILD's own content height
+        // (interactive/src/resize-report.ts). `.ml-activity`'s 1px border
+        // (custom.css) plus the page theme's `box-sizing: border-box` reset
+        // means `style.height` sets the iframe's OUTER (border-box) height,
+        // not its interior viewport -- so setting it to exactly the content
+        // height under-sizes the interior by the border's own width,
+        // producing a permanent, structural (not timing) 1-2px internal
+        // scrollbar (measured directly: a 1132px-tall activity given
+        // style.height=1132px settled at clientHeight=1130px). Reading the
+        // iframe's own current border width here, rather than hardcoding
+        // "2", keeps this correct if that border ever changes.
+        var cs = getComputedStyle(iframes[i]);
+        var borderAllowance = (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
+        var height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, Math.round(data.height + borderAllowance)));
         var current = parseInt(iframes[i].style.height, 10);
         if (!isNaN(current) && Math.abs(height - current) < IGNORE_DELTA_PX) break;
         iframes[i].style.height = height + "px";

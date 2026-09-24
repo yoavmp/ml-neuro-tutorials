@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Exercise 10: Common Machine Learning Mistakes &#8212; Machine Learning for Neuroscience</title>
+    <title>Exercise 10: Examples and Common Mistakes &#8212; Machine Learning for Neuroscience</title>
   
   
   
@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=5cd63e90" />
-    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-B2O2tOh4.css?v=592f4e85" />
+    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-B6lFPKNx.css?v=652b4995" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -65,9 +65,9 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_10/exercise_10';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="../../_static/launch-buttons.js?v=936dd70a"></script>
-    <script src="../../_static/activity-resize.js?v=c493a16f"></script>
-    <script src="../../_static/widgets/app/assets/index-CNfQFOuV.js?v=a8c4087a"></script>
+    <script src="../../_static/launch-buttons.js?v=3bf71cbf"></script>
+    <script src="../../_static/activity-resize.js?v=0d9766a4"></script>
+    <script src="../../_static/widgets/app/assets/index-BBv7OQYS.js?v=f69c674c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Exercise 11: Embeddings and Representational Similarity Analysis" href="../chapter_11/exercise_11.html" />
@@ -159,6 +159,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -227,7 +231,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Boosting and Gradient Boosting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: Unsupervised Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_09/exercise_09.html">Exercise 9: Advanced Models</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 10: Common Machine Learning Mistakes</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 10: Examples and Common Mistakes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_11/exercise_11.html">Exercise 11: Embeddings and Representational Similarity Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_12/exercise_12.html">Exercise 12: Review and Exam-Style Questions</a></li>
 </ul>
@@ -338,7 +342,7 @@
       
       
       
-      <li><a href="../../_sources/chapters/chapter_10/exercise_10.md" target="_blank"
+      <li><a href="../../_sources/chapters/chapter_10/exercise_10.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -348,7 +352,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.ipynb</span>
 </a>
 </li>
       
@@ -401,7 +405,9 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -412,11 +418,43 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Exercise 10: Common Machine Learning Mistakes</h1>
+    <h1>Exercise 10: Examples and Common Mistakes</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-boundary-around-the-training-data">1. The Boundary Around the Training Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#which-of-these-must-not-use-the-test-participants">Which of these must not use the test participants?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-leakage-laboratory">2. A Leakage Laboratory</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scaling-before-vs-after-the-split">Scaling before vs. after the split</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#target-informed-feature-selection-before-vs-after-the-split">Target-informed feature selection before vs. after the split</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pca-before-vs-after-the-split">PCA before vs. after the split</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#filling-missing-values-before-vs-after-the-split">Filling missing values before vs. after the split</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-happens-when-the-test-set-leaks-in">What Happens When the Test Set Leaks In?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#do-not-choose-the-model-with-the-test-set">3. Do Not Choose the Model With the Test Set</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#related-observations-must-stay-together">4. Related Observations Must Stay Together</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#random-windows-or-new-participants">Random Windows or New Participants?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#class-imbalance-changes-the-question">5. Class Imbalance Changes the Question</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-higher-accuracy-mean-a-better-classifier">Does Higher Accuracy Mean a Better Classifier?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#does-the-split-match-the-scientific-question-bonus">6. Does the Split Match the Scientific Question? (Bonus)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#find-the-mistake">7. Find the Mistake</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#final-checklist">Final Checklist</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -426,9 +464,1021 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="exercise-10-common-machine-learning-mistakes">
-<h1>Exercise 10: Common Machine Learning Mistakes<a class="headerlink" href="#exercise-10-common-machine-learning-mistakes" title="Link to this heading">#</a></h1>
-<p>Materials for this exercise will be added before the practice session.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-10-examples-and-common-mistakes">
+<h1>Exercise 10: Examples and Common Mistakes<a class="headerlink" href="#exercise-10-examples-and-common-mistakes" title="Link to this heading">#</a></h1>
+<div class="how-to-use admonition">
+<p class="admonition-title">Run or download this notebook</p>
+<p>This page is fully readable as it is, and the interactive activities work
+here in the browser. To <strong>run or change the Python code</strong>, use the portable
+version of the notebook:</p>
+<ul class="simple">
+<li><p><strong><a class="reference external" href="https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_10/exercise_10_portable.ipynb">Open the portable notebook in Colab</a></strong></p></li>
+<li><p><strong><a class="reference external" href="https://raw.githubusercontent.com/yoavmp/ml-neuro-tutorials/main/book/downloads/chapter_10/exercise_10_portable.ipynb">View or download the portable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code></a></strong>
+for VS Code or Jupyter</p></li>
+</ul>
+<p>The portable notebook keeps every Python analysis cell and swaps each
+embedded activity for a link back to this page.</p>
+</div>
+<section id="what-this-notebook-covers">
+<h2>What this notebook covers<a class="headerlink" href="#what-this-notebook-covers" title="Link to this heading">#</a></h2>
+<p>This is Exercise 10 of the <em>Machine Learning for Neuroscience</em> practice
+series. It reviews common choices that can make a model appear more
+generalizable than it really is.</p>
+<p>In this notebook, you will:</p>
+<ol class="arabic simple">
+<li><p>keep preprocessing and feature construction away from final test participants;</p></li>
+<li><p>avoid choosing models or parameters with the test set;</p></li>
+<li><p>keep related observations in the same fold;</p></li>
+<li><p>use metrics and training choices that match an imbalanced classification problem.</p></li>
+</ol>
+</section>
+<section id="the-boundary-around-the-training-data">
+<h2>1. The Boundary Around the Training Data<a class="headerlink" href="#the-boundary-around-the-training-data" title="Link to this heading">#</a></h2>
+<p>Every exercise so far has relied on one rule: the final test participants
+are only ever touched once, at the very end, to report a result. This
+exercise collects the most common ways that rule gets broken in practice –
+almost always by accident, and almost always in a way that makes a model
+look better than it will perform on genuinely new participants.</p>
+<p>The correct order of operations always looks like this:</p>
+<div class="ml-boundary-diagram" role="group" aria-label="Diagram: raw data leads to splitting participants, which leads to fitting preprocessing and feature selection on training data only, which leads to fitting the model, which leads to evaluating once on locked test data." style="margin:1.2rem 0;">
+<div style="display:flex;flex-wrap:wrap;align-items:center;row-gap:8px;font-size:0.86rem;">
+<span style="border:1px solid var(--ml-border);border-radius:8px;padding:8px 12px;background:var(--ml-surface-alt);color:var(--ml-ink);">Raw data</span>
+<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;"><span aria-hidden="true" style="color:var(--ml-muted);">&#8594;</span><span style="border:1px solid var(--ml-border);border-radius:8px;padding:8px 12px;background:var(--ml-surface-alt);color:var(--ml-ink);">Split participants</span></span>
+<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;"><span aria-hidden="true" style="color:var(--ml-muted);">&#8594;</span><span style="border:1px solid var(--ml-border);border-radius:8px;padding:8px 12px;background:var(--ml-surface-alt);color:var(--ml-ink);">Fit preprocessing / selection on training data</span></span>
+<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;"><span aria-hidden="true" style="color:var(--ml-muted);">&#8594;</span><span style="border:1px solid var(--ml-border);border-radius:8px;padding:8px 12px;background:var(--ml-surface-alt);color:var(--ml-ink);">Fit model</span></span>
+<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;"><span aria-hidden="true" style="color:var(--ml-muted);">&#8594;</span><span style="border:1px solid var(--ml-think-border-strong);border-radius:8px;padding:8px 12px;background:var(--ml-think-accent-soft);color:var(--ml-think-accent-ink);">Evaluate once on locked test data</span></span>
+</div>
+</div>
+<p>Excluding test rows from <code class="docutils literal notranslate"><span class="pre">model.fit()</span></code> is necessary, but it is not enough.
+Test participants must also be excluded when the notebook learns <em>any</em>
+quantity or makes <em>any</em> data-dependent decision, including:</p>
+<ul class="simple">
+<li><p>scaling values (mean, standard deviation);</p></li>
+<li><p>missing-value fill values;</p></li>
+<li><p>PCA directions;</p></li>
+<li><p>target-informed feature selection;</p></li>
+<li><p>parameter choices (like a chosen <code class="docutils literal notranslate"><span class="pre">k</span></code> or <code class="docutils literal notranslate"><span class="pre">C</span></code>);</p></li>
+<li><p>the final model itself.</p></li>
+</ul>
+<section id="which-of-these-must-not-use-the-test-participants">
+<h3>Which of these must not use the test participants?<a class="headerlink" href="#which-of-these-must-not-use-the-test-participants" title="Link to this heading">#</a></h3>
+<p>Before continuing, check your own intuition. Select every operation below
+that learns a quantity or makes a data-dependent decision, and therefore
+must not use the final test participants.</p>
+<iframe
+  title="Interactive multiple-selection question on which preprocessing and modelling steps must not use the final test participants"
+  src="../../_static/widgets/app/index.html?config=../configs/leakage_quiz.json"
+  loading="lazy"
+  width="100%"
+  height="750"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+</section>
+</section>
+<section id="a-leakage-laboratory">
+<h2>2. A Leakage Laboratory<a class="headerlink" href="#a-leakage-laboratory" title="Link to this heading">#</a></h2>
+<p>The rest of this section compares a <strong>correct</strong> pipeline against a
+<strong>leaky</strong> variant for three preprocessing operations, using the same
+ABIDE-II cortical-thickness table and age-regression target from
+Exercises 2, 4, and 5. In every pair below, the leaky version differs from
+the correct version in exactly one place: whether the operation was fit on
+the full sampled cohort (train and test rows together) or on the training
+rows alone.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">PIN</span> <span class="o">=</span> <span class="s2">"e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b"</span>
+<span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/</span><span class="si">{</span><span class="n">PIN</span><span class="si">}</span><span class="s2">/tu-machine-learning-yarkoni/data"</span>
+<span class="n">model_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE</span><span class="si">}</span><span class="s2">/abide2.tsv"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">ct_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fsCT_"</span><span class="p">)]</span>
+<span class="n">age</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="s2">"age"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
+<span class="n">X_ct</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="n">ct_cols</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">model_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> participants, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ct_cols</span><span class="p">)</span><span class="si">}</span><span class="s2"> cortical-thickness columns"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1004 participants, 360 cortical-thickness columns
+</pre></div>
+</div>
+</div>
+</div>
+<section id="scaling-before-vs-after-the-split">
+<h3>Scaling before vs. after the split<a class="headerlink" href="#scaling-before-vs-after-the-split" title="Link to this heading">#</a></h3>
+<p>The <strong>leaky</strong> version fits the scaler on every sampled row before
+splitting. The <strong>correct</strong> version splits first, and only ever calls
+<code class="docutils literal notranslate"><span class="pre">.fit()</span></code> on the training rows.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neighbors</span><span class="w"> </span><span class="kn">import</span> <span class="n">KNeighborsRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_ct</span><span class="p">))</span>
+<span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">X_ct</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X_ct</span><span class="p">[</span><span class="n">test_idx</span><span class="p">],</span> <span class="n">age</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">age</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+
+<span class="c1"># Correct: split first, then fit the scaler on the training rows only.</span>
+<span class="n">correct_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">))])</span>
+<span class="n">correct_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Leaky: the scaler sees every row, including the test rows, before the split.</span>
+<span class="c1"># Same train_idx/test_idx as the correct pipeline -- only the scaler's fit differs.</span>
+<span class="n">leaky_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_ct</span><span class="p">)</span>
+<span class="n">X_leaky</span> <span class="o">=</span> <span class="n">leaky_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_ct</span><span class="p">)</span>
+<span class="n">leaky_pipeline</span> <span class="o">=</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_leaky</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Correct test R2:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">correct_pipeline</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Leaky   test R2:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">leaky_pipeline</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_leaky</span><span class="p">[</span><span class="n">test_idx</span><span class="p">],</span> <span class="n">y_test</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Correct test R2: 0.576
+Leaky   test R2: 0.573
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="target-informed-feature-selection-before-vs-after-the-split">
+<h3>Target-informed feature selection before vs. after the split<a class="headerlink" href="#target-informed-feature-selection-before-vs-after-the-split" title="Link to this heading">#</a></h3>
+<p>The <strong>leaky</strong> version ranks features by their correlation with age using
+every sampled row – including the test rows – before splitting. The
+<strong>correct</strong> version uses a single <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> so the ranking is learned from
+the training rows only.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.feature_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">SelectKBest</span><span class="p">,</span> <span class="n">f_regression</span>
+
+<span class="n">k</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="c1"># Correct: a single pipeline fit on the training rows only.</span>
+<span class="n">correct_selection_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"select"</span><span class="p">,</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_regression</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">)),</span>
+<span class="p">])</span>
+<span class="n">correct_selection_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Leaky: the selector sees the target for every row, including the test rows,</span>
+<span class="c1"># before splitting. Same train_idx/test_idx as the correct pipeline.</span>
+<span class="n">leaky_selector</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_regression</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_ct</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span>
+<span class="n">X_selected</span> <span class="o">=</span> <span class="n">leaky_selector</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_ct</span><span class="p">)</span>
+<span class="n">leaky_selection_model</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">))])</span>
+<span class="n">leaky_selection_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_selected</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Correct test R2:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">correct_selection_pipeline</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Leaky   test R2:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">leaky_selection_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_selected</span><span class="p">[</span><span class="n">test_idx</span><span class="p">],</span> <span class="n">y_test</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Correct test R2: 0.61
+Leaky   test R2: 0.648
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="pca-before-vs-after-the-split">
+<h3>PCA before vs. after the split<a class="headerlink" href="#pca-before-vs-after-the-split" title="Link to this heading">#</a></h3>
+<p>The same pattern applies to PCA: the <strong>leaky</strong> version fits the component
+directions on every sampled row before splitting; the <strong>correct</strong> version
+learns them inside a pipeline fit on the training rows only.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+
+<span class="n">n_components</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="c1"># Correct: a single pipeline fit on the training rows only.</span>
+<span class="n">correct_pca_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">"pca"</span><span class="p">,</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">)),</span>
+<span class="p">])</span>
+<span class="n">correct_pca_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Leaky: component directions are learned from every row, including the test</span>
+<span class="c1"># rows, before splitting. Same train_idx/test_idx as the correct pipeline.</span>
+<span class="n">leaky_prep</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"pca"</span><span class="p">,</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">))])</span>
+<span class="n">leaky_prep</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_ct</span><span class="p">)</span>
+<span class="n">X_pca</span> <span class="o">=</span> <span class="n">leaky_prep</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_ct</span><span class="p">)</span>
+<span class="n">leaky_pca_model</span> <span class="o">=</span> <span class="n">KNeighborsRegressor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_pca</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Correct test R2:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">correct_pca_pipeline</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Leaky   test R2:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">leaky_pca_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_pca</span><span class="p">[</span><span class="n">test_idx</span><span class="p">],</span> <span class="n">y_test</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Correct test R2: 0.717
+Leaky   test R2: 0.717
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="filling-missing-values-before-vs-after-the-split">
+<h3>Filling missing values before vs. after the split<a class="headerlink" href="#filling-missing-values-before-vs-after-the-split" title="Link to this heading">#</a></h3>
+<p>Cortical thickness has no missing values in this table, so to show the
+code pattern we mark a small number of values in one copy of a single
+column as missing (this column has no real missing values – the pattern,
+not the result, is the lesson).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">demo_col</span> <span class="o">=</span> <span class="n">ct_cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">demo_series</span> <span class="o">=</span> <span class="n">model_df</span><span class="p">[</span><span class="n">demo_col</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">missing_idx</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">demo_series</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">demo_series</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">missing_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+<span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">demo_series</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Leaky: the fill value is calculated from every row, including the test rows.</span>
+<span class="n">leaky_fill_value</span> <span class="o">=</span> <span class="n">demo_series</span><span class="o">.</span><span class="n">median</span><span class="p">()</span>
+
+<span class="c1"># Correct: the fill value is calculated from the training rows only, then</span>
+<span class="c1"># applied unchanged to the test rows.</span>
+<span class="n">correct_fill_value</span> <span class="o">=</span> <span class="n">demo_series</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Leaky fill value:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">leaky_fill_value</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Correct fill value (from training rows only):"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">correct_fill_value</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Leaky fill value: 1.8415
+Correct fill value (from training rows only): 1.833
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="what-happens-when-the-test-set-leaks-in">
+<h3>What Happens When the Test Set Leaks In?<a class="headerlink" href="#what-happens-when-the-test-set-leaks-in" title="Link to this heading">#</a></h3>
+<p>The activity below runs the same three comparisons – scaling, feature
+selection, and PCA – at several sample sizes and five predetermined splits
+of real ABIDE-II participants, so you can see the effect across many
+splits rather than one.</p>
+<iframe
+  title="Interactive leakage-lab comparing correct and leaky preprocessing pipelines on ABIDE-II cortical thickness and age"
+  src="../../_static/widgets/app/index.html?config=../configs/leakage_lab.json"
+  loading="lazy"
+  width="100%"
+  height="1500"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<p>The activity compares the same participants and the same outer split for
+every correct/leaky pair, at sample sizes of 60, 100, 250, and all 1,004
+eligible participants, across five predetermined splits (never chosen
+after seeing a result), using a K-nearest-neighbours regressor (<code class="docutils literal notranslate"><span class="pre">k=15</span></code>,
+fixed by course design, the same value used throughout this activity) so
+that scaling and PCA are not automatically immune to the leak the way an
+ordinary linear model would be. Target-informed feature selection shows the
+clearest inflation, especially at small sample sizes, where a 360-feature
+candidate pool makes it easy for a handful of features to look predictive
+by chance. Scaling shows a real effect too, since K-nearest-neighbours’
+distance-based predictions do depend on how a feature was rescaled – but
+the size and even the direction of that effect vary from split to split,
+sometimes barely visible. <strong>Leakage makes the evaluation invalid even when
+its score is similar – or occasionally worse – in one particular split.</strong></p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ul class="simple">
+<li><p>Which participants influenced this preprocessing step in the leaky version?</p></li>
+<li><p>Why is target-informed feature selection a more direct form of leakage than scaling?</p></li>
+<li><p>If the two scores are almost equal, does that make the leaky procedure valid?</p></li>
+<li><p>Why can small samples make this comparison more unstable from one split to the next?</p></li>
+</ul>
+</div>
+</section>
+</section>
+<section id="do-not-choose-the-model-with-the-test-set">
+<h2>3. Do Not Choose the Model With the Test Set<a class="headerlink" href="#do-not-choose-the-model-with-the-test-set" title="Link to this heading">#</a></h2>
+<p>Validation and nested cross-validation were covered in Exercise 4. This
+section is a short reminder, using the same K-nearest-neighbours age
+predictor and the same audited results from that exercise’s “Choose k
+Before Revealing the Test Set” activity.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Exercise 4's own audited candidate-k results for this exact age-regression</span>
+<span class="c1"># task -- no new model is fit here, only the three workflows' outcomes are</span>
+<span class="c1"># tabulated: which k each workflow would have chosen, and the test R2 that</span>
+<span class="c1"># choice locks in.</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span>
+    <span class="p">{</span><span class="s2">"workflow"</span><span class="p">:</span> <span class="s2">"Chosen from training performance"</span><span class="p">,</span> <span class="s2">"k"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"test R2"</span><span class="p">:</span> <span class="mf">0.462</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"workflow"</span><span class="p">:</span> <span class="s2">"Chosen from validation performance"</span><span class="p">,</span> <span class="s2">"k"</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span> <span class="s2">"test R2"</span><span class="p">:</span> <span class="mf">0.651</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"workflow"</span><span class="p">:</span> <span class="s2">"Chosen from test performance (wrong)"</span><span class="p">,</span> <span class="s2">"k"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">"test R2"</span><span class="p">:</span> <span class="mf">0.667</span><span class="p">},</span>
+<span class="p">])</span>
+<span class="n">summary</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>workflow</th>
+      <th>k</th>
+      <th>test R2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Chosen from training performance</td>
+      <td>1</td>
+      <td>0.462</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Chosen from validation performance</td>
+      <td>25</td>
+      <td>0.651</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Chosen from test performance (wrong)</td>
+      <td>8</td>
+      <td>0.667</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Choosing <code class="docutils literal notranslate"><span class="pre">k</span></code> from <strong>training</strong> performance always favors the most flexible
+model (here, <code class="docutils literal notranslate"><span class="pre">k=1</span></code>, which memorizes the training rows) and generalizes
+poorly. Choosing <code class="docutils literal notranslate"><span class="pre">k</span></code> from <strong>test</strong> performance looks best of all three –
+but only because it was chosen to look best on that exact test set; a new
+test set would not repeat the advantage. Choosing <code class="docutils literal notranslate"><span class="pre">k</span></code> from <strong>validation</strong>
+performance, then evaluating once on a test set nothing has touched, is the
+only workflow that reports an honest estimate.</p>
+<ul class="simple">
+<li><p>Which workflow gives an optimistic final estimate?</p></li>
+<li><p>Why does trying more values of <code class="docutils literal notranslate"><span class="pre">k</span></code> on the test set make the problem worse?</p></li>
+<li><p>What role should the test set have after a model-development plan is fixed?</p></li>
+</ul>
+</section>
+<section id="related-observations-must-stay-together">
+<h2>4. Related Observations Must Stay Together<a class="headerlink" href="#related-observations-must-stay-together" title="Link to this heading">#</a></h2>
+<p>The public <a class="reference external" href="https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones">UCI Human Activity Recognition Using Smartphones dataset</a>
+(<a class="reference external" href="https://doi.org/10.24432/C54S4K">DOI: 10.24432/C54S4K</a>, CC BY 4.0) contains
+10,299 sensor-window rows from 30 participants performing six activities
+(walking, walking upstairs, walking downstairs, sitting, standing, lying),
+each 2.56 seconds long with 50% overlap between consecutive windows, and
+each labelled with a participant ID. The original authors already split it
+by participant (no participant appears in both their train and test sets).</p>
+<p>A row here is a sensor window, not an independent person. Randomly
+splitting rows allows windows from the same participant – and sometimes
+overlapping signal segments – to appear on both sides of the evaluation
+boundary.</p>
+<p>This is not specific to smartphone sensors. The same risk appears with:</p>
+<ul class="simple">
+<li><p>repeated scans of the same participant;</p></li>
+<li><p>longitudinal visits;</p></li>
+<li><p>multiple trials from one participant in a single session;</p></li>
+<li><p>twins or siblings who share a family;</p></li>
+<li><p>acquisition sites, whenever the goal is evaluating on an unseen site.</p></li>
+</ul>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">compact</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"../../data/uci_har/uci_har_compact.csv.gz"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">compact</span><span class="p">)</span><span class="si">}</span><span class="s2"> sensor windows, </span><span class="si">{</span><span class="n">compact</span><span class="p">[</span><span class="s1">'participant_id'</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span><span class="si">}</span><span class="s2"> participants, "</span>
+      <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">compact</span><span class="p">[</span><span class="s1">'activity_label'</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span><span class="si">}</span><span class="s2"> activities"</span><span class="p">)</span>
+<span class="n">compact</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>10299 sensor windows, 30 participants, 6 activities
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>participant_id</th>
+      <th>activity_id</th>
+      <th>activity_label</th>
+      <th>tBodyAcc-mean()-X</th>
+      <th>tBodyAcc-mean()-Y</th>
+      <th>tBodyAcc-mean()-Z</th>
+      <th>tBodyAcc-std()-X</th>
+      <th>tBodyAcc-std()-Y</th>
+      <th>tBodyAcc-std()-Z</th>
+      <th>tGravityAcc-mean()-X</th>
+      <th>...</th>
+      <th>tGravityAcc-mean()-Z</th>
+      <th>tGravityAcc-std()-X</th>
+      <th>tGravityAcc-std()-Y</th>
+      <th>tGravityAcc-std()-Z</th>
+      <th>tBodyGyro-mean()-X</th>
+      <th>tBodyGyro-mean()-Y</th>
+      <th>tBodyGyro-mean()-Z</th>
+      <th>tBodyGyro-std()-X</th>
+      <th>tBodyGyro-std()-Y</th>
+      <th>tBodyGyro-std()-Z</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>5</td>
+      <td>STANDING</td>
+      <td>0.288585</td>
+      <td>-0.020294</td>
+      <td>-0.132905</td>
+      <td>-0.995279</td>
+      <td>-0.983111</td>
+      <td>-0.913526</td>
+      <td>0.963396</td>
+      <td>...</td>
+      <td>0.115375</td>
+      <td>-0.985250</td>
+      <td>-0.981708</td>
+      <td>-0.877625</td>
+      <td>-0.006101</td>
+      <td>-0.031365</td>
+      <td>0.107725</td>
+      <td>-0.985310</td>
+      <td>-0.976623</td>
+      <td>-0.992205</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>5</td>
+      <td>STANDING</td>
+      <td>0.278419</td>
+      <td>-0.016411</td>
+      <td>-0.123520</td>
+      <td>-0.998245</td>
+      <td>-0.975300</td>
+      <td>-0.960322</td>
+      <td>0.966561</td>
+      <td>...</td>
+      <td>0.109379</td>
+      <td>-0.997411</td>
+      <td>-0.989447</td>
+      <td>-0.931639</td>
+      <td>-0.016112</td>
+      <td>-0.083894</td>
+      <td>0.100584</td>
+      <td>-0.983120</td>
+      <td>-0.989046</td>
+      <td>-0.989121</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>5</td>
+      <td>STANDING</td>
+      <td>0.279653</td>
+      <td>-0.019467</td>
+      <td>-0.113462</td>
+      <td>-0.995380</td>
+      <td>-0.967187</td>
+      <td>-0.978944</td>
+      <td>0.966878</td>
+      <td>...</td>
+      <td>0.101884</td>
+      <td>-0.999574</td>
+      <td>-0.992866</td>
+      <td>-0.992917</td>
+      <td>-0.031698</td>
+      <td>-0.102335</td>
+      <td>0.096127</td>
+      <td>-0.976292</td>
+      <td>-0.993552</td>
+      <td>-0.986379</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+      <td>5</td>
+      <td>STANDING</td>
+      <td>0.279174</td>
+      <td>-0.026201</td>
+      <td>-0.123283</td>
+      <td>-0.996091</td>
+      <td>-0.983403</td>
+      <td>-0.990675</td>
+      <td>0.967615</td>
+      <td>...</td>
+      <td>0.099850</td>
+      <td>-0.996646</td>
+      <td>-0.981393</td>
+      <td>-0.978476</td>
+      <td>-0.043410</td>
+      <td>-0.091386</td>
+      <td>0.085538</td>
+      <td>-0.991385</td>
+      <td>-0.992407</td>
+      <td>-0.987554</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1</td>
+      <td>5</td>
+      <td>STANDING</td>
+      <td>0.276629</td>
+      <td>-0.016570</td>
+      <td>-0.115362</td>
+      <td>-0.998139</td>
+      <td>-0.980817</td>
+      <td>-0.990482</td>
+      <td>0.968224</td>
+      <td>...</td>
+      <td>0.094486</td>
+      <td>-0.998429</td>
+      <td>-0.988098</td>
+      <td>-0.978745</td>
+      <td>-0.033960</td>
+      <td>-0.074708</td>
+      <td>0.077392</td>
+      <td>-0.985184</td>
+      <td>-0.992378</td>
+      <td>-0.987402</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 21 columns</p>
+</div></div></div>
+</div>
+<section id="random-windows-or-new-participants">
+<h3>Random Windows or New Participants?<a class="headerlink" href="#random-windows-or-new-participants" title="Link to this heading">#</a></h3>
+<p>Compare ordinary random-window 5-fold cross-validation against
+participant-grouped 5-fold cross-validation for a K-nearest-neighbours
+activity classifier, using the 18-feature subset above.</p>
+<iframe
+  title="Interactive comparison of random-window and participant-grouped cross-validation on UCI HAR smartphone sensor windows"
+  src="../../_static/widgets/app/index.html?config=../configs/har_fold_compare.json"
+  loading="lazy"
+  width="100%"
+  height="1400"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">StratifiedGroupKFold</span><span class="p">,</span> <span class="n">StratifiedKFold</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neighbors</span><span class="w"> </span><span class="kn">import</span> <span class="n">KNeighborsClassifier</span>
+
+<span class="n">har_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">compact</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"participant_id"</span><span class="p">,</span> <span class="s2">"activity_id"</span><span class="p">,</span> <span class="s2">"activity_label"</span><span class="p">)]</span>
+<span class="n">X_har</span> <span class="o">=</span> <span class="n">compact</span><span class="p">[</span><span class="n">har_features</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
+<span class="n">y_har</span> <span class="o">=</span> <span class="n">compact</span><span class="p">[</span><span class="s2">"activity_id"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">groups_har</span> <span class="o">=</span> <span class="n">compact</span><span class="p">[</span><span class="s2">"participant_id"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+<span class="n">k</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">splitter</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">"Ordinary"</span><span class="p">,</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">),</span> <span class="p">{}),</span>
+    <span class="p">(</span><span class="s2">"Participant-grouped"</span><span class="p">,</span> <span class="n">StratifiedGroupKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">),</span> <span class="p">{</span><span class="s2">"groups"</span><span class="p">:</span> <span class="n">groups_har</span><span class="p">}),</span>
+<span class="p">]:</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">val_idx</span> <span class="ow">in</span> <span class="n">splitter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_har</span><span class="p">,</span> <span class="n">y_har</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"knn"</span><span class="p">,</span> <span class="n">KNeighborsClassifier</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">))])</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_har</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y_har</span><span class="p">[</span><span class="n">train_idx</span><span class="p">])</span>
+        <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_har</span><span class="p">[</span><span class="n">val_idx</span><span class="p">],</span> <span class="n">y_har</span><span class="p">[</span><span class="n">val_idx</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> mean validation accuracy at k=</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ordinary             mean validation accuracy at k=5: 0.894
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Participant-grouped  mean validation accuracy at k=5: 0.831
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<p>Under ordinary random splitting, every one of the 30 participants has
+windows in more than one fold – so every fold’s training rows include
+windows from participants also present in that fold’s validation rows.
+Under participant-grouped splitting, zero participants cross folds by
+construction. Across every predetermined value of <code class="docutils literal notranslate"><span class="pre">k</span></code> (1, 3, 5, 11, 25),
+ordinary splitting reports 0.03-0.09 higher accuracy and macro-F1 than
+grouped splitting – consistently across folds, not because of one unusual
+fold.</p>
+<div class="think-first admonition">
+<p class="admonition-title">Think first</p>
+<ul class="simple">
+<li><p>What is the independent experimental unit here: a sensor window, or a participant?</p></li>
+<li><p>Why can windows from the same person be unusually similar to each other?</p></li>
+<li><p>How does the 50% overlap between windows add to this risk?</p></li>
+<li><p>What is the neuroscience equivalent of a participant ID in this activity?</p></li>
+</ul>
+</div>
+</section>
+</section>
+<section id="class-imbalance-changes-the-question">
+<h2>5. Class Imbalance Changes the Question<a class="headerlink" href="#class-imbalance-changes-the-question" title="Link to this heading">#</a></h2>
+<p>Using the same ABIDE-II autism-classification data and logistic-regression
+pipeline as Exercise 3, this section fixes one deterministic 400-participant
+cohort at each of five control:autism balances – 50:50, 60:40, 70:30,
+80:20, and 90:10 – with a correctly stratified, untouched evaluation set at
+each balance’s own prevalence. Both models below use identical,
+training-only preprocessing and a fixed decision threshold of 0.5 – this is
+not a leakage comparison, only a comparison of two valid ways to handle
+imbalance as it gets more severe.</p>
+<section id="does-higher-accuracy-mean-a-better-classifier">
+<h3>Does Higher Accuracy Mean a Better Classifier?<a class="headerlink" href="#does-higher-accuracy-mean-a-better-classifier" title="Link to this heading">#</a></h3>
+<p>Compare ordinary logistic regression against logistic regression with
+<code class="docutils literal notranslate"><span class="pre">class_weight=&quot;balanced&quot;</span></code> as the sample becomes more imbalanced.</p>
+<iframe
+  title="Interactive comparison of ordinary and class-weighted logistic regression across five class balances for autism classification"
+  src="../../_static/widgets/app/index.html?config=../configs/class_balance_compare.json"
+  loading="lazy"
+  width="100%"
+  height="1500"
+  class="ml-activity"
+  style="width: 100%;"
+></iframe>
+<div class="cell tag_hide-cell docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell content</p>
+<p class="expanded admonition-title">Hide code cell content</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="n">diagnosis</span> <span class="o">=</span> <span class="p">(</span><span class="n">model_df</span><span class="p">[</span><span class="s2">"group"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># 1 = autism, 0 = control</span>
+<span class="n">majority_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">diagnosis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">minority_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">diagnosis</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Same five balances, cohort draws, and split as the interactive activity:</span>
+<span class="c1"># cohort_seed = 20000 + ratio_index; one fixed split (seed 0) per balance.</span>
+<span class="n">balances</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.50</span><span class="p">,</span> <span class="s2">"50:50"</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.60</span><span class="p">,</span> <span class="s2">"60:40"</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.70</span><span class="p">,</span> <span class="s2">"70:30"</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.80</span><span class="p">,</span> <span class="s2">"80:20"</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.90</span><span class="p">,</span> <span class="s2">"90:10"</span><span class="p">)]</span>
+
+<span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">ratio_index</span><span class="p">,</span> <span class="p">(</span><span class="n">majority_pct</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">balances</span><span class="p">):</span>
+    <span class="n">n_majority</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mi">400</span> <span class="o">*</span> <span class="n">majority_pct</span><span class="p">)</span>
+    <span class="n">n_minority</span> <span class="o">=</span> <span class="mi">400</span> <span class="o">-</span> <span class="n">n_majority</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">20000</span> <span class="o">+</span> <span class="n">ratio_index</span><span class="p">)</span>
+    <span class="n">cohort_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+        <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">majority_idx</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_majority</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">minority_idx</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_minority</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="p">])</span>
+    <span class="n">X_cohort</span><span class="p">,</span> <span class="n">y_cohort</span> <span class="o">=</span> <span class="n">X_ct</span><span class="p">[</span><span class="n">cohort_idx</span><span class="p">],</span> <span class="n">diagnosis</span><span class="p">[</span><span class="n">cohort_idx</span><span class="p">]</span>
+    <span class="n">Xc_train</span><span class="p">,</span> <span class="n">Xc_test</span><span class="p">,</span> <span class="n">yc_train</span><span class="p">,</span> <span class="n">yc_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+        <span class="n">X_cohort</span><span class="p">,</span> <span class="n">y_cohort</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y_cohort</span>
+    <span class="p">)</span>
+    <span class="n">baseline</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">yc_test</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="p">(</span><span class="n">yc_test</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">class_weight</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"Ordinary"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s2">"Class-weighted"</span><span class="p">,</span> <span class="s2">"balanced"</span><span class="p">)]:</span>
+        <span class="n">clf</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"scaler"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight</span><span class="p">))])</span>
+        <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xc_train</span><span class="p">,</span> <span class="n">yc_train</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xc_test</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred</span> <span class="o">==</span> <span class="n">yc_test</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">recall</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[</span><span class="n">yc_test</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">"balance"</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span> <span class="s2">"model"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">"accuracy"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">"majority baseline"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">baseline</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="s2">"autism recall"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">recall</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+        <span class="p">})</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>balance</th>
+      <th>model</th>
+      <th>accuracy</th>
+      <th>majority baseline</th>
+      <th>autism recall</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>50:50</td>
+      <td>Ordinary</td>
+      <td>0.59</td>
+      <td>0.5</td>
+      <td>0.520</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>50:50</td>
+      <td>Class-weighted</td>
+      <td>0.59</td>
+      <td>0.5</td>
+      <td>0.520</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>60:40</td>
+      <td>Ordinary</td>
+      <td>0.64</td>
+      <td>0.6</td>
+      <td>0.550</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>60:40</td>
+      <td>Class-weighted</td>
+      <td>0.64</td>
+      <td>0.6</td>
+      <td>0.550</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>70:30</td>
+      <td>Ordinary</td>
+      <td>0.58</td>
+      <td>0.7</td>
+      <td>0.367</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>70:30</td>
+      <td>Class-weighted</td>
+      <td>0.59</td>
+      <td>0.7</td>
+      <td>0.400</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>80:20</td>
+      <td>Ordinary</td>
+      <td>0.75</td>
+      <td>0.8</td>
+      <td>0.050</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>80:20</td>
+      <td>Class-weighted</td>
+      <td>0.74</td>
+      <td>0.8</td>
+      <td>0.150</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>90:10</td>
+      <td>Ordinary</td>
+      <td>0.85</td>
+      <td>0.9</td>
+      <td>0.100</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>90:10</td>
+      <td>Class-weighted</td>
+      <td>0.81</td>
+      <td>0.9</td>
+      <td>0.100</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</details>
+</div>
+<p>Raw accuracy rises from 50:50 to 90:10 for both models, but that rise is
+mostly the majority-class baseline itself rising with it – always
+predicting control gets more “free” accuracy as control becomes more
+common, independent of whether either model has learned anything useful.
+Class weighting can raise autism recall or F1 while lowering raw accuracy,
+but it is not guaranteed to help every metric at every balance: at 90:10
+here, the class-weighted model’s accuracy and balanced accuracy are both
+<em>lower</em> than the ordinary model’s, with no matching gain in recall. ROC-AUC
+ranks participants across every possible threshold and does not track
+prevalence the way accuracy does; PR-AUC is prevalence-sensitive, so its
+no-skill baseline (autism’s own prevalence) falls as autism becomes rarer.
+Whether any of this counts as “better” depends on the scientific question
+and the relative costs of a missed autism case versus a false alarm.</p>
+<ul class="simple">
+<li><p>As controls become more common, does higher accuracy necessarily mean a better classifier?</p></li>
+<li><p>How far is each model’s accuracy above the majority-class baseline at each balance?</p></li>
+<li><p>Which model detects more autistic participants, and does that answer change across balances?</p></li>
+<li><p>Which conclusion changes when you inspect recall, F1, or PR-AUC instead of accuracy alone?</p></li>
+</ul>
+</section>
+</section>
+<section id="does-the-split-match-the-scientific-question-bonus">
+<h2>6. Does the Split Match the Scientific Question? (Bonus)<a class="headerlink" href="#does-the-split-match-the-scientific-question-bonus" title="Link to this heading">#</a></h2>
+<p>ABIDE-II pools participants from 17 acquisition sites. Two evaluation
+designs answer two different scientific questions:</p>
+<div class="ml-site-diagram" role="group" aria-label="Diagram: random participant splitting keeps participants from every site in both training and test; leave-one-site-out splitting holds out an entire site for testing." style="margin:1.2rem 0;display:flex;flex-wrap:wrap;gap:20px;">
+<div style="flex:1;min-width:220px;border:1px solid var(--ml-border);border-radius:10px;padding:10px 12px;">
+<div style="font-weight:600;color:var(--ml-ink);margin-bottom:6px;font-size:0.86rem;">Random participant split</div>
+<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:4px;">
+<span style="width:14px;height:14px;border-radius:3px;background:#a9c2e3;"></span><span style="width:14px;height:14px;border-radius:3px;background:#e6c368;"></span><span style="width:14px;height:14px;border-radius:3px;background:#a3cbae;"></span><span style="width:14px;height:14px;border-radius:3px;background:#e0a877;"></span><span style="width:14px;height:14px;border-radius:3px;background:#a9c2e3;"></span><span style="width:14px;height:14px;border-radius:3px;background:#e6c368;"></span>
+</div>
+<div style="font-size:0.8rem;color:var(--ml-muted);">Training -- familiar sites</div>
+<div style="display:flex;gap:3px;flex-wrap:wrap;margin:4px 0;">
+<span style="width:14px;height:14px;border-radius:3px;background:#a3cbae;"></span><span style="width:14px;height:14px;border-radius:3px;background:#e0a877;"></span>
+</div>
+<div style="font-size:0.8rem;color:var(--ml-muted);">Test -- the same sites, new participants</div>
+</div>
+<div style="flex:1;min-width:220px;border:1px solid var(--ml-think-border-strong);border-radius:10px;padding:10px 12px;">
+<div style="font-weight:600;color:var(--ml-ink);margin-bottom:6px;font-size:0.86rem;">Leave-one-site-out split</div>
+<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:4px;">
+<span style="width:14px;height:14px;border-radius:3px;background:#a9c2e3;"></span><span style="width:14px;height:14px;border-radius:3px;background:#e6c368;"></span><span style="width:14px;height:14px;border-radius:3px;background:#a3cbae;"></span><span style="width:14px;height:14px;border-radius:3px;background:#a9c2e3;"></span><span style="width:14px;height:14px;border-radius:3px;background:#e6c368;"></span>
+</div>
+<div style="font-size:0.8rem;color:var(--ml-muted);">Training -- 16 sites</div>
+<div style="display:flex;gap:3px;flex-wrap:wrap;margin:4px 0;">
+<span style="width:14px;height:14px;border-radius:3px;background:#e0a877;"></span>
+</div>
+<div style="font-size:0.8rem;color:var(--ml-muted);">Test -- 1 held-out site, entirely unseen</div>
+</div>
+</div>
+<p>Neither design is universally correct. Random participant splitting
+estimates generalization to new participants from already-familiar sites;
+leave-one-site-out estimates generalization to a completely new scanner and
+site. Which one answers your scientific question depends on what future
+population the model must serve.</p>
+</section>
+<section id="find-the-mistake">
+<h2>7. Find the Mistake<a class="headerlink" href="#find-the-mistake" title="Link to this heading">#</a></h2>
+<p>Each fragment below has exactly one mistake from this notebook. For each
+one: what crossed the intended evaluation boundary, why might the reported
+score be misleading, and where should the operation happen instead?</p>
+<p><strong>Fragment 1</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">X_scaled</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">The scaler is fit on <code class="docutils literal notranslate"><span class="pre">X</span></code> – every row, including what will become the test
+rows – before the split. Fit the scaler after splitting, on <code class="docutils literal notranslate"><span class="pre">X_train</span></code>
+only, inside a <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code>.</p>
+</div>
+</details><p><strong>Fragment 2</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">X_pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">LinearRegression</span><span class="p">(),</span> <span class="n">X_pca</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Both the scaler and PCA are fit on the full <code class="docutils literal notranslate"><span class="pre">X</span></code> before cross-validation
+even starts, so every fold’s “held-out” rows already influenced the
+component directions. Put the scaler and PCA inside a <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> and pass
+that pipeline to <code class="docutils literal notranslate"><span class="pre">cross_val_score</span></code> – then each fold refits them on that
+fold’s training rows only.</p>
+</div>
+</details><p><strong>Fragment 3</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">selector</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_regression</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">X_selected</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_selected</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">The feature selector uses the target <code class="docutils literal notranslate"><span class="pre">y</span></code> for every row, including the test
+rows, before splitting – the most direct form of leakage in this
+notebook. Select features inside a <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> fit on the training rows
+only.</p>
+</div>
+</details><p><strong>Fragment 4</strong></p>
+<p>This one reuses the UCI HAR <strong>smartphone-window</strong> dataset from Section 4
+above, not a new dataset: <code class="docutils literal notranslate"><span class="pre">X_har</span></code>/<code class="docutils literal notranslate"><span class="pre">y_har</span></code> are the same sensor-window
+features and activity labels used there, and <code class="docutils literal notranslate"><span class="pre">groups_har</span></code> is the same
+per-window participant ID – exactly the “many windows per participant,
+some overlapping in time” structure Section 4 described.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_har</span><span class="p">,</span> <span class="n">y_har</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">KNeighborsClassifier</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">train_test_split</span></code> here has no notion of <code class="docutils literal notranslate"><span class="pre">groups_har</span></code> – it splits
+individual sensor windows at random, so windows from the same participant
+(sometimes overlapping in time, since consecutive windows share 50% of
+their signal) routinely land on both sides of the boundary. This is a
+mistake for the goal this notebook cares about, <strong>generalizing to new
+participants</strong>: a model can partly recognize a participant’s own gait or
+sensor idiosyncrasies from windows it already saw elsewhere in training, so
+the test score no longer estimates performance on someone new. Row-wise
+splitting is not <em>universally</em> invalid, though – if the goal were instead
+generalizing to new <em>windows</em> from the same, already-known participants,
+an ordinary random split would be a reasonable match for that narrower
+goal. For the new-participant goal here, use a participant-grouped split
+instead (for example <code class="docutils literal notranslate"><span class="pre">StratifiedGroupKFold</span></code> with <code class="docutils literal notranslate"><span class="pre">groups_har</span></code> as
+<code class="docutils literal notranslate"><span class="pre">groups</span></code>), so every window from one participant stays entirely on one
+side.</p>
+</div>
+</details><p><strong>Fragment 5</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">best_k</span><span class="p">,</span> <span class="n">best_score</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">25</span><span class="p">]:</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">KNeighborsClassifier</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="n">best_score</span><span class="p">:</span>
+        <span class="n">best_k</span><span class="p">,</span> <span class="n">best_score</span> <span class="o">=</span> <span class="n">k</span><span class="p">,</span> <span class="n">score</span>
+</pre></div>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Answer</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Every candidate <code class="docutils literal notranslate"><span class="pre">k</span></code> is scored directly against the test set, and the best
+score on that exact test set is kept – the reported <code class="docutils literal notranslate"><span class="pre">best_score</span></code> is
+optimistic by construction. Choose <code class="docutils literal notranslate"><span class="pre">k</span></code> using a validation set or
+cross-validation on the training data, then evaluate the chosen <code class="docutils literal notranslate"><span class="pre">k</span></code> once
+on the test set.</p>
+</div>
+</details></section>
+<section id="final-checklist">
+<h2>Final Checklist<a class="headerlink" href="#final-checklist" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>split independent participants before learning anything from the data;</p></li>
+<li><p>fit scaling and missing-value filling on training data;</p></li>
+<li><p>place feature selection and PCA inside the validation pipeline;</p></li>
+<li><p>tune parameters without examining the final test set;</p></li>
+<li><p>group families, repeated scans, visits, trials, or sensor windows appropriately;</p></li>
+<li><p>make the split reflect the intended future population or site;</p></li>
+<li><p>compare classification performance with a meaningful baseline;</p></li>
+<li><p>choose metrics from the scientific goal and important error types;</p></li>
+<li><p>use the final test set only after development decisions are fixed.</p></li>
+</ul>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -485,6 +1535,47 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-notebook-covers">What this notebook covers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-boundary-around-the-training-data">1. The Boundary Around the Training Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#which-of-these-must-not-use-the-test-participants">Which of these must not use the test participants?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-leakage-laboratory">2. A Leakage Laboratory</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scaling-before-vs-after-the-split">Scaling before vs. after the split</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#target-informed-feature-selection-before-vs-after-the-split">Target-informed feature selection before vs. after the split</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pca-before-vs-after-the-split">PCA before vs. after the split</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#filling-missing-values-before-vs-after-the-split">Filling missing values before vs. after the split</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-happens-when-the-test-set-leaks-in">What Happens When the Test Set Leaks In?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#do-not-choose-the-model-with-the-test-set">3. Do Not Choose the Model With the Test Set</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#related-observations-must-stay-together">4. Related Observations Must Stay Together</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#random-windows-or-new-participants">Random Windows or New Participants?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#class-imbalance-changes-the-question">5. Class Imbalance Changes the Question</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-higher-accuracy-mean-a-better-classifier">Does Higher Accuracy Mean a Better Classifier?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#does-the-split-match-the-scientific-question-bonus">6. Does the Split Match the Scientific Question? (Bonus)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#find-the-mistake">7. Find the Mistake</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#final-checklist">Final Checklist</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

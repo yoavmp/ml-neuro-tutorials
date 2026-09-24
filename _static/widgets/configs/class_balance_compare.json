@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "type": "class-balance-compare",
+  "title": "Does higher accuracy mean a better classifier?",
+  "description": "Course activity for Exercise 10: compares ordinary logistic regression against logistic regression with class_weight=\"balanced\" across five progressively more imbalanced control:autism samples (50:50 through 90:10), all at a fixed decision threshold of 0.5.",
+  "data": "../data/abide_class_balance_compare.json",
+  "instructions": "Choose a control:autism class balance. Both models below always use the same participants, the same training/test split, and the same 0.5 decision threshold -- only the sample's class balance changes. Raw accuracy can rise simply because the majority class becomes easier to guess as it grows, and the majority-class baseline itself rises with it. Class weighting can improve autism recall, balanced accuracy, or F1, but it does not improve every metric at every balance -- compare the numbers directly rather than assuming one model is simply better.",
+  "reflectionPrompts": [
+    "As control participants become more common, does higher accuracy necessarily mean a better classifier?",
+    "How far is each model's accuracy above the majority-class baseline at each balance?",
+    "Which model detects more autistic participants, and does that answer change across balances?",
+    "Which conclusion changes when you look at recall, F1, or PR-AUC instead of accuracy alone?"
+  ]
+}

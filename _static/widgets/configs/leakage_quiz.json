@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "type": "multi-select-quiz",
+  "title": "Which steps must not see the test participants?",
+  "description": "Course activity for Exercise 10: a multiple-selection question about which preprocessing and modelling steps learn quantities or make data-dependent decisions, and therefore must not use the final test participants.",
+  "data": "../data/leakage_quiz.json",
+  "instructions": "Select every operation that learns a quantity or makes a data-dependent decision from whichever rows it sees. Any number of options may be selected. Nothing is scored until you choose Check answer."
+}
