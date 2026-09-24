@@ -1112,14 +1112,14 @@ _CH10_HAR_IFRAME_REPLACEMENT = (
 )
 
 _CH10_IMBALANCE_IFRAME_REPLACEMENT = (
-    "### High Accuracy Can Still Miss the Minority Class on the course website\n"
+    "### Does Higher Accuracy Mean a Better Classifier? on the course website\n"
     "\n"
-    "The interactive activity lets you choose ordinary or class-weighted\n"
-    "logistic regression and any classification threshold, and see the\n"
-    "confusion matrix, accuracy, balanced accuracy, ROC-AUC, PR-AUC, F1,\n"
-    "precision, and recall update together, recomputed from fixed\n"
-    "predicted probabilities. The runnable cell below reproduces the same\n"
-    "comparison at the default threshold.\n"
+    "The interactive activity lets you choose a control:autism class balance\n"
+    "(50:50 through 90:10) and see ordinary and class-weighted logistic\n"
+    "regression's accuracy, majority-class baseline, balanced accuracy,\n"
+    "recall, precision, F1, ROC-AUC, and PR-AUC update together, both models\n"
+    "shown side by side at a fixed decision threshold of 0.5. The runnable\n"
+    "cell below reproduces the same comparison across all five balances.\n"
     "\n"
     "> **Interactive version on the course website.** It is embedded in the\n"
     "> published Exercise 10 page:\n"
@@ -1146,7 +1146,7 @@ CHAPTER_10 = NotebookSpec(
         "Interactive comparison of random-window and participant-grouped cross-validation on UCI HAR smartphone sensor windows": (
             _CH10_HAR_IFRAME_REPLACEMENT
         ),
-        "Interactive comparison of ordinary and class-weighted logistic regression for imbalanced autism classification": (
+        "Interactive comparison of ordinary and class-weighted logistic regression across five class balances for autism classification": (
             _CH10_IMBALANCE_IFRAME_REPLACEMENT
         ),
     },
