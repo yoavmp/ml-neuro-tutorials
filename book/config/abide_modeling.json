@@ -1255,19 +1255,19 @@
         "bundle": "sensorimotor_core",
         "measures": ["CT"],
         "feature_count": 10,
-        "model": "Pipeline(StandardScaler(), LinearRegression())",
+        "model": "Pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=15))",
         "leaky_workflow": "StandardScaler().fit() on all sampled rows (train+test), then split.",
-        "correct_workflow": "split first; Pipeline(StandardScaler(), LinearRegression()).fit(X_train, y_train).",
-        "note": "A small, well-posed feature space (p=10) so the comparison isolates the scaling step itself rather than an underdetermined p>n regression."
+        "correct_workflow": "split first; Pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=15)).fit(X_train, y_train).",
+        "note": "A small, well-posed feature space (p=10) so the comparison isolates the scaling step itself rather than an underdetermined p>n regression. KNN (WP38R sec 4) is scale-sensitive, unlike ordinary least squares, so this scenario is where mis-scaled leakage is expected to matter most."
       },
       "feature_selection": {
         "bundle": "all-eligible",
         "measures": ["CT"],
         "feature_count": 360,
         "selected_feature_count": 20,
-        "model": "Pipeline(StandardScaler(), LinearRegression()) fit on the 20 selected columns",
+        "model": "Pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=15)) fit on the 20 selected columns",
         "leaky_workflow": "SelectKBest(f_regression, k=20).fit() using all sampled rows (train+test) and the target, then split; scaler/model fit on training rows of the selected columns only.",
-        "correct_workflow": "split first; Pipeline(SelectKBest(f_regression, k=20), StandardScaler(), LinearRegression()).fit(X_train, y_train).",
+        "correct_workflow": "split first; Pipeline(SelectKBest(f_regression, k=20), StandardScaler(), KNeighborsRegressor(n_neighbors=15)).fit(X_train, y_train).",
         "note": "Large candidate feature space (p=360) relative to small sample sizes is exactly where target-informed selection is expected to show the clearest inflation (WP38 sec 6.3)."
       },
       "pca": {
@@ -1275,9 +1275,9 @@
         "measures": ["CT"],
         "feature_count": 78,
         "component_count": 10,
-        "model": "Pipeline(StandardScaler(), PCA(n_components=10), LinearRegression())",
+        "model": "Pipeline(StandardScaler(), PCA(n_components=10), KNeighborsRegressor(n_neighbors=15))",
         "leaky_workflow": "StandardScaler()+PCA(n_components=10).fit() on all sampled rows (train+test), then split.",
-        "correct_workflow": "split first; Pipeline(StandardScaler(), PCA(n_components=10), LinearRegression()).fit(X_train, y_train).",
+        "correct_workflow": "split first; Pipeline(StandardScaler(), PCA(n_components=10), KNeighborsRegressor(n_neighbors=15)).fit(X_train, y_train).",
         "note": "Component count is fixed well below the smallest training-fold size (45 rows at sample_size=60) so PCA is always well-posed."
       }
     },

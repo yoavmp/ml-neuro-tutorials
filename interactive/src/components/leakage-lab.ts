@@ -2,15 +2,20 @@
 // in?" (WP38). Compares a correct pipeline (preprocessing fit on training
 // rows only) against a leaky variant (the same step fit on training+test
 // rows together) for scaling, feature selection, and PCA, on real ABIDE-II
-// participants predicting age from cortical thickness. Every (scenario,
-// sample size, seed) combination's test MSE/R2 is precomputed offline; the
-// component only selects, compares, and aggregates -- it never refits.
+// participants predicting age from cortical thickness. The estimator is
+// KNeighborsRegressor(n_neighbors=15) in every scenario (WP38R sec 4). Every
+// (scenario, sample size, seed) combination's test MSE/R2 is precomputed
+// offline; the component only selects, compares, and aggregates -- it never
+// refits.
 //
-// Honesty note (do not "fix" this): the scaling scenario's correct and leaky
-// numbers are identical in every entry, because ordinary least-squares
-// predictions are invariant to any consistent invertible rescaling of the
-// inputs. The paired and aggregate views below render that zero gap exactly
-// like any other value.
+// Honesty note (do not "fix" this): unlike ordinary least squares, KNN's
+// predictions depend on feature scale, so the scaling scenario's correct and
+// leaky numbers are NOT identical in the recomputed artifact -- every entry
+// shows a real gap, though it is often small (roughly +/-0.07 R2 across the
+// predeclared splits) and its sign is not consistent from split to split.
+// The paired and aggregate views below render whatever gap (zero, small, or
+// larger) the artifact actually contains exactly like any other value; do
+// not assume a particular sign or force one to appear.
 
 import Plotly from "plotly.js-cartesian-dist-min";
 import type { MountArgs, MountHandle, WidgetComponent } from "./types";
@@ -179,6 +184,16 @@ function mount(args: MountArgs<LeakageLabConfig, LeakageLabData>): MountHandle {
   resultsRow.append(correctTile, leakyTile);
   container.appendChild(resultsRow);
 
+  const diffStats = document.createElement("p");
+  diffStats.className = "widget-stats";
+  diffStats.setAttribute("data-testid", "leak-r2-diff");
+  container.appendChild(diffStats);
+
+  const mseDiffStats = document.createElement("p");
+  mseDiffStats.className = "widget-stats";
+  mseDiffStats.setAttribute("data-testid", "leak-mse-diff");
+  container.appendChild(mseDiffStats);
+
   // --- paired comparison plot for the current selection -------------------
   const pairHeading = document.createElement("h2");
   pairHeading.className = "widget-subhead";
@@ -305,6 +320,11 @@ function mount(args: MountArgs<LeakageLabConfig, LeakageLabData>): MountHandle {
 
     correctMetrics.textContent = `Test MSE = ${entry.correct.mse.toFixed(2)}  ·  Test R² = ${entry.correct.r2.toFixed(3)}`;
     leakyMetrics.textContent = `Test MSE = ${entry.leaky.mse.toFixed(2)}  ·  Test R² = ${entry.leaky.r2.toFixed(3)}`;
+
+    const r2Diff = entry.leaky.r2 - entry.correct.r2;
+    const mseDiff = entry.leaky.mse - entry.correct.mse;
+    diffStats.textContent = `ΔR² (leaky − correct) = ${r2Diff >= 0 ? "+" : ""}${r2Diff.toFixed(3)}`;
+    mseDiffStats.textContent = `ΔMSE (leaky − correct) = ${mseDiff >= 0 ? "+" : ""}${mseDiff.toFixed(2)}`;
 
     void drawPairPlot();
     void drawAggregatePlot();

@@ -14,7 +14,7 @@ function scenarioMeta(overrides: Partial<Record<string, unknown>> = {}) {
     bundle: "sensorimotor_core",
     featureCount: 10,
     measures: ["CT"],
-    model: "Pipeline(StandardScaler(), LinearRegression())",
+    model: "Pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=15))",
     correctWorkflow: "split first; fit on training rows only.",
     leakyWorkflow: "fit on all sampled rows, then split.",
     ...overrides,
@@ -26,7 +26,10 @@ function makeEntries() {
   for (const scenario of SCENARIOS) {
     for (const sampleSize of SAMPLE_SIZES) {
       for (const seed of SEEDS) {
-        const same = scenario === "scaling";
+        // KNN (unlike OLS) is scale-sensitive, so every scenario -- scaling
+        // included -- may show a nonzero correct/leaky gap; this fixture
+        // gives every scenario a small nonzero gap so no test here assumes
+        // scaling is special-cased to an identical pair.
         entries.push({
           scenario,
           sampleSize,
@@ -34,7 +37,7 @@ function makeEntries() {
           nTrain: Math.round(sampleSize * 0.75),
           nTest: Math.round(sampleSize * 0.25),
           correct: { mse: 50, r2: 0.3 },
-          leaky: { mse: same ? 50 : 45, r2: same ? 0.3 : 0.35 },
+          leaky: { mse: 45, r2: 0.35 },
         });
       }
     }
@@ -65,13 +68,18 @@ describe("parseLeakageLabData", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("preserves a zero (identical) correct/leaky gap for the scaling scenario", () => {
+  it("does not force the scaling scenario's correct/leaky pair to be identical", () => {
+    // Historical note: under ordinary least squares, scaling correct/leaky
+    // pairs were mathematically identical (OLS is scale-invariant). The
+    // estimator is now KNeighborsRegressor(n_neighbors=15) (WP38R sec 4),
+    // which IS scale-sensitive, so the parser/schema must not assume or
+    // require equality here -- a nonzero gap is a valid, expected value.
     const result = parseLeakageLabData(validPayload());
     expect(result.ok).toBe(true);
     if (result.ok) {
       const entry = findLeakageLabEntry(result.data, "scaling", 60, 0);
-      expect(entry.correct.mse).toBe(entry.leaky.mse);
-      expect(entry.correct.r2).toBe(entry.leaky.r2);
+      expect(entry.correct.mse).not.toBe(entry.leaky.mse);
+      expect(entry.correct.r2).not.toBe(entry.leaky.r2);
     }
   });
 
@@ -122,5 +130,35 @@ describe("parseLeakageLabData", () => {
     const text = await fs.readFile(url, "utf-8");
     const r = parseLeakageLabData(JSON.parse(text));
     expect(r.ok, r.ok ? "" : r.error).toBe(true);
+  });
+
+  it("shipped scaling entries are not trivially forced identical (KNN is scale-sensitive)", async () => {
+    // Smoke check against the real, recomputed KNeighborsRegressor(n_neighbors=15)
+    // artifact (WP38R sec 4): with the old LinearRegression estimator, every
+    // scaling entry's correct/leaky pair was mathematically identical. KNN's
+    // distance-based predictions depend on feature scale, so this equality
+    // no longer holds by construction; assert it stays that way rather than
+    // silently regressing to a stale OLS-shaped fixture.
+    const fs = await import("node:fs/promises");
+    const url = new URL("../../book/_static/widgets/data/abide_leakage_lab.json", import.meta.url);
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseLeakageLabData(JSON.parse(text));
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok) {
+      const scalingEntries = r.data.entries.filter((e) => e.scenario === "scaling");
+      expect(scalingEntries.length).toBeGreaterThan(0);
+      const identicalCount = scalingEntries.filter(
+        (e) => e.correct.mse === e.leaky.mse && e.correct.r2 === e.leaky.r2,
+      ).length;
+      expect(identicalCount).toBe(0);
+      for (const e of r.data.entries) {
+        expect(Number.isFinite(e.correct.mse)).toBe(true);
+        expect(Number.isFinite(e.leaky.mse)).toBe(true);
+        expect(Number.isFinite(e.correct.r2)).toBe(true);
+        expect(Number.isFinite(e.leaky.r2)).toBe(true);
+        expect(e.correct.mse).toBeGreaterThanOrEqual(0);
+        expect(e.leaky.mse).toBeGreaterThanOrEqual(0);
+      }
+    }
   });
 });

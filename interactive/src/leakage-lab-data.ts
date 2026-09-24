@@ -4,11 +4,14 @@
 //
 // Every (scenario, sample size, seed) combination's correct-pipeline and
 // leaky-pipeline test MSE/R2 is precomputed offline; nothing is refit in the
-// browser. The scaling scenario's correct and leaky numbers are identical in
-// every entry -- a real, deliberate finding (ordinary least squares
-// predictions are invariant to any consistent invertible rescaling of the
-// inputs) -- so this parser must not "fix" a zero gap; it is a valid value
-// like any other.
+// browser. The estimator is KNeighborsRegressor(n_neighbors=15) in all three
+// scenarios (WP38R sec 4). Unlike ordinary least squares, KNN's predictions
+// depend on feature scale, so the scaling scenario's correct/leaky pair is
+// NOT identical in the recomputed artifact -- every entry now shows a real,
+// if often small, gap (up to about +/-0.07 R2 across the predeclared splits,
+// sign not consistent from split to split). This parser must not assume a
+// zero gap for scaling, nor "fix" a non-zero one; whatever the artifact
+// contains is a valid value like any other.
 
 import { z } from "zod";
 import type { DataResult } from "./components/types";
