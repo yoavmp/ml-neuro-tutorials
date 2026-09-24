@@ -47,12 +47,10 @@ const SETTLE_TIMEOUT_MS = 15_000;
 // an activity's last element) plus ~8px of headroom for cross-platform
 // line-height/list-margin rounding (WP16's own 12px-clearance note already
 // measured a ~6px Linux/Chromium-vs-macOS difference at this same boundary).
-// Measured baselines: every activity ending on `<ul class="widget-prompts">`
-// (the common case) sits at ~24px; this tolerance is deliberately still well
-// under the 40-220px of dead space the pre-fix `.widget-plot { min-height:
-// 320px }` produced for any activity with one or more sub-320px charts
-// (leakage-lab: 2x300px plots; pca-kmeans-explorer: four sub-320px panels),
-// so it still fails on that regression.
+// Measured baseline: every activity ending on `<ul class="widget-prompts">`
+// (the common case) sits at ~24px -- 60px leaves headroom for that without
+// being loose enough to hide a genuine regression (e.g. a trailing element
+// gaining real unaccounted margin/padding).
 const TRAILING_GAP_TOLERANCE_PX = 60;
 
 interface ActivityCase {
