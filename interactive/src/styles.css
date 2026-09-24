@@ -320,22 +320,24 @@ input[type="radio"] {
 
 .widget-plot {
   width: 100%;
-  /* WP38R sec 7: this used to be a flat 320px, but every activity's Plotly
-     `layout.height` (plotly-policy.ts's `buildPlotLayout` override) is an
-     explicit number already -- 240px is the smallest one any component
-     configures (boosting-step-by-step's residual/MSE bar, pca-kmeans-
-     explorer's inertia/silhouette/composition panels). A flat 320px floor
-     left components configured shorter than that (many sit at 240-300px)
-     with 20-80px of permanent dead space below their own rendered figure,
-     multiplied by however many undersized plots one activity stacks (e.g.
-     leakage-lab's two 300px plots, or pca-kmeans-explorer's four sub-320px
-     panels) -- exactly the "excessive empty space below interactive
-     content" defect. 240px is a floor no real configured height falls
-     under, so it never clips or shrinks a plot below its own content (a
-     min-height can only ever add space, never remove it); it only bounds
-     the empty flash between mount and the first (async) Plotly.react()
-     paint, without forcing extra space once that paint lands. */
-  min-height: 240px;
+  /* WP38R sec 7 (investigated, not changed): each component's own
+     `layout.height` override (plotly-policy.ts's `buildPlotLayout`) reads as
+     though it should size the figure independently of this floor, but
+     direct measurement in the real embedded book -- not the standalone
+     preview, which behaves differently -- shows every Plotly figure here
+     actually renders at exactly THIS min-height, regardless of its own
+     `layout.height` value (confirmed on a completely unmodified checkout
+     too, so this is pre-existing `autosize`/`responsive` behavior, not
+     something introduced by any WP38R change): with this at 320px, a
+     component configured for 300px still renders its SVG at 320px, not
+     300px. Lowering it was tried and reverted -- it does not recover any
+     "wasted" space (there isn't any misconfigured-height gap to recover in
+     the deployed book), it just uniformly shrinks every chart in the book,
+     and at least one (leakage-lab's aggregate plot, whose y-axis title needs
+     real vertical margin) visibly overlapped adjacent text at the smaller
+     size. Left at the original value; see WP38R_REPORT.md sec 5 for the
+     measurements. */
+  min-height: 320px;
   /* WP16: the 12px minimum clearance this buffers against is measured to the
      next element's own rendered top (e.g. a following <details><summary>),
      whose exact position includes the browser's native disclosure-marker
