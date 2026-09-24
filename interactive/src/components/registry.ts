@@ -27,7 +27,7 @@ import { svmExplorerComponent } from "./svm-explorer";
 import { leakageQuizComponent } from "./leakage-quiz";
 import { leakageLabComponent } from "./leakage-lab";
 import { harFoldCompareComponent } from "./har-fold-compare";
-import { imbalanceThresholdComponent } from "./imbalance-threshold";
+import { classBalanceCompareComponent } from "./class-balance-compare";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -54,4 +54,4 @@ registry.register(svmExplorerComponent);
 registry.register(leakageQuizComponent);
 registry.register(leakageLabComponent);
 registry.register(harFoldCompareComponent);
-registry.register(imbalanceThresholdComponent);
+registry.register(classBalanceCompareComponent);

@@ -524,14 +524,17 @@ const harFoldCompareConfig = z
   })
   .strict();
 
-// WP38 (Exercise 10): "High accuracy can still miss the minority class" --
-// fixed 90:10 test-set predicted probabilities from an ordinary vs a
-// class-weighted logistic regression; every threshold-dependent metric is
-// recomputed client-side from those fixed probabilities, never refit.
-const imbalanceThresholdConfig = z
+// WP38R sec 5 (Exercise 10): "Does higher accuracy mean a better classifier?"
+// -- replaces the removed threshold-comparison activity (imbalance-threshold,
+// WP38). Compares the SAME two logistic-regression pipelines (ordinary and
+// class_weight="balanced") across five progressively more imbalanced
+// control:autism cohorts (50:50 through 90:10) at a FIXED decision threshold
+// of 0.5. There is no threshold control anywhere in this activity -- the
+// only primary control is the balance selector.
+const classBalanceCompareConfig = z
   .object({
     ...baseFields,
-    type: z.literal("imbalance-threshold"),
+    type: z.literal("class-balance-compare"),
     instructions: z.string().min(1, "config.instructions must be a non-empty string"),
     reflectionPrompts: z.array(z.string().min(1)).optional(),
   })
@@ -566,7 +569,7 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   multiSelectQuizConfig,
   leakageLabConfig,
   harFoldCompareConfig,
-  imbalanceThresholdConfig,
+  classBalanceCompareConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -601,7 +604,7 @@ export type SvmExplorerConfig = z.infer<typeof svmExplorerConfig>;
 export type MultiSelectQuizConfig = z.infer<typeof multiSelectQuizConfig>;
 export type LeakageLabConfig = z.infer<typeof leakageLabConfig>;
 export type HarFoldCompareConfig = z.infer<typeof harFoldCompareConfig>;
-export type ImbalanceThresholdConfig = z.infer<typeof imbalanceThresholdConfig>;
+export type ClassBalanceCompareConfig = z.infer<typeof classBalanceCompareConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

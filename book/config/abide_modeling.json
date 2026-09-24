@@ -1283,5 +1283,10 @@
     },
     "export_data_script": "scripts/export_leakage_lab_data.py",
     "export_data_artifact": "book/_static/widgets/data/abide_leakage_lab.json"
+  },
+  "class_balance_compare": {
+    "note": "WP38R sec 5: Exercise 10 activity comparing ordinary vs class_weight=\"balanced\" logistic regression across five class balances (50:50, 60:40, 70:30, 80:20, 90:10 -- the first five entries of classification.imbalance_activity.ratios, in order; 95:5 is deliberately excluded) at a FIXED decision threshold of 0.5. Replaces the removed imbalance-threshold activity (WP38), which let students sweep a classification threshold; that framing was removed entirely, not just relabelled. Reuses classification.imbalance_activity's cohort_size/cohort_resample_seed_base/ratios/split_seeds/majority_class/minority_class as-is (cohort_seed = cohort_resample_seed_base + ratio_index; split_seed = split_seeds[0], i.e. seed 0, same precedent as the removed activity) and classification_model_audit.C_EXAMPLE/MAX_ITER for both models -- introduces no new sampling rule, model family, or parameter search.",
+    "export_data_script": "scripts/export_class_balance_compare_data.py",
+    "export_data_artifact": "book/_static/widgets/data/abide_class_balance_compare.json"
   }
 }
