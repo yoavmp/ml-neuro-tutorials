@@ -107,6 +107,13 @@ body {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  /* WP38: a flex item's default `min-width: auto` refuses to shrink below its
+     content's own intrinsic minimum -- for a group containing a <select>
+     with a long option label, that minimum is the select's own unshrunk
+     width (see the `.widget-controls select` comment below). Without this,
+     `.widget-controls`' flex-shrink on this item has nothing to shrink into
+     and the row overflows a narrow (390px) embed. */
+  min-width: 0;
 }
 
 .widget-controls label {
@@ -120,6 +127,17 @@ body {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
+  /* WP38: a flex item's default `min-width: auto` refuses to shrink below its
+     content's intrinsic width -- for a <select> that is the widest OPTION
+     text, uncropped, even though only the selected option is ever shown. A
+     long option label (e.g. imbalance-threshold's class-weighted model name)
+     could otherwise push a narrow (390px) embed into horizontal document
+     scroll. `min-width: 0` lets the flex item actually shrink to fit;
+     `max-width: 100%` then caps it to the available width, truncating the
+     displayed text with an ellipsis rather than overflowing. */
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
 }
 
 .widget-controls input[type="range"] {
@@ -302,6 +320,23 @@ input[type="radio"] {
 
 .widget-plot {
   width: 100%;
+  /* WP38R sec 7 (investigated, not changed): each component's own
+     `layout.height` override (plotly-policy.ts's `buildPlotLayout`) reads as
+     though it should size the figure independently of this floor, but
+     direct measurement in the real embedded book -- not the standalone
+     preview, which behaves differently -- shows every Plotly figure here
+     actually renders at exactly THIS min-height, regardless of its own
+     `layout.height` value (confirmed on a completely unmodified checkout
+     too, so this is pre-existing `autosize`/`responsive` behavior, not
+     something introduced by any WP38R change): with this at 320px, a
+     component configured for 300px still renders its SVG at 320px, not
+     300px. Lowering it was tried and reverted -- it does not recover any
+     "wasted" space (there isn't any misconfigured-height gap to recover in
+     the deployed book), it just uniformly shrinks every chart in the book,
+     and at least one (leakage-lab's aggregate plot, whose y-axis title needs
+     real vertical margin) visibly overlapped adjacent text at the smaller
+     size. Left at the original value; see WP38R_REPORT.md sec 5 for the
+     measurements. */
   min-height: 320px;
   /* WP16: the 12px minimum clearance this buffers against is measured to the
      next element's own rendered top (e.g. a following <details><summary>),
@@ -493,4 +528,225 @@ input[type="radio"] {
   background: var(--surface-alt);
   font-weight: 600;
   text-align: left;
+}
+
+/* multi-select-quiz activity (Exercise 10) */
+.widget-quiz-fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px 12px;
+  margin: 0 0 12px;
+  background: var(--surface-alt);
+}
+
+.widget-quiz-question {
+  /* WP38R sec 3: hardening, not a fix for a reproduced defect -- extensive
+     measurement (Chromium + Firefox, desktop/mid-wrap/390px, light/dark, the
+     standalone widget preview and the real built-book iframe) found the
+     legend and the first option always separated by the intended 8px gap,
+     with no overlap, at every width from a single line up through the
+     ~5-line wrap this question reaches at 390px (see WP38R_REPORT.md sec 4).
+     `<legend>` has no reliable default cross-browser `width`, so this pins
+     it explicitly to the fieldset's own content width rather than relying on
+     an unspecified intrinsic size -- removing the only plausible latent
+     cause named in the spec (an implicit/insufficient width standing in for
+     a "fixed line assumption") even though it did not reproduce.
+     `white-space: normal` (the default, left unset) keeps wrapping natural. */
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font-weight: 600;
+  padding: 0 4px;
+}
+
+.widget-quiz-option {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 8px 4px;
+  border-top: 1px solid var(--border);
+}
+
+.widget-quiz-option:first-of-type {
+  border-top: none;
+}
+
+.widget-quiz-option label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.widget-quiz-mark {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-left: 26px;
+}
+
+.widget-quiz-feedback {
+  margin: 2px 0 0 26px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.widget-quiz-option.is-correct {
+  border-left: 4px solid #2f8f5b;
+  padding-left: 10px;
+}
+
+.widget-quiz-option.is-correct .widget-quiz-mark {
+  color: #2f8f5b;
+}
+
+.widget-quiz-option.is-incorrect {
+  border-left: 4px solid var(--error-fg);
+  padding-left: 10px;
+}
+
+.widget-quiz-option.is-incorrect .widget-quiz-mark {
+  color: var(--error-fg);
+}
+
+.widget-quiz-option.is-missed {
+  border-left: 4px solid var(--warn-fg);
+  padding-left: 10px;
+}
+
+.widget-quiz-option.is-missed .widget-quiz-mark {
+  color: var(--warn-fg);
+}
+
+.widget-quiz-success {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid #2f8f5b;
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: var(--surface-alt);
+}
+
+/* imbalance-threshold activity (Exercise 10): two large primary tiles,
+   secondary metrics as a plain smaller text line -- deliberate hierarchy so
+   accuracy-vs-baseline and PR-AUC-vs-prevalence are not lost among 8
+   equally-prominent numbers. */
+.widget-metric-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 4px 0 12px;
+}
+
+.widget-metric-tile {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 12px 16px 14px;
+  background: var(--surface-alt);
+  min-width: 0;
+}
+
+.widget-metric-label {
+  margin: 0 0 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.widget-metric-value {
+  margin: 0 0 4px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-ink);
+}
+
+.widget-metric-baseline {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.widget-metric-secondary {
+  font-size: 0.9rem;
+}
+
+/* leakage-lab / har-fold-compare shared pieces (Exercise 10) */
+.widget-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin: 4px 0 14px;
+}
+
+.widget-workflow-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px 12px;
+  background: var(--bg);
+  min-width: 0;
+}
+
+.widget-workflow-panel h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.widget-workflow-panel p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  /* WP38R sec 7/9.5: these strings contain code-like unbroken tokens (e.g.
+     "KNeighborsRegressor(n_neighbors=15))", longer than the estimator name
+     this replaced). Without this, a single-column narrow grid track (this
+     panel's own `.widget-workflow-grid` collapses to one column under
+     ~546px) can still compute its intrinsic/scrollable content size from
+     that token's un-wrapped length even though the visible text paints
+     wrapped and fits -- producing a real horizontal scrollWidth overflow
+     (measured: 20px in the built book at 390px) with no single element's
+     own rendered box appearing to exceed its container. This lets the
+     token itself break instead. */
+  overflow-wrap: break-word;
+}
+
+.widget-participant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: 4px;
+  margin: 8px 0 10px;
+  max-width: 480px;
+}
+
+.widget-participant-tile {
+  position: relative;
+  height: 26px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  overflow: hidden;
+  display: flex;
+}
+
+.widget-participant-tile.is-in-selected-fold {
+  border-color: var(--fg);
+}
+
+.widget-participant-tile-segment {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.widget-fold-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.widget-fold-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
 }

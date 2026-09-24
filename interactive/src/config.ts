@@ -485,6 +485,61 @@ const svmExplorerConfig = z
   })
   .strict();
 
+// WP38 (Exercise 10): "Which steps must not see the test participants?" --
+// a multiple-selection quiz over which preprocessing/modelling steps must
+// not use the final test participants. Pure DOM/ARIA component; no
+// reflectionPrompts field (the committed config carries none -- the data
+// file's own `nuance` line fills that role after a fully-correct answer).
+const multiSelectQuizConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("multi-select-quiz"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+  })
+  .strict();
+
+// WP38 (Exercise 10): "What happens when the test set leaks in?" -- compares
+// a correct pipeline (preprocessing fit on training rows only) against a
+// leaky variant (the same step fit on training+test rows) for scaling,
+// feature selection, and PCA, across a predeclared grid of sample sizes and
+// split seeds. Every entry is precomputed; nothing is refit in the browser.
+const leakageLabConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("leakage-lab"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP38 (Exercise 10): "Random windows or new participants?" -- compares
+// ordinary random-window 5-fold cross-validation against participant-grouped
+// 5-fold cross-validation for KNN activity classification on UCI HAR.
+const harFoldCompareConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("har-fold-compare"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP38R sec 5 (Exercise 10): "Does higher accuracy mean a better classifier?"
+// -- replaces the removed threshold-comparison activity (imbalance-threshold,
+// WP38). Compares the SAME two logistic-regression pipelines (ordinary and
+// class_weight="balanced") across five progressively more imbalanced
+// control:autism cohorts (50:50 through 90:10) at a FIXED decision threshold
+// of 0.5. There is no threshold control anywhere in this activity -- the
+// only primary control is the balance selector.
+const classBalanceCompareConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("class-balance-compare"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -511,6 +566,10 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   pcaKmeansExplorerConfig,
   pcrPlsExploreConfig,
   svmExplorerConfig,
+  multiSelectQuizConfig,
+  leakageLabConfig,
+  harFoldCompareConfig,
+  classBalanceCompareConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -542,6 +601,10 @@ export type PcrPlsExploreConfig = z.infer<typeof pcrPlsExploreConfig>;
 export type SvmExplorerDataset = z.infer<typeof svmExplorerDataset>;
 export type SvmExplorerKernel = z.infer<typeof svmExplorerKernel>;
 export type SvmExplorerConfig = z.infer<typeof svmExplorerConfig>;
+export type MultiSelectQuizConfig = z.infer<typeof multiSelectQuizConfig>;
+export type LeakageLabConfig = z.infer<typeof leakageLabConfig>;
+export type HarFoldCompareConfig = z.infer<typeof harFoldCompareConfig>;
+export type ClassBalanceCompareConfig = z.infer<typeof classBalanceCompareConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

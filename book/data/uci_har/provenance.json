@@ -1,0 +1,91 @@
+{
+  "dataset": {
+    "archiveVersion": "Version 1.0 (per the archive's own README.txt)",
+    "authors": "Jorge L. Reyes-Ortiz, Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra",
+    "doi": "https://doi.org/10.24432/C54S4K",
+    "license": "CC BY 4.0",
+    "sourceUrl": "https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones",
+    "title": "Human Activity Recognition Using Smartphones"
+  },
+  "derivedFile": {
+    "nActivities": 6,
+    "nParticipants": 30,
+    "nRows": 10299,
+    "path": "book/data/uci_har/uci_har_compact.csv.gz",
+    "sha256": "ca2f068f63964b6d2cca450b3ac576f81c67e2f9a1255b5d32ec2b6d7a0e7078"
+  },
+  "extraction": {
+    "chosenColumns": [
+      "participant_id",
+      "activity_id",
+      "activity_label",
+      "tBodyAcc-mean()-X",
+      "tBodyAcc-mean()-Y",
+      "tBodyAcc-mean()-Z",
+      "tBodyAcc-std()-X",
+      "tBodyAcc-std()-Y",
+      "tBodyAcc-std()-Z",
+      "tGravityAcc-mean()-X",
+      "tGravityAcc-mean()-Y",
+      "tGravityAcc-mean()-Z",
+      "tGravityAcc-std()-X",
+      "tGravityAcc-std()-Y",
+      "tGravityAcc-std()-Z",
+      "tBodyGyro-mean()-X",
+      "tBodyGyro-mean()-Y",
+      "tBodyGyro-mean()-Z",
+      "tBodyGyro-std()-X",
+      "tBodyGyro-std()-Y",
+      "tBodyGyro-std()-Z"
+    ],
+    "featurePositions0Indexed": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125
+    ],
+    "featureSubset": [
+      "tBodyAcc-mean()-X",
+      "tBodyAcc-mean()-Y",
+      "tBodyAcc-mean()-Z",
+      "tBodyAcc-std()-X",
+      "tBodyAcc-std()-Y",
+      "tBodyAcc-std()-Z",
+      "tGravityAcc-mean()-X",
+      "tGravityAcc-mean()-Y",
+      "tGravityAcc-mean()-Z",
+      "tGravityAcc-std()-X",
+      "tGravityAcc-std()-Y",
+      "tGravityAcc-std()-Z",
+      "tBodyGyro-mean()-X",
+      "tBodyGyro-mean()-Y",
+      "tBodyGyro-mean()-Z",
+      "tBodyGyro-std()-X",
+      "tBodyGyro-std()-Y",
+      "tBodyGyro-std()-Z"
+    ],
+    "note": "participant_id, activity_id, activity_label, and the 18 official feature columns below are read directly from X_{split}.txt / y_{split}.txt / subject_{split}.txt for split in (train, test) and concatenated train-then-test, in each split's original row order. No target-informed selection: the 18 columns were chosen in advance by measurement family (mean/std of body acceleration, gravity acceleration, and body angular velocity on each axis), not by predictive performance.",
+    "script": "scripts/export_uci_har_data.py"
+  },
+  "originalArchive": {
+    "innerArchiveName": "UCI HAR Dataset.zip",
+    "innerArchiveSha256": "2045e435c955214b38145fb5fa00776c72814f01b203fec405152dac7d5bfeb0",
+    "sha256": "c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031",
+    "url": "https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip"
+  },
+  "schemaVersion": 1
+}

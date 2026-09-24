@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "type": "har-fold-compare",
+  "title": "Random windows or new participants?",
+  "description": "Course activity for Exercise 10: compare ordinary random-window 5-fold cross-validation against participant-grouped 5-fold cross-validation for K-nearest-neighbours activity classification on the public UCI Human Activity Recognition Using Smartphones dataset.",
+  "data": "../data/uci_har_fold_comparison.json",
+  "instructions": "Choose ordinary or participant-grouped splitting and a value of k. The participant/fold diagram shows whether a participant's sensor windows land in one fold or spread across several. Pick a fold to see its validation accuracy, macro-F1, and confusion matrix.",
+  "reflectionPrompts": [
+    "What is the independent experimental unit here: a sensor window, or a participant?",
+    "Why can windows from the same person be unusually similar to each other?",
+    "How does the 50% overlap between windows add to this risk?",
+    "What is the neuroscience equivalent of a participant ID in this activity?"
+  ]
+}

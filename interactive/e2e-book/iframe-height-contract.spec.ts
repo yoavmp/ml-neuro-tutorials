@@ -1,7 +1,7 @@
 import { expect, test, type Frame, type Page } from "@playwright/test";
 
 // Reusable content-height contract for EVERY interactive activity iframe in
-// Exercises 1-9 (WP35 §17). The parent page (book/_static/activity-resize.js)
+// Exercises 1-10 (WP35 §17). The parent page (book/_static/activity-resize.js)
 // and each widget (interactive/src/resize-report.ts) implement one shared,
 // future-proof mechanism -- ResizeObserver in the child, postMessage to a
 // same-origin parent that resizes only the matching iframe -- rather than a
@@ -17,14 +17,41 @@ import { expect, test, type Frame, type Page } from "@playwright/test";
 //     exceed BOTTOM_SLACK_TOLERANCE_PX;
 //   - the child document has no vertical scrollbar caused by clipping
 //     (its content does not exceed the iframe's own rendered height);
-//   - a control change still leaves the contract holding (re-verified after
-//     the resize it should trigger);
+//   - the gap below the activity's own last element does not exceed
+//     TRAILING_GAP_TOLERANCE_PX (WP38R sec 7.1: fails on excessive blank
+//     space, not just on clipping or a reporting-pipeline mismatch);
+//   - a control change, AND a reset/"try again" contraction back to the
+//     default state where one exists, still leave the contract holding
+//     (re-verified after whichever resize each should trigger);
 //   - dark mode and a 390px viewport still fit the same contract;
 //   - no resize-message or cross-window runtime error is emitted throughout.
+//
+// WP38R sec 7: `childScrollHeight` is read from `document.body.scrollHeight`,
+// not `document.documentElement.scrollHeight` -- the latter is defined by
+// the CSSOM View spec as the greater of the viewport's own height and the
+// content's height, so it can never report a value smaller than the
+// iframe's OWN current height and would silently pass even a permanently
+// stuck-too-tall iframe. See `measureContract` below and
+// `interactive/src/resize-report.ts` for the fix this mirrors.
 
 const BOTTOM_SLACK_TOLERANCE_PX = 32;
 const IFRAME_UNDERSHOOT_TOLERANCE_PX = 4;
 const SETTLE_TIMEOUT_MS = 15_000;
+
+// WP38R sec 7.1: the distance between the content's own last meaningful
+// element and the bottom of the content box, derived from the shared
+// design's own intentional spacing rather than picked to make a known-bad
+// number pass -- `.widget-root`'s own bottom padding (20px, styles.css) plus
+// the largest bottom margin any trailing element can carry (`.widget-plot`'s
+// 28px, when a chart -- not a `<ul class="widget-prompts">` -- happens to be
+// an activity's last element) plus ~8px of headroom for cross-platform
+// line-height/list-margin rounding (WP16's own 12px-clearance note already
+// measured a ~6px Linux/Chromium-vs-macOS difference at this same boundary).
+// Measured baseline: every activity ending on `<ul class="widget-prompts">`
+// (the common case) sits at ~24px -- 60px leaves headroom for that without
+// being loose enough to hide a genuine regression (e.g. a trailing element
+// gaining real unaccounted margin/padding).
+const TRAILING_GAP_TOLERANCE_PX = 60;
 
 interface ActivityCase {
   chapterUrl: string;
@@ -56,6 +83,10 @@ const CASES: ActivityCase[] = [
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html", iframeSelector: iframeByTitle("Interactive PCA and K-means explorer for ABIDE-II participants") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html", iframeSelector: iframeByTitle("Interactive PCR-versus-PLS activity for a small simulated two-dimensional dataset") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html", iframeSelector: iframeByTitle("Interactive SVM decision-boundary explorer for two synthetic classification datasets") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive multiple-selection question on which preprocessing and modelling steps must not use the final test participants") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive leakage-lab comparing correct and leaky preprocessing pipelines on ABIDE-II cortical thickness and age") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive comparison of random-window and participant-grouped cross-validation on UCI HAR smartphone sensor windows") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive comparison of ordinary and class-weighted logistic regression across five class balances for autism classification") },
 ];
 
 async function waitForBookReady(page: Page): Promise<void> {
@@ -146,17 +177,52 @@ interface ContractSnapshot {
   iframeHeight: number;
   childScrollHeight: number;
   childClientWidthOverflow: number;
+  trailingGap: number | null;
 }
 
 async function measureContract(page: Page, iframeSelector: string): Promise<ContractSnapshot> {
   const frame = await activityFrame(page, iframeSelector);
   await waitForWidgetReady(frame);
   const settled = await waitForIframeLayoutToSettle(page, iframeSelector);
-  const childScrollHeight = await frame.evaluate(() => document.documentElement.scrollHeight);
+  // WP38R sec 7: `document.documentElement.scrollHeight` (the `<html>`
+  // element) is defined by the CSSOM View spec as the GREATER of the
+  // viewport's own height and the content's rendered height -- it can never
+  // report a value smaller than whatever height this iframe currently has,
+  // which is exactly why an iframe that starts (or was ever) too tall could
+  // never shrink back down (confirmed by direct measurement: forcing a short
+  // activity's viewport taller than its content left `documentElement
+  // .scrollHeight` stuck at the viewport's height even after the content was
+  // shrunk further -- see WP38R_REPORT.md sec 5). `document.body.scrollHeight`
+  // has no such floor and reflects the true, current content height in both
+  // directions -- this is also what `resize-report.ts` itself now measures,
+  // so this assertion is checking the real contract, not a tautology against
+  // the same clamped number the pipeline already reported.
+  const { childScrollHeight, trailingGap } = await frame.evaluate(() => {
+    const height = document.body.scrollHeight;
+    const app = document.getElementById("app");
+    // WP38R sec 7.1: the DOM's last child is not necessarily the last
+    // VISIBLE one -- e.g. leakage-quiz's `successPanel` and the multi-
+    // select-quiz's hidden marks/feedback stay in the DOM (just `hidden`)
+    // until an answer is checked, and a `hidden`/`display:none` element's
+    // own `getBoundingClientRect()` is an all-zero rect, so measuring
+    // against it would report almost the *entire* page height as "trailing
+    // gap" rather than the real, small one below the actually-rendered
+    // content. Walk backwards to the last child with a non-zero rendered
+    // box.
+    let last: Element | null = app?.lastElementChild ?? null;
+    while (last) {
+      const rect = last.getBoundingClientRect();
+      if (rect.width > 0 || rect.height > 0) break;
+      last = last.previousElementSibling;
+    }
+    const gap = last ? height - last.getBoundingClientRect().bottom : null;
+    return { childScrollHeight: height, trailingGap: gap };
+  });
   return {
     iframeHeight: settled.height,
     childScrollHeight,
     childClientWidthOverflow: settled.childScrollWidth - settled.childClientWidth,
+    trailingGap,
   };
 }
 
@@ -174,9 +240,22 @@ function assertContract(snapshot: ContractSnapshot, label: string): void {
     iframeHeight + IFRAME_UNDERSHOOT_TOLERANCE_PX,
   );
   expect(snapshot.childClientWidthOverflow, `${label}: no horizontal scrollbar`).toBeLessThanOrEqual(1);
+  // WP38R sec 7.1: the residual space below the activity's own last element
+  // must be limited to the design's intentional padding, not a large dead
+  // region -- this is the assertion that actually fails on excessive blank
+  // space (as opposed to the checks above, which only fail on clipping or a
+  // reporting-pipeline mismatch).
+  if (snapshot.trailingGap !== null) {
+    expect(snapshot.trailingGap, `${label}: trailing gap within intentional padding`).toBeLessThanOrEqual(
+      TRAILING_GAP_TOLERANCE_PX,
+    );
+    expect(snapshot.trailingGap, `${label}: trailing gap is not negative (no overlap/clipping)`).toBeGreaterThanOrEqual(
+      0,
+    );
+  }
 }
 
-test.describe("iframe height contract (every activity, Exercises 1-9)", () => {
+test.describe("iframe height contract (every activity, Exercises 1-10)", () => {
   for (const { chapterUrl, iframeSelector } of CASES) {
     const label = `${chapterUrl} ${iframeSelector}`;
 
@@ -224,6 +303,22 @@ test.describe("iframe height contract (every activity, Exercises 1-9)", () => {
             assertContract(afterControl, `${label} (after control change)`);
           }
         }
+      }
+
+      // WP38R sec 7.1: explicitly exercise a CONTRACTION, not just any
+      // change -- "Reset"/"Try again" returns every one of these activities
+      // to its shorter default state, which is exactly the transition the
+      // pre-fix `document.documentElement.scrollHeight` (viewport-floored)
+      // measurement could never report correctly once the iframe had grown
+      // taller than that default.
+      // Some activities' reset control (e.g. leakage-quiz's "Try again")
+      // starts hidden and only appears after another interaction (checking
+      // an answer) -- only click one that is actually visible right now.
+      const resetButton = frame.locator('button[data-testid*="reset" i]:visible').first();
+      if (await resetButton.count()) {
+        await resetButton.click();
+        const afterReset = await measureContract(page, iframeSelector);
+        assertContract(afterReset, `${label} (after reset)`);
       }
 
       // Dark mode + 390px narrow viewport.

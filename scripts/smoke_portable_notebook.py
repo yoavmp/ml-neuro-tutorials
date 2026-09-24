@@ -169,6 +169,15 @@ SMOKE = {
             "RBF SVR              mean MSE = 20.4   mean R2 = +0.772",
         ),
     },
+    "chapter_10": {
+        "path": REPO_ROOT / "book" / "downloads" / "chapter_10" / "exercise_10_portable.ipynb",
+        "expect": (
+            "1004 participants, 360 cortical-thickness columns",
+            "10299 sensor windows, 30 participants, 6 activities",
+            "Ordinary             mean validation accuracy at k=5: 0.894",
+            "Participant-grouped  mean validation accuracy at k=5: 0.831",
+        ),
+    },
 }
 
 

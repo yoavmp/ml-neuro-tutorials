@@ -127,6 +127,33 @@ export function percentPredictedPositive(scores: readonly number[], threshold: n
   return (predicted.reduce((a, b) => a + b, 0) / scores.length) * 100;
 }
 
+/** Precision: proportion of predicted positives that are actual positives. */
+export function precisionFromCounts(c: ConfusionCounts): number {
+  const denom = c.tp + c.fp;
+  return denom === 0 ? NaN : c.tp / denom;
+}
+
+/** Recall: identical to sensitivity, kept as an alias for readability at call sites. */
+export function recallFromCounts(c: ConfusionCounts): number {
+  return sensitivityFromCounts(c);
+}
+
+/** F1 score: harmonic mean of precision and recall. */
+export function f1FromCounts(c: ConfusionCounts): number {
+  const precision = precisionFromCounts(c);
+  const recall = recallFromCounts(c);
+  if (!Number.isFinite(precision) || !Number.isFinite(recall) || precision + recall === 0) return NaN;
+  return (2 * precision * recall) / (precision + recall);
+}
+
+/** Balanced accuracy: the mean of sensitivity and specificity, robust to class imbalance. */
+export function balancedAccuracyFromCounts(c: ConfusionCounts): number {
+  const sensitivity = sensitivityFromCounts(c);
+  const specificity = specificityFromCounts(c);
+  if (!Number.isFinite(sensitivity) || !Number.isFinite(specificity)) return NaN;
+  return (sensitivity + specificity) / 2;
+}
+
 /** Accuracy a classifier predicting only the majority class would achieve. */
 export function majorityBaselineAccuracy(labels: readonly number[]): number {
   if (labels.length === 0) return NaN;

@@ -52,7 +52,10 @@ EXERCISE_TITLES = {
     7: "Exercise 7: Boosting and Gradient Boosting",
     8: "Exercise 8: Unsupervised Learning",
     9: "Exercise 9: Advanced Models",
-    10: "Exercise 10: Common Machine Learning Mistakes",
+    # WP38 gave Exercise 10 its final, notebook-facing title (the syllabus and
+    # Word course overview are unchanged and still show the WP25 placeholder
+    # wording "Common Machine Learning Mistakes" -- out of scope for WP38).
+    10: "Exercise 10: Examples and Common Mistakes",
     11: "Exercise 11: Embeddings and Representational Similarity Analysis",
     12: "Exercise 12: Review and Exam-Style Questions",
 }
@@ -114,7 +117,7 @@ class SyllabusPageUnchangedTests(unittest.TestCase):
 
 class ExerciseOneThroughTwelveTitles(unittest.TestCase):
     def _title_of(self, n: int) -> str:
-        if n <= 9:
+        if n <= 10:
             import json
 
             path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
@@ -151,7 +154,7 @@ class ExerciseOneThroughTwelveTitles(unittest.TestCase):
 class NoFinalProjectReferences(unittest.TestCase):
     def test_no_final_project_reference_in_any_exercise_1_to_12_page(self):
         for n in range(1, 13):
-            if n <= 9:
+            if n <= 10:
                 path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
             else:
                 path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md"
@@ -160,7 +163,7 @@ class NoFinalProjectReferences(unittest.TestCase):
                 self.assertNotIn(needle, text, (n, needle))
 
     def test_no_final_project_reference_in_portable_notebooks(self):
-        for n in (1, 2, 3, 4, 5, 6, 7, 8, 9):
+        for n in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
             path = (
                 REPO_ROOT
                 / "book"
