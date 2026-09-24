@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "activity": "multi-select-quiz",
+  "question": "Which operations learn quantities or make data-dependent decisions and must therefore not use the final test participants? Select all correct answers.",
+  "options": [
+    {
+      "id": "scaling",
+      "text": "Calculating the mean and standard deviation for scaling",
+      "correct": true,
+      "feedback": "Scaling parameters are learned from whichever rows they are fit on."
+    },
+    {
+      "id": "feature-selection",
+      "text": "Choosing features based on their correlation with the target",
+      "correct": true,
+      "feedback": "This directly uses the target values of every row it is computed from."
+    },
+    {
+      "id": "pca",
+      "text": "Fitting PCA",
+      "correct": true,
+      "feedback": "The component directions are learned from whichever rows they are fit on."
+    },
+    {
+      "id": "missing-fill",
+      "text": "Calculating median values for filling missing data",
+      "correct": true,
+      "feedback": "The fill value is a quantity learned from whichever rows it is computed from."
+    },
+    {
+      "id": "param-choice",
+      "text": "Selecting a model parameter from performance results",
+      "correct": true,
+      "feedback": "This uses the outcome on whichever rows produced those performance results."
+    },
+    {
+      "id": "final-model",
+      "text": "Fitting the final prediction model",
+      "correct": true,
+      "feedback": "Model fitting learns directly from whichever rows are passed to it."
+    },
+    {
+      "id": "metric-choice",
+      "text": "Choosing in advance whether success will be summarized with F1, ROC-AUC, or another metric",
+      "correct": false,
+      "feedback": "A metric choice made in advance, from the scientific question, does not learn anything from participant data."
+    }
+  ],
+  "successFeedback": "The first six operations learn quantities or make decisions from observed data. They may use training data—and validation data where appropriate—but they must not use the final test participants. A performance metric should be chosen in advance from the scientific question and the costs of different errors; it is not learned from the participant data.",
+  "nuance": "Choosing a metric only after inspecting which one makes a model look best is still poor research practice, but it is different from fitting preprocessing or a model on the test participants."
+}

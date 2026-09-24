@@ -872,3 +872,127 @@ describe("regularization-explore config", () => {
     expect(r.ok, r.ok ? "" : r.error).toBe(true);
   });
 });
+
+const validMultiSelectQuiz = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "multi-select-quiz",
+  title: "Which steps must not see the test participants?",
+  data: "../data/leakage_quiz.json",
+  instructions: "instructions",
+};
+
+describe("multi-select-quiz config", () => {
+  it("accepts a well-formed config", () => {
+    expect(parseActivityConfig(validMultiSelectQuiz).ok).toBe(true);
+  });
+
+  it("rejects a missing instructions field", () => {
+    const { instructions: _instructions, ...rest } = validMultiSelectQuiz;
+    expect(parseActivityConfig(rest).ok).toBe(false);
+  });
+
+  it("rejects an unknown extra field (strict)", () => {
+    expect(parseActivityConfig({ ...validMultiSelectQuiz, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/leakage_quiz.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL("../../book/_static/widgets/configs/leakage_quiz.json", import.meta.url);
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok) expect(r.config.type).toBe("multi-select-quiz");
+  });
+});
+
+const validLeakageLab = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "leakage-lab",
+  title: "What happens when the test set leaks in?",
+  data: "../data/abide_leakage_lab.json",
+  instructions: "instructions",
+  reflectionPrompts: ["one"],
+};
+
+describe("leakage-lab config", () => {
+  it("accepts a well-formed config", () => {
+    expect(parseActivityConfig(validLeakageLab).ok).toBe(true);
+  });
+
+  it("accepts a config with no reflectionPrompts (optional)", () => {
+    const { reflectionPrompts: _reflectionPrompts, ...rest } = validLeakageLab;
+    expect(parseActivityConfig(rest).ok).toBe(true);
+  });
+
+  it("rejects an unknown extra field (strict)", () => {
+    expect(parseActivityConfig({ ...validLeakageLab, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/leakage_lab.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL("../../book/_static/widgets/configs/leakage_lab.json", import.meta.url);
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok) expect(r.config.type).toBe("leakage-lab");
+  });
+});
+
+const validHarFoldCompare = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "har-fold-compare",
+  title: "Random windows or new participants?",
+  data: "../data/uci_har_fold_comparison.json",
+  instructions: "instructions",
+  reflectionPrompts: ["one"],
+};
+
+describe("har-fold-compare config", () => {
+  it("accepts a well-formed config", () => {
+    expect(parseActivityConfig(validHarFoldCompare).ok).toBe(true);
+  });
+
+  it("rejects an unknown extra field (strict)", () => {
+    expect(parseActivityConfig({ ...validHarFoldCompare, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/har_fold_compare.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL("../../book/_static/widgets/configs/har_fold_compare.json", import.meta.url);
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok) expect(r.config.type).toBe("har-fold-compare");
+  });
+});
+
+const validImbalanceThreshold = {
+  schemaVersion: CONFIG_SCHEMA_VERSION,
+  type: "imbalance-threshold",
+  title: "High accuracy can still miss the minority class",
+  data: "../data/abide_imbalance_threshold.json",
+  instructions: "instructions",
+  reflectionPrompts: ["one"],
+};
+
+describe("imbalance-threshold config", () => {
+  it("accepts a well-formed config", () => {
+    expect(parseActivityConfig(validImbalanceThreshold).ok).toBe(true);
+  });
+
+  it("rejects an unknown extra field (strict)", () => {
+    expect(parseActivityConfig({ ...validImbalanceThreshold, extra: 1 }).ok).toBe(false);
+  });
+
+  it("accepts the shipped configs/imbalance_threshold.json", async () => {
+    const fs = await import("node:fs/promises");
+    const url = new URL(
+      "../../book/_static/widgets/configs/imbalance_threshold.json",
+      import.meta.url,
+    );
+    const text = await fs.readFile(url, "utf-8");
+    const r = parseActivityConfigJson(text);
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok) expect(r.config.type).toBe("imbalance-threshold");
+  });
+});

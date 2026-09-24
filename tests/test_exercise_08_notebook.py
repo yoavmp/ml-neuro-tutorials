@@ -487,10 +487,11 @@ class LaunchButtonsAndPortable(unittest.TestCase):
             if c["cell_type"] == "code":
                 self.assertIsNone(c.get("execution_count"))
 
-    def test_exercises_10_through_12_have_no_launch_button(self):
-        # Exercise 9 gained a portable notebook and launch button in WP34
-        # (see test_exercise_09_notebook.py); only 10-12 remain placeholders.
-        for n in range(10, 13):
+    def test_exercises_11_through_12_have_no_launch_button(self):
+        # Exercise 9 gained a portable notebook and launch button in WP34,
+        # Exercise 10 in WP38 (see test_exercise_09_notebook.py,
+        # test_exercise_10_notebook.py); only 11-12 remain placeholders.
+        for n in range(11, 13):
             page = f'"chapters/chapter_{n:02d}/exercise_{n:02d}.html"'
             self.assertNotIn(page, LAUNCH_BUTTONS_JS)
 

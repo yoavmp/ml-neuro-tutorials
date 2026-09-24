@@ -485,6 +485,58 @@ const svmExplorerConfig = z
   })
   .strict();
 
+// WP38 (Exercise 10): "Which steps must not see the test participants?" --
+// a multiple-selection quiz over which preprocessing/modelling steps must
+// not use the final test participants. Pure DOM/ARIA component; no
+// reflectionPrompts field (the committed config carries none -- the data
+// file's own `nuance` line fills that role after a fully-correct answer).
+const multiSelectQuizConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("multi-select-quiz"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+  })
+  .strict();
+
+// WP38 (Exercise 10): "What happens when the test set leaks in?" -- compares
+// a correct pipeline (preprocessing fit on training rows only) against a
+// leaky variant (the same step fit on training+test rows) for scaling,
+// feature selection, and PCA, across a predeclared grid of sample sizes and
+// split seeds. Every entry is precomputed; nothing is refit in the browser.
+const leakageLabConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("leakage-lab"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP38 (Exercise 10): "Random windows or new participants?" -- compares
+// ordinary random-window 5-fold cross-validation against participant-grouped
+// 5-fold cross-validation for KNN activity classification on UCI HAR.
+const harFoldCompareConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("har-fold-compare"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+// WP38 (Exercise 10): "High accuracy can still miss the minority class" --
+// fixed 90:10 test-set predicted probabilities from an ordinary vs a
+// class-weighted logistic regression; every threshold-dependent metric is
+// recomputed client-side from those fixed probabilities, never refit.
+const imbalanceThresholdConfig = z
+  .object({
+    ...baseFields,
+    type: z.literal("imbalance-threshold"),
+    instructions: z.string().min(1, "config.instructions must be a non-empty string"),
+    reflectionPrompts: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 /**
  * Discriminated union of every known activity config. Add a new activity by
  * adding a member here and registering a component with the same `type`.
@@ -511,6 +563,10 @@ export const activityConfigSchema = z.discriminatedUnion("type", [
   pcaKmeansExplorerConfig,
   pcrPlsExploreConfig,
   svmExplorerConfig,
+  multiSelectQuizConfig,
+  leakageLabConfig,
+  harFoldCompareConfig,
+  imbalanceThresholdConfig,
 ]);
 
 export type ActivityConfig = z.infer<typeof activityConfigSchema>;
@@ -542,6 +598,10 @@ export type PcrPlsExploreConfig = z.infer<typeof pcrPlsExploreConfig>;
 export type SvmExplorerDataset = z.infer<typeof svmExplorerDataset>;
 export type SvmExplorerKernel = z.infer<typeof svmExplorerKernel>;
 export type SvmExplorerConfig = z.infer<typeof svmExplorerConfig>;
+export type MultiSelectQuizConfig = z.infer<typeof multiSelectQuizConfig>;
+export type LeakageLabConfig = z.infer<typeof leakageLabConfig>;
+export type HarFoldCompareConfig = z.infer<typeof harFoldCompareConfig>;
+export type ImbalanceThresholdConfig = z.infer<typeof imbalanceThresholdConfig>;
 
 export type ConfigResult =
   | { ok: true; config: ActivityConfig }

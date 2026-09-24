@@ -24,6 +24,10 @@ import { pcaProjectionComponent } from "./pca-projection";
 import { pcaKmeansExplorerComponent } from "./pca-kmeans-explorer";
 import { pcrPlsExploreComponent } from "./pcr-pls-explore";
 import { svmExplorerComponent } from "./svm-explorer";
+import { leakageQuizComponent } from "./leakage-quiz";
+import { leakageLabComponent } from "./leakage-lab";
+import { harFoldCompareComponent } from "./har-fold-compare";
+import { imbalanceThresholdComponent } from "./imbalance-threshold";
 
 export const registry = new ComponentRegistry();
 registry.register(runtimeSmokeComponent);
@@ -47,3 +51,7 @@ registry.register(pcaProjectionComponent);
 registry.register(pcaKmeansExplorerComponent);
 registry.register(pcrPlsExploreComponent);
 registry.register(svmExplorerComponent);
+registry.register(leakageQuizComponent);
+registry.register(leakageLabComponent);
+registry.register(harFoldCompareComponent);
+registry.register(imbalanceThresholdComponent);

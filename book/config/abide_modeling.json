@@ -1242,5 +1242,46 @@
       "citation": "Narr KL, Woods RP, Thompson PM, et al. Relationships between IQ and regional cortical gray matter thickness in healthy adults. Cereb Cortex. 2007;17(9):2163-2171.",
       "doi": "10.1093/cercor/bhl125"
     }
+  },
+  "leakage_lab": {
+    "target": "age",
+    "note": "WP38 sec 6: compares a correct pipeline (preprocessing/selection fit on training rows only) against a leaky variant (the same step fit on the full sampled cohort before the outer split) for three preprocessing operations, on the same age-regression recipe used throughout Exercises 2/4/5.",
+    "sample_sizes": [60, 100, 250, 1004],
+    "sample_sizes_note": "1004 is every eligible participant (age has 0 missing brain-table rows); 60/100/250 are fixed subsamples of that pool, drawn once per (sample_size, seed) via frame.sample(n=sample_size, random_state=seed).",
+    "seeds": [0, 1, 2, 3, 4],
+    "seeds_note": "Predeclared, consecutive, never chosen after seeing results (WP38 sec 6.3). Each seed drives both the subsample draw (when sample_size < 1004) and the outer train_test_split(test_size=0.25, random_state=seed) -- identical rows and split for the paired correct/leaky comparison at that (scenario, sample_size, seed).",
+    "scenarios": {
+      "scaling": {
+        "bundle": "sensorimotor_core",
+        "measures": ["CT"],
+        "feature_count": 10,
+        "model": "Pipeline(StandardScaler(), LinearRegression())",
+        "leaky_workflow": "StandardScaler().fit() on all sampled rows (train+test), then split.",
+        "correct_workflow": "split first; Pipeline(StandardScaler(), LinearRegression()).fit(X_train, y_train).",
+        "note": "A small, well-posed feature space (p=10) so the comparison isolates the scaling step itself rather than an underdetermined p>n regression."
+      },
+      "feature_selection": {
+        "bundle": "all-eligible",
+        "measures": ["CT"],
+        "feature_count": 360,
+        "selected_feature_count": 20,
+        "model": "Pipeline(StandardScaler(), LinearRegression()) fit on the 20 selected columns",
+        "leaky_workflow": "SelectKBest(f_regression, k=20).fit() using all sampled rows (train+test) and the target, then split; scaler/model fit on training rows of the selected columns only.",
+        "correct_workflow": "split first; Pipeline(SelectKBest(f_regression, k=20), StandardScaler(), LinearRegression()).fit(X_train, y_train).",
+        "note": "Large candidate feature space (p=360) relative to small sample sizes is exactly where target-informed selection is expected to show the clearest inflation (WP38 sec 6.3)."
+      },
+      "pca": {
+        "bundle": "frontoparietal",
+        "measures": ["CT"],
+        "feature_count": 78,
+        "component_count": 10,
+        "model": "Pipeline(StandardScaler(), PCA(n_components=10), LinearRegression())",
+        "leaky_workflow": "StandardScaler()+PCA(n_components=10).fit() on all sampled rows (train+test), then split.",
+        "correct_workflow": "split first; Pipeline(StandardScaler(), PCA(n_components=10), LinearRegression()).fit(X_train, y_train).",
+        "note": "Component count is fixed well below the smallest training-fold size (45 rows at sample_size=60) so PCA is always well-posed."
+      }
+    },
+    "export_data_script": "scripts/export_leakage_lab_data.py",
+    "export_data_artifact": "book/_static/widgets/data/abide_leakage_lab.json"
   }
 }

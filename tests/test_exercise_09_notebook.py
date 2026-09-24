@@ -518,8 +518,8 @@ class LaunchButtonsAndPortable(unittest.TestCase):
         )
         self.assertTrue(found)
 
-    def test_exercises_10_through_12_have_no_launch_button(self):
-        for n in range(10, 13):
+    def test_exercises_11_through_12_have_no_launch_button(self):
+        for n in range(11, 13):
             page = f'"chapters/chapter_{n:02d}/exercise_{n:02d}.html"'
             self.assertNotIn(page, LAUNCH_BUTTONS_JS)
 

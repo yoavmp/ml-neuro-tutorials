@@ -1,7 +1,7 @@
 import { expect, test, type Frame, type Page } from "@playwright/test";
 
 // Reusable content-height contract for EVERY interactive activity iframe in
-// Exercises 1-9 (WP35 §17). The parent page (book/_static/activity-resize.js)
+// Exercises 1-10 (WP35 §17). The parent page (book/_static/activity-resize.js)
 // and each widget (interactive/src/resize-report.ts) implement one shared,
 // future-proof mechanism -- ResizeObserver in the child, postMessage to a
 // same-origin parent that resizes only the matching iframe -- rather than a
@@ -56,6 +56,10 @@ const CASES: ActivityCase[] = [
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html", iframeSelector: iframeByTitle("Interactive PCA and K-means explorer for ABIDE-II participants") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html", iframeSelector: iframeByTitle("Interactive PCR-versus-PLS activity for a small simulated two-dimensional dataset") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html", iframeSelector: iframeByTitle("Interactive SVM decision-boundary explorer for two synthetic classification datasets") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive multiple-selection question on which preprocessing and modelling steps must not use the final test participants") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive leakage-lab comparing correct and leaky preprocessing pipelines on ABIDE-II cortical thickness and age") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive comparison of random-window and participant-grouped cross-validation on UCI HAR smartphone sensor windows") },
+  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive comparison of ordinary and class-weighted logistic regression for imbalanced autism classification") },
 ];
 
 async function waitForBookReady(page: Page): Promise<void> {

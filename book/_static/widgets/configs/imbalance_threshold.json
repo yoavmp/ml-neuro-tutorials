@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "type": "imbalance-threshold",
+  "title": "High accuracy can still miss the minority class",
+  "description": "Course activity for Exercise 10: on a fixed 90 percent control / 10 percent autism cohort, compare ordinary logistic regression against logistic regression with class_weight=\"balanced\" at any chosen classification threshold, using fixed test-set predicted probabilities.",
+  "data": "../data/abide_imbalance_threshold.json",
+  "instructions": "Choose ordinary or class-weighted logistic regression and a classification threshold. The confusion matrix and metrics below recompute from fixed predicted probabilities on the same locked test participants -- the model is never refit.",
+  "reflectionPrompts": [
+    "Which model detects more autistic participants at the threshold you chose?",
+    "Which model looks better if you inspect accuracy alone?",
+    "Is 94% accuracy useful when the majority baseline is 90%?",
+    "Which kind of error -- a missed autism case, or a false alarm -- matters more for the intended application?"
+  ]
+}

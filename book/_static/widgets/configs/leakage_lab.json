@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "type": "leakage-lab",
+  "title": "What happens when the test set leaks in?",
+  "description": "Course activity for Exercise 10: compare a correct pipeline (preprocessing fit on training rows only) against a leaky variant (the same step fit on training and test rows together) for scaling, feature selection, and PCA, on real ABIDE-II participants predicting age from cortical thickness.",
+  "data": "../data/abide_leakage_lab.json",
+  "instructions": "Choose a preprocessing operation, a sample size, and one of five predetermined split seeds. Both pipelines use the exact same participants and the exact same training/test split -- only whether the operation saw the test rows differs.",
+  "reflectionPrompts": [
+    "Which participants influenced this preprocessing step in the leaky version?",
+    "Why is target-informed feature selection a more direct form of leakage than scaling?",
+    "If the correct and leaky scores are almost equal for your chosen split, does that make the leaky procedure valid?",
+    "Why can small samples make this comparison more unstable from one split to the next?"
+  ]
+}

@@ -107,6 +107,13 @@ body {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  /* WP38: a flex item's default `min-width: auto` refuses to shrink below its
+     content's own intrinsic minimum -- for a group containing a <select>
+     with a long option label, that minimum is the select's own unshrunk
+     width (see the `.widget-controls select` comment below). Without this,
+     `.widget-controls`' flex-shrink on this item has nothing to shrink into
+     and the row overflows a narrow (390px) embed. */
+  min-width: 0;
 }
 
 .widget-controls label {
@@ -120,6 +127,17 @@ body {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
+  /* WP38: a flex item's default `min-width: auto` refuses to shrink below its
+     content's intrinsic width -- for a <select> that is the widest OPTION
+     text, uncropped, even though only the selected option is ever shown. A
+     long option label (e.g. imbalance-threshold's class-weighted model name)
+     could otherwise push a narrow (390px) embed into horizontal document
+     scroll. `min-width: 0` lets the flex item actually shrink to fit;
+     `max-width: 100%` then caps it to the available width, truncating the
+     displayed text with an ellipsis rather than overflowing. */
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
 }
 
 .widget-controls input[type="range"] {
@@ -493,4 +511,199 @@ input[type="radio"] {
   background: var(--surface-alt);
   font-weight: 600;
   text-align: left;
+}
+
+/* multi-select-quiz activity (Exercise 10) */
+.widget-quiz-fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px 12px;
+  margin: 0 0 12px;
+  background: var(--surface-alt);
+}
+
+.widget-quiz-question {
+  font-weight: 600;
+  padding: 0 4px;
+}
+
+.widget-quiz-option {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 8px 4px;
+  border-top: 1px solid var(--border);
+}
+
+.widget-quiz-option:first-of-type {
+  border-top: none;
+}
+
+.widget-quiz-option label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.widget-quiz-mark {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-left: 26px;
+}
+
+.widget-quiz-feedback {
+  margin: 2px 0 0 26px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.widget-quiz-option.is-correct {
+  border-left: 4px solid #2f8f5b;
+  padding-left: 10px;
+}
+
+.widget-quiz-option.is-correct .widget-quiz-mark {
+  color: #2f8f5b;
+}
+
+.widget-quiz-option.is-incorrect {
+  border-left: 4px solid var(--error-fg);
+  padding-left: 10px;
+}
+
+.widget-quiz-option.is-incorrect .widget-quiz-mark {
+  color: var(--error-fg);
+}
+
+.widget-quiz-option.is-missed {
+  border-left: 4px solid var(--warn-fg);
+  padding-left: 10px;
+}
+
+.widget-quiz-option.is-missed .widget-quiz-mark {
+  color: var(--warn-fg);
+}
+
+.widget-quiz-success {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid #2f8f5b;
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: var(--surface-alt);
+}
+
+/* imbalance-threshold activity (Exercise 10): two large primary tiles,
+   secondary metrics as a plain smaller text line -- deliberate hierarchy so
+   accuracy-vs-baseline and PR-AUC-vs-prevalence are not lost among 8
+   equally-prominent numbers. */
+.widget-metric-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 4px 0 12px;
+}
+
+.widget-metric-tile {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 12px 16px 14px;
+  background: var(--surface-alt);
+  min-width: 0;
+}
+
+.widget-metric-label {
+  margin: 0 0 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.widget-metric-value {
+  margin: 0 0 4px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-ink);
+}
+
+.widget-metric-baseline {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.widget-metric-secondary {
+  font-size: 0.9rem;
+}
+
+/* leakage-lab / har-fold-compare shared pieces (Exercise 10) */
+.widget-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin: 4px 0 14px;
+}
+
+.widget-workflow-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px 12px;
+  background: var(--bg);
+  min-width: 0;
+}
+
+.widget-workflow-panel h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.widget-workflow-panel p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.widget-participant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: 4px;
+  margin: 8px 0 10px;
+  max-width: 480px;
+}
+
+.widget-participant-tile {
+  position: relative;
+  height: 26px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  overflow: hidden;
+  display: flex;
+}
+
+.widget-participant-tile.is-in-selected-fold {
+  border-color: var(--fg);
+}
+
+.widget-participant-tile-segment {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.widget-fold-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.widget-fold-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
 }

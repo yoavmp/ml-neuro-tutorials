@@ -30,8 +30,8 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,chapter_09,all}``
-(default ``all``) scopes both modes. Exercises 10-12 are placeholder pages
+``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,chapter_09,chapter_10,all}``
+(default ``all``) scopes both modes. Exercises 11-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
 registered here. The bare ``--write`` / ``--check`` invocations keep working
 and now cover every registered notebook.
@@ -45,6 +45,7 @@ generated cells use fixed literal ids). Running ``--write`` twice is a no-op.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import re
 import sys
@@ -82,6 +83,9 @@ PUBLISHED_PAGE_CH8 = (
 )
 PUBLISHED_PAGE_CH9 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html"
+)
+PUBLISHED_PAGE_CH10 = (
+    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html"
 )
 
 BANNER_ID = "portable-banner"
@@ -187,6 +191,11 @@ class NotebookSpec:
     iframe_followup_code: dict[str, str] = field(default_factory=dict)
     iframe_followup_ids: dict[str, str] = field(default_factory=dict)
     rewrite_columns: bool = False
+    # When true, a code cell whose source contains "uci_har_compact.csv.gz"
+    # (the canonical notebook's repository-relative data load) is replaced by
+    # an equivalent cell with the same committed table embedded inline as
+    # base64, so the portable notebook needs no repository file (WP38 sec 14).
+    embed_har_compact_table: bool = False
     require_pinned_source: str = "neurohackademy/nh2020-curriculum/"
     extra_banned: dict[str, str] = field(default_factory=dict)
     # The name Colab shows in its own tab / title bar for this notebook. When
@@ -1005,6 +1014,148 @@ CHAPTER_09 = NotebookSpec(
     colab_title="Exercise 9: Advanced Models",
 )
 
+_CH10_SETUP = (
+    "## Setup\n"
+    "\n"
+    "This notebook imports only `numpy`, `pandas`, and `scikit-learn`. Both\n"
+    "are already installed on Google Colab, and in a typical\n"
+    "scientific-Python environment, so there is normally nothing to do here.\n"
+    "\n"
+    "If one of the imports further down fails, run the next cell once (edit\n"
+    "the version pins if your project needs specific ones), then restart the\n"
+    "kernel and run the notebook from the top. The notebook also downloads a\n"
+    "public data file the first time it runs, so it needs internet access."
+)
+
+_CH10_BANNER = (
+    "# Exercise 10: Examples and Common Mistakes - portable notebook\n"
+    "\n"
+    "This is the **portable version** of the Exercise 10 review practice\n"
+    "from **Machine Learning for Neuroscience**, generated from the full\n"
+    "interactive course notebook. It is meant for running or editing the\n"
+    "code in Google Colab or in a local VS Code / Jupyter setup.\n"
+    "\n"
+    "The richer version -- with the four embedded activities running in the\n"
+    "browser -- is the published course page:\n"
+    "<" + PUBLISHED_PAGE_CH10 + ">\n"
+    "\n"
+    "In this notebook every interactive activity is replaced by a runnable\n"
+    "Python equivalent or a link to that page; every Python analysis cell is\n"
+    "kept and runnable.\n"
+    "\n"
+    "The UCI Human Activity Recognition Using Smartphones dataset used in\n"
+    "section 4 is (c) Jorge L. Reyes-Ortiz, Davide Anguita, Alessandro Ghio,\n"
+    "Luca Oneto and Xavier Parra, licensed CC BY 4.0:\n"
+    "<https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones>\n"
+    "(DOI: <https://doi.org/10.24432/C54S4K>)."
+)
+
+_CH10_QUIZ_IFRAME_REPLACEMENT = (
+    "Which operations learn quantities or make data-dependent decisions and\n"
+    "must therefore not use the final test participants? Select all correct\n"
+    "answers (as a thought exercise -- there is nothing to click here):\n"
+    "\n"
+    "1. Calculating the mean and standard deviation for scaling\n"
+    "2. Choosing features based on their correlation with the target\n"
+    "3. Fitting PCA\n"
+    "4. Calculating median values for filling missing data\n"
+    "5. Selecting a model parameter from performance results\n"
+    "6. Fitting the final prediction model\n"
+    "7. Choosing in advance whether success will be summarized with F1, ROC-AUC, or another metric\n"
+    "\n"
+    "```{dropdown} Answer\n"
+    "Options 1-6 are correct. Each learns a quantity or makes a\n"
+    "data-dependent decision from whichever rows it sees, so none of them\n"
+    "may use the final test participants -- they may use training data, and\n"
+    "validation data where appropriate, but not the locked test set. Option\n"
+    "7 is not correct: a performance metric should be chosen in advance from\n"
+    "the scientific question and the costs of different errors, not learned\n"
+    "from participant data. (Choosing a metric only after inspecting which\n"
+    "one makes a model look best is still poor research practice, but it is\n"
+    "different from fitting preprocessing or a model on the test\n"
+    "participants.)\n"
+    "```\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 10 page:\n"
+    "> <" + PUBLISHED_PAGE_CH10 + ">"
+)
+
+_CH10_LEAKAGE_LAB_IFRAME_REPLACEMENT = (
+    "### What Happens When the Test Set Leaks In? on the course website\n"
+    "\n"
+    "The interactive activity lets you choose a preprocessing operation, a\n"
+    "sample size, and one of five predetermined split seeds, then compares\n"
+    "the correct and leaky pipelines' test MSE and R2 for that split, plus an\n"
+    "aggregate view across all five splits. The runnable code pairs above\n"
+    "cover the same three operations.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 10 page:\n"
+    "> <" + PUBLISHED_PAGE_CH10 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+_CH10_HAR_IFRAME_REPLACEMENT = (
+    "### Random Windows or New Participants? on the course website\n"
+    "\n"
+    "The interactive activity lets you choose ordinary or participant-grouped\n"
+    "splitting and a value of `k`, see which participants land in which\n"
+    "fold, and inspect the confusion matrix and accuracy/macro-F1 for any\n"
+    "fold. The runnable cell below reproduces the same comparison for one\n"
+    "value of `k`.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 10 page:\n"
+    "> <" + PUBLISHED_PAGE_CH10 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+_CH10_IMBALANCE_IFRAME_REPLACEMENT = (
+    "### High Accuracy Can Still Miss the Minority Class on the course website\n"
+    "\n"
+    "The interactive activity lets you choose ordinary or class-weighted\n"
+    "logistic regression and any classification threshold, and see the\n"
+    "confusion matrix, accuracy, balanced accuracy, ROC-AUC, PR-AUC, F1,\n"
+    "precision, and recall update together, recomputed from fixed\n"
+    "predicted probabilities. The runnable cell below reproduces the same\n"
+    "comparison at the default threshold.\n"
+    "\n"
+    "> **Interactive version on the course website.** It is embedded in the\n"
+    "> published Exercise 10 page:\n"
+    "> <" + PUBLISHED_PAGE_CH10 + ">\n"
+    "> This portable notebook links to it instead of embedding it."
+)
+
+CHAPTER_10 = NotebookSpec(
+    key="chapter_10",
+    canonical=REPO_ROOT / "book" / "chapters" / "chapter_10" / "exercise_10.ipynb",
+    portable=REPO_ROOT / "book" / "downloads" / "chapter_10" / "exercise_10_portable.ipynb",
+    published_page=PUBLISHED_PAGE_CH10,
+    banner_source=_CH10_BANNER,
+    setup_source=_CH10_SETUP,
+    lesson_packages="numpy pandas scikit-learn",
+    drop_admonition_titles=DROP_ADMONITION_TITLES,
+    iframe_replacements={
+        "Interactive multiple-selection question on which preprocessing and modelling steps must not use the final test participants": (
+            _CH10_QUIZ_IFRAME_REPLACEMENT
+        ),
+        "Interactive leakage-lab comparing correct and leaky preprocessing pipelines on ABIDE-II cortical thickness and age": (
+            _CH10_LEAKAGE_LAB_IFRAME_REPLACEMENT
+        ),
+        "Interactive comparison of random-window and participant-grouped cross-validation on UCI HAR smartphone sensor windows": (
+            _CH10_HAR_IFRAME_REPLACEMENT
+        ),
+        "Interactive comparison of ordinary and class-weighted logistic regression for imbalanced autism classification": (
+            _CH10_IMBALANCE_IFRAME_REPLACEMENT
+        ),
+    },
+    preserve_output_ids=frozenset(),
+    rewrite_columns=False,
+    embed_har_compact_table=True,
+    colab_title="Exercise 10: Examples and Common Mistakes",
+)
+
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
     CHAPTER_02.key: CHAPTER_02,
@@ -1015,6 +1166,7 @@ NOTEBOOKS = {
     CHAPTER_07.key: CHAPTER_07,
     CHAPTER_08.key: CHAPTER_08,
     CHAPTER_09.key: CHAPTER_09,
+    CHAPTER_10.key: CHAPTER_10,
 }
 
 # Back-compat aliases for existing callers/tests (chapter_01 scope).
@@ -1065,6 +1217,38 @@ def _rewrite_data_loading(source: str, columns: list[str]) -> str:
         flags=re.DOTALL,
     )
     return source
+
+
+def _embed_har_compact_table() -> str:
+    """Embed the committed UCI HAR compact table as inline base64.
+
+    The Chapter 10 canonical notebook reads
+    ``book/data/uci_har/uci_har_compact.csv.gz`` by a repository-relative
+    path. The portable notebook must not depend on a repository checkout
+    (WP38 sec 14), so that read is replaced by the same committed bytes
+    embedded as a base64 literal, decoded and gzip-decompressed in memory.
+    """
+    data_path = REPO_ROOT / "book" / "data" / "uci_har" / "uci_har_compact.csv.gz"
+    encoded = base64.b64encode(data_path.read_bytes()).decode("ascii")
+    chunk_size = 120
+    lines = [encoded[i : i + chunk_size] for i in range(0, len(encoded), chunk_size)]
+    literal = "\n".join(f'    "{line}"' for line in lines)
+    return (
+        "import base64\n"
+        "import gzip\n"
+        "import io\n"
+        "\n"
+        "# The UCI HAR compact subset (10,299 rows, 30 participants, 18\n"
+        "# features) embedded here so this notebook needs no repository files\n"
+        "# to run.\n"
+        "_uci_har_compact_b64 = (\n"
+        f"{literal}\n"
+        ")\n"
+        "compact = pd.read_csv(io.BytesIO(gzip.decompress(base64.b64decode(_uci_har_compact_b64))))\n"
+        "print(f\"{len(compact)} sensor windows, {compact['participant_id'].nunique()} participants, \"\n"
+        "      f\"{compact['activity_label'].nunique()} activities\")\n"
+        "compact.head()"
+    )
 
 
 def _sanitise_output(out: dict) -> dict:
@@ -1179,6 +1363,8 @@ def build_portable(
         elif cell_type == "code":
             if spec.rewrite_columns and "eda_phenotype_columns.json" in source:
                 source = _rewrite_data_loading(source, columns)
+            elif spec.embed_har_compact_table and "uci_har_compact.csv.gz" in source:
+                source = _embed_har_compact_table()
             new = nbf.new_code_cell(source)
             new["id"] = src_cell["id"]
             new["metadata"] = {}
