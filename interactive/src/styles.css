@@ -692,6 +692,17 @@ input[type="radio"] {
   margin: 0;
   font-size: 0.9rem;
   color: var(--muted);
+  /* WP38R sec 7/9.5: these strings contain code-like unbroken tokens (e.g.
+     "KNeighborsRegressor(n_neighbors=15))", longer than the estimator name
+     this replaced). Without this, a single-column narrow grid track (this
+     panel's own `.widget-workflow-grid` collapses to one column under
+     ~546px) can still compute its intrinsic/scrollable content size from
+     that token's un-wrapped length even though the visible text paints
+     wrapped and fits -- producing a real horizontal scrollWidth overflow
+     (measured: 20px in the built book at 390px) with no single element's
+     own rendered box appearing to exceed its container. This lets the
+     token itself break instead. */
+  overflow-wrap: break-word;
 }
 
 .widget-participant-grid {

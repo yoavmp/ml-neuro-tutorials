@@ -42,6 +42,22 @@
 // and a height change of less than IGNORE_DELTA_PX is treated as noise, not
 // a real content-size change -- preventing a resize message/parent
 // iframe.height write loop.
+//
+// WP38R sec 7 (second finding): the height reported on each firing is the
+// ResizeObserver entry's OWN `contentRect.height`, not a fresh
+// `document.body.scrollHeight` read taken when the deferred rAF callback
+// runs. Measured directly on a dynamically-sized chart (regularization-
+// explore's coefficient plot, whose height depends on how many coefficients
+// are shown): on the specific frame a shrink settles, the entry's
+// `contentRect.height` already reported the correct, final, smaller value,
+// while a `document.body.scrollHeight` read one (or even two) animation
+// frames later still returned the previous, larger value and never
+// corrected afterward -- no further resize fires because `<body>`'s own
+// content box, which is what ResizeObserver watches, does not change again.
+// The entry's `contentRect` is the authoritative measurement FOR the resize
+// event that produced it; re-deriving the same quantity via a separately
+// timed property read is exactly the gap that let a stale value slip
+// through and stick.
 const IGNORE_DELTA_PX = 2;
 
 export function startHeightReporting(): void {
@@ -50,20 +66,24 @@ export function startHeightReporting(): void {
 
   let lastReportedHeight = 0;
   let rafHandle: number | undefined;
+  let pendingHeight = document.body.scrollHeight;
 
   function postHeight(): void {
     rafHandle = undefined;
-    const height = document.body.scrollHeight;
+    const height = pendingHeight;
     if (Math.abs(height - lastReportedHeight) < IGNORE_DELTA_PX) return;
     lastReportedHeight = height;
     window.parent.postMessage({ type: "ml-activity-resize", height }, window.location.origin);
   }
 
-  function scheduleReport(): void {
+  function scheduleReport(height: number): void {
+    pendingHeight = height;
     if (rafHandle !== undefined) return; // already coalescing this frame
     rafHandle = window.requestAnimationFrame(postHeight);
   }
 
-  new ResizeObserver(scheduleReport).observe(document.body);
-  scheduleReport();
+  new ResizeObserver((entries) => {
+    scheduleReport(entries[entries.length - 1]!.contentRect.height);
+  }).observe(document.body);
+  scheduleReport(document.body.scrollHeight);
 }

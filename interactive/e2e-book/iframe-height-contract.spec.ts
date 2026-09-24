@@ -202,7 +202,21 @@ async function measureContract(page: Page, iframeSelector: string): Promise<Cont
   const { childScrollHeight, trailingGap } = await frame.evaluate(() => {
     const height = document.body.scrollHeight;
     const app = document.getElementById("app");
-    const last = app?.lastElementChild ?? null;
+    // WP38R sec 7.1: the DOM's last child is not necessarily the last
+    // VISIBLE one -- e.g. leakage-quiz's `successPanel` and the multi-
+    // select-quiz's hidden marks/feedback stay in the DOM (just `hidden`)
+    // until an answer is checked, and a `hidden`/`display:none` element's
+    // own `getBoundingClientRect()` is an all-zero rect, so measuring
+    // against it would report almost the *entire* page height as "trailing
+    // gap" rather than the real, small one below the actually-rendered
+    // content. Walk backwards to the last child with a non-zero rendered
+    // box.
+    let last: Element | null = app?.lastElementChild ?? null;
+    while (last) {
+      const rect = last.getBoundingClientRect();
+      if (rect.width > 0 || rect.height > 0) break;
+      last = last.previousElementSibling;
+    }
     const gap = last ? height - last.getBoundingClientRect().bottom : null;
     return { childScrollHeight: height, trailingGap: gap };
   });
@@ -299,7 +313,10 @@ test.describe("iframe height contract (every activity, Exercises 1-10)", () => {
       // pre-fix `document.documentElement.scrollHeight` (viewport-floored)
       // measurement could never report correctly once the iframe had grown
       // taller than that default.
-      const resetButton = frame.locator('button[data-testid*="reset" i]').first();
+      // Some activities' reset control (e.g. leakage-quiz's "Try again")
+      // starts hidden and only appears after another interaction (checking
+      // an answer) -- only click one that is actually visible right now.
+      const resetButton = frame.locator('button[data-testid*="reset" i]:visible').first();
       if (await resetButton.count()) {
         await resetButton.click();
         const afterReset = await measureContract(page, iframeSelector);
