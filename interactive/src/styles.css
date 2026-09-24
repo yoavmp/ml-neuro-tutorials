@@ -320,7 +320,22 @@ input[type="radio"] {
 
 .widget-plot {
   width: 100%;
-  min-height: 320px;
+  /* WP38R sec 7: this used to be a flat 320px, but every activity's Plotly
+     `layout.height` (plotly-policy.ts's `buildPlotLayout` override) is an
+     explicit number already -- 240px is the smallest one any component
+     configures (boosting-step-by-step's residual/MSE bar, pca-kmeans-
+     explorer's inertia/silhouette/composition panels). A flat 320px floor
+     left components configured shorter than that (many sit at 240-300px)
+     with 20-80px of permanent dead space below their own rendered figure,
+     multiplied by however many undersized plots one activity stacks (e.g.
+     leakage-lab's two 300px plots, or pca-kmeans-explorer's four sub-320px
+     panels) -- exactly the "excessive empty space below interactive
+     content" defect. 240px is a floor no real configured height falls
+     under, so it never clips or shrinks a plot below its own content (a
+     min-height can only ever add space, never remove it); it only bounds
+     the empty flash between mount and the first (async) Plotly.react()
+     paint, without forcing extra space once that paint lands. */
+  min-height: 240px;
   /* WP16: the 12px minimum clearance this buffers against is measured to the
      next element's own rendered top (e.g. a following <details><summary>),
      whose exact position includes the browser's native disclosure-marker
@@ -523,6 +538,21 @@ input[type="radio"] {
 }
 
 .widget-quiz-question {
+  /* WP38R sec 3: hardening, not a fix for a reproduced defect -- extensive
+     measurement (Chromium + Firefox, desktop/mid-wrap/390px, light/dark, the
+     standalone widget preview and the real built-book iframe) found the
+     legend and the first option always separated by the intended 8px gap,
+     with no overlap, at every width from a single line up through the
+     ~5-line wrap this question reaches at 390px (see WP38R_REPORT.md sec 4).
+     `<legend>` has no reliable default cross-browser `width`, so this pins
+     it explicitly to the fieldset's own content width rather than relying on
+     an unspecified intrinsic size -- removing the only plausible latent
+     cause named in the spec (an implicit/insufficient width standing in for
+     a "fixed line assumption") even though it did not reproduce.
+     `white-space: normal` (the default, left unset) keeps wrapping natural. */
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   font-weight: 600;
   padding: 0 4px;
 }

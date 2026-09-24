@@ -14,6 +14,26 @@
 // No-ops when not embedded (e.g. the standalone Vite preview used by the e2e
 // suite) and only ever posts to this page's own origin.
 //
+// WP38R sec 7: this used to observe and measure `document.documentElement`
+// (the `<html>` element). That is the root cause of the "excessive blank
+// space below interactive content" defect -- per the CSSOM View spec, the
+// *root* element's `scrollHeight` is defined as the greater of the
+// viewport's height and the content's rendered height, so it can never
+// report a value smaller than whatever height the iframe is CURRENTLY set
+// to. Every activity starts life exactly in that too-tall state (the
+// notebook's static pre-JS `height` attribute is always an approximation of
+// the real content, and is frequently taller than it), and any later
+// content contraction (a control resetting to shorter text, a comparison
+// grid collapsing) is invisible to `documentElement.scrollHeight` for the
+// same reason -- confirmed by direct measurement: forcing a short
+// activity's viewport taller than its content made `documentElement
+// .scrollHeight` stick at the viewport's own height even after the content
+// was shrunk further, while `document.body.scrollHeight` tracked the real,
+// smaller value throughout (see WP38R_REPORT.md sec 5). `<body>` has no such
+// viewport floor -- its `scrollHeight` (and its own laid-out box, which
+// `ResizeObserver` watches below) reflect only its actual content, in both
+// directions, which is exactly what this needs to report.
+//
 // WP35 §17.5: a ResizeObserver can fire many times within the same frame
 // (e.g. Plotly re-drawing several stacked plots during one relayout) and
 // sub-pixel/scrollbar rounding can oscillate a reported height by a pixel or
@@ -33,7 +53,7 @@ export function startHeightReporting(): void {
 
   function postHeight(): void {
     rafHandle = undefined;
-    const height = document.documentElement.scrollHeight;
+    const height = document.body.scrollHeight;
     if (Math.abs(height - lastReportedHeight) < IGNORE_DELTA_PX) return;
     lastReportedHeight = height;
     window.parent.postMessage({ type: "ml-activity-resize", height }, window.location.origin);
@@ -44,6 +64,6 @@ export function startHeightReporting(): void {
     rafHandle = window.requestAnimationFrame(postHeight);
   }
 
-  new ResizeObserver(scheduleReport).observe(document.documentElement);
+  new ResizeObserver(scheduleReport).observe(document.body);
   scheduleReport();
 }

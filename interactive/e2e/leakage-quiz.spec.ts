@@ -137,5 +137,48 @@ for (const { name, prefix } of BASES) {
       );
       expect(overflow).toBeLessThanOrEqual(1);
     });
+
+    // WP38R sec 3/9.1: the wrapped question must stay visually separate from
+    // the answer list at every width the question itself wraps differently
+    // at -- a single line at very wide desktop widths, two or more lines at
+    // an intermediate width, and the ~5-line wrap the real question text
+    // reaches at 390px (see WP38R_REPORT.md sec 4 for the measurements this
+    // pins down: no overlap reproduced, but this test keeps it that way).
+    for (const { label, width, colorScheme } of [
+      { label: "desktop", width: 1280, colorScheme: "light" as const },
+      { label: "intermediate wrapping width", width: 700, colorScheme: "light" as const },
+      { label: "390px", width: 390, colorScheme: "dark" as const },
+    ]) {
+      test(`question bounding box does not overlap the first option at ${label}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.emulateMedia({ colorScheme });
+        await page.goto(appUrl(prefix, QUERY));
+        await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+        await page.waitForTimeout(200); // let web fonts / wrapped text settle
+
+        const question = page.locator(".widget-quiz-question");
+        const firstOption = page.locator('[data-testid^="quiz-option-"]').first();
+        const questionBox = await question.boundingBox();
+        const firstOptionBox = await firstOption.boundingBox();
+        expect(questionBox).not.toBeNull();
+        expect(firstOptionBox).not.toBeNull();
+
+        // the question must have wrapped onto at least one line and remain
+        // fully above the first option's own box, with a real (non-zero)
+        // gap -- not merely "not negative".
+        const gap = firstOptionBox!.y - (questionBox!.y + questionBox!.height);
+        expect(gap).toBeGreaterThanOrEqual(4);
+
+        // and reload once (simulating a hard refresh with dark mode already
+        // active) to cover the "initial load and reload while dark" case.
+        await page.reload();
+        await expect(page.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+        await page.waitForTimeout(200);
+        const questionBox2 = await question.boundingBox();
+        const firstOptionBox2 = await firstOption.boundingBox();
+        const gap2 = firstOptionBox2!.y - (questionBox2!.y + questionBox2!.height);
+        expect(gap2).toBeGreaterThanOrEqual(4);
+      });
+    }
   });
 }
