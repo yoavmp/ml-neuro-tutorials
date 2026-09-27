@@ -152,10 +152,21 @@ class Notebook(unittest.TestCase):
         self.assertIn('assert all(c.startswith("fsCT_") for c in FEATURES)', src)
         self.assertIn('assert "group" not in FEATURES', src)
         self.assertIn("360 features", self.all_output)
-        # same FEATURES derivation line as Exercise 2's Section 2 recipe cell
-        ex2 = nbformat.read(REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb", as_version=4)
-        ex2_cell = next(c for c in ex2.cells if c["id"] == "wp11-021")
-        self.assertIn('FEATURES = [c for c in BRAIN_COLS if c.startswith("fsCT_")]', _src(ex2_cell))
+        # Exercise 2 uses the identical 360-column canonical recipe (same
+        # manifest, same bundle/measure/target), though WP41 gave it its own
+        # same-origin data export (book/lite/files/data/) with a differently
+        # shaped FEATURES derivation one-liner -- compare the actual column
+        # set, not notebook source text, so this check does not depend on
+        # Exercise 2's internal implementation.
+        import json
+
+        sidecar = json.loads(
+            (
+                REPO_ROOT / "book" / "lite" / "files" / "data" / "abide_age_brain.manifest.json"
+            ).read_text()
+        )
+        self.assertEqual(len(sidecar["predictor_columns"]), 360)
+        self.assertTrue(all(c.startswith("fsCT_") for c in sidecar["predictor_columns"]))
 
     def test_forbidden_columns_are_not_predictors(self):
         xy_cell = self.by_id["wp17-032"]

@@ -30,11 +30,14 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_02,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,chapter_09,chapter_10,all}``
+``--notebook {chapter_01,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,chapter_09,chapter_10,all}``
 (default ``all``) scopes both modes. Exercises 11-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
-registered here. The bare ``--write`` / ``--check`` invocations keep working
-and now cover every registered notebook.
+registered here. chapter_02 is also absent: WP41 migrated Exercise 2 to a
+JupyterLite-native notebook, and scripts/generate_exercise_02_notebook.py is
+now its sole generator (see that script's own ``--write``/``--check``). The
+bare ``--write`` / ``--check`` invocations keep working and now cover every
+notebook still registered here.
 
 Determinism: each output depends only on its committed inputs. Serialization
 goes through ``nbformat.writes`` (sorted keys, fixed indent) with a single
@@ -59,9 +62,6 @@ COLUMNS_JSON = REPO_ROOT / "book" / "config" / "eda_phenotype_columns.json"
 
 PUBLISHED_PAGE = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_01/exercise_01.html"
-)
-PUBLISHED_PAGE_CH2 = (
-    "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html"
 )
 PUBLISHED_PAGE_CH3 = (
     "https://yoavmp.github.io/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html"
@@ -237,71 +237,6 @@ _CH1_SETUP = (
     "public data file the first time it runs, so it needs internet access."
 )
 
-_CH2_BANNER = (
-    "# Exercise 2: Regression and Bias-Variance Trade-Off - portable notebook\n"
-    "\n"
-    "This is the **portable version** of the Exercise 2 regression and KNN\n"
-    "bias-variance practice from **Machine Learning for Neuroscience**,\n"
-    "generated from the full interactive course notebook. It is meant for running or editing\n"
-    "the code in Google Colab or in a local VS Code / Jupyter setup.\n"
-    "\n"
-    "The richer version -- with the k-exploration activity embedded and\n"
-    "running in the browser -- is the published course page:\n"
-    "<" + PUBLISHED_PAGE_CH2 + ">\n"
-    "\n"
-    "In this notebook that interactive activity is replaced by a link to\n"
-    "that page; every Python analysis cell is kept and runnable. Questions\n"
-    "marked *Think first* are followed, where one exists, by a collapsible\n"
-    "*Check your reasoning* block; open questions are left without one fixed\n"
-    "answer."
-)
-
-_CH2_SETUP = (
-    "## Setup\n"
-    "\n"
-    "This notebook imports only `numpy`, `pandas`, `matplotlib` and\n"
-    "`scikit-learn`. All four are already installed on Google Colab, and in a\n"
-    "typical scientific-Python environment, so there is normally nothing to\n"
-    "do here.\n"
-    "\n"
-    "If one of the imports further down fails, run the next cell once (edit\n"
-    "the version pins if your project needs specific ones), then restart the\n"
-    "kernel and run the notebook from the top. The notebook also downloads two\n"
-    "public data files the first time it runs, so it needs internet access."
-)
-
-_CH2_IFRAME_REPLACEMENT = (
-    "### Compare feature sets on the course website\n"
-    "\n"
-    "The interactive activity lets you configure two linear-regression models\n"
-    "-- a measurement type and an anatomical ROI bundle each -- and compares\n"
-    "their held-out performance on one fixed cohort and one fixed train/test\n"
-    "split.\n"
-    "\n"
-    "> **Interactive version on the course website.** It is embedded in the\n"
-    "> published Exercise II page:\n"
-    "> <" + PUBLISHED_PAGE_CH2 + ">\n"
-    "> This portable notebook links to it instead of embedding it. The\n"
-    "> Python sections below still run the same kind of comparison directly."
-)
-
-_CH2_KNN_EXPLORE_IFRAME_REPLACEMENT = (
-    "### Explore k yourself on the course website\n"
-    "\n"
-    "The interactive activity lets you drag a slider across every k from 1\n"
-    "through every participant in the fitting set and watch fitting error,\n"
-    "validation error, and the observed-vs-predicted scatter update from the\n"
-    "actual refitted model at that k.\n"
-    "\n"
-    "> **Interactive version on the course website.** It is embedded in the\n"
-    "> published Exercise 2 page:\n"
-    "> <" + PUBLISHED_PAGE_CH2 + ">\n"
-    "> This portable notebook links to it instead of embedding it. Section 6\n"
-    "> above already computes and plots the same k = 1..N_fit exploration as a\n"
-    "> static Matplotlib figure, from the same fitting/validation split -- run\n"
-    "> it and change `FIT_RANDOM_STATE` or the split size to explore further."
-)
-
 # Per-activity replacement for the Chapter 1 `<iframe>` cells, keyed by the
 # iframe `title` attribute.
 IFRAME_REPLACEMENTS = {
@@ -378,24 +313,6 @@ CHAPTER_01 = NotebookSpec(
     rewrite_columns=True,
 )
 
-CHAPTER_02 = NotebookSpec(
-    key="chapter_02",
-    canonical=REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb",
-    portable=REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb",
-    published_page=PUBLISHED_PAGE_CH2,
-    banner_source=_CH2_BANNER,
-    setup_source=_CH2_SETUP,
-    lesson_packages="numpy pandas matplotlib scikit-learn",
-    drop_admonition_titles=DROP_ADMONITION_TITLES,
-    iframe_replacements={
-        "Interactive KNN neighbour-count exploration for predicting age from brain structure": (
-            _CH2_KNN_EXPLORE_IFRAME_REPLACEMENT
-        ),
-    },
-    preserve_output_ids=frozenset(),
-    rewrite_columns=False,
-    colab_title="Exercise 2: Regression and Bias-Variance Trade-Off",
-)
 
 _CH3_BANNER = (
     "# Exercise 3: Classification and Metrics - portable notebook\n"
@@ -1158,7 +1075,11 @@ CHAPTER_10 = NotebookSpec(
 
 NOTEBOOKS = {
     CHAPTER_01.key: CHAPTER_01,
-    CHAPTER_02.key: CHAPTER_02,
+    # chapter_02 is intentionally absent: WP41 migrated Exercise 2 to a
+    # JupyterLite-native notebook. scripts/generate_exercise_02_notebook.py
+    # is now the sole generator for both book/lite/files/exercise_02.ipynb
+    # and book/downloads/chapter_02/exercise_02_portable.ipynb; the old
+    # MyST-directive-rewriting pipeline below no longer applies to it.
     CHAPTER_03.key: CHAPTER_03,
     CHAPTER_04.key: CHAPTER_04,
     CHAPTER_05.key: CHAPTER_05,

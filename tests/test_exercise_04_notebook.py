@@ -162,15 +162,19 @@ class Notebook(unittest.TestCase):
     # -- 6. same ABIDE task as Exercise 2 -------------------------------------
 
     def test_same_abide_age_prediction_task_and_fixed_predictors_as_exercise_2(self):
-        ex2 = nbformat.read(
-            REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb", as_version=4
+        # WP41 moved Exercise 2 to book/lite/files/exercise_02.ipynb, with its
+        # own same-origin data export whose network fallback embeds this same
+        # pinned commit SHA directly in a URL (no "PIN = ..." constant of its
+        # own any more) -- compare against the known pinned SHA rather than
+        # exercise_02's internal source text, so this check does not depend
+        # on its implementation.
+        ex2_lite = nbformat.read(
+            REPO_ROOT / "book" / "lite" / "files" / "exercise_02.ipynb", as_version=4
         )
-        ex2_code = "\n\n".join(_src(c) for c in ex2.cells if c["cell_type"] == "code")
-        # same public data pin
+        ex2_code = "\n\n".join(_src(c) for c in ex2_lite.cells if c["cell_type"] == "code")
         pin = re.search(r'PIN = "([0-9a-f]{40})"', self.code)
-        ex2_pin = re.search(r'PIN = "([0-9a-f]{40})"', ex2_code)
         self.assertIsNotNone(pin)
-        self.assertEqual(pin.group(1), ex2_pin.group(1))
+        self.assertIn(pin.group(1), ex2_code)
         # same target and same fixed 360-predictor recipe
         self.assertIn('y = model_df.loc[has_age, "age"]', self.code)
         self.assertIn(

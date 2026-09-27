@@ -23,20 +23,24 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
+# chapter_02 is intentionally absent from CANONICAL/PORTABLE/EXERCISE_NUMBERS:
+# WP41 replaced its canonical notebook with a short JupyterLite transition
+# page (see tests/test_exercise_02_transition_page.py) and moved the actual
+# lesson to book/lite/files/exercise_02.ipynb (see
+# tests/test_exercise_02_lite_notebook.py), so the opening-structure/wording
+# conventions checked here no longer apply to it.
 CANONICAL = {
     "chapter_01": REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb",
-    "chapter_02": REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb",
     "chapter_03": REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
 }
 PORTABLE = {
     "chapter_01": REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb",
-    "chapter_02": REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb",
     "chapter_03": REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
 }
 WIDGET_CONFIGS = sorted((REPO_ROOT / "book" / "_static" / "widgets" / "configs").glob("*.json"))
 
 # Exercise number, one row per notebook, in the same order as CANONICAL.
-EXERCISE_NUMBERS = {"chapter_01": "1", "chapter_02": "2", "chapter_03": "3"}
+EXERCISE_NUMBERS = {"chapter_01": "1", "chapter_03": "3"}
 
 COVERS_HEADING = "## What this notebook covers"
 MAIN_HEADING_RE = re.compile(r"^## \d+\.", re.MULTILINE)
@@ -146,16 +150,16 @@ class RepeatedLoadingCellTests(unittest.TestCase):
             tags = nb["cells"][idx].get("metadata", {}).get("tags", [])
             self.assertEqual(tags, [], f"chapter_01 cell {idx} should carry no hide tag")
 
-    def test_exercises_2_to_3_hide_input_on_the_repeated_loading_cell(self):
-        for key in ("chapter_02", "chapter_03"):
+    def test_exercise_3_hides_input_on_the_repeated_loading_cell(self):
+        for key in ("chapter_03",):
             nb = _load(CANONICAL[key])
             cell = nb["cells"][4]
             tags = cell.get("metadata", {}).get("tags", [])
             self.assertIn("hide-input", tags, f"{key} cell 4 should carry hide-input")
             self.assertNotIn("hide-cell", tags, f"{key} cell 4 must not use hide-cell (it hides output too)")
 
-    def test_exercises_2_to_3_loading_cell_output_is_present(self):
-        for key in ("chapter_02", "chapter_03"):
+    def test_exercise_3_loading_cell_output_is_present(self):
+        for key in ("chapter_03",):
             nb = _load(CANONICAL[key])
             cell = nb["cells"][4]
             text = _cell_output_text(cell)

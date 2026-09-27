@@ -191,31 +191,28 @@ class NoDuplicateActiveCopies(unittest.TestCase):
         )
 
     def test_only_one_active_copy_of_the_transferred_knn_material(self):
-        import json
+        # WP41 moved Exercise 2's KNN material off book/chapters/chapter_02/
+        # (now a JupyterLite transition page, see
+        # tests/test_exercise_02_transition_page.py) into
+        # scripts/reference_notebooks/exercise_02_reference.ipynb (the
+        # completed fixed-k=20 fit is a "YOUR CODE HERE" activity in the
+        # student-facing template, so only the reference notebook has the
+        # real, executed fit). It must appear exactly once there, and nowhere
+        # in the other active chapter notebooks.
+        reference = (
+            REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_02_reference.ipynb"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(reference.count("KNeighborsRegressor(n_neighbors=20)"), 1)
 
-        nb = json.loads(
-            (REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb").read_text(
-                encoding="utf-8"
-            )
-        )
-        # one illustrative markdown snippet ("```python K_EXAMPLE = 20```",
-        # matching Exercise 2's linear-regression "Choosing C"-style pattern)
-        # plus exactly one real, executed code cell -- never two fit cells.
-        code_hits = sum(
-            1
-            for c in nb["cells"]
-            if c["cell_type"] == "code" and "K_EXAMPLE = 20" in "".join(c["source"])
-        )
-        self.assertEqual(code_hits, 1)
-        ex2 = (REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb").read_text(
-            encoding="utf-8"
-        )
-        # not duplicated anywhere else in the active chapters
+        transition = (
+            REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("KNeighborsRegressor", transition)
         for n in (1, 3):
             other = (
                 REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
             ).read_text(encoding="utf-8")
-            self.assertNotIn("K_EXAMPLE = 20", other)
+            self.assertNotIn("KNeighborsRegressor(n_neighbors=20)", other)
 
     def test_no_active_knn_abc_assets_remain(self):
         self.assertFalse(

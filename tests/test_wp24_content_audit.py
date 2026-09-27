@@ -189,30 +189,33 @@ class Exercise5SingleExploratoryWarning(unittest.TestCase):
         self.assertNotIn(self.NEEDLE, text)
 
 
-class Exercise2SampleSizeSectionAccurate(unittest.TestCase):
-    """WP24 §3.2: §5 is shortened and accurately describes the predeclared,
-    non-ranked feature-bundle selection; the fixed feature set is unchanged."""
+EX2_LITE = REPO_ROOT / "book" / "lite" / "files" / "exercise_02.ipynb"
 
-    def test_section_5_is_concise(self):
-        # WP25 moved this subsection under "## Bonus" as "### What does
-        # sample size change?" (previously the top-level "## 5.").
-        text = _notebook_markdown_text(EX2)
-        start = text.index("### What does sample size change?")
-        marker = "```{admonition} What the learning curve shows"
-        end = text.index(marker, start) if marker in text[start:] else len(text)
+
+class Exercise2SampleSizeSectionAccurate(unittest.TestCase):
+    """WP24 §3.2: the Bonus section is concise and accurately describes the
+    predeclared, non-ranked feature-bundle selection; the fixed feature set
+    is unchanged. WP41 moved Exercise 2's canonical page to
+    book/lite/files/exercise_02.ipynb (book/chapters/chapter_02/exercise_02.ipynb
+    is now a transition page, see tests/test_exercise_02_transition_page.py)."""
+
+    def test_bonus_intro_is_concise(self):
+        text = _notebook_markdown_text(EX2_LITE)
+        start = text.index("## Bonus")
+        end = text.index("```", start) if "```" in text[start:] else start + 400
         section = text[start:end]
-        self.assertLess(len(section.split()), 220, "Section 5 lead-in should be concise")
+        self.assertLess(len(section.split()), 220, "Bonus lead-in should be concise")
 
     def test_selection_described_as_not_ranked_by_correlation(self):
-        text = _notebook_markdown_text(EX2)
+        text = _notebook_markdown_text(EX2_LITE)
         self.assertIn("not chosen by ranking", text)
 
     def test_teaching_demonstration_caution_present(self):
-        text = _notebook_markdown_text(EX2)
+        text = _notebook_markdown_text(EX2_LITE)
         self.assertIn("teaching demonstration", text.lower())
 
     def test_fixed_feature_set_and_sizes_unchanged(self):
-        text = _notebook_text(EX2)
+        text = _notebook_text(EX2_LITE)
         self.assertIn('SAMPLE_SIZE_ROIS = ["4", "3a", "3b", "1", "2"]', text)
         self.assertIn("sizes = [40, 60, 90, 130, 200, 300, len(y_train_ss)]", text)
 

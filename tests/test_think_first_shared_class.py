@@ -1,5 +1,8 @@
 """WP14 section 2: one shared blue "Think first" admonition across every
-canonical notebook (Exercises 1-3).
+canonical lesson notebook (Exercises 1 and 3; Exercise 2's canonical page is
+now a WP41 JupyterLite transition page with no MyST admonitions of its own --
+see tests/test_exercise_02_transition_page.py and
+tests/test_exercise_02_lite_notebook.py instead).
 
 Standard-library ``unittest``; no network. Scans every markdown cell of all
 three canonical notebooks and asserts that every "Think first" admonition
@@ -22,7 +25,6 @@ import nbformat
 REPO_ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOKS = {
     "chapter_01": REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb",
-    "chapter_02": REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb",
     "chapter_03": REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
 }
 

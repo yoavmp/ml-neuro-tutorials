@@ -126,9 +126,13 @@ class NotebookContentAudit(unittest.TestCase):
             )
 
     def test_exercise_2_uses_fixed_k20_language(self):
-        for path in (NOTEBOOK_PATHS[1], NOTEBOOK_PATHS[4]):
-            text = _notebook_text(path)
-            self.assertIn("K_EXAMPLE = 20", text, path)
+        # WP41 turned this step into a "YOUR CODE HERE" activity in the
+        # student-facing notebook (book/lite/files/exercise_02.ipynb and its
+        # portable copy), so the fixed, non-tuned k=20 starting value is
+        # checked in the completed reference notebook instead.
+        reference = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_02_reference.ipynb"
+        text = _notebook_text(reference)
+        self.assertIn("KNeighborsRegressor(n_neighbors=20)", text, reference)
 
     def test_exercise_3_uses_fixed_c1_language(self):
         for path in (NOTEBOOK_PATHS[2], NOTEBOOK_PATHS[5]):
