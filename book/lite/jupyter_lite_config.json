@@ -1,0 +1,9 @@
+{
+  "LiteBuildConfig": {
+    "apps": ["notebooks"],
+    "no_sourcemaps": true,
+    "federated_extensions": [
+      "extensions/course-toolbar/course_toolbar/labextension"
+    ]
+  }
+}

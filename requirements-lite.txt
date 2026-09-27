@@ -1,0 +1,12 @@
+# Pinned, stable build-time dependencies for the JupyterLite browser notebook
+# platform (WP41 Gate A). Do not float these versions and do not use
+# alpha/rc/dev releases. Kept separate from the root requirements.txt, which
+# covers the Jupyter Book build only.
+#
+# jupyterlite-core builds the static JupyterLite application (the "notebooks"
+# app only, see book/lite/jupyter_lite_config.json).
+# jupyterlite-pyodide-kernel supplies the in-browser Python (Pyodide) kernel
+# and resolves/locks the pinned scientific-package set declared in
+# book/lite/overrides.json.
+jupyterlite-core==0.8.3
+jupyterlite-pyodide-kernel==0.8.5

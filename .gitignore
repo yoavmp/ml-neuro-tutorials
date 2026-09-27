@@ -20,6 +20,12 @@ interactive/dist/
 interactive/node_modules/
 book/_static/widgets/app/
 
+# JupyterLite course platform (WP41): source lives in book/lite/, but its
+# TypeScript build output and packaged labextension are generated.
+book/lite/extensions/*/lib/
+book/lite/extensions/*/*.tsbuildinfo
+book/lite/extensions/*/*/labextension/
+
 # Playwright test artifacts
 playwright-report/
 test-results/

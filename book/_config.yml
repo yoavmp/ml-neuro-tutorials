@@ -43,6 +43,12 @@ html:
 # warning and is not published under _build/html.
 exclude_patterns:
   - downloads/*
+  # book/lite/ is JupyterLite source material (config, notebooks copied
+  # verbatim into the browser app, and a labextension with its own
+  # node_modules/build tree) -- not Jupyter Book content. jupyter-lite
+  # itself is built as a separate step, straight into _build/html/lite.
+  - lite/*
+  - lite/**
 
 parse:
   myst_enable_extensions:

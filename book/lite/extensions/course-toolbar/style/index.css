@@ -1,0 +1,19 @@
+.course-toolbar-status-widget {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.course-toolbar-status {
+  font-size: var(--jp-ui-font-size1);
+  color: var(--jp-ui-font-color2);
+  white-space: nowrap;
+}
+
+.course-toolbar-status[data-state='dirty'] {
+  color: var(--jp-warn-color1);
+}
+
+.course-toolbar-status[data-state='saving'] {
+  color: var(--jp-brand-color1);
+}
