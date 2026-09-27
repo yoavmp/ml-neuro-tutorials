@@ -8,6 +8,25 @@ scripts/generate_exercise_02_notebook.py); this page keeps the same H1 title
 (so the book Contents page's auto-generated listing is unchanged) and points
 students straight at the JupyterLite notebook.
 
+WP41R blocker 3: both destination links use raw inline HTML `<a href=...>`
+rather than Markdown `[text](url)` syntax. MyST/Sphinx treats a *relative*
+Markdown link that is not a scheme-qualified external URL as a candidate
+cross-reference to another document in this project; since neither
+"../../lite/notebooks/index.html?path=..." nor
+"../../downloads/chapter_02/exercise_02_portable.ipynb" is a real Sphinx
+document, that resolution fails and the built HTML ends up either as a
+same-page "#..." anchor (a no-op click) or literal unlinked text. Raw inline
+HTML in a Markdown cell is passed through untouched by CommonMark/MyST, so it
+renders as an ordinary, working `<a>` tag instead.
+
+The download path is real (not 404) because `book/_config.yml` copies
+`book/downloads/` into the built site via Sphinx's `html_extra_path` -- see
+the comment there. That also means this page never needs a raw
+raw.githubusercontent.com/colab.research.google.com/github/... URL (which
+requires the source repository to stay public): both links are same-origin,
+so they keep working after the repository goes private, same as the
+JupyterLite notebook and its data already do.
+
 Modes:
   --write   regenerate book/chapters/chapter_02/exercise_02.ipynb.
   --check   fail if the committed file is stale.
@@ -25,7 +44,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_PATH = REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb"
 
 LITE_URL = "../../lite/notebooks/index.html?path=exercise_02.ipynb"
-DOWNLOAD_URL = "../../downloads/chapter_02/exercise_02_portable.ipynb"
+# Not "../../downloads/chapter_02/..." -- book/downloads/ is excluded from
+# the Jupyter Book build (see book/_config.yml) and only exists as a
+# raw-GitHub-served artifact for older chapters; this served copy instead
+# comes from book/lite/files/ (see LITE_FILES_PORTABLE_COPY_PATH in
+# scripts/generate_exercise_02_notebook.py), which `jupyter lite build`
+# already copies into the site verbatim, same-origin.
+DOWNLOAD_URL = "../../lite/files/exercise_02_portable.ipynb"
 
 
 def build_notebook() -> nbformat.NotebookNode:
@@ -43,7 +68,7 @@ This exercise now runs as a single interactive notebook, directly in your
 browser -- supplied code, your own code, written answers, checked questions,
 and figures all live together in one place.
 
-**[Open Exercise 2]({LITE_URL})**
+**<a href="{LITE_URL}">Open Exercise 2</a>**
 
 The notebook opens with a **Back to course contents** button, and a
 **Download my notebook** button that saves your current work (including your
@@ -51,10 +76,10 @@ edits) at any time. Your edits are stored only in this browser; use download
 if you want a copy that survives clearing your browser data or moving to a
 different device or browser.
 
-If you would rather work outside the browser, download the same notebook
-directly and run it in a local Jupyter installation or in
-[Google Colab](https://colab.research.google.com/github/yoavmp/ml-neuro-tutorials/blob/main/book/downloads/chapter_02/exercise_02_portable.ipynb):
-[{DOWNLOAD_URL}]({DOWNLOAD_URL})
+If you would rather work outside the browser, <a href="{DOWNLOAD_URL}">download
+the same notebook</a> and open it in a local Jupyter installation, or in
+[Google Colab](https://colab.research.google.com/) using **File > Upload
+notebook**.
 """.strip()
         + "\n"
     )

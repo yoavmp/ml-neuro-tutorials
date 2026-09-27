@@ -24,6 +24,9 @@ facing code.
 Outputs:
   book/lite/files/exercise_02.ipynb                    (--student, JupyterLite)
   book/downloads/chapter_02/exercise_02_portable.ipynb (--student, Colab/local)
+  book/lite/files/exercise_02_portable.ipynb           (--student, same file,
+                                                          served copy -- see
+                                                          LITE_FILES_PORTABLE_COPY_PATH)
   scripts/reference_notebooks/exercise_02_reference.ipynb (--reference)
 
 Modes:
@@ -50,9 +53,22 @@ REFERENCE_IMAGE_PATH = REPO_ROOT / "book" / "lite" / "files" / "data" / "exercis
 
 LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_02.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb"
+# WP41R blocker 3: `book/downloads/` is excluded from the Jupyter Book source
+# scan and is not copied into `_build/html/` (see book/_config.yml) -- it
+# only ever existed as a raw-GitHub-served artifact for the older chapters
+# that link to it that way. Exercise 2's transition page must not depend on
+# that (see scripts/generate_exercise_02_transition_page.py), so the same
+# byte-identical content is also written here, next to the JupyterLite
+# template -- `jupyter lite build` already copies this whole directory
+# verbatim into `_build/html/lite/files/`, same-origin, working regardless
+# of repository visibility. PORTABLE_PATH remains the canonical committed
+# copy (consistent with every other chapter, and what Colab/local-Jupyter
+# instructions elsewhere refer to); this is a second, identical output, not
+# a second source of truth.
+LITE_FILES_PORTABLE_COPY_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_02_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_02_reference.ipynb"
 
-TEMPLATE_VERSION = 1
+TEMPLATE_VERSION = 2
 
 KERNELSPEC = {
     "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
@@ -61,9 +77,11 @@ KERNELSPEC = {
 }
 
 
-def md(source: str, cell_id: str) -> dict:
+def md(source: str, cell_id: str, attachments: dict | None = None) -> dict:
     c = new_markdown_cell(source.strip() + "\n")
     c["id"] = cell_id
+    if attachments:
+        c["attachments"] = attachments
     return c
 
 
@@ -206,6 +224,28 @@ def _setup_cell(mode: str) -> dict:
     return code(source, "wp41-000-setup", hidden=True)
 
 
+def _run_first_notice() -> dict:
+    # WP41R blocker 1: the setup cell's INPUT is collapsed (hidden=True,
+    # above) and, before this notice existed, was also the very first thing
+    # in the notebook -- nothing told a student it was there or that it had
+    # to run before anything else. A fresh JupyterLite kernel has no
+    # variables at all until this cell runs, so skipping it (easy to do:
+    # click straight into a later cell and run only that one) surfaces as a
+    # bare `NameError` on `load_abide_age_brain_table` several cells later,
+    # not here. This notice, unlike the cell it describes, is never
+    # collapsed.
+    return md(
+        """
+**Run the cell below first.** Its code is collapsed (click the `...` to
+expand it) because it is one-time setup, not part of the lesson -- but it
+still has to run once, before anything else in this notebook, or later
+cells will fail with `NameError`. Click it, then press Shift+Enter (or the
+Run button), and continue through the notebook in order from there.
+""",
+        "wp41-000a-run-first",
+    )
+
+
 # --- section builders --------------------------------------------------
 
 
@@ -246,7 +286,14 @@ from sklearn.metrics import r2_score, mean_squared_error
         code(
             """
 # Load the established ABIDE-II age/brain table.
-data = load_abide_age_brain_table()
+try:
+    data = load_abide_age_brain_table()
+except NameError as exc:
+    raise RuntimeError(
+        "load_abide_age_brain_table is not defined yet. Run this notebook's "
+        "first code cell (collapsed, at the very top, under 'Run the cell "
+        "below first') before this one, then run this cell again."
+    ) from exc
 FEATURES = [c for c in data.columns if c not in ("age", "group")]
 print(f"{len(data)} participants, {len(FEATURES)} brain predictors")
 data.head()
@@ -474,7 +521,11 @@ For reference, here is the approved current result:
 """,
             "wp41-311-3b-instructions",
         ),
-        md(_reference_image_markdown(), "wp41-312-3b-reference-image"),
+        md(
+            _reference_image_markdown(),
+            "wp41-312-3b-reference-image",
+            attachments=_reference_image_attachments(),
+        ),
         blank(
             "# YOUR CODE HERE\n",
             """
@@ -503,9 +554,22 @@ plt.show()
     return cells
 
 
+REFERENCE_IMAGE_FILENAME = "exercise_02_observed_vs_predicted.png"
+
+
+def _reference_image_attachments() -> dict:
+    # WP41R blocker 2: a notebook *attachment* keeps the huge base64 payload
+    # out of the cell's visible markdown source. The bytes still live in the
+    # .ipynb JSON (cell["attachments"]), but a student who clicks into this
+    # cell to leave/re-enter edit mode sees only the short
+    # "attachment:<filename>" reference below, not a page-length data URI --
+    # and this is core nbformat, not a JupyterLite-only trick, so it renders
+    # the same way in JupyterLite, local Jupyter/nbclient, and Colab.
+    return {REFERENCE_IMAGE_FILENAME: {"image/png": _reference_image_data_uri()}}
+
+
 def _reference_image_markdown() -> str:
-    uri = _reference_image_data_uri()
-    return f'![Approved observed-vs-predicted result](data:image/png;base64,{uri})'
+    return f"![Approved observed-vs-predicted result](attachment:{REFERENCE_IMAGE_FILENAME})"
 
 
 def _section_4() -> list[dict]:
@@ -960,7 +1024,7 @@ def _summary() -> list[dict]:
 
 
 def _build_cells(mode: str) -> list[dict]:
-    cells: list[dict] = [_setup_cell(mode)]
+    cells: list[dict] = [_run_first_notice(), _setup_cell(mode)]
     cells += _title_and_overview()
     cells += _section_1()
     section_2 = _section_2()
@@ -1015,7 +1079,7 @@ def main() -> None:
     if do_student:
         nb = build_notebook("student")
         text = _serialize(nb)
-        for path in (LITE_TEMPLATE_PATH, PORTABLE_PATH):
+        for path in (LITE_TEMPLATE_PATH, PORTABLE_PATH, LITE_FILES_PORTABLE_COPY_PATH):
             if args.write:
                 if _write_if_changed(path, text):
                     changed.append(str(path.relative_to(REPO_ROOT)))

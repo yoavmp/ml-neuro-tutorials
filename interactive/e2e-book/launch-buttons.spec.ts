@@ -1,9 +1,18 @@
 import { expect, test } from "@playwright/test";
 
 // WP12 §3: confirms the opening-admonition links AND the article-header Colab
-// button, for BOTH chapters, point at that chapter's own portable notebook —
-// never the canonical Jupyter Book source notebook, and never the other
-// chapter's notebook (the previously observed "older notebook" regression).
+// button, for every chapter still using the OLD admonition-based opening,
+// point at that chapter's own portable notebook — never the canonical
+// Jupyter Book source notebook, and never another chapter's notebook (the
+// previously observed "older notebook" regression).
+//
+// WP41R: Chapter 2 is deliberately NOT in this list any more. WP41 replaced
+// its opening with a different page structure (see chapter02.spec.ts), and
+// its top-bar Colab button is intentionally suppressed (see
+// book/_static/launch-buttons.js and "Chapter 2 has no Colab button" below)
+// rather than pointed at a URL that would open the pre-WP41 notebook (this
+// migration is unpushed) and would stop working entirely once the
+// repository goes private.
 
 const REPO = "yoavmp/ml-neuro-tutorials";
 const CHAPTERS = [
@@ -11,11 +20,6 @@ const CHAPTERS = [
     name: "Chapter 1",
     url: "/ml-neuro-tutorials/chapters/chapter_01/exercise_01.html",
     portable: "book/downloads/chapter_01/exercise_01_portable.ipynb",
-  },
-  {
-    name: "Chapter 2",
-    url: "/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html",
-    portable: "book/downloads/chapter_02/exercise_02_portable.ipynb",
   },
   {
     name: "Chapter 3",
@@ -134,5 +138,14 @@ test("a page with no portable-notebook mapping (Introduction) gets no Colab butt
 // Colab button.
 test("a placeholder exercise page (Exercise 11) gets no Colab button", async ({ page }) => {
   await page.goto("/ml-neuro-tutorials/chapters/chapter_11/exercise_11.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+// WP41R blocker 3: unlike the placeholder pages above (which never had a
+// portable notebook), Chapter 2 DOES have one -- this button is suppressed
+// deliberately, not by omission. See the file comment at the top and
+// chapter02.spec.ts for the replacement, same-origin download link.
+test("Chapter 2 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });

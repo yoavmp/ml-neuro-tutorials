@@ -46,8 +46,12 @@ async function scrollWindowed(page: Page, fraction: number) {
 // render) and a reloaded, fully-rendered notebook, so no single fraction
 // guess is reliable across both. Sweep the whole list in small steps and
 // stop once the target cell is actually laid out (has a bounding box).
-async function scrollToVisible(page: Page, text: string): Promise<import("@playwright/test").Locator> {
-  const locator = page.locator(".jp-CodeCell", { hasText: text }).first();
+async function scrollToVisible(
+  page: Page,
+  text: string,
+  cellSelector = ".jp-CodeCell",
+): Promise<import("@playwright/test").Locator> {
+  const locator = page.locator(cellSelector, { hasText: text }).first();
   for (let f = 0; f <= 1.001; f += 0.05) {
     await scrollWindowed(page, f);
     if ((await locator.count()) > 0 && (await locator.boundingBox())) {
@@ -87,9 +91,18 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
     const errorCells = await page.locator(".jp-mod-error").count();
     expect(errorCells).toBe(0);
 
-    // benign, pre-existing book-page console noise is allowed; nothing new
+    // benign, pre-existing book-page console noise is allowed; nothing new.
+    // WP41R: "ERR_UNKNOWN_URL_SCHEME" is the browser's one-time failed
+    // literal fetch of "attachment:<filename>" (not a real URL scheme) when
+    // first rendering Section 3B's reference-image markdown cell, before
+    // JupyterLab's own attachment resolver replaces the <img> src with the
+    // real data URI -- this is how nbformat cell attachments always render
+    // in any Jupyter frontend (verified: the image still displays
+    // correctly, see "the reference image returns to rendered mode..."
+    // below), not a bug introduced by using them here instead of an inline
+    // data: URI.
     const unexpected = consoleErrors.filter(
-      (e) => !/THEBE_JS_URL|invalid theme mode/i.test(e),
+      (e) => !/THEBE_JS_URL|invalid theme mode|ERR_UNKNOWN_URL_SCHEME/i.test(e),
     );
     expect(unexpected, unexpected.join("\n")).toEqual([]);
   });
@@ -212,5 +225,70 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(2);
+  });
+
+  // WP41R blocker 1, reproduced live: a fresh kernel, opened normally (NOT
+  // "Run All Cells"), where the data-load cell is run directly without first
+  // running the collapsed setup cell above it -- the natural mistake, since
+  // that cell's own input is hidden and gives no visual cue it needs to run.
+  // Before the fix this surfaced as a bare `NameError:
+  // name 'load_abide_age_brain_table' is not defined`; existing coverage
+  // only ever exercised "Run All Cells" (which queues the setup cell first
+  // by construction) and so never caught it.
+  test("running the data cell before setup fails with an actionable message, not a bare NameError", async ({
+    page,
+  }) => {
+    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
+    await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
+    await page.waitForTimeout(3000);
+
+    const target = await scrollToVisible(page, "load_abide_age_brain_table()");
+    await target.click();
+    await page.keyboard.press("Shift+Enter");
+    await page.waitForTimeout(4000);
+
+    // The RuntimeError is chained from the original NameError (`raise ... from
+    // exc`), so the traceback legitimately still shows "NameError" as the
+    // chain's root cause -- Python's own "The above exception was the direct
+    // cause of the following exception" framing, not a bug. What must be
+    // true is that the FINAL, actionable exception is the friendly
+    // RuntimeError, not that "NameError" is absent from the output.
+    const output = await target.locator(".jp-OutputArea-output").first().innerText();
+    expect(output).toContain("RuntimeError");
+    expect(output).toContain("Run this notebook's");
+    expect(output.trim().split("\n").pop()).toContain("RuntimeError:");
+  });
+
+  // WP41R blocker 2: the approved reference image must round-trip through
+  // edit mode without ever exposing its base64 payload as visible, editable
+  // Markdown source (the pre-fix `data:image/png;base64,...` URL was tens of
+  // thousands of characters on one line).
+  test("the reference image returns to rendered mode without a page-length encoded string", async ({
+    page,
+  }) => {
+    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
+    await runAllCells(page);
+    await page.waitForTimeout(100_000);
+
+    const target = await scrollToVisible(
+      page,
+      "Approved observed-vs-predicted result",
+      ".jp-MarkdownCell",
+    );
+    await expect(target.locator("img")).toBeVisible({ timeout: 5_000 });
+
+    await target.dblclick();
+    await page.waitForTimeout(500);
+    const editorText = await page.evaluate(() => {
+      const active = document.querySelector(".jp-Cell.jp-mod-active .cm-content");
+      return active ? active.textContent ?? "" : "";
+    });
+    expect(editorText.length).toBeLessThan(200);
+    expect(editorText).not.toContain("base64");
+    expect(editorText).toContain("attachment:");
+
+    await page.keyboard.press("Shift+Enter");
+    await page.waitForTimeout(800);
+    await expect(target.locator("img")).toBeVisible({ timeout: 5_000 });
   });
 });

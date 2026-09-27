@@ -47,10 +47,30 @@ class TransitionPage(unittest.TestCase):
         self.assertLessEqual(len(self.cells), 3)
 
     def test_links_to_the_jupyterlite_notebook(self):
-        self.assertIn("lite/notebooks/index.html?path=exercise_02.ipynb", self.text)
+        # WP41R blocker 3: a bare Markdown `[text](../../lite/...)` link (the
+        # pre-fix form) is a relative, non-scheme URL, which MyST/Sphinx
+        # tries to resolve as an internal cross-reference and, failing that,
+        # renders as a same-page "#..." anchor -- a no-op click. Raw HTML
+        # passes through untouched, so require the real `<a href="...">`
+        # form here, not just the URL as a substring anywhere on the page.
+        self.assertIn(
+            '<a href="../../lite/notebooks/index.html?path=exercise_02.ipynb">',
+            self.text,
+        )
 
     def test_links_to_the_downloadable_copy(self):
-        self.assertIn("downloads/chapter_02/exercise_02_portable.ipynb", self.text)
+        # Same reasoning, and not book/downloads/ (excluded from the Jupyter
+        # Book build -- see book/_config.yml): the served copy lives in
+        # book/lite/files/, which `jupyter lite build` publishes same-origin.
+        self.assertIn('<a href="../../lite/files/exercise_02_portable.ipynb">', self.text)
+        self.assertNotIn("downloads/chapter_02", self.text)
+
+    def test_no_raw_github_or_colab_deep_link(self):
+        # WP41R blocker 3: colab.research.google.com/github/.../main/... only
+        # ever reflects the public "main" branch (stale while this migration
+        # is unpushed) and stops working once the repository goes private.
+        self.assertNotIn("colab.research.google.com/github", self.text)
+        self.assertNotIn("raw.githubusercontent.com", self.text)
 
     def test_no_analysis_content_duplicated_here(self):
         # None of the real lesson's code or established numbers should be

@@ -78,14 +78,37 @@ class StudentTemplateStructure(unittest.TestCase):
 
     def test_title(self):
         self.assertEqual(
-            _src(self.cells[1]).splitlines()[0],
+            _src(self.cells[2]).splitlines()[0],
             "# Exercise 2: Regression and Bias-Variance Trade-Off",
         )
 
+    def test_run_first_notice_precedes_the_collapsed_setup_cell(self):
+        # WP41R blocker 1: the collapsed setup cell has no visible input, so
+        # a not-collapsed notice must come immediately before it telling a
+        # student to run it first -- otherwise it is easy to skip straight to
+        # a later, visible cell in a fresh kernel and hit a bare NameError.
+        notice = self.cells[0]
+        self.assertEqual(notice["cell_type"], "markdown")
+        self.assertNotIn("source_hidden", notice.get("metadata", {}).get("jupyter", {}))
+        self.assertIn("Run the cell below first", _src(notice))
+
     def test_setup_cell_is_collapsed_and_first(self):
-        setup = self.cells[0]
+        setup = self.cells[1]
         self.assertEqual(setup["cell_type"], "code")
         self.assertTrue(setup.get("metadata", {}).get("jupyter", {}).get("source_hidden"))
+
+    def test_data_load_gives_an_actionable_error_if_setup_was_skipped(self):
+        # WP41R blocker 1: reproduced live -- a fresh kernel, this cell run
+        # without first running the collapsed setup cell, raises a bare
+        # `NameError: name 'load_abide_age_brain_table' is not defined`.
+        # This must instead fail with a message that tells the student what
+        # to do, not a raw traceback -- and it must still be a REAL failure
+        # (no swallowed exception, no fabricated fallback `data`).
+        load_cell = next(c for c in self.cells if c.get("id") == "wp41-103-load")
+        source = _src(load_cell)
+        self.assertIn("except NameError", source)
+        self.assertIn("raise RuntimeError", source)
+        self.assertIn("Run this notebook's", source)
 
     # -- item 22: all requested YOUR CODE HERE tasks exist ------------------
 
@@ -130,6 +153,25 @@ class StudentTemplateStructure(unittest.TestCase):
         idx = [i for i, c in enumerate(self.cells) if "reference" in c.get("id", "")]
         for i in idx:
             self.assertNotIn("plt.scatter(y_test, y_pred", _src(self.cells[i]))
+
+    # -- WP41R blocker 2: reference image is a compact attachment, not a -----
+    # -- page-length inline base64 Markdown URL -------------------------------
+
+    def test_reference_image_is_an_attachment_not_an_inline_data_uri(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp41-312-3b-reference-image")
+        source = _src(cell)
+        self.assertNotIn("data:image/png;base64", source)
+        self.assertIn("attachment:", source)
+        # The markdown SOURCE (what a student sees on entering/leaving edit
+        # mode) must stay short -- the payload lives in cell.attachments,
+        # not in the visible text.
+        self.assertLess(len(source), 200)
+        attachments = cell.get("attachments") or {}
+        self.assertEqual(len(attachments), 1)
+        (filename, mime_map) = next(iter(attachments.items()))
+        self.assertIn(f"attachment:{filename}", source)
+        self.assertIn("image/png", mime_map)
+        self.assertGreater(len(mime_map["image/png"]), 1000)  # real base64 payload
 
     # -- item 27: required editable answer cells exist -----------------------
 
