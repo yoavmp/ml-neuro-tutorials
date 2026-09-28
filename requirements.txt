@@ -2,6 +2,7 @@ jupyter-book==1.0.4.post1
 sphinxcontrib-mermaid==2.1.1
 jupyterlab
 ipykernel
+ipywidgets==8.1.9
 numpy
 pandas
 matplotlib
