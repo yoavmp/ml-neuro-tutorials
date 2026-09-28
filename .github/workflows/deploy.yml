@@ -41,7 +41,8 @@ jobs:
         working-directory: book/lite/extensions/course-toolbar
         run: |
           npm ci
-          npm run build
+          npx tsc
+          jupyter labextension build --development True .
 
       - name: Type-check and unit-test the frontend
         working-directory: interactive
