@@ -1074,12 +1074,16 @@ CHAPTER_10 = NotebookSpec(
 )
 
 NOTEBOOKS = {
-    CHAPTER_01.key: CHAPTER_01,
-    # chapter_02 is intentionally absent: WP41 migrated Exercise 2 to a
-    # JupyterLite-native notebook. scripts/generate_exercise_02_notebook.py
-    # is now the sole generator for both book/lite/files/exercise_02.ipynb
-    # and book/downloads/chapter_02/exercise_02_portable.ipynb; the old
-    # MyST-directive-rewriting pipeline below no longer applies to it.
+    # chapter_01 and chapter_02 are intentionally absent: WP41/WP42 migrated
+    # both to JupyterLite-native notebooks.
+    # scripts/generate_exercise_01_notebook.py /
+    # scripts/generate_exercise_02_notebook.py are now the sole generators
+    # for book/lite/files/exercise_0{1,2}.ipynb and
+    # book/downloads/chapter_0{1,2}/exercise_0{1,2}_portable.ipynb; the old
+    # MyST-directive-rewriting pipeline below (CHAPTER_01's spec, its
+    # column-rewriting, banner, and setup constants included) no longer
+    # applies to either and is left in place, unused, rather than removed --
+    # see the analogous knn_explore.json decision in WP41's report.
     CHAPTER_03.key: CHAPTER_03,
     CHAPTER_04.key: CHAPTER_04,
     CHAPTER_05.key: CHAPTER_05,

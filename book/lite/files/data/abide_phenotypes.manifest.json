@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "source": "book/_static/widgets/data/abide_table_inspection.json (already-approved curated 13-column teaching table)",
+  "file": "abide_phenotypes.csv",
+  "sha256": "333fc05e864583509a353de135ffd5375f140a546d7e2865125792fdc6b95352",
+  "row_count": 1114,
+  "columns": [
+    "SITE_ID",
+    "SUB_ID",
+    "DX_GROUP",
+    "AGE_AT_SCAN",
+    "SEX",
+    "HANDEDNESS_CATEGORY",
+    "FIQ",
+    "VIQ",
+    "PIQ",
+    "CURRENT_MED_STATUS",
+    "SRS_TOTAL_RAW",
+    "ADOS_G_TOTAL",
+    "ADI_R_SOCIAL_TOTAL_A"
+  ]
+}

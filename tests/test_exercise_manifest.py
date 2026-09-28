@@ -49,9 +49,9 @@ class ExerciseManifest(unittest.TestCase):
         for e in self.exercises:
             self.assertEqual(set(e.keys()), REQUIRED_FIELDS, e)
 
-    def test_only_exercise_2_is_migrated(self):
+    def test_only_exercises_1_and_2_are_migrated(self):
         migrated = [e["number"] for e in self.exercises if e["migrationState"] == "migrated"]
-        self.assertEqual(migrated, [2])
+        self.assertEqual(migrated, [1, 2])
         for e in self.exercises:
             self.assertIn(e["migrationState"], {"migrated", "legacy"})
 
@@ -78,10 +78,12 @@ class ExerciseManifest(unittest.TestCase):
             path = REPO_ROOT / "book" / e["legacyStaticPagePath"]
             self.assertTrue(path.exists(), path)
 
-    def test_exercise_2_data_assets_exist_on_disk(self):
-        ex2 = next(e for e in self.exercises if e["number"] == 2)
-        for rel in ex2["dataAssets"]:
-            self.assertTrue((REPO_ROOT / rel).exists(), rel)
+    def test_migrated_data_assets_exist_on_disk(self):
+        for e in self.exercises:
+            if e["migrationState"] != "migrated":
+                continue
+            for rel in e["dataAssets"]:
+                self.assertTrue((REPO_ROOT / rel).exists(), rel)
 
     def test_migrated_template_versions_match_notebook_metadata(self):
         # WP42 Gate 1: this manifest's own templateVersion drifted from the

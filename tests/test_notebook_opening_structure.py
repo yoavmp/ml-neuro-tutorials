@@ -23,24 +23,25 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# chapter_02 is intentionally absent from CANONICAL/PORTABLE/EXERCISE_NUMBERS:
-# WP41 replaced its canonical notebook with a short JupyterLite transition
-# page (see tests/test_exercise_02_transition_page.py) and moved the actual
-# lesson to book/lite/files/exercise_02.ipynb (see
+# chapter_01 and chapter_02 are intentionally absent from
+# CANONICAL/PORTABLE/EXERCISE_NUMBERS: WP41/WP42 replaced their canonical
+# notebooks with short JupyterLite transition pages (see
+# tests/test_exercise_01_transition_page.py,
+# tests/test_exercise_02_transition_page.py) and moved the actual lessons to
+# book/lite/files/exercise_0{1,2}.ipynb (see
+# tests/test_exercise_01_lite_notebook.py,
 # tests/test_exercise_02_lite_notebook.py), so the opening-structure/wording
-# conventions checked here no longer apply to it.
+# conventions checked here no longer apply to either.
 CANONICAL = {
-    "chapter_01": REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb",
     "chapter_03": REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
 }
 PORTABLE = {
-    "chapter_01": REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb",
     "chapter_03": REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
 }
 WIDGET_CONFIGS = sorted((REPO_ROOT / "book" / "_static" / "widgets" / "configs").glob("*.json"))
 
 # Exercise number, one row per notebook, in the same order as CANONICAL.
-EXERCISE_NUMBERS = {"chapter_01": "1", "chapter_03": "3"}
+EXERCISE_NUMBERS = {"chapter_03": "3"}
 
 COVERS_HEADING = "## What this notebook covers"
 MAIN_HEADING_RE = re.compile(r"^## \d+\.", re.MULTILINE)
@@ -140,15 +141,10 @@ class OpeningStructureTests(unittest.TestCase):
 
 
 class RepeatedLoadingCellTests(unittest.TestCase):
-    """§3.2: Exercise 1 keeps its own first/only loading example visible;
-    Exercises 2-3 collapse the repeated loading cell's input while keeping
-    its useful output visible."""
-
-    def test_exercise_1_loading_cells_are_visible(self):
-        nb = _load(CANONICAL["chapter_01"])
-        for idx in (4, 6):
-            tags = nb["cells"][idx].get("metadata", {}).get("tags", [])
-            self.assertEqual(tags, [], f"chapter_01 cell {idx} should carry no hide tag")
+    """§3.2: Exercise 3 collapses the repeated loading cell's input while
+    keeping its useful output visible (Exercise 1's own first/only loading
+    example lived here before WP42 migrated it to JupyterLite -- see
+    tests/test_exercise_01_lite_notebook.py instead)."""
 
     def test_exercise_3_hides_input_on_the_repeated_loading_cell(self):
         for key in ("chapter_03",):

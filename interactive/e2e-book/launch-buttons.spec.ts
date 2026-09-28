@@ -17,11 +17,6 @@ import { expect, test } from "@playwright/test";
 const REPO = "yoavmp/ml-neuro-tutorials";
 const CHAPTERS = [
   {
-    name: "Chapter 1",
-    url: "/ml-neuro-tutorials/chapters/chapter_01/exercise_01.html",
-    portable: "book/downloads/chapter_01/exercise_01_portable.ipynb",
-  },
-  {
     name: "Chapter 3",
     url: "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html",
     portable: "book/downloads/chapter_03/exercise_03_portable.ipynb",
@@ -147,5 +142,13 @@ test("a placeholder exercise page (Exercise 11) gets no Colab button", async ({ 
 // chapter02.spec.ts for the replacement, same-origin download link.
 test("Chapter 2 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
   await page.goto("/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+// WP42 Gate 2: same treatment as Chapter 2 above -- Chapter 1 also has a
+// portable notebook (it is the migrated JupyterLite student notebook now),
+// so this is a deliberate suppression, not an unmapped-page omission.
+test("Chapter 1 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_01/exercise_01.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });

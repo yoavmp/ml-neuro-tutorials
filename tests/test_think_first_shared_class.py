@@ -1,11 +1,13 @@
 """WP14 section 2: one shared blue "Think first" admonition across every
-canonical lesson notebook (Exercises 1 and 3; Exercise 2's canonical page is
-now a WP41 JupyterLite transition page with no MyST admonitions of its own --
-see tests/test_exercise_02_transition_page.py and
+canonical lesson notebook still using MyST admonitions (Exercise 3; Exercises
+1 and 2's canonical pages are now JupyterLite transition pages with no MyST
+admonitions of their own -- see tests/test_exercise_01_transition_page.py /
+tests/test_exercise_01_lite_notebook.py and
+tests/test_exercise_02_transition_page.py /
 tests/test_exercise_02_lite_notebook.py instead).
 
-Standard-library ``unittest``; no network. Scans every markdown cell of all
-three canonical notebooks and asserts that every "Think first" admonition
+Standard-library ``unittest``; no network. Scans every markdown cell of every
+remaining canonical notebook and asserts that every "Think first" admonition
 block uses the single shared ``think-first`` MyST class, and that no legacy
 variant (``:class: note`` immediately preceding a "Think first" title, or any
 other class) remains anywhere.
@@ -24,7 +26,6 @@ import nbformat
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOKS = {
-    "chapter_01": REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb",
     "chapter_03": REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
 }
 

@@ -6,13 +6,16 @@
     {
       "number": 1,
       "title": "Exploratory Data Analysis",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_01/exercise_01.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_01.ipynb",
+      "browserWorkingCopyName": "exercise_01.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_01.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_phenotypes.csv",
+        "book/lite/files/data/abide_phenotypes.manifest.json"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_01/exercise_01_portable.ipynb"
     },

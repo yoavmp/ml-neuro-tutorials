@@ -112,9 +112,12 @@ class NotebookLoads(unittest.TestCase):
         self.assertTrue(NB_PATH.exists())
         self.assertFalse((REPO_ROOT / "book" / "chapters" / "chapter_06" / "exercise_06.md").exists())
 
-    def test_shorter_than_exercise_1(self):
-        ex1 = nbformat.read(REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb", as_version=4)
-        self.assertLess(len(self.cells), len(ex1.cells))
+    def test_cell_count_is_reasonable(self):
+        # WP42 migrated Exercise 1 to a JupyterLite notebook, so its old
+        # canonical page (now a 2-cell transition page) is no longer a
+        # meaningful "longest lesson" reference point here -- a fixed
+        # absolute cap replaces the relative comparison.
+        self.assertLessEqual(len(self.cells), 45)
 
 
 class OpeningStructure(NotebookLoads):

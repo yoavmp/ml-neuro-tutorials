@@ -120,9 +120,12 @@ class OpeningStructure(unittest.TestCase):
         count = sum(1 for c in self.cells if c["cell_type"] == "markdown" and "<iframe" in _src(c))
         self.assertEqual(count, 2)
 
-    def test_cell_count_is_reasonable_and_shorter_than_exercise_01(self):
-        ex1 = nbformat.read(REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb", as_version=4)
-        self.assertLess(len(self.cells), len(ex1.cells))
+    def test_cell_count_is_reasonable(self):
+        # WP42 migrated Exercise 1 to a JupyterLite notebook, so its old
+        # canonical page (now a 2-cell transition page) is no longer a
+        # meaningful "longest lesson" reference point here -- a fixed
+        # absolute cap replaces the relative comparison.
+        self.assertLessEqual(len(self.cells), 45)
         self.assertGreaterEqual(len(self.cells), 25)
 
     def test_no_adaboost_anywhere(self):

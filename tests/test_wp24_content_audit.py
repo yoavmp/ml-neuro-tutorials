@@ -72,34 +72,20 @@ def _notebook_markdown_text(path: Path) -> str:
     )
 
 
-class Exercise1DecisionBlockOrder(unittest.TestCase):
-    """WP24 §2.1: the decision block precedes the retention activity."""
-
-    def test_our_approach_precedes_retention_activity(self):
-        cells = _load_cells(EX1)
-        approach_idx = next(
-            i
-            for i, c in enumerate(cells)
-            if "### Our approach in this exercise" in _cell_text(c)
-        )
-        activity_idx = next(
-            i
-            for i, c in enumerate(cells)
-            if "### Complete-case retention explorer" in _cell_text(c)
-        )
-        self.assertLess(approach_idx, activity_idx)
-
-    def test_approach_block_introduces_the_upcoming_activity(self):
-        text = _notebook_text(EX1)
-        block = text[text.index("### Our approach in this exercise") :]
-        block = block[: block.index("### Design a complete-case dataset")] if (
-            "### Design a complete-case dataset" in block
-        ) else block
-        self.assertIn("retention explorer", block.lower())
+# WP24's Exercise1DecisionBlockOrder is retired: WP42 migrated Exercise 1 to
+# a JupyterLite notebook (EX1 is now a short transition page; the real
+# lesson is EX1_PORTABLE) and dropped the separate "Our approach in this
+# exercise" decision block entirely as part of its concision pass -- the
+# retention explorer section (still present, notebook-native, see
+# tests/test_exercise_01_lite_notebook.py's
+# test_retention_explorer_is_notebook_native) no longer has a preceding
+# block whose order could be checked here.
 
 
 class Exercise1NoImputeJargon(unittest.TestCase):
-    """WP24 §2.2: no case-insensitive 'imput' anywhere student-facing in Ex1."""
+    """WP24 §2.2: no case-insensitive 'imput' anywhere student-facing in Ex1.
+    WP42 moved the real lesson text from EX1 (now a transition page) to
+    EX1_PORTABLE (the migrated JupyterLite notebook)."""
 
     def test_canonical_notebook_has_no_imput_text(self):
         text = _notebook_text(EX1)
@@ -110,7 +96,7 @@ class Exercise1NoImputeJargon(unittest.TestCase):
         self.assertNotIn("imput", text.lower())
 
     def test_plain_language_present(self):
-        text = _notebook_text(EX1)
+        text = _notebook_text(EX1_PORTABLE)
         self.assertIn("fill in", text.lower())
         self.assertIn("filled in", text.lower())
 
@@ -271,12 +257,12 @@ class Exercise4SinglePromptSetWithComparisonQuestion(unittest.TestCase):
 
 class RedundantReproductionCellsCollapsed(unittest.TestCase):
     """WP24 §7: website-only redundant reproduction cells are hide-cell;
-    the corresponding portable cells stay fully visible."""
+    the corresponding portable cells stay fully visible.
 
-    def test_exercise1_histogram_reproduction_is_hide_cell(self):
-        cells = _load_cells(EX1)
-        cell = next(c for c in cells if "sns.histplot(" in _cell_text(c))
-        self.assertEqual(cell["metadata"].get("tags"), ["hide-cell"])
+    Exercise 1's own case (a seaborn histplot reproduction cell) no longer
+    applies: WP42 migrated Exercise 1 to a JupyterLite notebook, which uses
+    no seaborn at all (no prebuilt Pyodide wheel) and no hide-cell concept
+    (that is a Jupyter Book/Sphinx-only rendering tag)."""
 
     def test_exercise4_threshold_reproduction_is_hide_cell(self):
         cells = _load_cells(EX4)
@@ -292,7 +278,6 @@ class RedundantReproductionCellsCollapsed(unittest.TestCase):
 
     def test_portable_notebooks_have_no_hide_tags_and_keep_the_code(self):
         for path, needle in (
-            (EX1_PORTABLE, "sns.histplot("),
             (EX4_PORTABLE, "threshold = 0.50"),
             (EX4_PORTABLE, 'class_ratio = "90:10"'),
         ):

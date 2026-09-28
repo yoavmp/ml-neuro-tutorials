@@ -108,13 +108,13 @@ class Notebook(unittest.TestCase):
         self.assertIn("classification metrics", low)
 
     def test_cell_count_is_short_relative_to_exercise_one(self):
+        # WP42 migrated Exercise 1 to a JupyterLite notebook, so its old
+        # canonical page (now a 2-cell transition page) is no longer a
+        # meaningful "longest lesson" reference point here -- a fixed
+        # absolute range replaces the relative comparison.
         n = len(self.cells)
         self.assertGreaterEqual(n, 20)
         self.assertLessEqual(n, 45)
-        ex1 = nbformat.read(
-            REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb", as_version=4
-        )
-        self.assertLess(n, len(ex1.cells))
 
     def test_only_hide_input_and_hide_cell_tags_are_used(self):
         seen = set()
