@@ -112,8 +112,15 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
     await runAllCells(page);
     await page.waitForTimeout(100_000);
 
-    await scrollWindowed(page, 0.85);
+    // Sweep for the slider by its own handle rather than a fixed scroll
+    // fraction: this notebook's exact cell heights (and so which fraction
+    // of the windowed list the Section 8 widget falls at) change whenever
+    // earlier content changes, which is expected and not itself a bug.
     const handle = page.locator(".widget-slider .noUi-handle").first();
+    for (let f = 0; f <= 1.001; f += 0.05) {
+      await scrollWindowed(page, f);
+      if ((await handle.count()) > 0 && (await handle.boundingBox())) break;
+    }
     const readout = page.locator(".widget-slider .widget-readout").first();
     await expect(handle).toBeVisible({ timeout: 5_000 });
     const before = await readout.textContent();
@@ -197,6 +204,55 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
     await download.saveAs(savePath);
     const downloaded = fs.readFileSync(savePath, "utf8");
     expect(downloaded).toContain(uniqueToken);
+  });
+
+  // WP42 Gate 1 item 1: a written-answer cell (a bold question in an
+  // otherwise-plain Markdown cell, no "YOUR ANSWER HERE" placeholder) must
+  // still be editable, saveable, reloadable, and included in a download --
+  // the same contract already proven above for a code cell, checked here
+  // for a Markdown one specifically since editing/rendering Markdown is a
+  // different code path (double-click to enter source view, not a single
+  // click into a CodeMirror editor already in edit mode).
+  test("a written-answer cell's edit persists across reload and downloads with the edit present", async ({
+    page,
+  }) => {
+    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
+    await runAllCells(page);
+    await page.waitForTimeout(100_000);
+
+    const target = await scrollToVisible(
+      page,
+      "How does KNN (k=20) compare",
+      ".jp-MarkdownCell",
+    );
+    await target.dblclick();
+    await page.waitForTimeout(300);
+    await page.keyboard.press("End");
+    const uniqueToken = `wp41-answer-e2e-${Date.now()}`;
+    await page.keyboard.type(`\n\n${uniqueToken}`, { delay: 5 });
+    await page.keyboard.press("Shift+Enter");
+    await page.waitForTimeout(500);
+    // Rendering back must still show the bold question -- editing/re-
+    // rendering the cell must not have destroyed its prompt.
+    await expect(target).toContainText("How does KNN (k=20) compare");
+    await expect(target).toContainText(uniqueToken);
+
+    await page.locator('[data-command="docmanager:save"]').first().click();
+    await page.waitForTimeout(1500);
+
+    await page.reload({ waitUntil: "load" });
+    await page.waitForTimeout(5000);
+
+    const downloadDir = fs.mkdtempSync(path.join(os.tmpdir(), "wp41-e2e-answer-"));
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page.click("text=Download my notebook"),
+    ]);
+    const savePath = path.join(downloadDir, "exercise_02.ipynb");
+    await download.saveAs(savePath);
+    const downloaded = fs.readFileSync(savePath, "utf8");
+    expect(downloaded).toContain(uniqueToken);
+    expect(downloaded).toContain("How does KNN (k=20) compare");
   });
 
   test("reset restores the template and Back returns to Contents", async ({ page }) => {

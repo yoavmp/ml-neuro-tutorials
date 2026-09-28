@@ -58,22 +58,26 @@ async def _execute_notebook(nb) -> dict:
     return ns
 
 
+def _execute_reference_notebook() -> dict:
+    import matplotlib
+
+    matplotlib.use("Agg")  # headless: no display, no GUI event loop
+    # cwd must be book/lite/files so the notebook's relative
+    # "data/abide_age_brain.csv" resolves to the same-origin asset, just
+    # as it does when JupyterLite serves the notebook from that folder.
+    old_cwd = os.getcwd()
+    os.chdir(REPO_ROOT / "book" / "lite" / "files")
+    try:
+        nb = nbformat.read(REFERENCE_PATH, as_version=4)
+        return asyncio.run(_execute_notebook(nb))
+    finally:
+        os.chdir(old_cwd)
+
+
 class ReferenceExecution(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import matplotlib
-
-        matplotlib.use("Agg")  # headless: no display, no GUI event loop
-        # cwd must be book/lite/files so the notebook's relative
-        # "data/abide_age_brain.csv" resolves to the same-origin asset, just
-        # as it does when JupyterLite serves the notebook from that folder.
-        cls._old_cwd = os.getcwd()
-        os.chdir(REPO_ROOT / "book" / "lite" / "files")
-        try:
-            nb = nbformat.read(REFERENCE_PATH, as_version=4)
-            cls.ns = asyncio.run(_execute_notebook(nb))
-        finally:
-            os.chdir(cls._old_cwd)
+        cls.ns = _execute_reference_notebook()
 
     def test_participant_and_predictor_counts(self):
         self.assertEqual(len(self.ns["data"]), 1004)
@@ -107,6 +111,59 @@ class ReferenceExecution(unittest.TestCase):
         self.assertEqual(
             set(self.ns["SAMPLE_SIZE_ROIS"]), {"4", "3a", "3b", "1", "2"}
         )
+
+
+def _knn_check_source() -> str:
+    nb = nbformat.read(REFERENCE_PATH, as_version=4)
+    cell = next(c for c in nb.cells if c.get("id") == "wp41-506-check")
+    return cell["source"]
+
+
+class KnnCheckCellBehavior(unittest.TestCase):
+    """WP42 Gate 1 item 4: the KNN check cell must behave correctly for a
+    correct, an incorrect-but-complete, and an unfinished student attempt --
+    exercised here directly (fast, no browser needed) against the exact
+    check-cell source every rendered notebook shares."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = _knn_check_source()
+        # A real, established k=20 result for the "correct" case rather than
+        # hand-typed numbers. Executed independently of ReferenceExecution
+        # (not read off its class attribute): unittest does not guarantee
+        # cross-class ordering, and this class alphabetically precedes it.
+        cls.base_ns = _execute_reference_notebook()
+
+    def _run(self, ns: dict) -> str:
+        import io
+        from contextlib import redirect_stdout
+
+        out = io.StringIO()
+        with redirect_stdout(out):
+            exec(compile(self.source, "knn_check", "exec"), dict(ns))
+        return out.getvalue()
+
+    def test_correct_attempt_prints_looks_good(self):
+        output = self._run(self.base_ns)
+        self.assertIn("Looks good", output)
+        self.assertNotIn("differs from", output)
+
+    def test_incorrect_but_complete_attempt_is_not_falsely_called_a_failure(self):
+        ns = dict(self.base_ns)
+        ns["knn_r2"] = 0.10  # far from the established ~0.664
+        ns["knn_mse"] = 120.0  # far from the established ~31.4
+        output = self._run(ns)
+        self.assertNotIn("Looks good", output)
+        self.assertIn("differs from", output)
+        # Must not accuse the student of a definite mistake -- a different
+        # valid implementation or an earlier choice can also explain this.
+        self.assertIn("does not automatically mean", output)
+        self.assertNotIn("fail", output.lower())
+        self.assertNotIn("incorrect", output.lower())
+
+    def test_unfinished_attempt_gives_a_helpful_message_not_an_error(self):
+        output = self._run({})
+        self.assertIn("Not complete yet", output)
 
 
 if __name__ == "__main__":

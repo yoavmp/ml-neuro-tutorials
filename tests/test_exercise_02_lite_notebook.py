@@ -174,13 +174,25 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertGreater(len(mime_map["image/png"]), 1000)  # real base64 payload
 
     # -- item 27: required editable answer cells exist -----------------------
+    # WP42 Gate 1 item 1: the literal "YOUR ANSWER HERE" placeholder was
+    # removed; an editable answer cell is now a markdown blockquote whose
+    # entire visible content is a **bold** question (`> **...**`).
 
     def test_editable_answer_cells_exist(self):
-        answer_cells = [c for c in self.cells if "YOUR ANSWER HERE" in _src(c)]
+        import re
+
+        answer_cells = [c for c in self.cells if c["cell_type"] == "markdown" and re.match(r"^>\s*\*\*.+\*\*\s*$", _src(c).strip())]
         self.assertGreaterEqual(len(answer_cells), 3)
         self.assertLessEqual(len(answer_cells), 5)
-        for c in answer_cells:
-            self.assertEqual(c["cell_type"], "markdown")
+
+    def test_your_answer_here_placeholder_is_gone(self):
+        self.assertNotIn("YOUR ANSWER HERE", self.md)
+
+    def test_one_notebook_wide_answer_cell_instruction(self):
+        # Exactly one place explains how to edit an answer cell -- not
+        # repeated after every question.
+        occurrences = self.md.lower().count("double-click")
+        self.assertEqual(occurrences, 1)
 
     # -- item 28: checked questions have keyed answers and feedback ---------
 
@@ -211,15 +223,47 @@ class StudentTemplateStructure(unittest.TestCase):
             self.assertNotRegex(self.code, pattern)
 
     # -- item 32/33: model-complexity axis conventions -----------------------
+    # WP42 Gate 1 items 6-7: a secondary_xaxis reliably triggered a live,
+    # reproduced MatplotlibDeprecationWarning ("width/height/x/y parameter as
+    # float") on plt.tight_layout() in this notebook's pinned browser
+    # matplotlib -- replaced with a log-scaled 1/k axis plus direct
+    # annotations naming k, applied identically in Sections 7 and 8.
 
     def test_model_complexity_axis_used_not_raw_1_over_k(self):
         self.assertIn('set_xlabel("Model complexity")', self.code)
         self.assertNotIn('set_xlabel("1/k")', self.code)
         self.assertNotIn("set_xlabel('1/k')", self.code)
 
-    def test_integer_k_still_visible_via_companion_axis(self):
-        self.assertIn("ax_top", self.code)
-        self.assertIn('set_xlabel("k (for reference)")', self.code)
+    def test_no_secondary_or_twin_axis(self):
+        # Simplified away once k values are annotated directly onto the
+        # primary Axes -- not itself the deprecation's cause (see the next
+        # test), just no longer needed.
+        self.assertNotIn("secondary_xaxis", self.code)
+        self.assertNotIn(".twiny(", self.code)
+        self.assertNotIn(".twinx(", self.code)
+
+    def test_matplotlib_deprecation_narrowly_filtered(self):
+        # Live bisection (four independent test figures in a real browser
+        # kernel, down to a one-line plot with no custom code) proved this
+        # warning fires on EVERY figure this pinned browser kernel renders,
+        # unconditionally -- not caused by anything in this notebook's own
+        # plotting code, and so not fixable by changing it. The filter must
+        # be scoped to this exact upstream message, not to
+        # DeprecationWarning or MatplotlibDeprecationWarning broadly.
+        self.assertIn("warnings.filterwarnings(", self.code)
+        self.assertIn("parameter as float was deprecated", self.code)
+        self.assertNotIn('warnings.filterwarnings("ignore")', self.code)
+        self.assertNotIn("category=DeprecationWarning", self.code)
+        self.assertNotIn("category=MatplotlibDeprecationWarning", self.code)
+
+    def test_integer_k_still_visible_via_annotation(self):
+        self.assertIn("def annotate_model_complexity_axis", self.code)
+        self.assertIn("annotate_model_complexity_axis(ax,", self.code)
+        self.assertIn("annotate_model_complexity_axis(ax_curve,", self.code)
+        self.assertIn('f"k={k}"', self.code)
+
+    def test_model_complexity_axis_is_log_scaled(self):
+        self.assertIn('ax.set_xscale("log")', self.code)
 
     def test_section_8_widget_reports_k_and_complexity(self):
         self.assertIn('k = {k}', self.code)
@@ -228,8 +272,12 @@ class StudentTemplateStructure(unittest.TestCase):
     # -- item 34: no duplicated prompts --------------------------------------
 
     def test_no_duplicated_reflection_or_answer_prompts(self):
+        import re
+
         answer_prompts = [
-            _src(c) for c in self.cells if c["cell_type"] == "markdown" and "YOUR ANSWER HERE" in _src(c)
+            _src(c).strip()
+            for c in self.cells
+            if c["cell_type"] == "markdown" and re.match(r"^>\s*\*\*.+\*\*\s*$", _src(c).strip())
         ]
         self.assertEqual(len(answer_prompts), len(set(answer_prompts)))
 
@@ -251,6 +299,52 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertNotIn("FIQ", self.code)
         self.assertNotIn("ridge", self.md.lower())
         self.assertNotIn("lasso", self.md.lower())
+
+    # -- WP42 Gate 1 item 2: checked-question layout -------------------------
+
+    def test_question_widgets_use_full_width_wrap_css(self):
+        self.assertIn("checked-question", self.code)
+        self.assertIn("white-space: normal", self.code)
+        self.assertNotIn('width="max-content"', self.code)
+
+    # -- WP42 Gate 1 item 3: Section 4 table is left-aligned everywhere ------
+
+    def test_section_4_table_is_left_aligned_via_styler(self):
+        # Not pandas' `.style` Styler -- it requires jinja2, which this
+        # notebook's browser kernel does not preload (confirmed live: an
+        # AttributeError there broke every following cell in "Run All
+        # Cells"). to_html() plus a small scoped <style> needs no extra
+        # package and works identically everywhere.
+        panels_cell = next(c for c in self.cells if c.get("id") == "wp41-403-panels")
+        source = _src(panels_cell)
+        self.assertIn(".to_html(", source)
+        # !important is required: confirmed live that JupyterLab's own
+        # dataframe stylesheet otherwise outranks a plain matching rule.
+        self.assertIn("text-align: left !important", source)
+        self.assertNotIn(".style.set_table_styles", source)
+
+    # -- WP42 Gate 1 item 4: KNN check wording and substance -----------------
+
+    def test_knn_check_is_student_facing_and_tolerant(self):
+        check_cell = next(c for c in self.cells if c.get("id") == "wp41-506-check")
+        source = _src(check_cell)
+        self.assertIn("Run this to check your KNN results.", source)
+        self.assertNotIn("A graceful check", source)
+        self.assertIn("EXPECTED_KNN_R2", source)
+        self.assertIn("EXPECTED_KNN_MSE", source)
+        self.assertIn("TOLERANCE", source.upper())
+        self.assertIn("does not automatically mean", source)
+
+    # -- WP42 Gate 1 item 5: conceptual figure is a static attachment --------
+
+    def test_bias_variance_figure_is_an_attachment_not_code(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp41-603-figure")
+        self.assertEqual(cell["cell_type"], "markdown")
+        source = _src(cell)
+        self.assertIn("attachment:", source)
+        self.assertNotIn("CONCEPTUAL illustration", source)
+        attachments = cell.get("attachments") or {}
+        self.assertEqual(len(attachments), 1)
 
 
 class StructuralSynchronization(unittest.TestCase):

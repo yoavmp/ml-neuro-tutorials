@@ -50,6 +50,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_SIDECAR = REPO_ROOT / "book" / "lite" / "files" / "data" / "abide_age_brain.manifest.json"
 REFERENCE_IMAGE_SCRIPT = REPO_ROOT / "scripts" / "render_exercise_02_reference_plot.py"
 REFERENCE_IMAGE_PATH = REPO_ROOT / "book" / "lite" / "files" / "data" / "exercise_02_observed_vs_predicted.png"
+BIAS_VARIANCE_IMAGE_PATH = REPO_ROOT / "book" / "lite" / "files" / "data" / "exercise_02_bias_variance_conceptual.png"
 
 LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_02.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb"
@@ -68,7 +69,7 @@ PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_p
 LITE_FILES_PORTABLE_COPY_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_02_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_02_reference.ipynb"
 
-TEMPLATE_VERSION = 2
+TEMPLATE_VERSION = 3
 
 KERNELSPEC = {
     "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
@@ -133,8 +134,69 @@ def _reference_image_data_uri() -> str:
     return base64.b64encode(REFERENCE_IMAGE_PATH.read_bytes()).decode("ascii")
 
 
+# WP42 Gate 1 item 6, re: the warnings.filterwarnings() call below: the
+# reported MatplotlibDeprecationWarning ("width/height/x/y parameter as
+# float ... deprecated in Matplotlib 3.10") was root-caused live, in the
+# actual browser kernel, by bisection -- not assumed from source. Four
+# independent one-off test figures were run in a live kernel after the full
+# notebook had already executed: (1) a bare `plt.plot(...); plt.legend();
+# plt.tight_layout(); plt.show()` with no axvline, no annotation, no
+# secondary/twin axis; (2) the same plus `axvline`; (3) the same as this
+# notebook's Section 7/8 plots (annotate with a blended transform) but with
+# `layout="constrained"` instead of `tight_layout()`; (4) the same as (3)
+# with no layout call at all. ALL FOUR warned, identically, including the
+# maximally minimal case (1). This proves the warning is unconditional on
+# this pinned browser kernel -- it fires on every matplotlib figure this
+# kernel renders, regardless of tight_layout, secondary axes, or
+# annotations, and is therefore a backend/matplotlib-version interaction
+# outside this notebook's plotting code, not a defect introduced by
+# Sections 7 or 8 specifically (they are simply the first two cells in the
+# STUDENT template that actually call plt.show() -- every earlier figure in
+# this notebook lives inside a still-blank "YOUR CODE HERE" activity that a
+# fresh "Run All Cells" never executes). A precise, message-text-scoped
+# filter (not a blanket DeprecationWarning/MatplotlibDeprecationWarning
+# suppression) removes exactly this known-benign upstream noise while still
+# surfacing every other warning normally.
+#
+# WP42 Gate 1 item 7, re: annotate_model_complexity_axis() below: Sections 7
+# and 8 previously plotted a LINEAR 1/k axis with a companion k-tick row on
+# a second, linked Axes on top. A linear 1/k axis crowds every k above
+# roughly 20 into a sliver near zero, since 1/k shrinks fast; log-scaling
+# 1/k spreads the whole tested range out evenly instead. The second linked
+# Axes for the k-tick row is also simply no longer needed once k values are
+# annotated directly onto the primary Axes at their own complexity position
+# (see the item-6 note above for what the second Axes was mistakenly, and
+# has since been confirmed NOT to be, responsible for). This rationale lives
+# here, in the generator, rather than in the notebook's own docstring,
+# because it is author-facing history, not student-facing documentation
+# (see tests/test_wp35_content_audit.py's ban on WP-number references in
+# published notebook text).
+#
+# WP42 Gate 1 item 2, re: _QUESTION_CSS below: ipywidgets' own stylesheet
+# gives ".widget-checkbox" and its inner ".widget-label-basic" a fixed 300px
+# width with "white-space: nowrap" + "text-overflow: ellipsis" -- confirmed
+# live (a real JupyterLite browser at 390px) to silently truncate a long
+# checkbox option ("Choosing which features to use because they correlate
+# well with y_test.") instead of wrapping it. The RadioButtons control
+# previously used here had the companion problem: sizing its own width to
+# fit its single longest option's text with no wrapping could exceed a
+# narrow viewport instead of wrapping. This CSS, scoped to ".checked-question",
+# removes the fixed width/ellipsis/nowrap so long option text wraps within
+# the notebook's own width at any viewport, in every environment that
+# renders this notebook's HTML/CSS output (JupyterLite, local Jupyter,
+# Colab) -- not a JupyterLite-only trick.
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import warnings
+
+# This notebook's pinned browser kernel renders every matplotlib figure
+# through a backend/version combination that emits a benign
+# MatplotlibDeprecationWarning about float pixel coordinates on EVERY figure
+# it draws -- confirmed by testing a one-line plot with no custom code at
+# all, so it is not something caused by any plotting choice in this
+# notebook. Silencing only this exact upstream message (never deprecation
+# warnings in general) keeps output clean without masking a real problem.
+warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
 
 if sys.platform == "emscripten":
     # Running in the browser (JupyterLite). ipywidgets has no prebuilt
@@ -149,7 +211,7 @@ if sys.platform == "emscripten":
 import numpy as np
 import pandas as pd
 import ipywidgets as widgets
-from IPython.display import display
+from IPython.display import display, HTML
 
 {features_literal}
 
@@ -183,9 +245,38 @@ def load_abide_age_brain_table():
     return table[_ABIDE_LITE_FEATURES + ["age", "group"]].reset_index(drop=True)
 
 
+# Keeps every checked question's option text wrapping within the notebook's
+# own width, at any viewport, instead of being cut off with an ellipsis.
+_QUESTION_CSS = """
+<style>
+.checked-question .widget-checkbox { width: 100% !important; height: auto !important; }
+.checked-question .widget-label-basic {
+    width: 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    height: auto !important;
+}
+.checked-question .widget-radio-box { width: 100% !important; }
+.checked-question .widget-radio-box label {
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    box-sizing: border-box;
+}
+</style>
+"""
+
+
+def _question_style_widget():
+    # Zero-height so it adds no visible gap; the <style> tag itself applies
+    # document-wide regardless of where it sits in the DOM.
+    return widgets.HTML(_QUESTION_CSS, layout=widgets.Layout(height="0px", margin="0px", padding="0px"))
+
+
 def make_single_choice_question(prompt, options, correct_index, feedback_correct="Correct.", feedback_incorrect="Not quite -- try again."):
     """A compact single-choice checked question. Returns a widget to display()."""
-    radio = widgets.RadioButtons(options=list(options), description="", layout=widgets.Layout(width="max-content"))
+    radio = widgets.RadioButtons(options=list(options), description="", layout=widgets.Layout(width="100%"))
     button = widgets.Button(description="Check answer", button_style="primary")
     feedback = widgets.Output()
 
@@ -195,13 +286,21 @@ def make_single_choice_question(prompt, options, correct_index, feedback_correct
             print(feedback_correct if radio.index == correct_index else feedback_incorrect)
 
     button.on_click(_on_click)
-    return widgets.VBox([widgets.HTML(f"<b>{prompt}</b>"), radio, button, feedback])
+    box = widgets.VBox(
+        [_question_style_widget(), widgets.HTML(f"<b>{prompt}</b>"), radio, button, feedback],
+        layout=widgets.Layout(width="100%"),
+    )
+    box.add_class("checked-question")
+    return box
 
 
 def make_multi_choice_question(prompt, options, correct_indices, feedback_correct="Correct.", feedback_incorrect="Not quite -- try again."):
     """A compact multiple-selection checked question. Returns a widget to display()."""
     correct = set(correct_indices)
-    boxes = [widgets.Checkbox(value=False, description=opt, indent=False) for opt in options]
+    boxes = [
+        widgets.Checkbox(value=False, description=opt, indent=False, layout=widgets.Layout(width="100%"))
+        for opt in options
+    ]
     button = widgets.Button(description="Check answer", button_style="primary")
     feedback = widgets.Output()
 
@@ -212,7 +311,39 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
             print(feedback_correct if selected == correct else feedback_incorrect)
 
     button.on_click(_on_click)
-    return widgets.VBox([widgets.HTML(f"<b>{prompt}</b>")] + boxes + [button, feedback])
+    box = widgets.VBox(
+        [_question_style_widget(), widgets.HTML(f"<b>{prompt}</b>")] + boxes + [button, feedback],
+        layout=widgets.Layout(width="100%"),
+    )
+    box.add_class("checked-question")
+    return box
+
+
+def annotate_model_complexity_axis(ax, k_ticks, n_max):
+    """Log-scale an Axes' x-axis as "Model complexity" (1/k) and label a few
+    k values directly on it. Returns nothing; modifies ax in place."""
+    ax.set_xscale("log")
+    ax.set_xlabel("Model complexity")
+    ax.set_title(ax.get_title(), pad=26)  # room for the (possibly staggered) k= labels below it
+    trans = ax.get_xaxis_transform()  # x in data coords, y in axes-fraction
+    # Two nearby k values (e.g. the k with lowest validation error landing
+    # next to a round number like 20) can land close enough on a log axis
+    # that their labels would overlap at the same height -- alternating the
+    # vertical offset by position avoids that regardless of exact spacing.
+    for i, k in enumerate(sorted(set(k for k in k_ticks if 1 <= k <= n_max))):
+        x = 1.0 / k
+        ax.axvline(x, color="0.85", lw=0.6, zorder=0)
+        ax.annotate(
+            f"k={k}",
+            xy=(x, 1.0),
+            xycoords=trans,
+            xytext=(0, 4 if i % 2 == 0 else 15),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=7,
+            color="0.35",
+        )
 '''.strip()
 
 
@@ -262,6 +393,11 @@ cells are supplied and ready to run; others ask you to write a few lines
 yourself, answer a question in writing, or answer a checked question with
 immediate feedback. Along the way you will explore how model complexity
 trades bias against variance.
+
+Written-answer cells (like the bold question below) are ordinary Markdown:
+double-click one to edit it, type your answer, then press Shift+Enter to
+render it back. Your answer is saved with the rest of this notebook,
+including in **Download my notebook**.
 """,
             "wp41-002-overview",
         ),
@@ -366,9 +502,9 @@ for name, arr in [("train", y_train), ("test", y_test)]:
             tags=["wp41-activity-2a"],
         ),
         md(
-            "> Are the two distributions similar enough for this exercise? Name one "
-            "similarity and one difference. Do not choose model settings from the "
-            "test distribution.\n\nYOUR ANSWER HERE",
+            "> **Are the two distributions similar enough for this exercise? Name "
+            "one similarity and one difference. Do not choose model settings from "
+            "the test distribution.**",
             "wp41-206-2a-answer",
         ),
     ]
@@ -406,8 +542,8 @@ display(top10.rename("correlation").to_frame())
             tags=["wp41-activity-2b"],
         ),
         md(
-            "> Which two or three features do you expect to have large fitted "
-            "coefficients, and why?\n\nYOUR ANSWER HERE",
+            "> **Which two or three features do you expect to have large fitted "
+            "coefficients, and why?**",
             "wp41-211-2b-prediction",
         ),
     ]
@@ -480,8 +616,8 @@ plt.show()
             tags=["wp41-activity-3a"],
         ),
         md(
-            "> Compare this ranking with Activity 2B's correlation ranking. Which "
-            "features appear on both lists, and which do not?\n\nYOUR ANSWER HERE",
+            "> **Compare this ranking with Activity 2B's correlation ranking. Which "
+            "features appear on both lists, and which do not?**",
             "wp41-307-3a-answer",
         ),
         code(
@@ -546,8 +682,8 @@ plt.show()
             tags=["wp41-activity-3b"],
         ),
         md(
-            "> How closely do the held-out points track the diagonal? Where do "
-            "the largest errors fall?\n\nYOUR ANSWER HERE",
+            "> **How closely do the held-out points track the diagonal? Where do "
+            "the largest errors fall?**",
             "wp41-314-3b-answer",
         ),
     ]
@@ -570,6 +706,26 @@ def _reference_image_attachments() -> dict:
 
 def _reference_image_markdown() -> str:
     return f"![Approved observed-vs-predicted result](attachment:{REFERENCE_IMAGE_FILENAME})"
+
+
+BIAS_VARIANCE_IMAGE_FILENAME = "exercise_02_bias_variance_conceptual.png"
+
+
+def _bias_variance_image_attachments() -> dict:
+    # WP42 Gate 1 item 5: this schematic never depended on student data or
+    # code -- it is a fixed conceptual illustration (the old cell's own
+    # comment said so: "CONCEPTUAL illustration only ... Section 7 computes
+    # the empirical analogue"). Embedding its approved render as a cell
+    # attachment (same nbformat mechanism as Activity 3B's reference image,
+    # see WP41R blocker 2) shows students the illustration without opaque
+    # plotting code, and keeps the notebook portable (no linked file to break
+    # for a downloaded/Colab copy).
+    encoded = base64.b64encode(BIAS_VARIANCE_IMAGE_PATH.read_bytes()).decode("ascii")
+    return {BIAS_VARIANCE_IMAGE_FILENAME: {"image/png": encoded}}
+
+
+def _bias_variance_image_markdown() -> str:
+    return f"![The classic bias-variance tradeoff (conceptual illustration)](attachment:{BIAS_VARIANCE_IMAGE_FILENAME})"
 
 
 def _section_4() -> list[dict]:
@@ -602,7 +758,19 @@ comparison = pd.DataFrame(
     },
     index=["A. correct", "B. training score", "C. invalid"],
 )
-display(comparison.round(3))
+# Left-align every cell, including headers: pandas' default (index left,
+# headers centered, numbers right) is set by the Book theme's own CSS in
+# some environments but not others (plain nbconvert/local Jupyter/Colab).
+# `to_html()` plus a small scoped <style> looks the same everywhere, with no
+# dependency on the Book theme -- and no dependency on jinja2 either, unlike
+# `DataFrame.style` (which is not preloaded in this notebook's browser
+# kernel and is not guaranteed present in a bare downloaded/Colab copy).
+table_html = comparison.round(3).to_html(classes="ex2-eval-table", border=0)
+# !important is required: JupyterLab's own dataframe stylesheet
+# (.dataframe th/td) otherwise outranks this rule -- confirmed live (without
+# it, the header row's inherited "text-align: right" from pandas' own
+# `to_html()` output wins even though this rule also directly targets th/td).
+display(HTML(f'<style>.ex2-eval-table th, .ex2-eval-table td {{ text-align: left !important; }}</style>{table_html}'))
 """,
             "wp41-403-panels",
         ),
@@ -690,18 +858,38 @@ plt.show()
             tags=["wp41-activity-5"],
         ),
         md(
-            "> How does KNN (k=20) compare with linear regression on this same "
-            "split?\n\nYOUR ANSWER HERE",
+            "> **How does KNN (k=20) compare with linear regression on this same "
+            "split?**",
             "wp41-505-answer",
         ),
         code(
             """
-# A graceful check: verifies your KNN result without breaking later,
-# independent sections if something above is still incomplete.
-if "knn_pred" in globals() and "knn_r2" in globals():
+# Run this to check your KNN results.
+EXPECTED_KNN_R2 = 0.664
+EXPECTED_KNN_MSE = 31.4
+R2_TOLERANCE = 0.05  # generous: absorbs reasonable implementation differences
+MSE_TOLERANCE = 3.0
+
+if "knn_pred" in globals() and "knn_r2" in globals() and "knn_mse" in globals():
     assert len(knn_pred) == len(y_test), "knn_pred should have one prediction per test row"
     assert np.isfinite(knn_r2) and np.isfinite(knn_mse), "R^2 and MSE should be finite numbers"
-    print("Looks good: knn_pred, knn_r2, and knn_mse are all present and finite.")
+    r2_close = abs(knn_r2 - EXPECTED_KNN_R2) <= R2_TOLERANCE
+    mse_close = abs(knn_mse - EXPECTED_KNN_MSE) <= MSE_TOLERANCE
+    if r2_close and mse_close:
+        print(
+            f"Looks good: R^2={knn_r2:.3f} and MSE={knn_mse:.1f} are within the "
+            f"expected range for k=20 (R^2~{EXPECTED_KNN_R2}, MSE~{EXPECTED_KNN_MSE})."
+        )
+    else:
+        print(
+            f"Your result (R^2={knn_r2:.3f}, MSE={knn_mse:.1f}) differs from the "
+            f"expected k=20 result (R^2~{EXPECTED_KNN_R2}, MSE~{EXPECTED_KNN_MSE}). "
+            "That does not automatically mean something is wrong -- a different "
+            "valid implementation, or an earlier choice in data loading, the "
+            "train/test split, or scaling, can shift these numbers. Check that "
+            "you used k=20 and the scaled X_train_scaled/X_test_scaled from "
+            "Section 1 before assuming this is an error."
+        )
 else:
     print("Not complete yet: define knn_pred, knn_r2, and knn_mse above first.")
 """,
@@ -727,28 +915,11 @@ For KNN, `k` controls this directly:
 """,
             "wp41-602-theory",
         ),
-        code(
-            """
-# CONCEPTUAL illustration only -- smooth idealised curves, not measured from
-# the ABIDE data. Section 7 computes the empirical analogue.
-flexibility = np.linspace(0.02, 1, 200)
-bias_sq = (1 - flexibility) ** 2 * 2.2
-variance = flexibility ** 2.2 * 2.0
-irreducible = np.full_like(flexibility, 0.35)
-expected_test_error = bias_sq + variance + irreducible
-
-fig, ax = plt.subplots(figsize=(6.4, 3.8))
-ax.plot(flexibility, bias_sq, label="squared bias", color="#2a6f9e")
-ax.plot(flexibility, variance, label="variance", color="#b5622f")
-ax.plot(flexibility, irreducible, label="irreducible error", color="0.6", ls=":")
-ax.plot(flexibility, expected_test_error, label="expected test error", color="black", lw=2)
-ax.set_xlabel("model flexibility (small k -> large k, right to left)")
-ax.set_ylabel("error (schematic units)")
-ax.set_title("The classic bias-variance tradeoff")
-ax.legend(fontsize=8)
-plt.show()
-""",
+        md(
+            "This is a schematic illustration, not measured from the ABIDE data "
+            "-- Section 7 computes the empirical analogue.\n\n" + _bias_variance_image_markdown(),
             "wp41-603-figure",
+            attachments=_bias_variance_image_attachments(),
         ),
         code(
             """
@@ -803,25 +974,19 @@ def _section_7() -> list[dict]:
         code(_knn_sweep_code(), "wp41-702-sweep"),
         code(
             """
-# Model complexity increases as k decreases, so plot against 1/k and let
-# larger complexity run left to right. Integer k values stay visible as
-# tick labels on a companion top axis.
+# Model complexity increases as k decreases. A log scale keeps every tested
+# k readable at once (a linear 1/k axis crowds most of them near zero);
+# integer k values are labelled directly above the curve.
 complexity = 1.0 / ks
 
 fig, ax = plt.subplots(figsize=(7, 4))
 ax.plot(complexity, fit_mse, label="fitting MSE (resubstitution)", color="#2a6f9e")
 ax.plot(complexity, val_mse, label="validation MSE", color="#b5622f")
 ax.axvline(1.0 / val_optimal_k, color="0.6", lw=1, ls=":")
-ax.set_xlabel("Model complexity")
 ax.set_ylabel("mean squared error (years$^2$)")
 ax.set_title("Fitting vs. validation error across model complexity")
 ax.legend(fontsize=8)
-
-k_ticks = [N_FIT, 100, 20, val_optimal_k, 5, 1]
-k_ticks = sorted(set(k for k in k_ticks if 1 <= k <= N_FIT))
-ax_top = ax.secondary_xaxis("top", functions=(lambda c: 1.0 / c, lambda k: 1.0 / k))
-ax_top.set_xticks(k_ticks)
-ax_top.set_xlabel("k (for reference)")
+annotate_model_complexity_axis(ax, [N_FIT, 100, 20, val_optimal_k, 5, 1], N_FIT)
 plt.tight_layout()
 plt.show()
 """,
@@ -886,10 +1051,10 @@ def _explore_refit(k):
         ax_curve.plot(1.0 / ks, fit_mse, color="#2a6f9e", label="fitting MSE")
         ax_curve.plot(1.0 / ks, val_mse, color="#b5622f", label="validation MSE")
         ax_curve.axvline(1.0 / k, color="black", lw=1.5)
-        ax_curve.set_xlabel("Model complexity")
         ax_curve.set_ylabel("mean squared error (years$^2$)")
         ax_curve.set_title("Your current k on the error curve")
         ax_curve.legend(fontsize=8)
+        annotate_model_complexity_axis(ax_curve, [N_FIT, 100, 20, k, 5, 1], N_FIT)
         plt.tight_layout()
         plt.show()
         print(f"k = {k}   model complexity (1/k) = {1.0 / k:.3f}")

@@ -140,21 +140,55 @@ function assertDarkFigure(snap: PlotSnapshot, label: string): void {
 test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () => {
   test.describe.configure({ timeout: 60_000 });
 
-  test("Exercise 2 — KNN exploration: initial dark load", async ({ page }) => {
-    // WP28: the regression-compare activity previously checked here moved to
-    // Exercise 5 (see the Exercise 5 test below); Exercise 2's built page now
-    // embeds knn-explore only.
-    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_02/exercise_02.html");
+  // WP41 migrated Exercise 2 to a JupyterLite-native notebook: its built
+  // page (chapters/chapter_02/exercise_02.html) is now a 2-cell transition
+  // page with no embedded iframe or Plotly figure at all (confirmed:
+  // chapter02.spec.ts asserts iframe count is 0 there), so the book's own
+  // dark-mode toggle and this file's Plotly `_fullData`/`_fullLayout`
+  // color-snapshot technique have no surface left to check on that page.
+  // Exercise 2's own figures (matplotlib, not Plotly) live inside the
+  // JupyterLite app instead, a separate origin/app with its OWN theme
+  // setting unrelated to the book's theme-switch-button -- this replacement
+  // test checks THAT surface: switching the notebook's own JupyterLab theme
+  // to dark must not error, and Section 8's live figure (the one explicitly
+  // required to "keep figures legible in light/dark modes") must still be
+  // present and rendered. Matplotlib figures here are static, white-card
+  // PNGs -- legible by construction regardless of the surrounding app
+  // theme, unlike the dark-palette-remapped Plotly figures other exercises
+  // still use, which is why this test's shape necessarily differs from the
+  // others in this file rather than reusing snapshotPlot/assertDarkFigure.
+  test("Exercise 2 — JupyterLite notebook: Section 8 figure survives switching to the app's own dark theme", async ({
+    page,
+  }) => {
+    // Overrides this file's 60s describe-level timeout: a cold JupyterLite
+    // start (Pyodide + the scientific stack) can take up to ~140s, the same
+    // budget exercise-02-lite.spec.ts uses for this same notebook.
+    test.setTimeout(180_000);
+    await page.goto("/lite/notebooks/index.html?path=exercise_02.ipynb", { waitUntil: "load" });
+    await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
+    await page.click("text=Run");
+    await page.waitForTimeout(200);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+    await page.waitForTimeout(140_000);
 
-    const exploreFrame = await activityFrame(page, 'iframe[src*="config=../configs/knn_explore.json"]');
-    const exploreSnap = await snapshotPlot(exploreFrame, "knn-scatter-plot");
-    assertDarkFigure(exploreSnap, "knn-explore knn-scatter-plot");
-    expect(exploreSnap.markerColors, "knn-explore scatter: validation points visible (dark palette)").toContain(
-      MARKER_PRIMARY_DARK,
-    );
-    expect(exploreSnap.markerColors, "knn-explore scatter: diagonal reference line visible (dark palette)").toContain(
-      DIAGONAL_LINE_DARK,
-    );
+    await page.click("text=Settings");
+    await page.waitForTimeout(300);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "Theme" }).first().click();
+    await page.waitForTimeout(300);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "JupyterLab Dark" }).first().click();
+    await page.waitForTimeout(1000);
+
+    expect(await page.locator(".jp-mod-error").count()).toBe(0);
+
+    const el = await page.evaluate(() => {
+      const panel = document.querySelector(".jp-WindowedPanel-outer");
+      if (panel) panel.scrollTop = panel.scrollHeight * 0.78;
+      return true;
+    });
+    expect(el).toBe(true);
+    await page.waitForTimeout(600);
+    const figureVisible = await page.locator(".jp-OutputArea-output img, .jp-OutputArea-output canvas").count();
+    expect(figureVisible).toBeGreaterThan(0);
   });
 
   test("Exercise 5 — feature-set comparison and regularization exploration: initial dark load", async ({

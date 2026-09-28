@@ -83,6 +83,28 @@ class ExerciseManifest(unittest.TestCase):
         for rel in ex2["dataAssets"]:
             self.assertTrue((REPO_ROOT / rel).exists(), rel)
 
+    def test_migrated_template_versions_match_notebook_metadata(self):
+        # WP42 Gate 1: this manifest's own templateVersion drifted from the
+        # generated notebook's `metadata.wp41.templateVersion` after WP41R
+        # bumped only the notebook (see WPs/reports/WP41R_REPORT.md
+        # "Deviations"). Only the generator writes notebook metadata and only
+        # a human edits this manifest, so nothing previously checked they
+        # agreed; this test is that check, for every migrated exercise, not
+        # just Exercise 2.
+        import nbformat
+
+        for e in self.exercises:
+            if e["migrationState"] != "migrated":
+                continue
+            nb = nbformat.read(REPO_ROOT / e["templateNotebookPath"], as_version=4)
+            notebook_version = nb["metadata"]["wp41"]["templateVersion"]
+            self.assertEqual(
+                e["templateVersion"],
+                notebook_version,
+                f"exercise {e['number']}: manifest templateVersion "
+                f"({e['templateVersion']}) != notebook metadata ({notebook_version})",
+            )
+
     def test_common_packages_present(self):
         common = self.manifest["commonPackages"]
         for pkg in ("numpy", "pandas", "scikit-learn", "matplotlib", "ipywidgets"):
