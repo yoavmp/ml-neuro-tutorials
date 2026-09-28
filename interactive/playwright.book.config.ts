@@ -13,7 +13,12 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL: `http://localhost:${PORT}`,
-    trace: "off",
+    // WP43RR found this suite's CI failures left no trace, screenshot, or
+    // video to inspect -- only a bare timeout message. Capture on failure
+    // only, so a normal green run costs nothing extra.
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {

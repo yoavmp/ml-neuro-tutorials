@@ -25,7 +25,9 @@ import path from "node:path";
 //     <input type=range>); its keyboard-operable handle is ".noUi-handle".
 //   - Cold start (first visit, empty cache) fetches Pyodide plus the
 //     scientific stack from the CDN and can take ~90s; warm reloads are
-//     much faster. The waits below are sized for a cold run.
+//     much faster. The waits below are sized for a cold run on CI, which
+//     has been observed to need up to 140s in practice (not just download
+//     time -- Section 8's own KNN refits + matplotlib rendering add to it).
 
 test.setTimeout(180_000);
 
@@ -80,7 +82,14 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(100_000); // cold start: kernel + package fetch + full run
+    // Bumped from 100s to 140s: CI (unlike this repo's own dev machine)
+    // reliably needed more than 100s to reach Section 8's widget cell in
+    // two separate observed CI runs, each stalling out with the slider
+    // never rendered. 140s is not a guess -- it is the value
+    // exercise-01-lite.spec.ts and wp22-cross-chapter-dark-mode.spec.ts's
+    // own Exercise 2 dark-mode check already use successfully for this
+    // exact notebook's cold start.
+    await page.waitForTimeout(140_000);
 
     await scrollWindowed(page, 0.2);
     await expect(page.locator("body")).toContainText("held-out R^2 = 0.469", {
@@ -110,7 +119,7 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   test("Section 8 slider is operable and updates the figure", async ({ page }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(100_000);
+    await page.waitForTimeout(140_000);
 
     // Sweep for the slider by its own handle rather than a fixed scroll
     // fraction: this notebook's exact cell heights (and so which fraction
@@ -134,7 +143,7 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   test("a checked question grades correctly", async ({ page }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(100_000);
+    await page.waitForTimeout(140_000);
 
     await scrollWindowed(page, 0.12);
     // Every checked question stays mounted once rendered, and more than one
@@ -160,7 +169,7 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
     await context.grantPermissions?.([]);
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(100_000);
+    await page.waitForTimeout(140_000);
 
     const target = await scrollToVisible(page, "knn_model = ...");
     const editor = target.locator(".cm-content").first();
@@ -218,7 +227,7 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(100_000);
+    await page.waitForTimeout(140_000);
 
     const target = await scrollToVisible(
       page,
@@ -258,7 +267,7 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   test("reset restores the template and Back returns to Contents", async ({ page }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(100_000);
+    await page.waitForTimeout(140_000);
 
     await page.click("text=Reset from course template");
     await page.waitForTimeout(800);
@@ -324,7 +333,7 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(100_000);
+    await page.waitForTimeout(140_000);
 
     const target = await scrollToVisible(
       page,

@@ -115,6 +115,14 @@ jobs:
         working-directory: interactive
         run: npm run test:e2e:book
 
+      - name: Upload Playwright failure evidence (book suite)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-book-failure-evidence
+          path: interactive/test-results
+          retention-days: 14
+
       - name: Execute the portable notebook outside the repository
         run: python scripts/smoke_portable_notebook.py
 
