@@ -24,7 +24,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt -r requirements-lite.txt
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -36,6 +36,12 @@ jobs:
       - name: Install frontend dependencies
         working-directory: interactive
         run: npm ci
+
+      - name: Install and build the course-toolbar JupyterLite extension
+        working-directory: book/lite/extensions/course-toolbar
+        run: |
+          npm ci
+          npm run build
 
       - name: Type-check and unit-test the frontend
         working-directory: interactive
@@ -53,6 +59,18 @@ jobs:
 
       - name: Validate both committed ABIDE data artifacts (offline)
         run: python scripts/export_widget_data.py --check --artifact all
+
+      - name: Validate the JupyterLite exercise data exports (offline)
+        run: |
+          python scripts/export_abide_lite_data.py --check
+          python scripts/export_abide_phenotypes_lite_data.py --check
+
+      - name: Check the migrated exercise generators are not stale (offline)
+        run: |
+          python scripts/generate_exercise_01_notebook.py --check
+          python scripts/generate_exercise_02_notebook.py --check
+          python scripts/generate_exercise_01_transition_page.py --check
+          python scripts/generate_exercise_02_transition_page.py --check
 
       - name: Unit-test the Python scripts (offline)
         run: python -m unittest discover -s tests -v
@@ -85,7 +103,14 @@ jobs:
           fi
           echo "No notebook execution-error reports found."
 
-      - name: End-to-end test the built Chapter 1 page
+      - name: Build JupyterLite (Exercises 1 and 2)
+        run: |
+          jupyter lite build \
+            --config book/lite/jupyter_lite_config.json \
+            --lite-dir book/lite \
+            --output-dir book/_build/html/lite
+
+      - name: End-to-end test the combined book + JupyterLite build
         working-directory: interactive
         run: npm run test:e2e:book
 
