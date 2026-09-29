@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. Exercises 1-3 are migrated/active (WP41/WP42/WP44); every other entry keeps its existing legacy static Jupyter Book page untouched.",
+  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. Exercises 1-2 are migrated/active. Exercise 3's JupyterLite migration is built and locally verified (see feature/wp44-colab-portability-exercise-3 and WPs/reports/WP44_REPORT.md) but is deliberately kept migrationState=legacy here pending the real-Colab acceptance gate (WP41_MAINTAINER_GUIDE.md section 11) -- flip it to migrated only after that gate passes. Every other entry keeps its existing legacy static Jupyter Book page untouched.",
   "commonPackages": ["numpy", "pandas", "scikit-learn", "matplotlib", "ipywidgets"],
   "exercises": [
     {
@@ -40,16 +40,13 @@
     {
       "number": 3,
       "title": "Classification and Metrics",
-      "migrationState": "migrated",
+      "migrationState": "legacy",
       "legacyStaticPagePath": "chapters/chapter_03/exercise_03.ipynb",
-      "templateNotebookPath": "book/lite/files/exercise_03.ipynb",
-      "browserWorkingCopyName": "exercise_03.ipynb",
-      "liteUrl": "lite/notebooks/index.html?path=exercise_03.ipynb",
-      "templateVersion": 1,
-      "dataAssets": [
-        "book/lite/files/data/abide_age_brain.csv",
-        "book/lite/files/data/abide_age_brain.manifest.json"
-      ],
+      "templateNotebookPath": null,
+      "browserWorkingCopyName": null,
+      "liteUrl": null,
+      "templateVersion": null,
+      "dataAssets": [],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_03/exercise_03_portable.ipynb"
     },
