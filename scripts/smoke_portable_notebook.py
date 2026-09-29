@@ -12,11 +12,18 @@ Notebooks and their expected strings:
   entry for why (an ipywidgets.Output()/nbclient hang, pre-existing since
   WP41 for chapter_02's own equivalent widget, not introduced or fixed here).
 * ``chapter_02/exercise_02_portable.ipynb`` -- the merged modelling table loads
-  with `age` available for all 1004 participants; the held-out linear-regression
-  workflow runs and prints its R-squared; the fixed-k=20 KNN workflow (reusing
-  the same split) runs and prints its own held-out R-squared; the from-scratch
-  empirical k=1..N_fit curve runs and verifies the k=N_fit endpoint; the
-  learning curve prints n/p.
+  with 1004 participants and 360 brain predictors; the held-out linear-
+  regression workflow runs and prints its R-squared; the guarded KNN-check
+  cell (a student fill-in-the-blank exercise, correctly blank in the
+  distributed portable notebook) prints its "not complete yet" guard message
+  rather than a result; the from-scratch empirical k=1..N_fit curve runs and
+  prints its fitting/validation participant counts and the validation-
+  optimal k. Section 8's own "k = {k} model complexity" print is not checked
+  here: it runs inside an ``ipywidgets.Output()`` context, whose captured
+  text is stored in the widget's own comm-synced state, not in the cell's
+  regular ``outputs`` list that ``_all_output_text()`` below reads -- the
+  same structural gap chapter_01's exclusion above is about, not something
+  this WP's fix can check for without changing that extraction method.
 * ``chapter_03/exercise_03_portable.ipynb`` -- the same brain table, diagnosis
   (`group`) as target; the fixed-C=1.0 honest logistic-regression workflow
   runs and prints its confusion matrix, accuracy, and AUC; the editable
@@ -75,29 +82,24 @@ SMOKE = {
     # chapter_01 is intentionally absent: WP42 migrated Exercise 1 to a
     # JupyterLite-native notebook whose interactive widgets use
     # ipywidgets.Output() as a context manager (the retention explorer and
-    # histogram widgets) -- confirmed live that this specific pattern hangs
-    # nbclient's real ZMQ kernel indefinitely with no frontend attached to
-    # acknowledge the widget comm handshake (no timeout, no exception; a
-    # bounded run of this exact script against chapter_02, which has the
-    # same pattern in its own Section 8 widget, never completed within
-    # 100s). This is a pre-existing gap this WP did not introduce -- chapter_02
-    # has had the same unresolved issue since WP41 shipped it; flagged for
-    # the course author, not fixed here (out of WP42's scope). See
-    # tests/test_exercise_01_reference_execution.py /
-    # tests/test_exercise_02_reference_execution.py for the safe alternative
-    # (direct cell-source execution, not nbclient) already used for both
-    # exercises' own numeric-integrity checks.
+    # histogram widgets), historically believed to hang nbclient's real ZMQ
+    # kernel indefinitely with no frontend attached to acknowledge the widget
+    # comm handshake. This WP found chapter_02's own equivalent Section 8
+    # widget (the same Output()-context pattern) runs to completion cleanly
+    # in real CI without hanging, so that specific claim about chapter_02 no
+    # longer holds (whatever the earlier bounded-run finding was, it is not
+    # reproducing now) -- chapter_01 itself was not re-verified, so its
+    # exclusion is left in place rather than assumed fixed too.
     "chapter_02": {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb",
         "expect": (
-            "age available for 1004 of 1004",
-            "n_features = 360",
+            "1004 participants, 360 brain predictors",
+            "n_train = 753   n_test = 251",
             "held-out R^2 = 0.469",
-            "k = 20",
-            "held-out R^2 = 0.664",
-            "fitting participants (N_fit) = 564   validation participants (N_val) = 189",
-            "every validation prediction equals the fitting-set mean",
-            "n_features (p) = 10",
+            "held-out MSE = 49.6",
+            "Not complete yet: define knn_pred, knn_r2, and knn_mse above first.",
+            "fitting participants = 564   validation participants = 189",
+            "k with lowest validation error = 17",
         ),
     },
     "chapter_03": {
