@@ -10,34 +10,37 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  // CI's runner has 2 vCPUs and this config's default (unset) workers
-  // count used both of them. Two consecutive real CI runs (17b13fc,
-  // a016d8e) showed that a CPU-heavy JupyterLite/Pyodide test on one
-  // worker starves a completely unrelated, timing-sensitive test running
-  // concurrently on the other -- iframe-height-contract.spec.ts's Chapter
-  // 5 check uses page.waitForFunction(..., { polling: "raf" }) to detect
-  // layout settle, and a busy second worker delays its rAF callbacks
-  // enough to report a too-early "stable" height (reproducibly: both
-  // failures landed on the exact same 1578px reading). Serializing CI
-  // removes that class of cross-test contention entirely; it costs wall-
-  // clock time, not correctness, and this workflow has no time limit
-  // tighter than GitHub's own 360-minute job default.
-  ...(process.env.CI ? { workers: 1 } : {}),
   reporter: [["list"]],
   use: {
     baseURL: `http://localhost:${PORT}`,
-    // WP43RR found this suite's CI failures left no trace or screenshot to
-    // inspect -- only a bare timeout message. `trace`/`screenshot` capture
-    // on failure only (zero cost to a green run). `video` was tried too
-    // (commit a016d8e) but reverted: Playwright records video continuously
-    // for every test to support "retain-on-failure", and the very next CI
-    // run failed a *different*, previously always-green test
-    // (iframe-height-contract.spec.ts's Chapter 5 check) on a
-    // requestAnimationFrame-driven settle-detection race -- exactly the
-    // kind of test a busier main thread (continuous video encoding, across
-    // every parallel worker) would perturb. Not worth the added CI-load
-    // risk for a suite already timing-sensitive under 2-worker CI.
-    trace: "retain-on-failure",
+    // WP43RR found this suite's CI failures left nothing to inspect but a
+    // bare timeout message. `screenshot: "only-on-failure"` is genuinely
+    // free on a passing test (it fires once, only on failure) and stays.
+    //
+    // Three things were tried and reverted after real CI evidence ruled
+    // each one out, in order:
+    //   1. `video: "retain-on-failure"` -- Playwright records video
+    //      continuously for every test to support this mode. The very
+    //      next CI run broke a different, previously always-green test
+    //      (iframe-height-contract.spec.ts's Chapter 5 Ridge/Lasso check,
+    //      which settle-detects via page.waitForFunction with
+    //      { polling: "raf" }) at 1578px received vs >=1620px required.
+    //   2. Removing video alone didn't fix it -- the identical test failed
+    //      again with the *exact same* 1578px reading, which first looked
+    //      like cross-worker CPU contention on CI's 2-vCPU runner (the
+    //      other worker was mid-Pyodide-computation at the same wall-clock
+    //      moment), so CI was capped to 1 worker to remove that entirely.
+    //   3. That didn't fix it either -- fully serialized (1 worker, zero
+    //      cross-test contention possible), the exact same test failed
+    //      with the exact same 1578px reading a third time. The one
+    //      constant across all three failures was `trace:
+    //      "retain-on-failure"`, which (like video) records continuously
+    //      to support "retain on failure" -- removed here as the real
+    //      suspect. If CI evidence ever shows it wasn't `trace` either,
+    //      the next thing to suspect is the settle-detection algorithm
+    //      itself (rAF-polling can misjudge "stable" under any added
+    //      per-frame overhead, self-inflicted or not), not another
+    //      capture-mode guess.
     screenshot: "only-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
