@@ -10,6 +10,19 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
+  // CI's runner has 2 vCPUs and this config's default (unset) workers
+  // count used both of them. Two consecutive real CI runs (17b13fc,
+  // a016d8e) showed that a CPU-heavy JupyterLite/Pyodide test on one
+  // worker starves a completely unrelated, timing-sensitive test running
+  // concurrently on the other -- iframe-height-contract.spec.ts's Chapter
+  // 5 check uses page.waitForFunction(..., { polling: "raf" }) to detect
+  // layout settle, and a busy second worker delays its rAF callbacks
+  // enough to report a too-early "stable" height (reproducibly: both
+  // failures landed on the exact same 1578px reading). Serializing CI
+  // removes that class of cross-test contention entirely; it costs wall-
+  // clock time, not correctness, and this workflow has no time limit
+  // tighter than GitHub's own 360-minute job default.
+  ...(process.env.CI ? { workers: 1 } : {}),
   reporter: [["list"]],
   use: {
     baseURL: `http://localhost:${PORT}`,
