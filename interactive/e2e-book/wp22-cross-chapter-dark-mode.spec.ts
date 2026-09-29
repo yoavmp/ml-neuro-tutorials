@@ -238,28 +238,49 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     ).toContain(DIAGONAL_LINE_DARK);
   });
 
-  test("Exercise 3 — classification threshold ROC and class-imbalance: initial dark load", async ({ page }) => {
-    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html");
+  // WP44 migrated Exercise 3 to a JupyterLite-native notebook: its built
+  // page (chapters/chapter_03/exercise_03.html) is now a 2-cell transition
+  // page with no embedded iframe or Plotly figure at all (confirmed:
+  // chapter03.spec.ts asserts iframe count is 0 there), so this file's
+  // Plotly `_fullData`/`_fullLayout` color-snapshot technique has no
+  // surface left to check on that page -- the same reasoning already
+  // applied to Exercise 2 above. This replacement checks the JupyterLite
+  // app's own theme instead: switching to dark must not error, and a
+  // rendered Matplotlib figure (a static, white-card PNG, legible
+  // regardless of surrounding app theme, unlike the dark-palette-remapped
+  // Plotly figures other exercises still use) must still be present.
+  test("Exercise 3 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await page.goto("/lite/notebooks/index.html?path=exercise_03.ipynb", { waitUntil: "load" });
+    await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
+    await page.click("text=Run");
+    await page.waitForTimeout(200);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+    await page.waitForTimeout(140_000);
 
-    const rocFrame = await activityFrame(page, 'iframe[src*="config=../configs/classification_threshold.json"]');
-    const rocSnap = await snapshotPlot(rocFrame, "cls-roc-plot");
-    assertDarkFigure(rocSnap, "classification-threshold cls-roc-plot");
-    expect(rocSnap.markerColors, "classification-threshold: ROC curve uses the dark palette").toContain("#8fb8da");
-    expect(rocSnap.markerColors, "classification-threshold: chance line uses the dark palette").toContain("#b0b0b0");
-    expect(rocSnap.markerColors, "classification-threshold: selected-threshold marker uses the dark palette").toContain(
-      "#f0915c",
-    );
+    await page.click("text=Settings");
+    await page.waitForTimeout(300);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "Theme" }).first().click();
+    await page.waitForTimeout(300);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "JupyterLab Dark" }).first().click();
+    await page.waitForTimeout(1000);
 
-    // Cheap addition, same already-loaded page.
-    const imbFrame = await activityFrame(page, 'iframe[src*="config=../configs/classification_imbalance.json"]');
-    const imbSnap = await snapshotPlot(imbFrame, "cls-imb-plot");
-    assertDarkFigure(imbSnap, "classification-imbalance cls-imb-plot");
-    expect(imbSnap.markerColors, "classification-imbalance: model-accuracy bar uses the dark palette").toContain(
-      "#5a9bd4",
-    );
-    expect(imbSnap.markerColors, "classification-imbalance: baseline-accuracy bar uses the dark palette").toContain(
-      "#d9a441",
-    );
+    // The untouched template's own guarded model-fit RuntimeError (Section
+    // 3, by design -- see exercise-03-lite.spec.ts) is the one expected
+    // error cell here; anything beyond that would be a real regression.
+    expect(await page.locator(".jp-mod-error").count()).toBeLessThanOrEqual(1);
+
+    const el = await page.evaluate(() => {
+      const panel = document.querySelector(".jp-WindowedPanel-outer");
+      if (panel) panel.scrollTop = panel.scrollHeight * 0.1;
+      return true;
+    });
+    expect(el).toBe(true);
+    await page.waitForTimeout(600);
+    const figureVisible = await page.locator(".jp-OutputArea-output img, .jp-OutputArea-output canvas").count();
+    expect(figureVisible).toBeGreaterThan(0);
   });
 
   test("Exercise 4 — validation-stability, validation-lock-test, nested-cv-explorer: initial dark load", async ({

@@ -219,3 +219,108 @@ canonical page until:
 
 Only then replace the canonical page with a transition page. Never leave
 two divergent copies of the same lesson content live at once.
+
+## 11. The Colab acceptance gate (WP44)
+
+Structural tests, reference-notebook execution, and the local Playwright
+suite (sections 8-10 above) are a necessary, fast, offline/local proxy --
+**they are not proof that a real student's downloaded `.ipynb` actually
+works in real Google Colab.** WP44 found this gap had never been closed for
+Exercises 1-2 even after they shipped to production, and closed it as a
+standing requirement for every present and future migrated notebook.
+
+**The gate, in order, for every migrated exercise before it is presented as
+Colab-ready:**
+
+1. From the exercise's own transition page (or the manifest's
+   `fallbackDownloadablePath`), **download the published `.ipynb`** exactly
+   as a student would -- no repository checkout, no companion files.
+2. Open a **fresh** Google Colab session (a private/incognito browser
+   profile if you want to rule out a stale cached session) and **File >
+   Upload notebook** the downloaded file.
+3. Run the **untouched** template top to bottom (**Runtime > Run all**).
+   Confirm: every supplied cell executes; any intentionally blank "YOUR CODE
+   HERE" activity fails gracefully (one clear, actionable message -- never a
+   bare traceback, never a long cascade of unrelated failures further down);
+   the notebook does not attempt to install anything from this repository or
+   require Git/GitHub access; the data-loading cell's fallback path (the
+   pinned, checksummed public URL, not a same-origin file that does not
+   exist in a bare download) is what actually runs.
+4. Separately, build a **teacher-only completed copy** by filling in every
+   blank with the intended student workflow (the reference notebook's own
+   solution text is the right source), upload that to a fresh Colab session,
+   and **Run all**. Confirm: the established numeric results reproduce
+   (compare against the manifest's audited values / the reference-execution
+   test's expected numbers); every checked question gives correct AND
+   incorrect feedback, with retry where offered; every notebook-native
+   slider/dropdown/typed-input/interactive figure visibly changes its output
+   when operated; reference images and conceptual figures render (as real
+   images, never a raw `attachment:...`/`data:...` string); editable
+   written-answer cells are editable and their edits persist through a
+   save; **File > Download > Download .ipynb** produces a file that still
+   contains the edits.
+5. Record, in the exercise's own WP report: the Colab runtime's reported
+   Python and key package versions, the notebook's source commit/SHA, the
+   exact cells and widget interactions exercised, and any error encountered
+   plus its fix (or, if unresolved, its precise blocker).
+
+**If live, authenticated Colab access is unavailable in the environment
+doing the migration** (true for an unattended coding agent with no browser
+automation or Google-authenticated session): do every step above that is
+possible offline/locally (generator `--check`, structural tests, reference-
+notebook execution reproducing the established numbers, a local Playwright
+run against the real combined build), state the exact blocker plainly, leave
+a short manual test checklist (steps 1-5 above, ready to run) for whoever
+next has real Colab access, and **mark Colab acceptance explicitly
+unverified** -- do not claim this gate passed, and do not deploy on the
+strength of the local-only work alone. A local `nbclient`/headless kernel
+run, however thorough, is not a substitute for step 2's real browser
+session: it cannot exercise Colab's own upload flow, its actual installed
+package versions, or any Colab-specific rendering quirk.
+
+**Automated proxies that keep this gate honest, not a replacement for it:**
+- the generator's `--check` mode and each exercise's
+  `test_exercise_NN_lite_notebook.py` structural suite catch drift between
+  the template, its portable copy, and the reference notebook before a human
+  ever opens Colab;
+- `test_exercise_NN_reference_execution.py` catches a numeric regression
+  offline, in seconds, without waiting on a browser;
+- `tests/test_exercise_manifest.py` and each generator's data-loading helper
+  (section 3 above) enforce that every migrated exercise declares a
+  same-origin asset for JupyterLite/local checkout AND a pinned, checksummed
+  public fallback URL for a bare downloaded/Colab copy -- never a URL back
+  into this course's own repository (which breaks the instant the repository
+  goes private) and never a same-origin-only path (which does not exist in a
+  bare download at all).
+- do not add a CI job that depends on an instructor's personal Google
+  credentials to automate step 2-4 above; Colab has no supported,
+  credential-free automation surface, and a credentialed one is a standing
+  secret-management and account-security liability out of proportion to what
+  it would catch beyond the proxies already listed.
+
+## 12. Teacher Colab-acceptance checklist template
+
+Copy this into the relevant WP report for each exercise being verified:
+
+```
+Exercise N: <title>
+Notebook source commit/SHA: <>
+Colab runtime Python version: <>
+Colab runtime key package versions (numpy/pandas/scikit-learn/matplotlib/ipywidgets): <>
+
+Untouched template, fresh Colab session, Runtime > Run all:
+  [ ] every supplied cell executed
+  [ ] each blank activity failed gracefully (message, not cascade): <list>
+  [ ] no repository checkout / Git access / pip install from this repo
+  [ ] data loaded via the pinned public fallback URL (not a same-origin path)
+
+Teacher-completed copy, fresh Colab session, Runtime > Run all:
+  [ ] established results reproduced: <numbers, vs. expected>
+  [ ] every checked question: correct feedback [ ]  incorrect feedback [ ]  retry/reset [ ]
+  [ ] every slider/dropdown/typed-input/interactive figure changes its output live: <list>
+  [ ] reference images / conceptual figures render as real images
+  [ ] written-answer cell edited, saved, reloaded, edit still present
+  [ ] Download .ipynb produced a file containing the edits
+
+Result: PASS / FAIL / UNVERIFIED (state the blocker)
+```

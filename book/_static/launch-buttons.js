@@ -24,17 +24,19 @@
  * Contents, and the placeholder Exercises 11-12, which have no portable
  * notebook yet) get no button.
  *
- * WP41R/WP42: chapter_01/exercise_01.html and chapter_02/exercise_02.html are
- * deliberately NOT in this map. Every URL this button can build is
- * "github.com/<repo>/blob/main/<path>" -- fetched live from the PUBLIC
- * "main" branch, never from this local/feature branch. The JupyterLite
- * migrations live only on feature branches (unmerged, unpushed), so that
- * button would open the OLD, pre-migration notebook -- and once the
- * repository goes private (see WPs' course-privacy constraint), the same URL
- * pattern stops working for every chapter. Each migrated exercise's
- * transition page (see scripts/generate_exercise_01_transition_page.py,
- * scripts/generate_exercise_02_transition_page.py) instead links the student
- * straight to a same-origin download, with plain "open it in Colab"
+ * WP41R/WP42/WP44: chapter_01/exercise_01.html, chapter_02/exercise_02.html,
+ * and chapter_03/exercise_03.html are deliberately NOT in this map. Every
+ * URL this button can build is "github.com/<repo>/blob/main/<path>" --
+ * fetched live from the PUBLIC "main" branch, never from this local/feature
+ * branch. The JupyterLite migrations live only on feature branches
+ * (unmerged, unpushed), so that button would open the OLD, pre-migration
+ * notebook -- and once the repository goes private (see WPs' course-privacy
+ * constraint), the same URL pattern stops working for every chapter. Each
+ * migrated exercise's transition page (see
+ * scripts/generate_exercise_01_transition_page.py,
+ * scripts/generate_exercise_02_transition_page.py,
+ * scripts/generate_exercise_03_transition_page.py) instead links the
+ * student straight to a same-origin download, with plain "open it in Colab"
  * instructions, so it does not depend on this repository's visibility or
  * branch state at all.
  */
@@ -47,9 +49,8 @@
   // path (as it appears in the page URL, without a leading slash) -> portable
   // notebook path relative to the repository root.
   var PAGE_TO_PORTABLE = {
-    // chapter_01 and chapter_02 intentionally omitted -- see the file header comment.
-    "chapters/chapter_03/exercise_03.html":
-      "book/downloads/chapter_03/exercise_03_portable.ipynb",
+    // chapter_01, chapter_02, and chapter_03 intentionally omitted -- see
+    // the file header comment.
     "chapters/chapter_04/exercise_04.html":
       "book/downloads/chapter_04/exercise_04_portable.ipynb",
     "chapters/chapter_05/exercise_05.html":

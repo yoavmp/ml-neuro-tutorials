@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. Only Exercise 2 is migrated/active in WP41; every other entry keeps its existing legacy static Jupyter Book page untouched.",
+  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. Exercises 1-3 are migrated/active (WP41/WP42/WP44); every other entry keeps its existing legacy static Jupyter Book page untouched.",
   "commonPackages": ["numpy", "pandas", "scikit-learn", "matplotlib", "ipywidgets"],
   "exercises": [
     {
@@ -40,13 +40,16 @@
     {
       "number": 3,
       "title": "Classification and Metrics",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_03/exercise_03.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_03.ipynb",
+      "browserWorkingCopyName": "exercise_03.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_03.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_03/exercise_03_portable.ipynb"
     },

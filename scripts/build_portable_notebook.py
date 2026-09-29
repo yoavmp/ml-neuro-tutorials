@@ -30,13 +30,14 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_01,chapter_03,chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,chapter_09,chapter_10,all}``
+``--notebook {chapter_04,chapter_05,chapter_06,chapter_07,chapter_08,chapter_09,chapter_10,all}``
 (default ``all``) scopes both modes. Exercises 11-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
-registered here. chapter_02 is also absent: WP41 migrated Exercise 2 to a
-JupyterLite-native notebook, and scripts/generate_exercise_02_notebook.py is
-now its sole generator (see that script's own ``--write``/``--check``). The
-bare ``--write`` / ``--check`` invocations keep working and now cover every
+registered here. chapter_01, chapter_02, and chapter_03 are also absent:
+WP41/WP42/WP44 migrated Exercises 1, 2, and 3 to JupyterLite-native
+notebooks, and scripts/generate_exercise_0{1,2,3}_notebook.py are now their
+sole generators (see each script's own ``--write``/``--check``). The bare
+``--write`` / ``--check`` invocations keep working and now cover every
 notebook still registered here.
 
 Determinism: each output depends only on its committed inputs. Serialization
@@ -1074,17 +1075,19 @@ CHAPTER_10 = NotebookSpec(
 )
 
 NOTEBOOKS = {
-    # chapter_01 and chapter_02 are intentionally absent: WP41/WP42 migrated
-    # both to JupyterLite-native notebooks.
+    # chapter_01, chapter_02, and chapter_03 are intentionally absent:
+    # WP41/WP42/WP44 migrated all three to JupyterLite-native notebooks.
     # scripts/generate_exercise_01_notebook.py /
-    # scripts/generate_exercise_02_notebook.py are now the sole generators
-    # for book/lite/files/exercise_0{1,2}.ipynb and
-    # book/downloads/chapter_0{1,2}/exercise_0{1,2}_portable.ipynb; the old
-    # MyST-directive-rewriting pipeline below (CHAPTER_01's spec, its
-    # column-rewriting, banner, and setup constants included) no longer
-    # applies to either and is left in place, unused, rather than removed --
-    # see the analogous knn_explore.json decision in WP41's report.
-    CHAPTER_03.key: CHAPTER_03,
+    # scripts/generate_exercise_02_notebook.py /
+    # scripts/generate_exercise_03_notebook.py are now the sole generators
+    # for book/lite/files/exercise_0{1,2,3}.ipynb and
+    # book/downloads/chapter_0{1,2,3}/exercise_0{1,2,3}_portable.ipynb; the
+    # old MyST-directive-rewriting pipeline below (CHAPTER_01's spec, its
+    # column-rewriting, banner, and setup constants included, plus
+    # CHAPTER_03's own banner/setup/iframe-replacement constants) no longer
+    # applies to any of them and is left in place, unused, rather than
+    # removed -- see the analogous knn_explore.json decision in WP41's
+    # report.
     CHAPTER_04.key: CHAPTER_04,
     CHAPTER_05.key: CHAPTER_05,
     CHAPTER_06.key: CHAPTER_06,

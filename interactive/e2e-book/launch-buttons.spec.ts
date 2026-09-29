@@ -6,21 +6,16 @@ import { expect, test } from "@playwright/test";
 // Jupyter Book source notebook, and never another chapter's notebook (the
 // previously observed "older notebook" regression).
 //
-// WP41R: Chapter 2 is deliberately NOT in this list any more. WP41 replaced
-// its opening with a different page structure (see chapter02.spec.ts), and
-// its top-bar Colab button is intentionally suppressed (see
-// book/_static/launch-buttons.js and "Chapter 2 has no Colab button" below)
-// rather than pointed at a URL that would open the pre-WP41 notebook (this
-// migration is unpushed) and would stop working entirely once the
-// repository goes private.
+// WP41R/WP44: Chapters 1-3 are deliberately NOT in this list any more.
+// WP41/WP42/WP44 replaced their openings with a different page structure
+// (see chapter01.spec.ts, chapter02.spec.ts, chapter03.spec.ts), and each
+// one's top-bar Colab button is intentionally suppressed (see
+// book/_static/launch-buttons.js and the "gets no top-bar Colab button"
+// tests below) rather than pointed at a URL that would stop working once
+// the repository goes private.
 
 const REPO = "yoavmp/ml-neuro-tutorials";
 const CHAPTERS = [
-  {
-    name: "Chapter 3",
-    url: "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html",
-    portable: "book/downloads/chapter_03/exercise_03_portable.ipynb",
-  },
   {
     // WP28 §3: Exercise 4 is no longer a placeholder (WP27) -- it has its own
     // portable notebook and Colab button like chapters 1-3, so it belongs in
@@ -150,5 +145,13 @@ test("Chapter 2 (migrated to JupyterLite) gets no top-bar Colab button", async (
 // so this is a deliberate suppression, not an unmapped-page omission.
 test("Chapter 1 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
   await page.goto("/ml-neuro-tutorials/chapters/chapter_01/exercise_01.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+// WP44 Gate B: same treatment as Chapters 1-2 above -- Chapter 3 also has a
+// portable notebook (it is the migrated JupyterLite student notebook now),
+// so this is a deliberate suppression, not an unmapped-page omission.
+test("Chapter 3 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });

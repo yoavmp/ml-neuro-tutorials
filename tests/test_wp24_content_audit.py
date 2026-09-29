@@ -28,7 +28,12 @@ EX2_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_po
 EX5 = REPO_ROOT / "book" / "chapters" / "chapter_05" / "exercise_05.ipynb"
 # WP25 moved this content wholesale from chapter_04 to chapter_03 (the
 # classification lesson is now Exercise 3; chapter_04 is a placeholder).
-EX4 = REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb"
+# WP44 migrated Exercise 3 to a JupyterLite notebook: EX4 now points at the
+# real lesson (book/lite/files/exercise_03.ipynb), not the canonical page
+# (now a 2-cell transition page with none of this content -- see
+# tests/test_exercise_03_transition_page.py), mirroring how EX2_LITE already
+# repoints Exercise 2's own checks below.
+EX4 = REPO_ROOT / "book" / "lite" / "files" / "exercise_03.ipynb"
 EX4_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb"
 
 EDA_CORRELATION_JSON = REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "eda_correlation.json"
@@ -227,11 +232,16 @@ class Exercise4SinglePromptSetWithComparisonQuestion(unittest.TestCase):
     Reflect list), and it includes the new accuracy-vs-baseline question."""
 
     def test_notebook_section_6_has_no_think_first_block(self):
+        # WP44 shortened this heading to "## 6. Class imbalance and
+        # misleading accuracy" as part of Exercise 3's JupyterLite migration
+        # (no MyST admonitions exist in a JupyterLite-native notebook at
+        # all, so this assertion is now trivially true by construction --
+        # kept as a real regression check, not deleted).
         cells = _load_cells(EX4)
         start = next(
             i
             for i, c in enumerate(cells)
-            if "## 6. Interactive activity: class imbalance" in _cell_text(c)
+            if "## 6. Class imbalance and misleading accuracy" in _cell_text(c)
         )
         end = next(
             (i for i, c in enumerate(cells) if i > start and _cell_text(c).startswith("## ")),
@@ -262,19 +272,15 @@ class RedundantReproductionCellsCollapsed(unittest.TestCase):
     Exercise 1's own case (a seaborn histplot reproduction cell) no longer
     applies: WP42 migrated Exercise 1 to a JupyterLite notebook, which uses
     no seaborn at all (no prebuilt Pyodide wheel) and no hide-cell concept
-    (that is a Jupyter Book/Sphinx-only rendering tag)."""
-
-    def test_exercise4_threshold_reproduction_is_hide_cell(self):
-        cells = _load_cells(EX4)
-        cell = next(c for c in cells if c.get("cell_type") == "code" and "threshold = 0.50" in _cell_text(c))
-        self.assertEqual(cell["metadata"].get("tags"), ["hide-cell"])
-
-    def test_exercise4_imbalance_reproduction_is_hide_cell(self):
-        cells = _load_cells(EX4)
-        cell = next(
-            c for c in cells if c.get("cell_type") == "code" and 'class_ratio = "90:10"' in _cell_text(c)
-        )
-        self.assertEqual(cell["metadata"].get("tags"), ["hide-cell"])
+    (that is a Jupyter Book/Sphinx-only rendering tag). Exercise 3's own
+    case (an iframe-widget-plus-portable-reproduction pair, each previously
+    carrying a matching threshold/ratio default) no longer applies for the
+    same reason: WP44 migrated Exercise 3 to a JupyterLite notebook, whose
+    threshold/imbalance activities are native ipywidgets controls with no
+    separate iframe or hide-cell reproduction at all -- checked instead,
+    directly, in tests/test_exercise_03_lite_notebook.py's
+    test_threshold_widget_is_notebook_native and
+    test_imbalance_widget_is_notebook_native."""
 
     def test_portable_notebooks_have_no_hide_tags_and_keep_the_code(self):
         for path, needle in (

@@ -62,20 +62,19 @@ function iframeByTitle(title: string): string {
   return `iframe[title="${title}"]`;
 }
 
-// Exercises 1 and 2 are intentionally absent from this list: WP41/WP42
-// migrated both to JupyterLite-native notebooks, whose interactive
-// activities are native ipywidgets/Matplotlib figures inside the notebook
-// document itself, not iframes -- there is no iframe-height contract left
-// to check for either (the widgets live in the browser kernel's own DOM,
-// with no parent/child postMessage handshake at all). This is a genuine
-// structural difference from every still-legacy exercise below, not a
-// skipped or forgotten case: their own platform-appropriate coverage
-// (390px usability, light/dark, control operability, persistence) lives in
-// interactive/e2e-book/exercise-01-lite.spec.ts and
-// interactive/e2e-book/exercise-02-lite.spec.ts instead.
+// Exercises 1, 2, and 3 are intentionally absent from this list: WP41/WP42/
+// WP44 migrated all three to JupyterLite-native notebooks, whose
+// interactive activities are native ipywidgets/Matplotlib figures inside
+// the notebook document itself, not iframes -- there is no iframe-height
+// contract left to check for any of them (the widgets live in the browser
+// kernel's own DOM, with no parent/child postMessage handshake at all).
+// This is a genuine structural difference from every still-legacy exercise
+// below, not a skipped or forgotten case: their own platform-appropriate
+// coverage (390px usability, light/dark, control operability, persistence)
+// lives in interactive/e2e-book/exercise-01-lite.spec.ts,
+// interactive/e2e-book/exercise-02-lite.spec.ts, and
+// interactive/e2e-book/exercise-03-lite.spec.ts instead.
 const CASES: ActivityCase[] = [
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html", iframeSelector: iframeByTitle("Interactive decision-threshold exploration for classifying autism vs. control from brain structure") },
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html", iframeSelector: iframeByTitle("Interactive class-imbalance exploration for classifying autism vs. control from brain structure") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html", iframeSelector: iframeByTitle("Interactive single-split and cross-validation stability comparison for predicting age from brain structure") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html", iframeSelector: iframeByTitle("Interactive KNN tuning activity: choose k before revealing the test result") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html", iframeSelector: iframeByTitle("Interactive nested cross-validation explorer for predicting age from brain structure") },

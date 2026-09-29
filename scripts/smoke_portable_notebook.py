@@ -11,6 +11,13 @@ Notebooks and their expected strings:
 * chapter_01 is intentionally absent -- see the comment above its old ``SMOKE``
   entry for why (an ipywidgets.Output()/nbclient hang, pre-existing since
   WP41 for chapter_02's own equivalent widget, not introduced or fixed here).
+* chapter_03 is intentionally absent (WP44) -- see the comment above its old
+  ``SMOKE`` entry for why (its guarded model-fit cell correctly, by design,
+  raises an actionable ``RuntimeError`` on the unmodified distributed
+  template, since Section 3's FEATURES/X-y/split activities are intentionally
+  left blank; this script's ``client.execute()`` call has no
+  `on_notebook_start=` retry-past-an-expected-error mode, so the whole run
+  aborts there, before ever reaching the confusion-matrix/AUC cells).
 * ``chapter_02/exercise_02_portable.ipynb`` -- the merged modelling table loads
   with 1004 participants and 360 brain predictors; the held-out linear-
   regression workflow runs and prints its R-squared; the guarded KNN-check
@@ -24,10 +31,6 @@ Notebooks and their expected strings:
   regular ``outputs`` list that ``_all_output_text()`` below reads -- the
   same structural gap chapter_01's exclusion above is about, not something
   this WP's fix can check for without changing that extraction method.
-* ``chapter_03/exercise_03_portable.ipynb`` -- the same brain table, diagnosis
-  (`group`) as target; the fixed-C=1.0 honest logistic-regression workflow
-  runs and prints its confusion matrix, accuracy, and AUC; the editable
-  threshold and class-imbalance demo cells run.
 * ``chapter_04/exercise_04_portable.ipynb`` -- the same brain table, `age` as
   target, the same fixed 360-column KNN recipe and outer split as Exercise 2;
   the fixed-k=20 cross-validation workflow runs and prints its per-fold and
@@ -102,17 +105,23 @@ SMOKE = {
             "k with lowest validation error = 17",
         ),
     },
-    "chapter_03": {
-        "path": REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
-        "expect": (
-            "463 autism (group=1), 541 control (group=2)",
-            "n_train = 753   n_test = 251   n_features = 360",
-            "accuracy    = 0.546",
-            "AUC         = 0.569",
-            "AUC is unchanged by the threshold: 0.569",
-            "cohort: 400 participants (360 control, 40 autism)",
-        ),
-    },
+    # chapter_03 is intentionally absent: WP44 migrated Exercise 3 to a
+    # JupyterLite-native notebook whose Section 3 (FEATURES, X/y, and the
+    # train/test split) is now a genuine student fill-in-the-blank sequence
+    # rather than fully worked code -- confirmed live (WP44): a bounded run
+    # of the unmodified distributed template against this script correctly
+    # raises the guarded, actionable RuntimeError
+    # ("X_train/X_test/y_train/y_test are not defined yet...") at the given
+    # model-fit cell, which this script's plain client.execute() treats as a
+    # fatal error and aborts on, before ever reaching the confusion-matrix,
+    # ROC/AUC, threshold, or imbalance cells. This is not an
+    # ipywidgets.Output()/nbclient hang (no hang occurs here, unlike
+    # chapter_01's exclusion above) -- it is a structural mismatch between
+    # this script's "run everything, check solved output" design and a
+    # notebook whose middle section is deliberately left blank. The same
+    # numeric results this script would have checked are already verified,
+    # correctly (executing the completed reference notebook, not the blank
+    # student template), by tests/test_exercise_03_reference_execution.py.
     "chapter_04": {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
         "expect": (

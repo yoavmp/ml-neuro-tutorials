@@ -1,7 +1,7 @@
 """Offline schema/consistency tests for book/config/exercise_manifest.json.
 
 WP41 section 4.3/12: one machine-readable manifest for Exercises 1-12, with
-exactly Exercise 2 marked migrated in this WP, and unique routes/paths across
+Exercises 1-3 marked migrated (WP41/WP42/WP44) and unique routes/paths across
 entries.
 
 Run:
@@ -49,9 +49,9 @@ class ExerciseManifest(unittest.TestCase):
         for e in self.exercises:
             self.assertEqual(set(e.keys()), REQUIRED_FIELDS, e)
 
-    def test_only_exercises_1_and_2_are_migrated(self):
+    def test_only_exercises_1_2_and_3_are_migrated(self):
         migrated = [e["number"] for e in self.exercises if e["migrationState"] == "migrated"]
-        self.assertEqual(migrated, [1, 2])
+        self.assertEqual(migrated, [1, 2, 3])
         for e in self.exercises:
             self.assertIn(e["migrationState"], {"migrated", "legacy"})
 

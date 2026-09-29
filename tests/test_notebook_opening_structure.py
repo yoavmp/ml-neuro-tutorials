@@ -1,7 +1,12 @@
 """WP20 correction pass: cross-notebook authoring-rule checks for Exercises
 1-3 (WP25 renumbered the active book to Exercises 1-3 plus placeholder
-Exercises 4-12, which have no notebook structure to check here), covering
-the durable requirements in NOTEBOOK_AUTHORING_STANDARDS.md.
+Exercises 4-12, which have no notebook structure to check here; WP41-WP44
+subsequently migrated all three to JupyterLite transition pages, so none of
+the opening-structure/wording conventions checked here still apply -- see
+tests/test_exercise_01_lite_notebook.py,
+tests/test_exercise_02_lite_notebook.py, and
+tests/test_exercise_03_lite_notebook.py instead), covering the durable
+requirements in NOTEBOOK_AUTHORING_STANDARDS.md.
 
 Deliberately structural/count-based rather than exact-wording where possible
 (the opening list content is free to be reworded by a future WP), except for
@@ -23,25 +28,27 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# chapter_01 and chapter_02 are intentionally absent from
-# CANONICAL/PORTABLE/EXERCISE_NUMBERS: WP41/WP42 replaced their canonical
-# notebooks with short JupyterLite transition pages (see
+# chapter_01, chapter_02, and chapter_03 are intentionally absent from
+# CANONICAL/PORTABLE/EXERCISE_NUMBERS: WP41/WP42/WP44 replaced their
+# canonical notebooks with short JupyterLite transition pages (see
 # tests/test_exercise_01_transition_page.py,
-# tests/test_exercise_02_transition_page.py) and moved the actual lessons to
-# book/lite/files/exercise_0{1,2}.ipynb (see
+# tests/test_exercise_02_transition_page.py,
+# tests/test_exercise_03_transition_page.py) and moved the actual lessons to
+# book/lite/files/exercise_0{1,2,3}.ipynb (see
 # tests/test_exercise_01_lite_notebook.py,
-# tests/test_exercise_02_lite_notebook.py), so the opening-structure/wording
-# conventions checked here no longer apply to either.
-CANONICAL = {
-    "chapter_03": REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
-}
-PORTABLE = {
-    "chapter_03": REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
-}
+# tests/test_exercise_02_lite_notebook.py,
+# tests/test_exercise_03_lite_notebook.py), so the opening-structure/wording
+# conventions checked here no longer apply to any of them. CANONICAL and
+# PORTABLE are now both empty; the DeprecatedPhraseTests class below is kept
+# (rather than deleted) because it still has a real, ongoing subject --
+# WIDGET_CONFIGS, covering every remaining widget config used by the
+# still-legacy exercises.
+CANONICAL: dict[str, Path] = {}
+PORTABLE: dict[str, Path] = {}
 WIDGET_CONFIGS = sorted((REPO_ROOT / "book" / "_static" / "widgets" / "configs").glob("*.json"))
 
 # Exercise number, one row per notebook, in the same order as CANONICAL.
-EXERCISE_NUMBERS = {"chapter_03": "3"}
+EXERCISE_NUMBERS: dict[str, str] = {}
 
 COVERS_HEADING = "## What this notebook covers"
 MAIN_HEADING_RE = re.compile(r"^## \d+\.", re.MULTILINE)
@@ -140,26 +147,11 @@ class OpeningStructureTests(unittest.TestCase):
             )
 
 
-class RepeatedLoadingCellTests(unittest.TestCase):
-    """§3.2: Exercise 3 collapses the repeated loading cell's input while
-    keeping its useful output visible (Exercise 1's own first/only loading
-    example lived here before WP42 migrated it to JupyterLite -- see
-    tests/test_exercise_01_lite_notebook.py instead)."""
-
-    def test_exercise_3_hides_input_on_the_repeated_loading_cell(self):
-        for key in ("chapter_03",):
-            nb = _load(CANONICAL[key])
-            cell = nb["cells"][4]
-            tags = cell.get("metadata", {}).get("tags", [])
-            self.assertIn("hide-input", tags, f"{key} cell 4 should carry hide-input")
-            self.assertNotIn("hide-cell", tags, f"{key} cell 4 must not use hide-cell (it hides output too)")
-
-    def test_exercise_3_loading_cell_output_is_present(self):
-        for key in ("chapter_03",):
-            nb = _load(CANONICAL[key])
-            cell = nb["cells"][4]
-            text = _cell_output_text(cell)
-            self.assertIn("data table:", text, f"{key} cell 4 output is missing or stale")
+# RepeatedLoadingCellTests (§3.2, Exercise 3's repeated-loading-cell
+# hide-input convention) is retired: WP44 migrated Exercise 3 to a
+# JupyterLite notebook, whose canonical page is now a 2-cell transition page
+# with no such cell at all -- the same treatment WP41/WP42 already gave the
+# analogous per-notebook checks for Exercises 1 and 2.
 
 
 class DeprecatedPhraseTests(unittest.TestCase):

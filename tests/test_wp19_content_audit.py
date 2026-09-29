@@ -135,9 +135,16 @@ class NotebookContentAudit(unittest.TestCase):
         self.assertIn("KNeighborsRegressor(n_neighbors=20)", text, reference)
 
     def test_exercise_3_uses_fixed_c1_language(self):
-        for path in (NOTEBOOK_PATHS[2], NOTEBOOK_PATHS[5]):
-            text = _notebook_text(path)
-            self.assertIn("C_EXAMPLE = 1.0", text, path)
+        # WP44 migrated Exercise 3 to a JupyterLite notebook: NOTEBOOK_PATHS[2]
+        # (the canonical page) is now a 2-cell transition page with no
+        # analysis code of its own (see
+        # tests/test_exercise_03_transition_page.py), so only the portable
+        # notebook (NOTEBOOK_PATHS[5]) still carries this text. The real
+        # lesson's own copy is checked directly in
+        # tests/test_exercise_03_lite_notebook.py's
+        # test_c_example_fixed_not_tuned.
+        text = _notebook_text(NOTEBOOK_PATHS[5])
+        self.assertIn("C_EXAMPLE = 1.0", text, NOTEBOOK_PATHS[5])
 
 
 class WidgetConfigContentAudit(unittest.TestCase):
