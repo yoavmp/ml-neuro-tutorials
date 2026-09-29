@@ -1,0 +1,13 @@
+{
+  "@jupyterlite/pyodide-kernel-extension:kernel": {
+    "loadPyodideOptions": {
+      "packages": [
+        "numpy",
+        "pandas",
+        "scikit-learn",
+        "matplotlib",
+        "ipywidgets"
+      ]
+    }
+  }
+}
