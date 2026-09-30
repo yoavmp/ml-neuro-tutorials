@@ -6,32 +6,16 @@ import { expect, test } from "@playwright/test";
 // Jupyter Book source notebook, and never another chapter's notebook (the
 // previously observed "older notebook" regression).
 //
-// WP41R/WP44: Chapters 1-3 are deliberately NOT in this list any more.
-// WP41/WP42/WP44 replaced their openings with a different page structure
-// (see chapter01.spec.ts, chapter02.spec.ts, chapter03.spec.ts), and each
-// one's top-bar Colab button is intentionally suppressed (see
-// book/_static/launch-buttons.js and the "gets no top-bar Colab button"
-// tests below) rather than pointed at a URL that would stop working once
-// the repository goes private.
+// WP41R/WP44/WP45: Chapters 1-5 are deliberately NOT in this list any more.
+// WP41/WP42/WP44/WP45 replaced their openings with a different page
+// structure (see chapter01.spec.ts, chapter02.spec.ts, chapter03.spec.ts,
+// chapter04.spec.ts, chapter05.spec.ts), and each one's top-bar Colab
+// button is intentionally suppressed (see book/_static/launch-buttons.js
+// and the "gets no top-bar Colab button" tests below) rather than pointed
+// at a URL that would stop working once the repository goes private.
 
 const REPO = "yoavmp/ml-neuro-tutorials";
 const CHAPTERS = [
-  {
-    // WP28 §3: Exercise 4 is no longer a placeholder (WP27) -- it has its own
-    // portable notebook and Colab button like chapters 1-3, so it belongs in
-    // this loop rather than under the "placeholder gets no button" checks
-    // below, where a stale assertion previously claimed the opposite.
-    name: "Chapter 4",
-    url: "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html",
-    portable: "book/downloads/chapter_04/exercise_04_portable.ipynb",
-  },
-  {
-    // WP28 §6: Exercise 5 is now a complete notebook, with its own portable
-    // notebook and Colab button.
-    name: "Chapter 5",
-    url: "/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html",
-    portable: "book/downloads/chapter_05/exercise_05_portable.ipynb",
-  },
   {
     // WP29 §6: Exercise 6 is now a complete notebook, with its own portable
     // notebook and Colab button.
@@ -153,5 +137,21 @@ test("Chapter 1 (migrated to JupyterLite) gets no top-bar Colab button", async (
 // so this is a deliberate suppression, not an unmapped-page omission.
 test("Chapter 3 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
   await page.goto("/ml-neuro-tutorials/chapters/chapter_03/exercise_03.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+// WP45: same treatment as Chapters 1-3 above -- Chapter 4 also has a
+// portable notebook (it is the migrated JupyterLite student notebook now),
+// so this is a deliberate suppression, not an unmapped-page omission.
+test("Chapter 4 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+// WP45: same treatment as Chapters 1-3 above -- Chapter 5 also has a
+// portable notebook (it is the migrated JupyterLite student notebook now),
+// so this is a deliberate suppression, not an unmapped-page omission.
+test("Chapter 5 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });

@@ -31,18 +31,15 @@ Notebooks and their expected strings:
   regular ``outputs`` list that ``_all_output_text()`` below reads -- the
   same structural gap chapter_01's exclusion above is about, not something
   this WP's fix can check for without changing that extraction method.
-* ``chapter_04/exercise_04_portable.ipynb`` -- the same brain table, `age` as
-  target, the same fixed 360-column KNN recipe and outer split as Exercise 2;
-  the fixed-k=20 cross-validation workflow runs and prints its per-fold and
-  mean MSE; the training/validation tuning cell runs and prints the
-  training-selected and validation-selected k; the one-time test-reveal cell
-  runs (its saved output is intentionally absent from the committed portable
-  notebook -- see its banner cell); the nested-cross-validation cell runs and
-  prints its per-fold selected k and mean outer-test MSE.
-* ``chapter_05/exercise_05_portable.ipynb`` (WP33) -- the same brain table;
-  cross-validated KNN, ridge, and lasso workflows run and print their
-  selected k / alpha and validation MSE; the frontal-bundle forward feature
-  selection cell runs and prints its selected feature count and CV MSE.
+* chapter_04 and chapter_05 are intentionally absent (WP45) -- see the
+  comment above their old ``SMOKE`` entries for why (each notebook's
+  Section 2/4 predefined-comparison or split-stability activity uses an
+  ``ipywidgets.Output()`` widget as a context manager, the same pattern
+  documented to hang ``nbclient`` with no real frontend attached; the same
+  numbers are verified instead by directly executing the reference
+  notebook's cell sources in
+  ``tests/test_exercise_04_reference_execution.py`` and
+  ``tests/test_exercise_05_reference_execution.py``).
 * ``chapter_06/exercise_06_portable.ipynb`` (WP33) -- the same brain table;
   the greedy-split search, the fixed-depth-3 tree fit, the depth-sweep
   table, and the bagging/Random-Forest fair comparison all run and print
@@ -122,31 +119,19 @@ SMOKE = {
     # numeric results this script would have checked are already verified,
     # correctly (executing the completed reference notebook, not the blank
     # student template), by tests/test_exercise_03_reference_execution.py.
-    "chapter_04": {
-        "path": REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb",
-        "expect": (
-            "data table: 1004 participants x 1446 columns",
-            "360 predictors, fixed before this lesson",
-            "n_train = 753   n_test = 251   n_features = 360",
-            "mean MSE = 33.8   (sd 5.4)",
-            "n_fit = 564   n_val = 189",
-            "training-selected k   = 1",
-            "validation-selected k = 25",
-            "validation-selected  k =  25   test MSE = 32.6   test R^2 = 0.651",
-            "mean outer-test MSE = 33.4   (sd 7.5)",
-            "selected k per outer fold: [15, 12, 10, 18, 15]",
-        ),
-    },
-    "chapter_05": {
-        "path": REPO_ROOT / "book" / "downloads" / "chapter_05" / "exercise_05_portable.ipynb",
-        "expect": (
-            "data table: 1004 participants x 1446 columns",
-            "n_train = 753   n_test = 251   n_features = 360",
-            "best k by cross-validation: 80",
-            "ridge best alpha = 562.3   validation MSE = 22.3   nonzero = 360",
-            "lowest cross-validation MSE at 17 features (MSE = 56.4)",
-        ),
-    },
+    # chapter_04 and chapter_05 are intentionally absent: WP45 migrated both
+    # to JupyterLite-native notebooks whose Section 4 (chapter_04, the "One
+    # Split or Several Folds?" activity) and Section 2 (chapter_05, the
+    # predefined feature-set comparison) each use an ipywidgets.Output()
+    # widget as a context manager -- the same pattern WP41's maintainer
+    # guide (section 8) documents as hanging nbclient's real ZMQ kernel
+    # indefinitely, with no real frontend attached to acknowledge the widget
+    # comm handshake (chapter_01's own exclusion above is the precedent).
+    # The same numbers this script would have checked are already verified,
+    # correctly, by directly executing the completed reference notebook's
+    # cell sources (not nbclient) in
+    # tests/test_exercise_04_reference_execution.py and
+    # tests/test_exercise_05_reference_execution.py.
     "chapter_06": {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_06" / "exercise_06_portable.ipynb",
         "expect": (

@@ -24,8 +24,13 @@ EX1_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_po
 EX2 = REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb"
 EX2_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb"
 # WP28 moved "Compare Two Feature Sets" (and its exploratory-comparison
-# warning) from Exercise 2's Bonus section to Exercise 5.
-EX5 = REPO_ROOT / "book" / "chapters" / "chapter_05" / "exercise_05.ipynb"
+# warning) from Exercise 2's Bonus section to Exercise 5. WP45 migrated
+# Exercise 5 to a JupyterLite notebook: EX5 now points at the real lesson
+# (book/lite/files/exercise_05.ipynb), not the canonical page (now a 2-cell
+# transition page with none of this content -- see
+# tests/test_exercise_05_transition_page.py), mirroring how EX4 already
+# repoints Exercise 3's own checks below.
+EX5 = REPO_ROOT / "book" / "lite" / "files" / "exercise_05.ipynb"
 # WP25 moved this content wholesale from chapter_04 to chapter_03 (the
 # classification lesson is now Exercise 3; chapter_04 is a placeholder).
 # WP44 migrated Exercise 3 to a JupyterLite notebook: EX4 now points at the
@@ -170,10 +175,16 @@ class Exercise5SingleExploratoryWarning(unittest.TestCase):
         self.assertNotIn(self.NEEDLE, raw.lower())
 
     def test_warning_follows_the_interactive_activity(self):
-        text = _norm_ws(_notebook_text(EX5))
-        iframe_idx = text.index("regression_compare.json")
-        warning_idx = text.index(self.NEEDLE)
-        self.assertGreater(warning_idx, iframe_idx)
+        # WP45 migrated Exercise 5's feature-set comparison from an iframe
+        # (configs/regression_compare.json) to a notebook-native ipywidgets
+        # control (cell id wp45-204-widget) -- check cell order instead of
+        # a now-nonexistent iframe config string.
+        cells = _load_cells(EX5)
+        widget_idx = next(i for i, c in enumerate(cells) if c.get("id") == "wp45-204-widget")
+        warning_idx = next(
+            i for i, c in enumerate(cells) if self.NEEDLE in _cell_text(c) and c.get("cell_type") == "markdown"
+        )
+        self.assertGreater(warning_idx, widget_idx)
 
     def test_no_exploratory_comparison_warning_left_in_exercise_2(self):
         text = _norm_ws(_notebook_markdown_text(EX2))

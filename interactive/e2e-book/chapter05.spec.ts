@@ -1,156 +1,57 @@
-import { expect, test, type Frame } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-// Proof that both embedded Exercise 5 activities (WP28: "Regularization and
-// Feature Selection") work on the *final built* Exercise 5 HTML page -- not
-// just the standalone widget page. The regression-compare activity moved
-// here from Exercise 2's Bonus section (see chapter02.spec.ts, which now
-// only covers the knn-explore activity); regularization-explore is new. The
-// dark-mode check for these activities lives in
-// wp22-cross-chapter-dark-mode.spec.ts.
+// WP45 replaced Exercise 5's canonical Jupyter Book page with a short
+// transition page: the real lesson now runs as a JupyterLite notebook (see
+// exercise-05-lite.spec.ts). This file only checks the transition page
+// itself; it must not embed the old regression-compare/regularization-explore
+// iframes or any analysis code of its own (see
+// tests/test_exercise_05_transition_page.py for the offline structural
+// equivalent). Modeled exactly on chapter03.spec.ts's own treatment of
+// Exercise 3. chapter05-visual-policy.spec.ts (a Plotly-geometry regression
+// guard for the old iframe activity) is deleted: there is no iframe left on
+// this page for it to check.
 
 const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html";
-const COMPARE_IFRAME_SELECTOR =
-  'iframe[title="Interactive feature-set comparison for predicting age from brain structure"]';
-const REGULARIZATION_IFRAME_SELECTOR =
-  'iframe[title="Interactive Ridge/Lasso regularization exploration for predicting age from brain structure"]';
+const LITE_HREF = "../../lite/notebooks/index.html?path=exercise_05.ipynb";
+const DOWNLOAD_HREF = "../../lite/files/exercise_05_portable.ipynb";
 
-async function frameFor(page: import("@playwright/test").Page, selector: string): Promise<Frame> {
-  await page.locator(selector).scrollIntoViewIfNeeded();
-  const handle = await page.locator(selector).elementHandle();
-  expect(handle, "iframe element present").not.toBeNull();
-  const frame = await handle!.contentFrame();
-  expect(frame, "iframe content frame present").not.toBeNull();
-  return frame!;
-}
-
-test.describe("Chapter 5 built page — title and structure", () => {
-  test("shows the exact title, no stale placeholder text, both activities, and a Colab button", async ({
-    page,
-  }) => {
+test.describe("Chapter 5 built page — JupyterLite transition page", () => {
+  test("has no embedded iframe and links to the JupyterLite notebook", async ({ page }) => {
     await page.goto(CHAPTER_URL);
-    const h1Text = await page.locator(".bd-article h1").first().innerText();
-    expect(h1Text.replace(/#\s*$/, "").trim()).toBe("Exercise 5: Regularization and Feature Selection");
-
-    const bodyText = await page.locator(".bd-article").innerText();
-    expect(bodyText).not.toMatch(/Materials for this exercise will be added before the practice session\./);
-    expect(bodyText).not.toMatch(/logistic regression/i);
-    expect(bodyText.toLowerCase()).not.toContain("selection frequency");
-    expect(bodyText.toLowerCase()).not.toContain("are the selected features stable");
-
-    // exactly one embedded activity of each kind
-    await expect(page.locator(COMPARE_IFRAME_SELECTOR)).toHaveCount(1);
-    await expect(page.locator(REGULARIZATION_IFRAME_SELECTOR)).toHaveCount(1);
-    await expect(page.locator("iframe")).toHaveCount(2);
-
-    await expect(page.locator('[data-testid="colab-launch-button"]')).toBeVisible();
+    await expect(page.locator("iframe")).toHaveCount(0);
+    const liteLink = page.locator(`a[href="${LITE_HREF}"]`);
+    await expect(liteLink).toHaveCount(1);
+    await expect(liteLink).toHaveText("Open Exercise 5");
   });
-});
 
-test.describe("Chapter 5 built page — embedded feature-set comparison (moved from Exercise 2)", () => {
-  test("iframe loads, config+data are 200, both panels render, a control change is real", async ({
-    page,
-  }) => {
-    const APP_MARKER = "/_static/widgets/app/";
-    const responses: { url: string; status: number }[] = [];
-    const activityRequests: string[] = [];
-    page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
-    page.on("request", (r) => {
-      if ((r.frame()?.url() ?? "").includes(APP_MARKER)) activityRequests.push(r.url());
+  test("clicking Open Exercise 5 actually opens the JupyterLite notebook", async ({ page }) => {
+    await page.goto(CHAPTER_URL);
+    await page.click(`a[href="${LITE_HREF}"]`);
+    await page.waitForURL(/lite\/notebooks\/index\.html\?path=exercise_05\.ipynb/, {
+      timeout: 10_000,
     });
-
-    await page.goto(CHAPTER_URL);
-    const frame = await frameFor(page, COMPARE_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-
-    const configResp = responses.find((r) => r.url.endsWith("/configs/regression_compare.json"));
-    const dataResp = responses.find((r) => r.url.endsWith("/data/abide_regression_models.json"));
-    expect(configResp?.status, "config HTTP status").toBe(200);
-    expect(dataResp?.status, "data HTTP status").toBe(200);
-
-    const panelA = frame.locator('[data-testid="regression-panel-A"]');
-    const panelB = frame.locator('[data-testid="regression-panel-B"]');
-    await expect(panelA).toBeVisible();
-    await expect(panelB).toBeVisible();
-    await expect(panelA).toHaveAttribute("data-feature-count", "78"); // frontoparietal x CT
-    await expect(panelB).toHaveAttribute("data-feature-count", "46"); // occipital x CT
-
-    const beforeR2 = await panelA.getAttribute("data-r2");
-    await frame.locator('[data-testid="regression-A-bundle"]').selectOption("all-eligible");
-    await expect(panelA).toHaveAttribute("data-feature-count", "360");
-    expect(await panelA.getAttribute("data-r2")).not.toEqual(beforeR2);
-
-    expect(activityRequests.length).toBeGreaterThan(0);
-  });
-});
-
-test.describe("Chapter 5 built page — embedded regularization-explore activity", () => {
-  test("iframe loads, config+data are 200, defaults to Ridge at its best alpha", async ({ page }) => {
-    const responses: { url: string; status: number }[] = [];
-    page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
-
-    await page.goto(CHAPTER_URL);
-    const frame = await frameFor(page, REGULARIZATION_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-
-    const configResp = responses.find((r) => r.url.endsWith("/configs/regularization_explore.json"));
-    const dataResp = responses.find((r) => r.url.endsWith("/data/regularization_explore.json"));
-    expect(configResp?.status, "config HTTP status").toBe(200);
-    expect(dataResp?.status, "data HTTP status").toBe(200);
-
-    await expect(frame.locator('[data-testid="regularization-model-select"]')).toHaveValue("ridge");
-    await expect(frame.locator('[data-testid="regularization-predictions-plot"]')).toHaveAttribute(
-      "data-render-count",
-      /[1-9]/,
-    );
-    await expect(frame.locator('[data-testid="regularization-coefficients-plot"]')).toHaveAttribute(
-      "data-render-count",
-      /[1-9]/,
-    );
-
-    const bodyText = await frame.locator("#app").innerText();
-    expect(bodyText.toLowerCase()).not.toContain("test mse");
-    expect(bodyText.toLowerCase()).not.toContain("held-out");
+    expect(page.url()).toContain("lite/notebooks/index.html?path=exercise_05.ipynb");
   });
 
-  test("choosing Linear Regression disables the alpha control", async ({ page }) => {
+  test("links to the downloadable portable notebook with a real, working href", async ({
+    page,
+  }) => {
     await page.goto(CHAPTER_URL);
-    const frame = await frameFor(page, REGULARIZATION_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
+    const downloadLink = page.locator(`a[href="${DOWNLOAD_HREF}"]`);
+    await expect(downloadLink).toHaveCount(1);
+    await expect(downloadLink).toBeVisible();
 
-    await frame.locator('[data-testid="regularization-model-select"]').selectOption("linear");
-    await expect(frame.locator('[data-testid="regularization-alpha-slider"]')).toBeDisabled();
+    const response = await page.request.get(
+      new URL(DOWNLOAD_HREF, page.url()).toString(),
+    );
+    expect(response.status()).toBe(200);
   });
 
-  test("browser refresh restores the configured default model", async ({ page }) => {
+  test("has no top-bar Colab button and no raw-GitHub link", async ({ page }) => {
     await page.goto(CHAPTER_URL);
-    let frame = await frameFor(page, REGULARIZATION_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await frame.locator('[data-testid="regularization-model-select"]').selectOption("lasso");
-
-    await page.reload();
-    frame = await frameFor(page, REGULARIZATION_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await expect(frame.locator('[data-testid="regularization-model-select"]')).toHaveValue("ridge");
-  });
-});
-
-test.describe("Chapter 5 built page — narrow-viewport layout", () => {
-  test("both activities remain usable at 390px without horizontal document scroll", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 900 });
-    await page.goto(CHAPTER_URL);
-
-    const compareFrame = await frameFor(page, COMPARE_IFRAME_SELECTOR);
-    await expect(compareFrame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    let overflow = await compareFrame.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
-
-    const regFrame = await frameFor(page, REGULARIZATION_IFRAME_SELECTOR);
-    await expect(regFrame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    overflow = await regFrame.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
+    await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+    const bodyHtml = await page.locator(".bd-article").innerHTML();
+    expect(bodyHtml).not.toContain("raw.githubusercontent.com");
+    expect(bodyHtml).not.toContain("colab.research.google.com/github");
   });
 });

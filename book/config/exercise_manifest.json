@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. Exercises 1-2 are migrated/active. Exercise 3's JupyterLite migration is built and locally verified (see feature/wp44-colab-portability-exercise-3 and WPs/reports/WP44_REPORT.md) but is deliberately kept migrationState=legacy here pending the real-Colab acceptance gate (WP41_MAINTAINER_GUIDE.md section 11) -- flip it to migrated only after that gate passes. Every other entry keeps its existing legacy static Jupyter Book page untouched.",
+  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. Exercises 1-2 are migrated/active. Exercises 3-5's JupyterLite migrations are built and locally verified (see feature/wp44-colab-portability-exercise-3, WPs/reports/WP44_REPORT.md, feature/wp45-active-exercises-4-and-5, WPs/reports/WP45_REPORT.md) but are deliberately kept migrationState=legacy here pending the real-Colab acceptance gate (WP41_MAINTAINER_GUIDE.md section 11) -- flip each to migrated only after that gate passes for that exercise. Every other entry keeps its existing legacy static Jupyter Book page untouched.",
   "commonPackages": ["numpy", "pandas", "scikit-learn", "matplotlib", "ipywidgets"],
   "exercises": [
     {

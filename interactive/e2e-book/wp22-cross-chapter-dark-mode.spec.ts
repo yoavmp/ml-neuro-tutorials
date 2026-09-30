@@ -191,35 +191,49 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     expect(figureVisible).toBeGreaterThan(0);
   });
 
-  test("Exercise 5 — feature-set comparison and regularization exploration: initial dark load", async ({
+  // WP45 migrated Exercise 5 to a JupyterLite-native notebook: its built
+  // page (chapters/chapter_05/exercise_05.html) is now a 2-cell transition
+  // page with no embedded iframe or Plotly figure at all (confirmed:
+  // chapter05.spec.ts asserts iframe count is 0 there), so this file's
+  // Plotly `_fullData`/`_fullLayout` color-snapshot technique has no
+  // surface left to check on that page -- the same reasoning WP44 already
+  // applied to Exercise 3 below. This replacement checks the JupyterLite
+  // app's own theme instead: switching to dark must not error, and a
+  // rendered Matplotlib figure (a static, white-card PNG, legible
+  // regardless of surrounding app theme) must still be present.
+  test("Exercise 5 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
     page,
   }) => {
-    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_05/exercise_05.html");
-    const frame = await activityFrame(page, 'iframe[src*="config=../configs/regression_compare.json"]');
+    test.setTimeout(180_000);
+    await page.goto("/lite/notebooks/index.html?path=exercise_05.ipynb", { waitUntil: "load" });
+    await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
+    await page.click("text=Run");
+    await page.waitForTimeout(200);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+    await page.waitForTimeout(140_000);
 
-    for (const testId of ["regression-A-plot", "regression-B-plot"]) {
-      const snap = await snapshotPlot(frame, testId);
-      assertDarkFigure(snap, `regression-compare ${testId}`);
-      expect(snap.markerColors, `regression-compare ${testId}: scatter marker uses the dark palette`).toContain(
-        MARKER_PRIMARY_DARK,
-      );
-      expect(snap.markerColors, `regression-compare ${testId}: diagonal reference line uses the dark palette`).toContain(
-        DIAGONAL_LINE_DARK,
-      );
-    }
+    await page.click("text=Settings");
+    await page.waitForTimeout(300);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "Theme" }).first().click();
+    await page.waitForTimeout(300);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "JupyterLab Dark" }).first().click();
+    await page.waitForTimeout(1000);
 
-    // Cheap addition, same already-loaded page.
-    const regFrame = await activityFrame(page, 'iframe[src*="config=../configs/regularization_explore.json"]');
-    const regSnap = await snapshotPlot(regFrame, "regularization-predictions-plot");
-    assertDarkFigure(regSnap, "regularization-explore regularization-predictions-plot");
-    expect(
-      regSnap.markerColors,
-      "regularization-explore: validation scatter uses the dark palette",
-    ).toContain(MARKER_PRIMARY_DARK);
-    expect(
-      regSnap.markerColors,
-      "regularization-explore: diagonal reference line uses the dark palette",
-    ).toContain(DIAGONAL_LINE_DARK);
+    // The untouched template's blank "YOUR CODE HERE" activities degrade to
+    // their own "Not complete yet" print messages (no exception raised, by
+    // design -- see exercise-05-lite.spec.ts), so no error cell is expected
+    // here at all.
+    expect(await page.locator(".jp-mod-error").count()).toBe(0);
+
+    const el = await page.evaluate(() => {
+      const panel = document.querySelector(".jp-WindowedPanel-outer");
+      if (panel) panel.scrollTop = panel.scrollHeight * 0.1;
+      return true;
+    });
+    expect(el).toBe(true);
+    await page.waitForTimeout(600);
+    const figureVisible = await page.locator(".jp-OutputArea-output img, .jp-OutputArea-output canvas").count();
+    expect(figureVisible).toBeGreaterThan(0);
   });
 
   test("Exercise 6 — one tree or many?: initial dark load", async ({ page }) => {
@@ -283,52 +297,63 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     expect(figureVisible).toBeGreaterThan(0);
   });
 
-  test("Exercise 4 — validation-stability, validation-lock-test, nested-cv-explorer: initial dark load", async ({
+  // WP45 migrated Exercise 4 to a JupyterLite-native notebook: its built
+  // page (chapters/chapter_04/exercise_04.html) is now a 2-cell transition
+  // page with no embedded iframe or Plotly figure at all (confirmed:
+  // chapter04.spec.ts asserts iframe count is 0 there), so this file's
+  // Plotly `_fullData`/`_fullLayout` color-snapshot technique has no
+  // surface left to check on that page -- the same reasoning WP44 already
+  // applied to Exercise 3 below. This replacement checks the JupyterLite
+  // app's own theme instead, and additionally confirms the native
+  // nested-cross-validation split diagram (raw HTML in a markdown cell, not
+  // a widget iframe) still picks up the dark palette via its `--ml-ncv-*`
+  // custom properties.
+  test("Exercise 4 — JupyterLite notebook: a rendered figure and the nested-CV diagram survive switching to the app's own dark theme", async ({
     page,
   }) => {
-    await gotoDark(page, "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html");
+    test.setTimeout(180_000);
+    await page.goto("/lite/notebooks/index.html?path=exercise_04.ipynb", { waitUntil: "load" });
+    await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
+    await page.click("text=Run");
+    await page.waitForTimeout(200);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+    await page.waitForTimeout(140_000);
 
-    const stabilityFrame = await activityFrame(page, 'iframe[src*="config=../configs/validation_stability.json"]');
-    for (const testId of ["validation-stability-single-plot", "validation-stability-cv-plot"]) {
-      const snap = await snapshotPlot(stabilityFrame, testId);
-      assertDarkFigure(snap, `validation-stability ${testId}`);
-      expect(snap.markerColors, `validation-stability ${testId}: bars use the dark palette`).toContain(
-        MARKER_PRIMARY_DARK,
-      );
-      expect(
-        snap.markerColors,
-        `validation-stability ${testId}: highlighted seed / mean line uses the dark palette`,
-      ).toContain(DIAGONAL_LINE_DARK);
-    }
+    await page.click("text=Settings");
+    await page.waitForTimeout(300);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "Theme" }).first().click();
+    await page.waitForTimeout(300);
+    await page.locator(".lm-Menu-itemLabel", { hasText: "JupyterLab Dark" }).first().click();
+    await page.waitForTimeout(1000);
 
-    // Cheap addition, same already-loaded page.
-    const lockTestFrame = await activityFrame(page, 'iframe[src*="config=../configs/validation_lock_test.json"]');
-    const lockTestSnap = await snapshotPlot(lockTestFrame, "validation-lock-test-plot");
-    assertDarkFigure(lockTestSnap, "validation-lock-test validation-lock-test-plot");
-    expect(lockTestSnap.markerColors, "validation-lock-test: training line uses the dark palette").toContain(
-      MARKER_PRIMARY_DARK,
-    );
-    expect(lockTestSnap.markerColors, "validation-lock-test: validation line uses the dark palette").toContain(
-      DIAGONAL_LINE_DARK,
-    );
+    // The untouched template's blank "YOUR CODE HERE" activities degrade to
+    // their own "Not complete yet" print messages (no exception raised, by
+    // design -- see exercise-04-lite.spec.ts), so no error cell is expected
+    // here at all.
+    expect(await page.locator(".jp-mod-error").count()).toBe(0);
 
-    // Cheap addition, same already-loaded page.
-    const nestedCvFrame = await activityFrame(page, 'iframe[src*="config=../configs/nested_cv_explorer.json"]');
-    const nestedCvSnap = await snapshotPlot(nestedCvFrame, "nested-cv-inner-plot");
-    assertDarkFigure(nestedCvSnap, "nested-cv-explorer nested-cv-inner-plot");
-    expect(nestedCvSnap.markerColors, "nested-cv-explorer: candidate-k bars use the dark palette").toContain(
-      MARKER_PRIMARY_DARK,
-    );
-    expect(nestedCvSnap.markerColors, "nested-cv-explorer: selected-k bar uses the dark palette").toContain(
-      DIAGONAL_LINE_DARK,
-    );
+    const el = await page.evaluate(() => {
+      const panel = document.querySelector(".jp-WindowedPanel-outer");
+      if (panel) panel.scrollTop = panel.scrollHeight * 0.4;
+      return true;
+    });
+    expect(el).toBe(true);
+    await page.waitForTimeout(600);
 
-    // WP27R: the native nested-CV split diagram (raw HTML on the page, not
-    // inside a widget iframe) must also pick up the dark palette via its
-    // `--ml-ncv-*` custom properties, not just the Plotly figures.
+    // Unlike the built Book page (chapters/chapter_04/exercise_04.html,
+    // which loads book/_static/custom.css and toggles its dark palette via
+    // the Sphinx theme's own `html[data-theme="dark"]` selector), the
+    // JupyterLite app is a separate build that never loads that stylesheet
+    // at all -- confirmed live: `--ml-ncv-outer-train` reads back empty
+    // here regardless of the JupyterLab theme, so the diagram always
+    // renders its inline fallback colors (chosen for a light background).
+    // This is a real, found-live limitation (the diagram does not adapt to
+    // JupyterLab's own dark theme the way it adapts to the book's), noted
+    // in the WP45 report rather than asserted as if it were the book
+    // page's own dark-mode contract; what this test can honestly confirm
+    // in this context is that the diagram still renders, visibly, with no
+    // error, after switching themes.
     const diagram = page.locator(".ml-ncv-diagram");
     await expect(diagram).toBeVisible();
-    const outerTrainVar = await diagram.evaluate((el) => getComputedStyle(el).getPropertyValue("--ml-ncv-outer-train"));
-    expect(outerTrainVar.trim()).toBe("#4d6a94");
   });
 });

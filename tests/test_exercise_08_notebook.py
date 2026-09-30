@@ -242,15 +242,25 @@ class AbideePca(unittest.TestCase):
         self.assertNotIn("np.sum(loadings", _src(cell))
 
     def test_grouped_loading_uses_the_same_anatomical_groups_as_exercise_5(self):
-        ex5 = nbformat.read(REPO_ROOT / "book" / "chapters" / "chapter_05" / "exercise_05.ipynb", as_version=4)
-        ex5_source = "\n".join(_src(c) for c in ex5.cells)
+        # WP45 migrated Exercise 5 to a JupyterLite-native notebook whose
+        # Section 2 feature-set comparison uses the same canonical bundle
+        # definitions (book/config/abide_modeling.json bundles.frontal),
+        # but expresses them as fully-qualified fsCT_ column names generated
+        # at build time (scripts/generate_exercise_05_notebook.py's
+        # _bundle_features_literal()), not as this short-code ROI list --
+        # so the cross-check now compares Exercise 8's inlined list against
+        # that same canonical config source directly, rather than against
+        # Exercise 5's own notebook text (which no longer contains it in
+        # this form).
+        canonical = json.loads(
+            (REPO_ROOT / "book" / "config" / "abide_modeling.json").read_text(encoding="utf-8")
+        )
+        canonical_frontal_rois = canonical["bundles"]["frontal"]["rois"]
         cell = next(c for c in self.cells if c["cell_type"] == "code" and "ANATOMICAL_ROIS" in _src(c))
         src = _src(cell)
-        # Exercise 5's own frontal-bundle ROI list appears verbatim in Exercise
-        # 8's grouped-loading cell -- same bundle definitions, not redefined
-        # independently.
-        self.assertIn('"46", "9-46d"', ex5_source)
         self.assertIn('"46", "9-46d"', src)
+        for roi in canonical_frontal_rois:
+            self.assertIn(f'"{roi}"', src)
 
     def test_interpretation_questions_present(self):
         idx = _index_of_cell_starting_with(self.cells, "## 4. PCA with ABIDE-II")
