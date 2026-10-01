@@ -195,18 +195,36 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertEqual(occurrences, 1)
 
     # -- item 28: checked questions have keyed answers and feedback ---------
+    # -- checked questions: visibility (WP48's own new requirement) -------
 
-    def test_checked_questions_have_keys_and_feedback(self):
+    QUESTION_IDS = {
+        "q-test-target-use",
+        "q-correlation-vs-coefficient",
+        "q-honest-evaluation",
+        "q-knn-complexity",
+        "q-knn-large-k-variance",
+    }
+
+    def test_checked_questions_use_show_question_with_no_visible_answer_key(self):
         checked = [
             c
             for c in self.cells
-            if "display(make_single_choice_question" in _src(c) or "display(make_multi_choice_question" in _src(c)
+            if c.get("id") != "wp41-000-setup" and 'show_question("' in _src(c)
         ]
-        self.assertGreaterEqual(len(checked), 4)
-        self.assertLessEqual(len(checked), 6)
+        self.assertEqual(len(checked), 5)
         for c in checked:
             src = _src(c)
-            self.assertTrue("correct_index=" in src or "correct_indices=" in src, src)
+            self.assertNotIn("correct_index", src)
+            self.assertNotIn("correct_indices", src)
+            self.assertTrue(any(f'show_question("{qid}")' in src for qid in self.QUESTION_IDS), src)
+
+    def test_hidden_setup_cell_carries_every_question_definition(self):
+        setup = self.cells[1]
+        source = _src(setup)
+        self.assertIn("_QUESTIONS = {", source)
+        for qid in self.QUESTION_IDS:
+            self.assertIn(f'"{qid}"', source)
+        self.assertIn("def show_question(question_id):", source)
 
     # -- item 29: curse-of-dimensionality text is absent ---------------------
 
@@ -255,6 +273,17 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertNotIn('warnings.filterwarnings("ignore")', self.code)
         self.assertNotIn("category=DeprecationWarning", self.code)
         self.assertNotIn("category=MatplotlibDeprecationWarning", self.code)
+
+    def test_threadpoolctl_warning_narrowly_filtered(self):
+        # WP48 C.3: reproduced live in the real JupyterLite kernel as
+        # "threadpoolctl.py:1135: RuntimeWarning: JsProxy.as_object_map()
+        # is deprecated. Use as_py_json() instead." -- fired from
+        # threadpoolctl's own Pyodide introspection, not this notebook's
+        # code, whenever a model is fit. Filtered by exact message AND
+        # category=RuntimeWarning, never a blanket RuntimeWarning filter.
+        self.assertIn("JsProxy\\.as_object_map", self.code)
+        self.assertIn("category=RuntimeWarning", self.code)
+        self.assertNotIn('warnings.filterwarnings("ignore", category=RuntimeWarning)', self.code)
 
     def test_integer_k_still_visible_via_annotation(self):
         self.assertIn("def annotate_model_complexity_axis", self.code)

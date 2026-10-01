@@ -322,6 +322,73 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
     )
     box.add_class("checked-question")
     return box
+
+
+# Question content lives here, not in the visible cell that displays it: a
+# visible call like show_question("q-boosting-residuals") never prints or
+# displays a correct_index/correct_indices value (WP48's "Multiple-choice
+# answer visibility" requirement -- see
+# scripts/generate_exercise_08_notebook.py for the pattern this mirrors).
+# This is visual concealment, not secure assessment: the hidden cell is
+# fully expandable, and a downloaded, fully offline, editable notebook must
+# contain enough information to check an answer locally, so a technically
+# curious student can always recover it from source or the running kernel.
+_QUESTIONS = {
+    "q-boosting-residuals": dict(
+        kind="single",
+        prompt="Does a new tree in gradient boosting predict the target directly, or the current residuals?",
+        options=[
+            "The current residuals -- the errors the ensemble still makes.",
+            "The target directly, exactly like the first tree.",
+            "The predictions of all previous trees combined.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: every tree after the first is fit to what the ensemble still gets wrong, not to the original target.",
+    ),
+    "q-learning-rate-trees": dict(
+        kind="single",
+        prompt="Why does a smaller learning rate usually require more trees to reach the same fit?",
+        options=[
+            "Each tree's correction is scaled down more, so more corrections are needed to accumulate the same total change.",
+            "A smaller learning rate makes each tree deeper.",
+            "A smaller learning rate changes which features the trees can split on.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: the learning rate only scales each stage's contribution; reaching a given fit with smaller steps takes more steps.",
+    ),
+    "q-boosting-vs-bagging": dict(
+        kind="multi",
+        prompt="Which of the following correctly distinguish boosting from bagging?",
+        options=[
+            "Boosting fits trees sequentially, each correcting the current ensemble's residuals; bagging fits trees independently on resampled data.",
+            "Boosting combines trees with a weighted sum built up stage by stage; bagging combines trees by simple averaging.",
+            "Boosting is guaranteed to always achieve lower test error than bagging.",
+            "Both methods can overfit if allowed to add trees indefinitely, though the mechanism differs (boosting stages vs. tree count).",
+        ],
+        correct_indices={0, 1, 3},
+    ),
+}
+
+
+def show_question(question_id):
+    q = _QUESTIONS[question_id]
+    if q["kind"] == "single":
+        widget = make_single_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_index"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    else:
+        widget = make_multi_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_indices"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    display(widget)
 '''.strip()
 
 
@@ -597,17 +664,7 @@ _step_render()
         ),
         code(
             """
-display(make_single_choice_question(
-    "Does a new tree in gradient boosting predict the target directly, or "
-    "the current residuals?",
-    [
-        "The current residuals -- the errors the ensemble still makes.",
-        "The target directly, exactly like the first tree.",
-        "The predictions of all previous trees combined.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: every tree after the first is fit to what the ensemble still gets wrong, not to the original target.",
-))
+show_question("q-boosting-residuals")
 """,
             "wp46-205-checked",
         ),
@@ -827,17 +884,7 @@ _explorer_render()
         ),
         code(
             """
-display(make_single_choice_question(
-    "Why does a smaller learning rate usually require more trees to reach "
-    "the same fit?",
-    [
-        "Each tree's correction is scaled down more, so more corrections are needed to accumulate the same total change.",
-        "A smaller learning rate makes each tree deeper.",
-        "A smaller learning rate changes which features the trees can split on.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: the learning rate only scales each stage's contribution; reaching a given fit with smaller steps takes more steps.",
-))
+show_question("q-learning-rate-trees")
 """,
             "wp46-408-checked",
         ),
@@ -1216,16 +1263,7 @@ def _section_8_conclusion() -> list[dict]:
         ),
         code(
             """
-display(make_multi_choice_question(
-    "Which of the following correctly distinguish boosting from bagging?",
-    [
-        "Boosting fits trees sequentially, each correcting the current ensemble's residuals; bagging fits trees independently on resampled data.",
-        "Boosting combines trees with a weighted sum built up stage by stage; bagging combines trees by simple averaging.",
-        "Boosting is guaranteed to always achieve lower test error than bagging.",
-        "Both methods can overfit if allowed to add trees indefinitely, though the mechanism differs (boosting stages vs. tree count).",
-    ],
-    correct_indices={0, 1, 3},
-))
+show_question("q-boosting-vs-bagging")
 """,
             "wp46-803-checked",
         ),

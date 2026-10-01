@@ -11,7 +11,7 @@
       "templateNotebookPath": "book/lite/files/exercise_01.ipynb",
       "browserWorkingCopyName": "exercise_01.ipynb",
       "liteUrl": "lite/notebooks/index.html?path=exercise_01.ipynb",
-      "templateVersion": 1,
+      "templateVersion": 2,
       "dataAssets": [
         "book/lite/files/data/abide_phenotypes.csv",
         "book/lite/files/data/abide_phenotypes.manifest.json"
@@ -27,7 +27,7 @@
       "templateNotebookPath": "book/lite/files/exercise_02.ipynb",
       "browserWorkingCopyName": "exercise_02.ipynb",
       "liteUrl": "lite/notebooks/index.html?path=exercise_02.ipynb",
-      "templateVersion": 3,
+      "templateVersion": 4,
       "dataAssets": [
         "book/lite/files/data/abide_age_brain.csv",
         "book/lite/files/data/abide_age_brain.manifest.json",

@@ -147,28 +147,52 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("tree_cv_fold_results", _src(comparison_instructions))
         self.assertIn("tree_cv_summary", _src(comparison_instructions))
 
-    # -- checked questions --------------------------------------------------
+    # -- checked questions: visibility (WP48's own new requirement) -------
 
-    def test_checked_questions_have_keys_and_feedback(self):
+    QUESTION_IDS = {
+        "q-greedy-splitting",
+        "q-depth-selection",
+        "q-bagging-forest-variance",
+        "q-bagging-reduces-variance",
+    }
+
+    def test_checked_questions_use_show_question_with_no_visible_answer_key(self):
         checked = [
             c
             for c in self.cells
-            if "display(make_single_choice_question" in _src(c) or "display(make_multi_choice_question" in _src(c)
+            if c.get("id") != "wp46-000-setup" and 'show_question("' in _src(c)
         ]
         self.assertEqual(len(checked), 4)
         for c in checked:
             src = _src(c)
-            self.assertTrue("correct_index=" in src or "correct_indices=" in src, src)
+            self.assertNotIn("correct_index", src)
+            self.assertNotIn("correct_indices", src)
+            self.assertTrue(any(f'show_question("{qid}")' in src for qid in self.QUESTION_IDS), src)
+
+    def test_hidden_setup_cell_carries_every_question_definition(self):
+        setup = self.cells[1]
+        source = _src(setup)
+        self.assertIn("_QUESTIONS = {", source)
+        for qid in self.QUESTION_IDS:
+            self.assertIn(f'"{qid}"', source)
+        self.assertIn("def show_question(question_id):", source)
 
     def test_question_widgets_use_full_width_wrap_css(self):
         self.assertIn("checked-question", self.code)
         self.assertIn("white-space: normal", self.code)
 
     def test_depth_selection_question_correct_answer_is_validation_mse(self):
-        cell = next(c for c in self.cells if c.get("id") == "wp46-307-checked")
-        source = _src(cell)
-        self.assertIn("correct_index=0", source)
-        self.assertIn("The depth that minimizes validation MSE.", source)
+        # The question content moved into the hidden setup cell's
+        # _QUESTIONS dict (WP48); check it there instead of in the visible
+        # cell, which now only calls show_question("q-depth-selection").
+        checked_cell = next(c for c in self.cells if c.get("id") == "wp46-307-checked")
+        self.assertEqual(_src(checked_cell).strip(), 'show_question("q-depth-selection")')
+        setup_source = _src(self.cells[1])
+        match = re.search(r'"q-depth-selection": dict\((.*?)\n    \),', setup_source, re.DOTALL)
+        self.assertIsNotNone(match)
+        q_block = match.group(1)
+        self.assertIn("correct_index=0", q_block)
+        self.assertIn("The depth that minimizes validation MSE.", q_block)
 
     # -- notebook-native widgets (no iframes) --------------------------------
 

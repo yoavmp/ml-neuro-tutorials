@@ -50,6 +50,7 @@ Modes:
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import sys
 from pathlib import Path
@@ -59,6 +60,7 @@ from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_SIDECAR = REPO_ROOT / "book" / "lite" / "files" / "data" / "abide_age_brain.manifest.json"
+NCV_DIAGRAM_IMAGE_PATH = REPO_ROOT / "book" / "lite" / "files" / "data" / "exercise_04_nested_cv_diagram.png"
 
 LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_04.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
@@ -91,9 +93,11 @@ EXPECTED_NESTED_MEAN_MSE = 33.3552
 EXPECTED_NESTED_MEAN_R2 = 0.619821
 
 
-def md(source: str, cell_id: str) -> dict:
+def md(source: str, cell_id: str, attachments: dict | None = None) -> dict:
     c = new_markdown_cell(source.strip() + "\n")
     c["id"] = cell_id
+    if attachments:
+        c["attachments"] = attachments
     return c
 
 
@@ -149,6 +153,19 @@ import sys
 import warnings
 
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
+
+# WP48: same upstream threadpoolctl/Pyodide RuntimeWarning
+# scripts/generate_exercise_02_notebook.py's setup cell documents and
+# filters (reproduced live in this exact browser build, firing from
+# threadpoolctl's own Pyodide shared-library introspection whenever a model
+# is fit, including this notebook's one-split cell) -- same narrow,
+# message-and-category-scoped filter, applied consistently rather than
+# reinventing it per notebook.
+warnings.filterwarnings(
+    "ignore",
+    message=r"JsProxy\\.as_object_map\\(\\) is deprecated",
+    category=RuntimeWarning,
+)
 
 if sys.platform == "emscripten":
     # Running in the browser (JupyterLite). ipywidgets has no prebuilt
@@ -211,7 +228,10 @@ _QUESTION_CSS = """
     width: 100% !important;
     max-width: 100% !important;
     white-space: normal !important;
+    height: auto !important;
     box-sizing: border-box;
+    padding: 3px 0;
+    line-height: 1.3;
 }
 </style>
 """
@@ -264,6 +284,84 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
     )
     box.add_class("checked-question")
     return box
+
+
+# Question content lives here, not in the visible cell that displays it: a
+# visible call like show_question("q-inner-loop-data") never prints or
+# displays a correct_index/correct_indices value (WP48's "Multiple-choice
+# answer visibility" requirement -- see
+# scripts/generate_exercise_08_notebook.py for the pattern this mirrors).
+# This is visual concealment, not secure assessment: the hidden cell is
+# fully expandable, and a downloaded, fully offline, editable notebook must
+# contain enough information to check an answer locally, so a technically
+# curious student can always recover it from source or the running kernel.
+_QUESTIONS = {
+    "q-single-split-vs-cv-stability": dict(
+        kind="single",
+        prompt=(
+            "At a small sample size (for example, 30 or 50 participants), why can "
+            "changing only the random seed swing the single-split test R^2 by a "
+            "large amount, while the 5-fold cross-validation mean tends to move "
+            "less?"
+        ),
+        options=[
+            "The single split evaluates on only one held-out subset of participants, so which few participants land there matters a lot; cross-validation averages over several different held-out subsets, so unusually easy or hard subsets tend to cancel out.",
+            "Cross-validation always uses more participants in total than a single split.",
+            "KNN itself becomes a different algorithm when cross-validated.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: averaging several held-out subsets, rather than reporting just one, is what makes cross-validation's summary more stable than a single split's.",
+    ),
+    "q-inner-loop-data": dict(
+        kind="single",
+        prompt=(
+            "Inside the pipeline above, which participants does the inner "
+            "GridSearchCV use to choose k for a given outer fold?"
+        ),
+        options=[
+            "Only that outer fold's training data -- the outer fold's own test data is never used to select k.",
+            "All 1004 participants, including the current outer fold's test data.",
+            "Only the current outer fold's test data.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: the inner loop selects k using only the outer fold's training data, so the outer test fold stays untouched by the tuning decision.",
+    ),
+    "q-outer-test-mse-meaning": dict(
+        kind="single",
+        prompt=(
+            "What does the mean outer-test MSE (averaged across the 5 outer folds) "
+            "actually estimate?"
+        ),
+        options=[
+            "The performance of the complete tuning procedure -- choosing k with inner cross-validation, then evaluating that choice on data the inner loop never saw -- not the performance of one single, fixed k.",
+            "The performance of whichever k happened to score best on the inner cross-validation.",
+            "The performance of a KNN model with k chosen by looking at all the outer-test folds at once.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: nested cross-validation's outer score estimates the tuning procedure's performance, which is what you would actually get by repeating this whole inner-selection process on new data.",
+    ),
+}
+
+
+def show_question(question_id):
+    q = _QUESTIONS[question_id]
+    if q["kind"] == "single":
+        widget = make_single_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_index"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    else:
+        widget = make_multi_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_indices"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    display(widget)
 '''.strip()
 
 
@@ -467,8 +565,14 @@ Hints:
         blank(
             """
 # YOUR CODE HERE
-# cv_fold_mse = ...  # one MSE per fold (5 values), ordinary (positive) MSE
-# cv_mean_mse = ...
+# 1. create the model/pipeline (StandardScaler + KNeighborsRegressor(k=K_EXAMPLE))
+# 2. set up five folds (KFold(n_splits=5, shuffle=True, random_state=0))
+# 3. for each fold: fit on that fold's training participants, predict its
+#    validation participants, and record that fold's MSE -- ordinary
+#    (positive) MSE, not cross_validate's negated scorer output
+# 4. compute the mean of the five fold MSEs
+#
+# Required names: cv_fold_mse (5 values, one per fold), cv_mean_mse
 """,
             f"""
 cv_pipe = make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=K_EXAMPLE))
@@ -621,19 +725,7 @@ else:
         ),
         code(
             """
-display(make_single_choice_question(
-    "At a small sample size (for example, 30 or 50 participants), why can "
-    "changing only the random seed swing the single-split test R^2 by a "
-    "large amount, while the 5-fold cross-validation mean tends to move "
-    "less?",
-    [
-        "The single split evaluates on only one held-out subset of participants, so which few participants land there matters a lot; cross-validation averages over several different held-out subsets, so unusually easy or hard subsets tend to cancel out.",
-        "Cross-validation always uses more participants in total than a single split.",
-        "KNN itself becomes a different algorithm when cross-validated.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: averaging several held-out subsets, rather than reporting just one, is what makes cross-validation's summary more stable than a single split's.",
-))
+show_question("q-single-split-vs-cv-stability")
 """,
             "wp45-404-checked",
         ),
@@ -642,32 +734,41 @@ display(make_single_choice_question(
 
 # --- Section 5: Nested cross-validation ------------------------------------
 
-_NCV_DIAGRAM_HTML = r"""
-<div class="ml-ncv-diagram" role="group" aria-label="Diagram: outer cross-validation rotates an outer-test fold across 5 iterations; for one outer-training set, inner cross-validation rotates an inner-validation fold across 5 iterations to choose k, which is then refit on all outer-training data and evaluated once on that iteration's outer-test fold." style="margin:1.4rem 0;">
-<div style="display:flex;flex-wrap:wrap;gap:4px 4px;align-items:center;margin-bottom:12px;font-size:0.86rem;"><span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span>Outer training</span></span><span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span>Outer test</span></span><span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span>Inner training</span></span><span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span>Inner validation</span></span></div>
-<div style="display:flex;overflow-x:auto;gap:20px;align-items:flex-start;padding-bottom:6px;" aria-hidden="true">
-<div style="flex:0 0 auto;">
-<div style="font-weight:600;font-size:0.92rem;margin-bottom:2px;">Outer cross-validation</div>
-<div style="font-size:0.78rem;color:var(--ml-muted, #5c5674);margin-bottom:8px;max-width:180px;">5 outer iterations; the outer-test segment (yellow) rotates. Outlined row: the iteration zoomed into on the right.</div>
-<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">1</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">2</span><span style="display:flex;gap:3px;outline:2px solid var(--ml-accent, #dd5f1b);outline-offset:2px;border-radius:4px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">3</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">4</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">5</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-train, #a9c2e3);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-outer-test, #e6c368);"></span></span></div>
-</div>
-<div style="flex:0 0 auto;align-self:center;font-size:1.5rem;padding-top:44px;color:var(--ml-muted, #5c5674);">&#8594;</div>
-<div style="flex:0 0 auto;">
-<div style="font-weight:600;font-size:0.92rem;margin-bottom:2px;">Inner cross-validation</div>
-<div style="font-size:0.78rem;color:var(--ml-muted, #5c5674);margin-bottom:8px;max-width:180px;">Zoomed from outer iteration 2's training data: 5 inner iterations; the inner-validation segment (orange) rotates.</div>
-<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">1</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">2</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">3</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">4</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span></span></div><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="width:15px;font-size:0.72rem;color:var(--ml-muted, #5c5674);text-align:right;">5</span><span style="display:flex;gap:3px;"><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-train, #a3cbae);"></span><span style="display:inline-block;width:24px;height:20px;border-radius:3px;background-color:var(--ml-ncv-inner-val, #e0a877);"></span></span></div>
-</div>
-<div style="flex:0 0 auto;align-self:center;font-size:1.5rem;padding-top:44px;color:var(--ml-muted, #5c5674);">&#8594;</div>
-<div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;max-width:190px;padding-top:30px;">
-<div style="border-left:4px solid var(--ml-ncv-inner-val, #e0a877);padding-left:8px;font-size:0.86rem;">Choose <code>k</code></div>
-<div style="border-left:4px solid var(--ml-ink, #1b1826);padding-left:8px;font-size:0.86rem;">Refit the selected <code>k</code> on all outer-training data</div>
-<div style="border-left:4px solid var(--ml-ncv-outer-test, #e6c368);padding-left:8px;font-size:0.86rem;">Evaluate the tuning procedure</div>
-</div>
-</div>
-<p style="margin-top:10px;font-size:0.86rem;color:var(--ml-muted, #5c5674);">Inner-validation folds (orange) choose <code>k</code>, using only the current outer iteration's training data. Outer-test folds (yellow) then evaluate the complete tuning procedure -- inner selection included -- on data the inner loop never saw. Outer-test folds never choose <code>k</code>.</p>
-</div>
-""".strip()
+# WP48: this diagram used to be raw HTML with every fold block's size and
+# color carried only by an inline style="..." attribute -- JupyterLab/
+# JupyterLite's markdown-HTML sanitizer strips that attribute, which a live
+# screenshot confirmed: only the loose headings, fold numbers, and arrows
+# survived, with no visible colored blocks at all. A rendered image sent as
+# a notebook attachment (nbformat's own mechanism, already used for
+# scripts/generate_exercise_02_notebook.py's Activity 3B reference image)
+# is always allowed through -- in JupyterLite, local Jupyter, and Colab
+# alike -- so it replaces the HTML entirely. Render with
+# scripts/render_exercise_04_nested_cv_diagram.py; this is a fixed
+# conceptual illustration, not derived from student data.
+NCV_DIAGRAM_IMAGE_FILENAME = "exercise_04_nested_cv_diagram.png"
 
+
+def _ncv_diagram_attachments() -> dict:
+    encoded = base64.b64encode(NCV_DIAGRAM_IMAGE_PATH.read_bytes()).decode("ascii")
+    return {NCV_DIAGRAM_IMAGE_FILENAME: {"image/png": encoded}}
+
+
+def _ncv_diagram_markdown() -> str:
+    alt_text = (
+        "Nested cross-validation diagram: on the left, 5 outer iterations, "
+        "each a row of 5 blocks with one outer-test block (yellow) rotating "
+        "position and the rest outer-training (blue); iteration 2 is "
+        "outlined. An arrow leads to the right panel, zoomed into that "
+        "outlined iteration's outer-training data: 5 inner iterations, each "
+        "a row of 5 blocks with one inner-validation block (orange) "
+        "rotating and the rest inner-training (green). A second arrow leads "
+        "to three captioned steps: inner folds select k; refit the selected "
+        "k on all of this outer fold's training data; score once on this "
+        "outer fold's own held-out test block. A footer note states this "
+        "repeats for every outer fold, and the 5 outer-test scores are then "
+        "averaged into the nested-CV estimate."
+    )
+    return f"![{alt_text}](attachment:{NCV_DIAGRAM_IMAGE_FILENAME})"
 
 def _section_5() -> list[dict]:
     return [
@@ -683,7 +784,11 @@ inner selection included -- on data the inner loop never saw.
 """,
             "wp45-502-intro",
         ),
-        md(_NCV_DIAGRAM_HTML, "wp45-503-diagram"),
+        md(
+            _ncv_diagram_markdown(),
+            "wp45-503-diagram",
+            attachments=_ncv_diagram_attachments(),
+        ),
         md(
             f"""
 Complete the pipeline below: an outer `KFold` splits the full cohort; for
@@ -811,33 +916,13 @@ tuning procedure -- not of one fixed model.
         ),
         code(
             """
-display(make_single_choice_question(
-    "Inside the pipeline above, which participants does the inner "
-    "GridSearchCV use to choose k for a given outer fold?",
-    [
-        "Only that outer fold's training data -- the outer fold's own test data is never used to select k.",
-        "All 1004 participants, including the current outer fold's test data.",
-        "Only the current outer fold's test data.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: the inner loop selects k using only the outer fold's training data, so the outer test fold stays untouched by the tuning decision.",
-))
+show_question("q-inner-loop-data")
 """,
             "wp45-508-checked",
         ),
         code(
             """
-display(make_single_choice_question(
-    "What does the mean outer-test MSE (averaged across the 5 outer folds) "
-    "actually estimate?",
-    [
-        "The performance of the complete tuning procedure -- choosing k with inner cross-validation, then evaluating that choice on data the inner loop never saw -- not the performance of one single, fixed k.",
-        "The performance of whichever k happened to score best on the inner cross-validation.",
-        "The performance of a KNN model with k chosen by looking at all the outer-test folds at once.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: nested cross-validation's outer score estimates the tuning procedure's performance, which is what you would actually get by repeating this whole inner-selection process on new data.",
-))
+show_question("q-outer-test-mse-meaning")
 """,
             "wp45-509-checked",
         ),

@@ -158,19 +158,36 @@ class StudentTemplateStructure(unittest.TestCase):
         ]
         self.assertEqual(len(answer_prompts), len(set(answer_prompts)))
 
-    # -- checked questions --------------------------------------------------
+    # -- checked questions: visibility (WP48's own new requirement) -------
 
-    def test_checked_questions_have_keys_and_feedback(self):
+    QUESTION_IDS = {
+        "q-probability-near-threshold",
+        "q-threshold-tradeoff",
+        "q-roc-needs-proba",
+        "q-threshold-false-negatives",
+        "q-accuracy-under-imbalance",
+    }
+
+    def test_checked_questions_use_show_question_with_no_visible_answer_key(self):
         checked = [
             c
             for c in self.cells
-            if "display(make_single_choice_question" in _src(c) or "display(make_multi_choice_question" in _src(c)
+            if c.get("id") != "wp44-000-setup" and 'show_question("' in _src(c)
         ]
-        self.assertGreaterEqual(len(checked), 4)
-        self.assertLessEqual(len(checked), 6)
+        self.assertEqual(len(checked), 5)
         for c in checked:
             src = _src(c)
-            self.assertTrue("correct_index=" in src or "correct_indices=" in src, src)
+            self.assertNotIn("correct_index", src)
+            self.assertNotIn("correct_indices", src)
+            self.assertTrue(any(f'show_question("{qid}")' in src for qid in self.QUESTION_IDS), src)
+
+    def test_hidden_setup_cell_carries_every_question_definition(self):
+        setup = self.cells[1]
+        source = _src(setup)
+        self.assertIn("_QUESTIONS = {", source)
+        for qid in self.QUESTION_IDS:
+            self.assertIn(f'"{qid}"', source)
+        self.assertIn("def show_question(question_id):", source)
 
     def test_question_widgets_use_full_width_wrap_css(self):
         self.assertIn("checked-question", self.code)
@@ -208,11 +225,41 @@ class StudentTemplateStructure(unittest.TestCase):
     def test_established_split_arguments_present(self):
         self.assertIn("test_size=0.25, random_state=42, stratify=y", self.code)
 
-    def test_established_metrics_referenced_in_checks(self):
-        self.assertIn("0.545817", self.code)
+    def test_established_auc_referenced_in_its_check(self):
+        # The accuracy/sensitivity/specificity numeric autocheck cell was
+        # replaced by a qualitative reflection (WP48, D.3); the AUC check
+        # (untouched) still embeds its own established value.
         self.assertIn("0.569221", self.code)
-        self.assertIn("0.534483", self.code)
-        self.assertIn("0.555556", self.code)
+
+    # -- SEX/SITE metadata distractors and the explicit group recode ------
+
+    def test_sex_and_site_loaded_as_metadata_distractors(self):
+        load_cell = next(c for c in self.cells if c.get("id") == "wp44-102-load")
+        intro_cell = next(c for c in self.cells if c.get("id") == "wp44-103-labels-intro")
+        self.assertIn("SEX", _src(load_cell) + _src(intro_cell))
+        self.assertIn("SITE", _src(load_cell) + _src(intro_cell))
+        self.assertIn("distractor", _src(intro_cell).lower())
+
+    def test_group_is_explicitly_recoded_to_binary_before_xy_activity(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp44-104-labels")
+        source = _src(cell)
+        self.assertIn('df["group"] = df["group"].map(', source)
+        self.assertIn("assert set(df[\"group\"].unique()) == {0, 1}", source)
+        xy_idx = next(i for i, c in enumerate(self.cells) if "wp44-activity-xy" in c.get("metadata", {}).get("tags", []))
+        labels_idx = next(i for i, c in enumerate(self.cells) if c.get("id") == "wp44-104-labels")
+        self.assertLess(labels_idx, xy_idx)
+
+    def test_confusion_matrix_reflection_replaces_the_numeric_autocheck(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp44-414-reflection")
+        self.assertEqual(cell["cell_type"], "markdown")
+        source = _src(cell).lower()
+        self.assertIn("plausible", source)
+        self.assertNotIn("linear regression", source)
+        self.assertIn("not", source)
+        self.assertIn("necessarily generalize better", source)
+        self.assertIn('y = df["sex"]', source)
+        self.assertIn("unsafe", source)
+        self.assertNotIn("wp44-414-check", self.code)
 
     def test_no_wp_or_script_references_in_student_text(self):
         low_md = self.md.lower()

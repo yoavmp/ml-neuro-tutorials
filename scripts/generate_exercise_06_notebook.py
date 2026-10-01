@@ -302,6 +302,84 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
     )
     box.add_class("checked-question")
     return box
+
+
+# Question content lives here, not in the visible cell that displays it: a
+# visible call like show_question("q-greedy-splitting") never prints or
+# displays a correct_index/correct_indices value (WP48's "Multiple-choice
+# answer visibility" requirement -- see
+# scripts/generate_exercise_08_notebook.py for the pattern this mirrors).
+# This is visual concealment, not secure assessment: the hidden cell is
+# fully expandable, and a downloaded, fully offline, editable notebook must
+# contain enough information to check an answer locally, so a technically
+# curious student can always recover it from source or the running kernel.
+_QUESTIONS = {
+    "q-greedy-splitting": dict(
+        kind="single",
+        prompt="Why is this splitting procedure called 'greedy'?",
+        options=[
+            "Each split is chosen to minimize error at that node right now, without considering whether a different split would produce a better tree several levels later.",
+            "It always produces the tree with the lowest possible training error among all possible trees.",
+            "It requires more computation than trying every possible tree shape.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: greedy splitting is locally optimal at each node, not guaranteed to be globally optimal for the whole tree.",
+    ),
+    "q-depth-selection": dict(
+        kind="single",
+        prompt="Which depth should we select before predicting the test set?",
+        options=[
+            "The depth that minimizes validation MSE.",
+            "The depth that minimizes training MSE.",
+            "The depth that minimizes test MSE, checked after trying each depth.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: training MSE keeps falling as depth grows (it always prefers the most flexible tree), and checking the test set to choose a depth would spend it before the final, honest evaluation. If two depths tie on validation MSE, the shallower (simpler) one is the safer choice.",
+    ),
+    "q-bagging-forest-variance": dict(
+        kind="multi",
+        prompt="Which of the following correctly describe why bagging and Random Forest usually beat a single tree here?",
+        options=[
+            "Averaging many trees trained on different resamples reduces sensitivity to any one training sample (variance reduction).",
+            "Random Forest's random feature subset at each split further decorrelates its trees, which can reduce variance beyond bagging alone.",
+            "Bagging and Random Forest are guaranteed to always outperform a single tree on every dataset.",
+            "A single deterministic tree, given the same training data and settings, is not sensitive to which training sample it happened to see.",
+        ],
+        correct_indices={0, 1},
+    ),
+    "q-bagging-reduces-variance": dict(
+        kind="single",
+        prompt="Bagging fits many trees on bootstrap resamples and averages their predictions. What does this primarily reduce?",
+        options=[
+            "The model's sensitivity to which particular training sample it saw (variance).",
+            "The model's systematic tendency to under- or over-predict in some region, regardless of training sample (bias).",
+            "The number of features the model considers.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: averaging over resamples targets variance; it does not change what the underlying tree family can represent.",
+    ),
+}
+
+
+def show_question(question_id):
+    q = _QUESTIONS[question_id]
+    if q["kind"] == "single":
+        widget = make_single_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_index"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    else:
+        widget = make_multi_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_indices"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    display(widget)
 '''.strip()
 
 
@@ -808,16 +886,7 @@ _greedy_render()
         ),
         code(
             """
-display(make_single_choice_question(
-    "Why is this splitting procedure called 'greedy'?",
-    [
-        "Each split is chosen to minimize error at that node right now, without considering whether a different split would produce a better tree several levels later.",
-        "It always produces the tree with the lowest possible training error among all possible trees.",
-        "It requires more computation than trying every possible tree shape.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: greedy splitting is locally optimal at each node, not guaranteed to be globally optimal for the whole tree.",
-))
+show_question("q-greedy-splitting")
 """,
             "wp46-206-checked",
         ),
@@ -929,16 +998,7 @@ else:
         ),
         code(
             """
-display(make_single_choice_question(
-    "Which depth should we select before predicting the test set?",
-    [
-        "The depth that minimizes validation MSE.",
-        "The depth that minimizes training MSE.",
-        "The depth that minimizes test MSE, checked after trying each depth.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: training MSE keeps falling as depth grows (it always prefers the most flexible tree), and checking the test set to choose a depth would spend it before the final, honest evaluation. If two depths tie on validation MSE, the shallower (simpler) one is the safer choice.",
-))
+show_question("q-depth-selection")
 """,
             "wp46-307-checked",
         ),
@@ -1160,17 +1220,7 @@ _ens_render()
         ),
         code(
             """
-display(make_multi_choice_question(
-    "Which of the following correctly describe why bagging and Random "
-    "Forest usually beat a single tree here?",
-    [
-        "Averaging many trees trained on different resamples reduces sensitivity to any one training sample (variance reduction).",
-        "Random Forest's random feature subset at each split further decorrelates its trees, which can reduce variance beyond bagging alone.",
-        "Bagging and Random Forest are guaranteed to always outperform a single tree on every dataset.",
-        "A single deterministic tree, given the same training data and settings, is not sensitive to which training sample it happened to see.",
-    ],
-    correct_indices={0, 1},
-))
+show_question("q-bagging-forest-variance")
 """,
             "wp46-505-checked",
         ),
@@ -1361,17 +1411,7 @@ correcting the errors left by the trees before it.
         ),
         code(
             """
-display(make_single_choice_question(
-    "Bagging fits many trees on bootstrap resamples and averages their "
-    "predictions. What does this primarily reduce?",
-    [
-        "The model's sensitivity to which particular training sample it saw (variance).",
-        "The model's systematic tendency to under- or over-predict in some region, regardless of training sample (bias).",
-        "The number of features the model considers.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: averaging over resamples targets variance; it does not change what the underlying tree family can represent.",
-))
+show_question("q-bagging-reduces-variance")
 """,
             "wp46-703-checked",
         ),

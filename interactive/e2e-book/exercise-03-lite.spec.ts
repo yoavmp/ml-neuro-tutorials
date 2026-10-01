@@ -192,7 +192,7 @@ test.describe("Exercise 3 — JupyterLite notebook, teacher-completed path", () 
     await fillBlank(
       page,
       "# X = ...",
-      'X = df[FEATURES].to_numpy(float)\ny = (df["group"] == 1).astype(int).to_numpy()',
+      'X = df[FEATURES].to_numpy(float)\ny = df["group"].to_numpy()',
     );
     await fillBlank(
       page,
@@ -218,7 +218,7 @@ test.describe("Exercise 3 — JupyterLite notebook, teacher-completed path", () 
         "accuracy = accuracy_score(y_test, y_pred)\n" +
         "sensitivity = tp / (tp + fn)\n" +
         "specificity = tn / (tn + fp)\n" +
-        "print('placeholder plot')",
+        "print(f'accuracy = {accuracy:.3f}')",
     );
     await fillBlank(
       page,
@@ -229,8 +229,16 @@ test.describe("Exercise 3 — JupyterLite notebook, teacher-completed path", () 
     await runAllCells(page);
     await page.waitForTimeout(30_000);
 
+    // WP48 D.3 replaced the confusion-matrix numeric autocheck cell with a
+    // qualitative Markdown reflection (no "Looks good: accuracy=..." print
+    // left to assert on) -- the activity's own typed print above is this
+    // test's replacement signal that the established accuracy reproduced.
     await scrollWindowed(page, 0.55);
-    await expect(page.locator("body")).toContainText("Looks good: accuracy=0.546", { timeout: 5_000 });
+    await expect(page.locator("body")).toContainText("accuracy = 0.546", { timeout: 5_000 });
+    await expect(page.locator("body")).toContainText(
+      "plausible outcome for this specific, difficult problem",
+      { timeout: 5_000 },
+    );
     await scrollWindowed(page, 0.65);
     await expect(page.locator("body")).toContainText("Looks good: AUC=0.569", { timeout: 5_000 });
 

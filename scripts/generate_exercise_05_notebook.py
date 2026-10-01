@@ -323,6 +323,80 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
     )
     box.add_class("checked-question")
     return box
+
+
+# Question content lives here, not in the visible cell that displays it: a
+# visible call like show_question("q-selectkbest-leakage") never prints or
+# displays a correct_index/correct_indices value (WP48's "Multiple-choice
+# answer visibility" requirement -- see
+# scripts/generate_exercise_08_notebook.py for the pattern this mirrors).
+# This is visual concealment, not secure assessment: the hidden cell is
+# fully expandable, and a downloaded, fully offline, editable notebook must
+# contain enough information to check an answer locally, so a technically
+# curious student can always recover it from source or the running kernel.
+_QUESTIONS = {
+    "q-selectkbest-leakage": dict(
+        kind="single",
+        prompt=(
+            "Why must SelectKBest be fit on X_train/y_train only, rather than on "
+            "the full X/y before splitting?"
+        ),
+        options=[
+            "Fitting it on all participants would let information from the test set influence which predictors the model is allowed to see -- data leakage that makes the test score an overly optimistic estimate.",
+            "SelectKBest only works on training data for implementation reasons unrelated to leakage.",
+            "It would make the notebook run more slowly.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: a feature selector is a fitting step like any other, and must never see the test set before evaluation.",
+    ),
+    "q-alpha-tuning-leakage": dict(
+        kind="single",
+        prompt=(
+            "Why does tuning alpha with cross-validation on the training set, "
+            "rather than by checking which alpha gives the lowest held-out test "
+            "MSE, matter?"
+        ),
+        options=[
+            "Choosing alpha by minimizing the test MSE directly would use the test set to make a modeling decision, so the final test score would no longer be an honest estimate of performance on new participants.",
+            "Cross-validation always selects a smaller alpha than checking the test set would.",
+            "It does not matter, as long as the final number reported is the test MSE.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: any decision that uses the test set, including choosing a hyperparameter, compromises the test set as an honest final evaluation.",
+    ),
+    "q-ridge-lasso-properties": dict(
+        kind="multi",
+        prompt="Which of the following are true about Ridge and Lasso coefficients?",
+        options=[
+            "Ridge shrinks coefficients toward zero but rarely sets any exactly to zero.",
+            "Lasso can set some coefficients to exactly zero, dropping those predictors.",
+            "Both methods require predictors to be standardized for the penalty to be fair.",
+            "Ridge always produces a smaller held-out MSE than Lasso.",
+        ],
+        correct_indices={0, 1, 2},
+    ),
+}
+
+
+def show_question(question_id):
+    q = _QUESTIONS[question_id]
+    if q["kind"] == "single":
+        widget = make_single_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_index"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    else:
+        widget = make_multi_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_indices"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    display(widget)
 '''.strip()
 
 
@@ -697,17 +771,7 @@ else:
         ),
         code(
             """
-display(make_single_choice_question(
-    "Why must SelectKBest be fit on X_train/y_train only, rather than on "
-    "the full X/y before splitting?",
-    [
-        "Fitting it on all participants would let information from the test set influence which predictors the model is allowed to see -- data leakage that makes the test score an overly optimistic estimate.",
-        "SelectKBest only works on training data for implementation reasons unrelated to leakage.",
-        "It would make the notebook run more slowly.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: a feature selector is a fitting step like any other, and must never see the test set before evaluation.",
-))
+show_question("q-selectkbest-leakage")
 """,
             "wp45-310-checked",
         ),
@@ -959,18 +1023,7 @@ else:
         ),
         code(
             """
-display(make_single_choice_question(
-    "Why does tuning alpha with cross-validation on the training set, "
-    "rather than by checking which alpha gives the lowest held-out test "
-    "MSE, matter?",
-    [
-        "Choosing alpha by minimizing the test MSE directly would use the test set to make a modeling decision, so the final test score would no longer be an honest estimate of performance on new participants.",
-        "Cross-validation always selects a smaller alpha than checking the test set would.",
-        "It does not matter, as long as the final number reported is the test MSE.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: any decision that uses the test set, including choosing a hyperparameter, compromises the test set as an honest final evaluation.",
-))
+show_question("q-alpha-tuning-leakage")
 """,
             "wp45-507-checked",
         ),
@@ -1028,16 +1081,7 @@ Next practice: decision trees.
         ),
         code(
             """
-display(make_multi_choice_question(
-    "Which of the following are true about Ridge and Lasso coefficients?",
-    [
-        "Ridge shrinks coefficients toward zero but rarely sets any exactly to zero.",
-        "Lasso can set some coefficients to exactly zero, dropping those predictors.",
-        "Both methods require predictors to be standardized for the penalty to be fair.",
-        "Ridge always produces a smaller held-out MSE than Lasso.",
-    ],
-    correct_indices={0, 1, 2},
-))
+show_question("q-ridge-lasso-properties")
 """,
             "wp45-604-checked",
         ),

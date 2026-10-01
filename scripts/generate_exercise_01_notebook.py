@@ -48,7 +48,7 @@ PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_p
 LITE_FILES_PORTABLE_COPY_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_01_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_01_reference.ipynb"
 
-TEMPLATE_VERSION = 1
+TEMPLATE_VERSION = 2
 
 KERNELSPEC = {
     "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
@@ -236,6 +236,73 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
     )
     box.add_class("wrap-labels")
     return box
+
+
+# Question content lives here, not in the visible cell that displays it: a
+# visible call like show_question("q-histogram-bins") never prints or
+# displays a correct_index/correct_indices value (WP48's "Multiple-choice
+# answer visibility" requirement -- see scripts/generate_exercise_08_notebook.py
+# for the pattern this mirrors). This is visual concealment, not secure
+# assessment: the hidden cell is fully expandable, and a downloaded, fully
+# offline, editable notebook must contain enough information to check an
+# answer locally, so a technically curious student can always recover it
+# from source or the running kernel.
+_QUESTIONS = {
+    "q-categorical-columns": dict(
+        kind="multi",
+        prompt="Which of these columns should be treated as categorical, even though some are stored as numbers?",
+        options=[
+            "DX_GROUP (diagnosis code)",
+            "AGE_AT_SCAN (age in years)",
+            "SEX (coded 1/2)",
+            "FIQ (full-scale IQ score)",
+            "HANDEDNESS_CATEGORY (coded 1/2/3)",
+        ],
+        correct_indices={0, 2, 4},
+    ),
+    "q-histogram-bins": dict(
+        kind="single",
+        prompt="Using very few histogram bins mainly risks:",
+        options=[
+            "Hiding real structure in the distribution (e.g. two separate peaks).",
+            "Turning random noise into apparent structure.",
+            "Changing the underlying data values.",
+        ],
+        correct_index=0,
+    ),
+    "q-fiq-correlation": dict(
+        kind="multi",
+        prompt="FIQ correlates strongly with VIQ and PIQ (r ~ 0.83). What does that tell you?",
+        options=[
+            "Full-scale IQ is computed from the verbal and performance scores, so a strong correlation is expected by construction.",
+            "It is strong evidence of a specific brain mechanism linking the three scores.",
+            "VIQ and PIQ are two separate sub-scores, so their own correlation with each other can still be moderate.",
+            "A correlation this strong proves FIQ causes changes in VIQ.",
+        ],
+        correct_indices={0, 2},
+    ),
+}
+
+
+def show_question(question_id):
+    q = _QUESTIONS[question_id]
+    if q["kind"] == "single":
+        widget = make_single_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_index"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    else:
+        widget = make_multi_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_indices"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    display(widget)
 '''.strip()
 
 
@@ -296,9 +363,7 @@ def _section_1() -> list[dict]:
         ),
         code(
             """
-# Load the curated ABIDE-II phenotype table (13 columns). The loader tries a
-# same-origin file first, falling back to the original pinned source if it
-# is not present (see the collapsed setup cell above).
+# Load the curated ABIDE-II phenotype table (13 columns).
 try:
     data = load_abide_phenotypes()
 except NameError as exc:
@@ -323,7 +388,13 @@ def _section_2() -> list[dict]:
             "different questions. `head()` shows the first rows:",
             "wp42-202-intro",
         ),
-        code("data.head()", "wp42-203-head"),
+        code(
+            """
+# data.head() shows five rows by default; data.head(n=8) shows eight participants.
+data.head()
+""",
+            "wp42-203-head",
+        ),
         md(
             """
 Now write code that:
@@ -383,17 +454,7 @@ data["SUB_ID"] = data["SUB_ID"].astype("string")  # a label, not a measurement
         ),
         code(
             """
-display(make_multi_choice_question(
-    "Which of these columns should be treated as categorical, even though some are stored as numbers?",
-    [
-        "DX_GROUP (diagnosis code)",
-        "AGE_AT_SCAN (age in years)",
-        "SEX (coded 1/2)",
-        "FIQ (full-scale IQ score)",
-        "HANDEDNESS_CATEGORY (coded 1/2/3)",
-    ],
-    correct_indices={0, 2, 4},
-))
+show_question("q-categorical-columns")
 """,
             "wp42-306-checked",
         ),
@@ -584,7 +645,7 @@ Write code that:
             "wp42-503-drop-instructions",
         ),
         blank(
-            "# YOUR CODE HERE\n",
+            "# YOUR CODE HERE\n# data_complete = ...\n",
             """
 data_complete = data.dropna()
 print(f"original rows: {len(data)}   retained rows: {len(data_complete)}")
@@ -617,7 +678,7 @@ Now write code that:
             "wp42-506-fill-instructions",
         ),
         blank(
-            "# YOUR CODE HERE\n",
+            "# YOUR CODE HERE\n# data_filled = ...\n",
             """
 data_filled = data.copy()
 fiq_median = data_filled["FIQ"].median()
@@ -675,15 +736,7 @@ plt.show()
         code(_histogram_widget_code(), "wp42-604-histogram-widget"),
         code(
             """
-display(make_single_choice_question(
-    "Using very few histogram bins mainly risks:",
-    [
-        "Hiding real structure in the distribution (e.g. two separate peaks).",
-        "Turning random noise into apparent structure.",
-        "Changing the underlying data values.",
-    ],
-    correct_index=0,
-))
+show_question("q-histogram-bins")
 """,
             "wp42-605-checked",
         ),
@@ -725,7 +778,9 @@ plt.show()
 correlation_variables = ["AGE_AT_SCAN", "FIQ", "VIQ", "PIQ", "SRS_TOTAL_RAW", "ADOS_G_TOTAL", "ADI_R_SOCIAL_TOTAL_A"]
 pearson_matrix = data[correlation_variables].corr(method="pearson")
 
-fig, ax = plt.subplots(figsize=(6.5, 6.5))
+# figsize is widened and the title is a suptitle (figure-level, not axes-level)
+# so the colorbar on the right has room without clipping the title text.
+fig, ax = plt.subplots(figsize=(8, 6.5))
 im = ax.imshow(pearson_matrix.to_numpy(), cmap="coolwarm", vmin=-1, vmax=1)
 ax.set_xticks(range(len(correlation_variables)))
 ax.set_xticklabels(correlation_variables, rotation=90)
@@ -735,25 +790,16 @@ for i in range(len(correlation_variables)):
     for j in range(len(correlation_variables)):
         v = pearson_matrix.to_numpy()[i, j]
         ax.text(j, i, f"{v:.2f}", ha="center", va="center", fontsize=7, color="white" if abs(v) > 0.5 else "black")
-fig.colorbar(im, ax=ax, shrink=0.8, label="Pearson r")
-ax.set_title("Pearson correlation between numerical variables")
-plt.tight_layout()
+fig.colorbar(im, ax=ax, shrink=0.8, pad=0.03, label="Pearson r")
+fig.suptitle("Pearson correlation between numerical variables", x=0.46)
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
 """,
             "wp42-610-correlation-plot",
         ),
         code(
             """
-display(make_multi_choice_question(
-    "FIQ correlates strongly with VIQ and PIQ (r ~ 0.83). What does that tell you?",
-    [
-        "Full-scale IQ is computed from the verbal and performance scores, so a strong correlation is expected by construction.",
-        "It is strong evidence of a specific brain mechanism linking the three scores.",
-        "VIQ and PIQ are two separate sub-scores, so their own correlation with each other can still be moderate.",
-        "A correlation this strong proves FIQ causes changes in VIQ.",
-    ],
-    correct_indices={0, 2},
-))
+show_question("q-fiq-correlation")
 """,
             "wp42-611-checked",
         ),

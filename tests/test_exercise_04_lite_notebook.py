@@ -135,18 +135,51 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertNotIn("GridSearchCV(", source)
         self.assertNotIn("grid.fit(X_tr, y_tr)", source)
 
-    # -- checked questions --------------------------------------------------
+    # -- checked questions: visibility (WP48's own new requirement) -------
 
-    def test_checked_questions_have_keys_and_feedback(self):
+    QUESTION_IDS = {
+        "q-single-split-vs-cv-stability",
+        "q-inner-loop-data",
+        "q-outer-test-mse-meaning",
+    }
+
+    def test_checked_questions_use_show_question_with_no_visible_answer_key(self):
         checked = [
             c
             for c in self.cells
-            if "display(make_single_choice_question" in _src(c) or "display(make_multi_choice_question" in _src(c)
+            if c.get("id") != "wp45-000-setup" and 'show_question("' in _src(c)
         ]
         self.assertEqual(len(checked), 3)
         for c in checked:
             src = _src(c)
-            self.assertTrue("correct_index=" in src or "correct_indices=" in src, src)
+            self.assertNotIn("correct_index", src)
+            self.assertNotIn("correct_indices", src)
+            self.assertTrue(any(f'show_question("{qid}")' in src for qid in self.QUESTION_IDS), src)
+
+    def test_hidden_setup_cell_carries_every_question_definition(self):
+        setup = self.cells[1]
+        source = _src(setup)
+        self.assertIn("_QUESTIONS = {", source)
+        for qid in self.QUESTION_IDS:
+            self.assertIn(f'"{qid}"', source)
+        self.assertIn("def show_question(question_id):", source)
+
+    def test_threadpoolctl_warning_narrowly_filtered(self):
+        # WP48 E.1: same upstream threadpoolctl/Pyodide RuntimeWarning
+        # reproduced live for Exercise 2 (see
+        # tests/test_exercise_02_lite_notebook.py), filtered consistently
+        # here by exact message AND category=RuntimeWarning, never a
+        # blanket RuntimeWarning filter.
+        self.assertIn("JsProxy\\.as_object_map", self.code)
+        self.assertIn("category=RuntimeWarning", self.code)
+        self.assertNotIn('warnings.filterwarnings("ignore", category=RuntimeWarning)', self.code)
+
+    def test_question_radio_labels_do_not_clip_wrapped_rows(self):
+        # WP48 E.3: a long option that wraps to two lines must not overlap
+        # the option below it -- the ipywidgets default fixes each radio
+        # label's row height to one line unless explicitly overridden.
+        self.assertIn(".widget-radio-box label", self.code)
+        self.assertIn("height: auto !important", self.code)
 
     def test_question_widgets_use_full_width_wrap_css(self):
         self.assertIn("checked-question", self.code)
@@ -168,8 +201,21 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("seed:", source)
 
     def test_nested_cv_conceptual_diagram_present(self):
+        # WP48 E.4: the old raw-HTML/inline-CSS diagram is replaced by a
+        # rendered image, embedded as a notebook attachment (never a
+        # separate linked file, which would break for a downloaded/Colab
+        # copy) with descriptive alt text -- the same nbformat mechanism
+        # Exercise 2's Activity 3B reference image already uses.
         diagram = next(c for c in self.cells if c.get("id") == "wp45-503-diagram")
-        self.assertIn("ml-ncv-diagram", _src(diagram))
+        source = _src(diagram)
+        self.assertNotIn("ml-ncv-diagram", source)
+        self.assertNotIn("<div", source)
+        self.assertIn("attachment:exercise_04_nested_cv_diagram.png", source)
+        self.assertIn("![", source)
+        self.assertGreater(len(source.strip()), 40)  # real alt text, not a bare image tag
+        self.assertIn("attachments", diagram)
+        self.assertIn("exercise_04_nested_cv_diagram.png", diagram["attachments"])
+        self.assertIn("image/png", diagram["attachments"]["exercise_04_nested_cv_diagram.png"])
 
     # -- editable answer cells -------------------------------------------
 

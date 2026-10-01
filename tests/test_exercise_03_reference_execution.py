@@ -133,16 +133,17 @@ def _check_cell_source(cell_id: str) -> str:
     return cell["source"]
 
 
-class MetricsCheckCellBehavior(unittest.TestCase):
-    """The Section 4 confusion-matrix check cell must behave correctly for a
-    correct, an incorrect-but-complete, and an unfinished student attempt --
-    exercised directly (fast, no browser) against the exact check-cell
-    source every rendered notebook shares, mirroring WP42's KNN-check
-    behavior tests for Exercise 2."""
+class XYCheckCellBehavior(unittest.TestCase):
+    """The Section 3 X/y sanity check (wp44-324-check) must behave correctly
+    whether a student builds X/y as NumPy arrays or as a pandas
+    DataFrame/Series, and must give one helpful message -- never an
+    ambiguous-Series-truth-value crash -- for incomplete, nonnumeric, or
+    invalid-label attempts. Exercised directly (fast, no browser) against
+    the exact check-cell source every rendered notebook shares (WP48)."""
 
     @classmethod
     def setUpClass(cls):
-        cls.source = _check_cell_source("wp44-414-check")
+        cls.source = _check_cell_source("wp44-324-check")
         cls.base_ns = _execute_reference_notebook()
 
     def _run(self, ns: dict) -> str:
@@ -151,29 +152,49 @@ class MetricsCheckCellBehavior(unittest.TestCase):
 
         out = io.StringIO()
         with redirect_stdout(out):
-            exec(compile(self.source, "metrics_check", "exec"), dict(ns))
+            exec(compile(self.source, "xy_check", "exec"), dict(ns))
         return out.getvalue()
 
-    def test_correct_attempt_prints_looks_good(self):
+    def test_numpy_attempt_prints_looks_good(self):
         output = self._run(self.base_ns)
         self.assertIn("Looks good", output)
-        self.assertNotIn("differs from", output)
 
-    def test_incorrect_but_complete_attempt_is_not_falsely_called_a_failure(self):
+    def test_dataframe_and_series_attempt_prints_looks_good(self):
+        # The exact ambiguous-truth-value regression this check must avoid:
+        # np.isfinite(X).all() on a DataFrame returns a per-column Series,
+        # which raises in a bare `if`/`elif` instead of printing a message.
         ns = dict(self.base_ns)
-        ns["accuracy"] = 0.10
-        ns["sensitivity"] = 0.05
-        ns["specificity"] = 0.05
+        ns["X"] = ns["df"][ns["FEATURES"]]
+        ns["y"] = ns["df"]["group"]
         output = self._run(ns)
-        self.assertNotIn("Looks good", output)
-        self.assertIn("differs from", output)
-        self.assertIn("does not automatically mean", output)
-        self.assertNotIn("fail", output.lower())
-        self.assertNotIn("incorrect", output.lower())
+        self.assertIn("Looks good", output)
 
     def test_unfinished_attempt_gives_a_helpful_message_not_an_error(self):
         output = self._run({})
         self.assertIn("Not complete yet", output)
+
+    def test_nonnumeric_x_gives_a_helpful_message_not_a_crash(self):
+        ns = dict(self.base_ns)
+        bad_x = ns["X"].astype(object).copy()
+        bad_x[0, 0] = "not a number"
+        ns["X"] = bad_x
+        output = self._run(ns)
+        self.assertIn("Not quite", output)
+        self.assertIn("numeric", output)
+
+    def test_incomplete_row_count_gives_a_helpful_message(self):
+        ns = dict(self.base_ns)
+        ns["X"] = ns["X"][:-1]
+        output = self._run(ns)
+        self.assertIn("Not quite", output)
+        self.assertIn("rows", output)
+
+    def test_raw_1_2_labels_are_rejected_before_downstream_use(self):
+        ns = dict(self.base_ns)
+        ns["y"] = ns["y"] + 1  # simulate an un-recoded {1, 2} label
+        output = self._run(ns)
+        self.assertIn("Not quite", output)
+        self.assertIn("only 0 and 1", output)
 
 
 class AucCheckCellBehavior(unittest.TestCase):

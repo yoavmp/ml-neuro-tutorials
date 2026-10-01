@@ -145,18 +145,34 @@ class StudentTemplateStructure(unittest.TestCase):
         for name in ("lasso_cv_model", "lasso_cv_alpha", "lasso_cv_pred", "lasso_cv_test_mse"):
             self.assertIn(name, _src(lasso_cv_instructions))
 
-    # -- checked questions --------------------------------------------------
+    # -- checked questions: visibility (WP48's own new requirement) -------
 
-    def test_checked_questions_have_keys_and_feedback(self):
+    QUESTION_IDS = {
+        "q-selectkbest-leakage",
+        "q-alpha-tuning-leakage",
+        "q-ridge-lasso-properties",
+    }
+
+    def test_checked_questions_use_show_question_with_no_visible_answer_key(self):
         checked = [
             c
             for c in self.cells
-            if "display(make_single_choice_question" in _src(c) or "display(make_multi_choice_question" in _src(c)
+            if c.get("id") != "wp45-000-setup" and 'show_question("' in _src(c)
         ]
         self.assertEqual(len(checked), 3)
         for c in checked:
             src = _src(c)
-            self.assertTrue("correct_index=" in src or "correct_indices=" in src, src)
+            self.assertNotIn("correct_index", src)
+            self.assertNotIn("correct_indices", src)
+            self.assertTrue(any(f'show_question("{qid}")' in src for qid in self.QUESTION_IDS), src)
+
+    def test_hidden_setup_cell_carries_every_question_definition(self):
+        setup = self.cells[1]
+        source = _src(setup)
+        self.assertIn("_QUESTIONS = {", source)
+        for qid in self.QUESTION_IDS:
+            self.assertIn(f'"{qid}"', source)
+        self.assertIn("def show_question(question_id):", source)
 
     def test_question_widgets_use_full_width_wrap_css(self):
         self.assertIn("checked-question", self.code)

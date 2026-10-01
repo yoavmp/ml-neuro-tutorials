@@ -161,10 +161,40 @@ from IPython.display import display, HTML
 {features_literal}
 
 
+def load_demographics_table():
+    """Return SEX and SITE for the same participants, in the same row order
+    as load_abide_classification_table() -- metadata/distractors a student
+    must learn to exclude from FEATURES, never model inputs themselves.
+
+    Mirrors load_abide_classification_table()'s own two paths exactly (same
+    same-origin file first, same pinned fallback URL, no extra filtering of
+    either) so the two tables stay row-for-row aligned under both paths --
+    this is the same sex/site sidecar Exercise 8 already ships
+    (book/lite/files/data/abide_age_brain_demographics.csv), reused here
+    rather than re-exported.
+    """
+    from pathlib import Path
+
+    local_path = Path("data/abide_age_brain_demographics.csv")
+    if local_path.exists():
+        table = pd.read_csv(local_path)
+    else:
+        url = (
+            "https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/"
+            "e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b/"
+            "tu-machine-learning-yarkoni/data/abide2.tsv"
+        )
+        table = pd.read_csv(url, sep="\\t")
+    return table[["sex", "site"]].rename(columns={"sex": "SEX", "site": "SITE"}).reset_index(drop=True)
+
+
 def load_abide_classification_table():
-    """Return the classification table: 360 cortical-thickness predictors and
-    `group`, ABIDE-II's own raw diagnosis code (1 = autism, 2 = control) --
-    never a model feature itself, only the source of this notebook's target.
+    """Return the classification table: 360 cortical-thickness predictors,
+    `group` (ABIDE-II's own raw diagnosis code, 1 = autism, 2 = control --
+    never a model feature itself, only the source of this notebook's
+    target), and SEX/SITE (metadata/distractors students must learn to
+    exclude from FEATURES -- never model inputs either, and never the
+    target).
 
     Tries the small same-origin file this notebook ships next to first
     (JupyterLite, or a full local checkout) -- the exact same file Exercise 2
@@ -187,7 +217,12 @@ def load_abide_classification_table():
             "tu-machine-learning-yarkoni/data/abide2.tsv"
         )
         table = pd.read_csv(url, sep="\\t")
-    return table[_ABIDE_LITE_FEATURES + ["group"]].reset_index(drop=True)
+    table = table[_ABIDE_LITE_FEATURES + ["group"]].reset_index(drop=True)
+    demographics = load_demographics_table()
+    assert len(demographics) == len(table), "participant count mismatch between the brain-predictor and demographics tables"
+    table["SEX"] = demographics["SEX"].to_numpy()
+    table["SITE"] = demographics["SITE"].to_numpy()
+    return table
 
 
 # Keeps every checked question's option text wrapping within the notebook's
@@ -260,6 +295,101 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
     )
     box.add_class("checked-question")
     return box
+
+
+# Question content lives here, not in the visible cell that displays it: a
+# visible call like show_question("q-probability-near-threshold") never
+# prints or displays a correct_index/correct_indices value (WP48's
+# "Multiple-choice answer visibility" requirement -- see
+# scripts/generate_exercise_08_notebook.py for the pattern this mirrors).
+# This is visual concealment, not secure assessment: the hidden cell is
+# fully expandable, and a downloaded, fully offline, editable notebook must
+# contain enough information to check an answer locally, so a technically
+# curious student can always recover it from source or the running kernel.
+_QUESTIONS = {
+    "q-probability-near-threshold": dict(
+        kind="single",
+        prompt=(
+            "Two participants receive autism probabilities of 0.48 and 0.52. At the "
+            "default 0.50 threshold their predicted labels differ. What does that "
+            "imply about their underlying model evidence?"
+        ),
+        options=[
+            "It must be very different -- opposite predicted labels always mean opposite evidence.",
+            "It can be nearly identical -- the sigmoid is continuous, so a tiny change in the linear score crossing the threshold flips the label while barely changing the model's actual evidence.",
+            "It cannot be compared without also knowing the true diagnosis.",
+        ],
+        correct_index=1,
+        feedback_correct="Correct: a predicted label is a summary of a probability, and near a threshold that summary can be almost arbitrary.",
+    ),
+    "q-threshold-tradeoff": dict(
+        kind="single",
+        prompt=(
+            "If failing to identify an autistic participant were considered more "
+            "costly than falsely flagging a control, would you generally lower or "
+            "raise the decision threshold?"
+        ),
+        options=[
+            "Lower it -- this predicts autism more readily, increasing sensitivity (fewer false negatives) at the cost of specificity.",
+            "Raise it -- this predicts autism more readily, increasing sensitivity at the cost of specificity.",
+            "The threshold cannot change this tradeoff.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: a lower threshold predicts autism more readily, which can only increase or hold constant the number of participants predicted autistic -- more true positives caught, but also more false positives.",
+    ),
+    "q-roc-needs-proba": dict(
+        kind="single",
+        prompt="Why is predict_proba(), not predict(), needed to compute the ROC curve and AUC?",
+        options=[
+            "predict() only returns the label already decided at one fixed threshold -- a single point, not a curve; predict_proba() gives the probability needed to sweep every possible threshold.",
+            "predict_proba() is faster to compute than predict().",
+            "predict() cannot be called on a held-out test set.",
+        ],
+        correct_index=0,
+    ),
+    "q-threshold-false-negatives": dict(
+        kind="single",
+        prompt="What generally happens to false negatives when the decision threshold is lowered?",
+        options=[
+            "They generally decrease -- a lower threshold predicts autism more readily, so fewer actually-autistic participants are missed.",
+            "They generally increase.",
+            "They are unaffected by the threshold.",
+        ],
+        correct_index=0,
+    ),
+    "q-accuracy-under-imbalance": dict(
+        kind="multi",
+        prompt="Why can 95% accuracy describe a useless classifier under severe class imbalance, and what should you look at instead?",
+        options=[
+            "At a severe enough imbalance, predicting the majority class for everyone can itself reach ~95% accuracy while detecting none of the minority class.",
+            "Comparing accuracy to the majority-class baseline for the same test partition exposes this.",
+            "Sensitivity, specificity, balanced accuracy, and AUC can reveal what accuracy alone conceals.",
+            "95% accuracy is always reliable regardless of class balance.",
+        ],
+        correct_indices={0, 1, 2},
+    ),
+}
+
+
+def show_question(question_id):
+    q = _QUESTIONS[question_id]
+    if q["kind"] == "single":
+        widget = make_single_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_index"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    else:
+        widget = make_multi_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_indices"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    display(widget)
 '''.strip()
 
 
@@ -328,7 +458,10 @@ except NameError as exc:
         "notebook's first code cell (collapsed, at the very top, under 'Run "
         "the cell below first') before this one, then run this cell again."
     ) from exc
-print(f"{len(df)} participants, {df.shape[1] - 1} brain predictors")
+print(f"{len(df)} participants, {len(_ABIDE_LITE_FEATURES)} brain predictors")
+print("group, SEX, and SITE are also loaded now, but only as metadata -- group is")
+print("this notebook's target (see below), and SEX/SITE are distractors: real")
+print("participant information that must stay OUT of the model's predictors.")
 df.head()
 """,
             "wp44-102-load",
@@ -336,7 +469,10 @@ df.head()
         md(
             """
 `group` is ABIDE-II's own raw diagnosis code, not yet the label this
-notebook will model with.
+notebook will model with. `SEX` and `SITE` are real participant metadata,
+included here as **distractors**: a later activity asks you to build
+`FEATURES` from this table, and `group`, `SEX`, and `SITE` must all be
+excluded -- none of the three may leak into `X`.
 """,
             "wp44-103-labels-intro",
         ),
@@ -347,10 +483,18 @@ notebook will model with.
 observed_codes = sorted(df["group"].unique())
 assert observed_codes == [1, 2], f"unexpected group codes: {observed_codes}"
 
-# This notebook encodes the modelling target as 0 = control, 1 = autism.
 diagnosis_label = df["group"].map({1: "autism", 2: "control"})
 class_counts = diagnosis_label.value_counts()
 print(f"{class_counts['autism']} autism (group=1 -> 1), {class_counts['control']} control (group=2 -> 0)")
+
+# Recode the raw ABIDE-II codes to this notebook's binary target, once, here
+# -- every later cell already sees 0 = control / 1 = autism on df["group"],
+# never the raw 1/2 codes or a string label.
+df["group"] = df["group"].map({1: 1, 2: 0})
+assert set(df["group"].unique()) == {0, 1}, (
+    "df['group'] must be binary (0 = control, 1 = autism) before any "
+    "downstream model or plot assumes it."
+)
 """,
             "wp44-104-labels",
         ),
@@ -406,18 +550,7 @@ plt.show()
         ),
         code(
             """
-display(make_single_choice_question(
-    "Two participants receive autism probabilities of 0.48 and 0.52. At the "
-    "default 0.50 threshold their predicted labels differ. What does that "
-    "imply about their underlying model evidence?",
-    [
-        "It must be very different -- opposite predicted labels always mean opposite evidence.",
-        "It can be nearly identical -- the sigmoid is continuous, so a tiny change in the linear score crossing the threshold flips the label while barely changing the model's actual evidence.",
-        "It cannot be compared without also knowing the true diagnosis.",
-    ],
-    correct_index=1,
-    feedback_correct="Correct: a predicted label is a summary of a probability, and near a threshold that summary can be almost arbitrary.",
-))
+show_question("q-probability-near-threshold")
 """,
             "wp44-204-checked",
         ),
@@ -491,9 +624,10 @@ else:
         md("### Build X and y", "wp44-321-header"),
         md(
             """
-Write code that builds `X` (the `FEATURES` columns of `df`, as a NumPy
-array) and `y` (the binary diagnosis target, 0 = control / 1 = autism, from
-`df["group"]`, as established in Section 1).
+Write code that builds `X` (the `FEATURES` columns of `df`) and `y` (this
+notebook's binary diagnosis target, already recoded in Section 1 onto
+`df["group"]`: 0 = control, 1 = autism). `X` can be a NumPy array or a
+pandas DataFrame -- the check below accepts either.
 """,
             "wp44-322-instructions",
         ),
@@ -501,24 +635,36 @@ array) and `y` (the binary diagnosis target, 0 = control / 1 = autism, from
             "# YOUR CODE HERE\n# X = ...\n# y = ...\n",
             """
 X = df[FEATURES].to_numpy(float)
-y = (df["group"] == 1).astype(int).to_numpy()
+y = df["group"].to_numpy()
 """,
             "wp44-323-blank",
             tags=["wp44-activity-xy"],
         ),
         code(
             """
-# Run this to check your X and y.
+# Run this to check your X and y. Accepts X/y as a NumPy array, a pandas
+# DataFrame/Series, or anything else convertible to one -- a plain
+# `np.isfinite(X).all()` on a DataFrame returns a per-column Series, which
+# raises an ambiguous-truth-value error in an `if`/`elif`; converting with
+# np.asarray() first avoids that regardless of what the student built.
 if "X" in globals() and "y" in globals():
-    if len(X) != len(y) or len(X) != len(df):
-        print(f"Not quite: X has {len(X)} rows and y has {len(y)} rows; both should have one row per participant ({len(df)}).")
-    elif not np.isfinite(X).all():
-        print("Not quite: X contains non-finite values -- check that FEATURES only selects numeric brain columns.")
-    elif set(np.unique(y)) != {0, 1}:
-        print(f"Not quite: y should contain only 0 and 1; found {sorted(set(np.unique(y)))}.")
+    try:
+        X_arr = np.asarray(X, dtype=float)
+        y_arr = np.asarray(y).reshape(-1)
+    except (TypeError, ValueError) as exc:
+        print(f"Not quite: X and y must be numeric -- got a conversion error: {exc}")
     else:
-        n_pos, n_neg = int(y.sum()), int((y == 0).sum())
-        print(f"Looks good: X shape {X.shape}, y has {n_pos} autism (1) and {n_neg} control (0).")
+        if X_arr.ndim != 2 or X_arr.shape[1] != len(FEATURES):
+            print(f"Not quite: X should have one column per FEATURES entry ({len(FEATURES)}); got shape {X_arr.shape}.")
+        elif len(X_arr) != len(y_arr) or len(X_arr) != len(df):
+            print(f"Not quite: X has {len(X_arr)} rows and y has {len(y_arr)} rows; both should have one row per participant ({len(df)}).")
+        elif not np.isfinite(X_arr).all():
+            print("Not quite: X contains non-finite values -- check that FEATURES only selects numeric brain columns.")
+        elif set(np.unique(y_arr)) != {0, 1}:
+            print(f"Not quite: y should contain only 0 and 1; found {sorted(set(np.unique(y_arr)))}.")
+        else:
+            n_pos, n_neg = int(y_arr.sum()), int((y_arr == 0).sum())
+            print(f"Looks good: X shape {X_arr.shape}, y has {n_pos} autism (1) and {n_neg} control (0).")
 else:
     print("Not complete yet: define X and y above first.")
 """,
@@ -526,10 +672,14 @@ else:
         ),
         md("### Make the train/test split", "wp44-331-header"),
         md(
-            f"""
-Write code that makes the established split: `train_test_split(X, y,
-test_size=0.25, random_state=42, stratify=y)`, producing `X_train`,
-`X_test`, `y_train`, `y_test`.
+            """
+Write code that makes this course's established train/test split: 75%
+train / 25% test, seeded for reproducibility, **stratified** so the
+autism/control balance matches in both halves. *Hints:* `train_test_split`
+takes `test_size`, `random_state`, and `stratify` arguments; this course's
+standard seed is `random_state=42`; stratify on `y`.
+
+Required output names: `X_train`, `X_test`, `y_train`, `y_test`.
 """,
             "wp44-332-instructions",
         ),
@@ -689,40 +839,28 @@ print(f"specificity = {specificity:.3f}  (proportion of control participants cor
             "wp44-413-blank",
             tags=["wp44-activity-metrics"],
         ),
-        code(
-            f"""
-# Run this to check your confusion-matrix results.
-EXPECTED_ACCURACY = {EXPECTED_ACCURACY}
-EXPECTED_SENSITIVITY = {EXPECTED_SENSITIVITY}
-EXPECTED_SPECIFICITY = {EXPECTED_SPECIFICITY}
-TOLERANCE = 0.03  # generous: absorbs reasonable implementation differences
+        md(
+            """
+A modest result here -- accuracy and sensitivity/specificity not far above
+chance -- is a plausible outcome for this specific, difficult problem:
+separating autism from control using only cortical-thickness measurements,
+with a single `LogisticRegression(C=1.0)` chosen in advance rather than
+tuned. It does not mean your code is wrong, and it is **not** evidence that
+a more complex classifier would necessarily generalize better on held-out
+data -- a stronger result, if one exists, more plausibly comes from
+systematic model comparison and careful, principled feature choices, which
+later exercises introduce.
 
-if "accuracy" in globals() and "sensitivity" in globals() and "specificity" in globals():
-    assert np.isfinite(accuracy) and np.isfinite(sensitivity) and np.isfinite(specificity)
-    close = (
-        abs(accuracy - EXPECTED_ACCURACY) <= TOLERANCE
-        and abs(sensitivity - EXPECTED_SENSITIVITY) <= TOLERANCE
-        and abs(specificity - EXPECTED_SPECIFICITY) <= TOLERANCE
-    )
-    if close:
-        print(
-            f"Looks good: accuracy={{accuracy:.3f}}, sensitivity={{sensitivity:.3f}}, "
-            f"specificity={{specificity:.3f}} are within the expected range."
-        )
-    else:
-        print(
-            f"Your result (accuracy={{accuracy:.3f}}, sensitivity={{sensitivity:.3f}}, "
-            f"specificity={{specificity:.3f}}) differs from the expected result "
-            f"(accuracy~{{EXPECTED_ACCURACY:.3f}}, sensitivity~{{EXPECTED_SENSITIVITY:.3f}}, "
-            f"specificity~{{EXPECTED_SPECIFICITY:.3f}}). That does not automatically mean "
-            "something is wrong -- a different valid implementation can shift these "
-            "numbers slightly. Check that you used y_test/y_pred from Section 3 "
-            "before assuming this is an error."
-        )
-else:
-    print("Not complete yet: define accuracy, sensitivity, and specificity above first.")
+*(Optional, exploratory only.)* The same cortical-thickness features could
+instead be used to predict `SEX` rather than diagnosis -- a genuinely
+different modelling problem, not a one-line substitution. It needs its own
+explicit target recoding and labels (`SEX`'s own raw codes, not the
+autism/control labels above) and `SEX` itself excluded from the predictors.
+Simply swapping `y = df["SEX"]` into the autism-labeled plots and metric
+code above, without those changes, is unsafe and would not produce a
+meaningful result on its own.
 """,
-            "wp44-414-check",
+            "wp44-414-reflection",
         ),
         md("### Plot the ROC curve and report AUC", "wp44-421-header"),
         md(
@@ -837,18 +975,7 @@ _threshold_refit(threshold_slider.value)
         ),
         code(
             """
-display(make_single_choice_question(
-    "If failing to identify an autistic participant were considered more "
-    "costly than falsely flagging a control, would you generally lower or "
-    "raise the decision threshold?",
-    [
-        "Lower it -- this predicts autism more readily, increasing sensitivity (fewer false negatives) at the cost of specificity.",
-        "Raise it -- this predicts autism more readily, increasing sensitivity at the cost of specificity.",
-        "The threshold cannot change this tradeoff.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: a lower threshold predicts autism more readily, which can only increase or hold constant the number of participants predicted autistic -- more true positives caught, but also more false positives.",
-))
+show_question("q-threshold-tradeoff")
 """,
             "wp44-504-checked",
         ),
@@ -979,44 +1106,19 @@ def _summary() -> list[dict]:
         ),
         code(
             """
-display(make_single_choice_question(
-    "Why is predict_proba(), not predict(), needed to compute the ROC curve and AUC?",
-    [
-        "predict() only returns the label already decided at one fixed threshold -- a single point, not a curve; predict_proba() gives the probability needed to sweep every possible threshold.",
-        "predict_proba() is faster to compute than predict().",
-        "predict() cannot be called on a held-out test set.",
-    ],
-    correct_index=0,
-))
+show_question("q-roc-needs-proba")
 """,
             "wp44-702-checked",
         ),
         code(
             """
-display(make_single_choice_question(
-    "What generally happens to false negatives when the decision threshold is lowered?",
-    [
-        "They generally decrease -- a lower threshold predicts autism more readily, so fewer actually-autistic participants are missed.",
-        "They generally increase.",
-        "They are unaffected by the threshold.",
-    ],
-    correct_index=0,
-))
+show_question("q-threshold-false-negatives")
 """,
             "wp44-703-checked",
         ),
         code(
             """
-display(make_multi_choice_question(
-    "Why can 95% accuracy describe a useless classifier under severe class imbalance, and what should you look at instead?",
-    [
-        "At a severe enough imbalance, predicting the majority class for everyone can itself reach ~95% accuracy while detecting none of the minority class.",
-        "Comparing accuracy to the majority-class baseline for the same test partition exposes this.",
-        "Sensitivity, specificity, balanced accuracy, and AUC can reveal what accuracy alone conceals.",
-        "95% accuracy is always reliable regardless of class balance.",
-    ],
-    correct_indices={0, 1, 2},
-))
+show_question("q-accuracy-under-imbalance")
 """,
             "wp44-704-checked",
         ),

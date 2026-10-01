@@ -69,7 +69,7 @@ PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_p
 LITE_FILES_PORTABLE_COPY_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_02_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_02_reference.ipynb"
 
-TEMPLATE_VERSION = 3
+TEMPLATE_VERSION = 4
 
 KERNELSPEC = {
     "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
@@ -198,6 +198,27 @@ import warnings
 # warnings in general) keeps output clean without masking a real problem.
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
 
+# WP48: this notebook's pinned browser kernel's own threadpoolctl
+# (imported internally by scikit-learn, not by this notebook) emits a
+# RuntimeWarning every time a model is fit under Pyodide -- reproduced live
+# in this exact browser build, in Section 7/8's figure cells, as:
+#   threadpoolctl.py:1135: RuntimeWarning: JsProxy.as_object_map() is
+#   deprecated. Use as_py_json() instead.
+#     for filepath in LDSO.loadedLibsByName.as_object_map():
+# The call site is threadpoolctl's own Pyodide shared-library introspection
+# (LDSO.loadedLibsByName.as_object_map()), never a call this notebook's
+# code makes -- not something a local source-text replacement or
+# site-packages patch could reach without re-vendoring threadpoolctl itself
+# inside this course's own JupyterLite build, which the current Pyodide
+# distribution does not support overriding per-notebook. Filtered here by
+# the identical exact message match, scoped to RuntimeWarning only -- never
+# a blanket RuntimeWarning/DeprecationWarning suppression.
+warnings.filterwarnings(
+    "ignore",
+    message=r"JsProxy\\.as_object_map\\(\\) is deprecated",
+    category=RuntimeWarning,
+)
+
 if sys.platform == "emscripten":
     # Running in the browser (JupyterLite). ipywidgets has no prebuilt
     # Pyodide package, unlike numpy/pandas/scikit-learn/matplotlib
@@ -317,6 +338,87 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
     )
     box.add_class("checked-question")
     return box
+
+
+# Question content lives here, not in the visible cell that displays it: a
+# visible call like show_question("q-knn-complexity") never prints or
+# displays a correct_index/correct_indices value (WP48's "Multiple-choice
+# answer visibility" requirement -- see scripts/generate_exercise_08_notebook.py
+# for the pattern this mirrors). This is visual concealment, not secure
+# assessment: the hidden cell is fully expandable, and a downloaded, fully
+# offline, editable notebook must contain enough information to check an
+# answer locally, so a technically curious student can always recover it
+# from source or the running kernel.
+_QUESTIONS = {
+    "q-test-target-use": dict(
+        kind="multi",
+        prompt="Which uses of the test target y_test are allowed at this point in the notebook?",
+        options=[
+            "Plotting its distribution to sanity-check the split (as above).",
+            "Choosing which features to use because they correlate well with y_test.",
+            "Reporting its mean and standard deviation.",
+            "Tuning the model's settings so the test score looks better.",
+        ],
+        correct_indices={0, 2},
+    ),
+    "q-correlation-vs-coefficient": dict(
+        kind="multi",
+        prompt="Why can a feature's correlation with age and its fitted regression coefficient tell different stories?",
+        options=[
+            "Correlation is a marginal (feature-by-itself) relationship; a coefficient is conditional on every other feature already being in the model.",
+            "Correlated predictors can share credit: a coefficient can shrink even for a feature with a strong marginal correlation once correlated neighbours absorb that signal.",
+            "Coefficients are computed on the test set, so they answer a different question than a training-only correlation.",
+            "The two measures are mathematically identical whenever the model is linear.",
+        ],
+        correct_indices={0, 1},
+    ),
+    "q-honest-evaluation": dict(
+        kind="single",
+        prompt="Which evaluation can estimate performance for a new participant?",
+        options=["A. correct", "B. training score", "C. invalid"],
+        correct_index=0,
+        feedback_correct="Correct: only scoring on held-out rows the model never touched during fitting estimates performance on a new participant.",
+        feedback_incorrect="Not quite -- both training-row evaluation and fitting on test rows are misleading.",
+    ),
+    "q-knn-complexity": dict(
+        kind="single",
+        prompt="Which of these changes increases KNN's model complexity?",
+        options=["Decreasing k", "Increasing k", "Model complexity does not depend on k"],
+        correct_index=0,
+    ),
+    "q-knn-large-k-variance": dict(
+        kind="single",
+        prompt="In this activity, what happens to the three training-sample resamples' scatter as k grows very large?",
+        options=[
+            "They converge toward the same near-constant predictions.",
+            "They spread further apart from each other.",
+            "They become identical to the k=1 scatter.",
+        ],
+        correct_index=0,
+        feedback_correct="Correct: at large k every resample averages over nearly the whole fitting set, so predictions converge toward the fitting-set mean regardless of which participants happened to be resampled.",
+    ),
+}
+
+
+def show_question(question_id):
+    q = _QUESTIONS[question_id]
+    if q["kind"] == "single":
+        widget = make_single_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_index"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    else:
+        widget = make_multi_choice_question(
+            q["prompt"],
+            q["options"],
+            q["correct_indices"],
+            q.get("feedback_correct", "Correct."),
+            q.get("feedback_incorrect", "Not quite -- try again."),
+        )
+    display(widget)
 
 
 def annotate_model_complexity_axis(ax, k_ticks, n_max):
@@ -553,16 +655,7 @@ display(top10.rename("correlation").to_frame())
 def _activity_2a_checked_question() -> dict:
     return code(
         """
-display(make_multi_choice_question(
-    "Which uses of the test target y_test are allowed at this point in the notebook?",
-    [
-        "Plotting its distribution to sanity-check the split (as above).",
-        "Choosing which features to use because they correlate well with y_test.",
-        "Reporting its mean and standard deviation.",
-        "Tuning the model's settings so the test score looks better.",
-    ],
-    correct_indices={0, 2},
-))
+show_question("q-test-target-use")
 """,
         "wp41-207-2a-checked",
     )
@@ -598,7 +691,7 @@ Write code that:
             "wp41-305-3a-instructions",
         ),
         blank(
-            "# YOUR CODE HERE\n",
+            "# YOUR CODE HERE\n# Hint: the fitted model's coefficients live in its coef_ attribute,\n# in the same order as FEATURES.\n",
             """
 coefs = pd.Series(model.coef_, index=FEATURES)
 top_coefs = coefs.reindex(coefs.abs().sort_values(ascending=False).index[:10])
@@ -622,16 +715,7 @@ plt.show()
         ),
         code(
             """
-display(make_multi_choice_question(
-    "Why can a feature's correlation with age and its fitted regression coefficient tell different stories?",
-    [
-        "Correlation is a marginal (feature-by-itself) relationship; a coefficient is conditional on every other feature already being in the model.",
-        "Correlated predictors can share credit: a coefficient can shrink even for a feature with a strong marginal correlation once correlated neighbours absorb that signal.",
-        "Coefficients are computed on the test set, so they answer a different question than a training-only correlation.",
-        "The two measures are mathematically identical whenever the model is linear.",
-    ],
-    correct_indices={0, 1},
-))
+show_question("q-correlation-vs-coefficient")
 """,
             "wp41-308-3a-checked",
         ),
@@ -682,8 +766,8 @@ plt.show()
             tags=["wp41-activity-3b"],
         ),
         md(
-            "> **How closely do the held-out points track the diagonal? Where do "
-            "the largest errors fall?**",
+            "> **Reflect: How closely do the held-out points track the "
+            "diagonal? Where do the largest errors fall?**",
             "wp41-314-3b-answer",
         ),
     ]
@@ -786,13 +870,7 @@ display(HTML(f'<style>.ex2-eval-table th, .ex2-eval-table td {{ text-align: left
         ),
         code(
             """
-display(make_single_choice_question(
-    "Which evaluation can estimate performance for a new participant?",
-    ["A. correct", "B. training score", "C. invalid"],
-    correct_index=0,
-    feedback_correct="Correct: only scoring on held-out rows the model never touched during fitting estimates performance on a new participant.",
-    feedback_incorrect="Not quite -- both training-row evaluation and fitting on test rows are misleading.",
-))
+show_question("q-honest-evaluation")
 """,
             "wp41-405-checked",
         ),
@@ -923,11 +1001,7 @@ For KNN, `k` controls this directly:
         ),
         code(
             """
-display(make_single_choice_question(
-    "Which of these changes increases KNN's model complexity?",
-    ["Decreasing k", "Increasing k", "Model complexity does not depend on k"],
-    correct_index=0,
-))
+show_question("q-knn-complexity")
 """,
             "wp41-604-checked",
         ),
@@ -1076,16 +1150,7 @@ _explore_refit(k_slider.value)
         ),
         code(
             """
-display(make_single_choice_question(
-    "In this activity, what happens to the three training-sample resamples' scatter as k grows very large?",
-    [
-        "They converge toward the same near-constant predictions.",
-        "They spread further apart from each other.",
-        "They become identical to the k=1 scatter.",
-    ],
-    correct_index=0,
-    feedback_correct="Correct: at large k every resample averages over nearly the whole fitting set, so predictions converge toward the fitting-set mean regardless of which participants happened to be resampled.",
-))
+show_question("q-knn-large-k-variance")
 """,
             "wp41-804-checked",
         ),

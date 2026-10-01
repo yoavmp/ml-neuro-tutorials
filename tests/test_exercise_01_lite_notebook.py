@@ -137,23 +137,52 @@ class StudentTemplateStructure(unittest.TestCase):
         ]
         self.assertEqual(len(answer_prompts), len(set(answer_prompts)))
 
-    # -- checked questions -------------------------------------------------
+    # -- checked questions: visibility (WP48's own new requirement) -------
 
-    def test_checked_questions_have_keys_and_feedback(self):
+    QUESTION_IDS = {
+        "q-categorical-columns",
+        "q-histogram-bins",
+        "q-fiq-correlation",
+    }
+
+    def test_checked_questions_use_show_question_with_no_visible_answer_key(self):
+        # Excludes the hidden setup cell itself (id wp42-000-setup), which
+        # defines show_question() and mentions it in its own explanatory
+        # comment -- every OTHER, visible cell that calls it is a question.
         checked = [
             c
             for c in self.cells
-            if "display(make_single_choice_question" in _src(c) or "display(make_multi_choice_question" in _src(c)
+            if c.get("id") != "wp42-000-setup" and 'show_question("' in _src(c)
         ]
-        self.assertGreaterEqual(len(checked), 3)
-        self.assertLessEqual(len(checked), 6)
+        self.assertEqual(len(checked), 3)
         for c in checked:
             src = _src(c)
-            self.assertTrue("correct_index=" in src or "correct_indices=" in src, src)
+            self.assertNotIn("correct_index", src)
+            self.assertNotIn("correct_indices", src)
+            self.assertTrue(any(f'show_question("{qid}")' in src for qid in self.QUESTION_IDS), src)
+
+    def test_hidden_setup_cell_carries_every_question_definition(self):
+        setup = self.cells[1]
+        source = _src(setup)
+        self.assertIn("_QUESTIONS = {", source)
+        for qid in self.QUESTION_IDS:
+            self.assertIn(f'"{qid}"', source)
+        self.assertIn("def show_question(question_id):", source)
 
     def test_question_widgets_use_full_width_wrap_css(self):
         self.assertIn("wrap-labels", self.code)
         self.assertIn("white-space: normal", self.code)
+
+    def test_pearson_plot_title_is_not_clipped_by_the_colorbar(self):
+        # WP48 B.5: the title used to be ax.set_title(...), centered on the
+        # Axes the colorbar had already narrowed, clipping the full string
+        # at the figure's right edge. fig.suptitle(...) is figure-level, so
+        # it has the whole figure's width to render in.
+        cell = next(c for c in self.cells if c.get("id") == "wp42-610-correlation-plot")
+        source = _src(cell)
+        self.assertIn("fig.suptitle(", source)
+        self.assertNotIn("ax.set_title(", source)
+        self.assertIn("Pearson correlation between numerical variables", source)
 
     # -- scope constraints (WP42 Gate 2) -------------------------------
 
