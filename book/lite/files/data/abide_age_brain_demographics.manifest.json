@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "source": "abide_modeling_data.load_modeling_frame(), filtered to age.notna() -- identical mask/order to export_abide_lite_data.py",
+  "file": "abide_age_brain_demographics.csv",
+  "sha256": "b65bbb60c453fecc57d90548ba946a8149b1b220e0b040ac3c3c6eedcbf4d37e",
+  "participant_count": 1004,
+  "columns": [
+    "age",
+    "sex",
+    "site"
+  ],
+  "sex_labels": {
+    "1": "Male",
+    "2": "Female"
+  },
+  "alignment_note": "Row-for-row aligned with the committed abide_age_brain.csv: this file's own 'age' column is included only to let --check and tests/test_export_abide_demographics_lite_data.py verify that alignment directly, never for a notebook to read 'age' from here."
+}

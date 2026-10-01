@@ -62,9 +62,10 @@ function iframeByTitle(title: string): string {
   return `iframe[title="${title}"]`;
 }
 
-// Exercises 1-7 are intentionally absent from this list: WP41/WP42/WP44
-// migrated Exercises 1-3, WP45 migrated Exercises 4-5, and WP46 migrated
-// Exercises 6-7, to JupyterLite-native notebooks, whose interactive
+// Exercises 1-8 are intentionally absent from this list: WP41/WP42/WP44
+// migrated Exercises 1-3, WP45 migrated Exercises 4-5, WP46 migrated
+// Exercises 6-7, and WP47 migrated Exercise 8, to JupyterLite-native
+// notebooks, whose interactive
 // activities are native ipywidgets/Matplotlib figures inside the notebook
 // document itself, not iframes -- there is no iframe-height contract left
 // to check for any of them (the widgets live in the browser kernel's own
@@ -77,11 +78,10 @@ function iframeByTitle(title: string): string {
 // interactive/e2e-book/exercise-03-lite.spec.ts,
 // interactive/e2e-book/exercise-04-lite.spec.ts,
 // interactive/e2e-book/exercise-05-lite.spec.ts,
-// interactive/e2e-book/exercise-06-lite.spec.ts, and
-// interactive/e2e-book/exercise-07-lite.spec.ts instead.
+// interactive/e2e-book/exercise-06-lite.spec.ts,
+// interactive/e2e-book/exercise-07-lite.spec.ts, and
+// interactive/e2e-book/exercise-08-lite.spec.ts instead.
 const CASES: ActivityCase[] = [
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html", iframeSelector: iframeByTitle("Interactive projection-angle activity for a small simulated two-dimensional dataset") },
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html", iframeSelector: iframeByTitle("Interactive PCA and K-means explorer for ABIDE-II participants") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html", iframeSelector: iframeByTitle("Interactive PCR-versus-PLS activity for a small simulated two-dimensional dataset") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html", iframeSelector: iframeByTitle("Interactive SVM decision-boundary explorer for two synthetic classification datasets") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html", iframeSelector: iframeByTitle("Interactive multiple-selection question on which preprocessing and modelling steps must not use the final test participants") },

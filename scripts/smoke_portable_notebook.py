@@ -40,19 +40,15 @@ Notebooks and their expected strings:
   notebook's cell sources in
   ``tests/test_exercise_04_reference_execution.py`` and
   ``tests/test_exercise_05_reference_execution.py``).
-* chapter_06 and chapter_07 are intentionally absent (WP46) -- see the
-  comment above their old ``SMOKE`` entries for why (each notebook's native
-  interactive activities use an ``ipywidgets.Output()`` widget as a context
-  manager, the same pattern documented to hang ``nbclient`` with no real
-  frontend attached; the same numbers are verified instead by directly
-  executing the reference notebook's cell sources in
-  ``tests/test_exercise_06_reference_execution.py`` and
-  ``tests/test_exercise_07_reference_execution.py``).
-* ``chapter_08/exercise_08_portable.ipynb`` (WP33; section 8 revised by
-  WP34) -- the same brain table; the projection-activity reproduction, the
-  standardized-PCA fit (explained variance), the research-example K-means
-  fit, and the CV-tuned PCA + KNN pipeline (with its raw-feature KNN
-  comparison) all run and print their audited numbers.
+* chapter_06, chapter_07, and chapter_08 are intentionally absent (WP46,
+  WP47) -- see the comment above their old ``SMOKE`` entries for why (each
+  notebook's native interactive activities use an ``ipywidgets.Output()``
+  widget as a context manager, the same pattern documented to hang
+  ``nbclient`` with no real frontend attached; the same numbers are
+  verified instead by directly executing the reference notebook's cell
+  sources in ``tests/test_exercise_06_reference_execution.py``,
+  ``tests/test_exercise_07_reference_execution.py``, and
+  ``tests/test_exercise_08_reference_execution.py``).
 * ``chapter_09/exercise_09_portable.ipynb`` (WP34) -- the same brain table;
   the PCR/PLS and SVM synthetic-data reproductions, and the nested-cross-
   validation comparison of five models (standardized OLS, PCR, PLS, linear
@@ -145,17 +141,14 @@ SMOKE = {
     # completed reference notebook's cell sources (not nbclient) in
     # tests/test_exercise_06_reference_execution.py and
     # tests/test_exercise_07_reference_execution.py.
-    "chapter_08": {
-        "path": REPO_ROOT / "book" / "downloads" / "chapter_08" / "exercise_08_portable.ipynb",
-        "expect": (
-            "data table: 1004 participants x 1446 columns",
-            "360 cortical-thickness predictors",
-            "PC1 explained variance = 36.1%   PC2 explained variance = 5.9%",
-            "cumulative explained variance through PC50 = 70.2%",
-            "selected: n_components=20, k=10  (mean CV MSE = 24.8)",
-            "raw-feature KNN selected: k=5  (mean CV MSE = 35.4)",
-        ),
-    },
+    # chapter_08 is intentionally absent: WP47 migrated it to a
+    # JupyterLite-native notebook whose native interactive ("Explore PCA and
+    # K-Means") uses an ipywidgets.Output() widget as a context manager --
+    # the same pattern that hangs nbclient (chapter_01's own exclusion above
+    # is the precedent). The same numbers this script would have checked are
+    # already verified, correctly, by directly executing the completed
+    # reference notebook's cell sources (not nbclient) in
+    # tests/test_exercise_08_reference_execution.py.
     "chapter_09": {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_09" / "exercise_09_portable.ipynb",
         "expect": (

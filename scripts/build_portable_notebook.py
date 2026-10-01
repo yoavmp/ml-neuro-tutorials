@@ -30,14 +30,15 @@ Modes (exactly one required):
 * ``--check``   -- regenerate in memory and fail if a committed file is stale or
                    missing. Used by CI. No network access, no writes.
 
-``--notebook {chapter_08,chapter_09,chapter_10,all}``
+``--notebook {chapter_09,chapter_10,all}``
 (default ``all``) scopes both modes. Exercises 11-12 are placeholder pages
 with no interactive activity and no portable notebook, so they are not
-registered here. chapter_01 through chapter_07 are also absent:
-WP41/WP42/WP44 migrated Exercises 1-3, WP45 migrated Exercises 4-5, and
-WP46 migrated Exercises 6-7, to JupyterLite-native notebooks, and
-scripts/generate_exercise_0{1..7}_notebook.py are now their sole generators
-(see each script's own ``--write``/``--check``). The bare ``--write`` /
+registered here. chapter_01 through chapter_08 are also absent:
+WP41/WP42/WP44 migrated Exercises 1-3, WP45 migrated Exercises 4-5, WP46
+migrated Exercises 6-7, and WP47 migrated Exercise 8, to JupyterLite-native
+notebooks, and scripts/generate_exercise_0{1..8}_notebook.py are now their
+sole generators (see each script's own ``--write``/``--check``). The bare
+``--write`` /
 ``--check`` invocations keep working and now cover every notebook still
 registered here.
 
@@ -1076,18 +1077,17 @@ CHAPTER_10 = NotebookSpec(
 )
 
 NOTEBOOKS = {
-    # chapter_01 through chapter_07 are intentionally absent: WP41/WP42/WP44
-    # migrated Exercises 1-3, WP45 migrated Exercises 4-5, and WP46 migrated
-    # Exercises 6-7, to JupyterLite-native notebooks.
-    # scripts/generate_exercise_0{1..7}_notebook.py are now the sole
-    # generators for book/lite/files/exercise_0{1..7}.ipynb and
-    # book/downloads/chapter_0{1..7}/exercise_0{1..7}_portable.ipynb; the old
+    # chapter_01 through chapter_08 are intentionally absent: WP41/WP42/WP44
+    # migrated Exercises 1-3, WP45 migrated Exercises 4-5, WP46 migrated
+    # Exercises 6-7, and WP47 migrated Exercise 8, to JupyterLite-native
+    # notebooks. scripts/generate_exercise_0{1..8}_notebook.py are now the
+    # sole generators for book/lite/files/exercise_0{1..8}.ipynb and
+    # book/downloads/chapter_0{1..8}/exercise_0{1..8}_portable.ipynb; the old
     # MyST-directive-rewriting pipeline below (each chapter's own spec,
     # banner, setup, and iframe-replacement constants included) no longer
     # applies to any of them and is left in place, unused, rather than
     # removed -- see the analogous knn_explore.json decision in WP41's
     # report.
-    CHAPTER_08.key: CHAPTER_08,
     CHAPTER_09.key: CHAPTER_09,
     CHAPTER_10.key: CHAPTER_10,
 }
