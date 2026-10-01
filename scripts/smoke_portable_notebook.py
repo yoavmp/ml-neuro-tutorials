@@ -40,14 +40,14 @@ Notebooks and their expected strings:
   notebook's cell sources in
   ``tests/test_exercise_04_reference_execution.py`` and
   ``tests/test_exercise_05_reference_execution.py``).
-* ``chapter_06/exercise_06_portable.ipynb`` (WP33) -- the same brain table;
-  the greedy-split search, the fixed-depth-3 tree fit, the depth-sweep
-  table, and the bagging/Random-Forest fair comparison all run and print
-  their MSE/AUC summaries.
-* ``chapter_07/exercise_07_portable.ipynb`` (WP33) -- the same brain table;
-  the stage-by-stage boosting reproduction, the CV-tuned gradient-boosting
-  pipeline, and the tree-model comparison all run and print their selected
-  settings and locked-test metrics.
+* chapter_06 and chapter_07 are intentionally absent (WP46) -- see the
+  comment above their old ``SMOKE`` entries for why (each notebook's native
+  interactive activities use an ``ipywidgets.Output()`` widget as a context
+  manager, the same pattern documented to hang ``nbclient`` with no real
+  frontend attached; the same numbers are verified instead by directly
+  executing the reference notebook's cell sources in
+  ``tests/test_exercise_06_reference_execution.py`` and
+  ``tests/test_exercise_07_reference_execution.py``).
 * ``chapter_08/exercise_08_portable.ipynb`` (WP33; section 8 revised by
   WP34) -- the same brain table; the projection-activity reproduction, the
   standardized-PCA fit (explained variance), the research-example K-means
@@ -132,28 +132,19 @@ SMOKE = {
     # cell sources (not nbclient) in
     # tests/test_exercise_04_reference_execution.py and
     # tests/test_exercise_05_reference_execution.py.
-    "chapter_06": {
-        "path": REPO_ROOT / "book" / "downloads" / "chapter_06" / "exercise_06_portable.ipynb",
-        "expect": (
-            "data table: 1004 participants x 1446 columns",
-            "360 predictors",
-            "n_fit = 564   n_val = 189   n_test = 251 (test set untouched in this notebook)",
-            "leaves = 8   depth = 3",
-            "best Brain measure 1 threshold = 5.92  (reduction = 38.35)",
-            "eligible = 1004   development = 753   outer test (excluded) = 251",
-        ),
-    },
-    "chapter_07": {
-        "path": REPO_ROOT / "book" / "downloads" / "chapter_07" / "exercise_07_portable.ipynb",
-        "expect": (
-            "data table: 1004 participants x 1446 columns",
-            "360 predictors",
-            "n_fit = 564   n_val = 189   n_train (development) = 753   n_test = 251 (locked; read once, in section 6)",
-            "stage 0 prediction (training mean) = 8.454",
-            "selected settings: {'learning_rate': 0.1, 'n_estimators': 200, 'max_depth': 3}  (mean CV MSE = 27.2)",
-            "locked-test MSE = 32.4   locked-test R2 = 0.653  (evaluated once)",
-        ),
-    },
+    # chapter_06 and chapter_07 are intentionally absent: WP46 migrated both
+    # to JupyterLite-native notebooks whose native interactives (chapter_06's
+    # "Build a Tree Greedily"/"One Tree or Many?"; chapter_07's "Build a
+    # Boosted Model"/"Explore the Boosting Parameters") each use an
+    # ipywidgets.Output() widget as a context manager -- the same pattern
+    # WP41's maintainer guide (section 8) documents as hanging nbclient's
+    # real ZMQ kernel indefinitely, with no real frontend attached to
+    # acknowledge the widget comm handshake (chapter_01's own exclusion
+    # above is the precedent). The same numbers this script would have
+    # checked are already verified, correctly, by directly executing the
+    # completed reference notebook's cell sources (not nbclient) in
+    # tests/test_exercise_06_reference_execution.py and
+    # tests/test_exercise_07_reference_execution.py.
     "chapter_08": {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_08" / "exercise_08_portable.ipynb",
         "expect": (

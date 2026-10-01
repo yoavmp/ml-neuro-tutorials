@@ -1,146 +1,55 @@
-import { expect, test, type Frame } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-// Proof that both embedded Exercise 6 activities (WP29: "Decision Trees") --
-// "Build a Tree Greedily" and "One Tree or Many?" -- work on the *final
-// built* Exercise 6 HTML page, not just the standalone widget page.
+// WP46 replaced Exercise 6's canonical Jupyter Book page with a short
+// transition page: the real lesson now runs as a JupyterLite notebook (see
+// exercise-06-lite.spec.ts). This file only checks the transition page
+// itself; it must not embed the old greedy-split/tree-ensemble-compare
+// iframes or any analysis code of its own (see
+// tests/test_exercise_06_transition_page.py for the offline structural
+// equivalent). Modeled exactly on chapter05.spec.ts's own treatment of
+// Exercise 5.
 
 const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html";
-const GREEDY_IFRAME_SELECTOR =
-  'iframe[title="Interactive greedy-splitting activity for a small synthetic regression tree"]';
-const ENSEMBLE_IFRAME_SELECTOR =
-  'iframe[title="Interactive comparison of a single tree, bagging, and Random Forest for predicting age from brain structure"]';
+const LITE_HREF = "../../lite/notebooks/index.html?path=exercise_06.ipynb";
+const DOWNLOAD_HREF = "../../lite/files/exercise_06_portable.ipynb";
 
-async function frameFor(page: import("@playwright/test").Page, selector: string): Promise<Frame> {
-  await page.locator(selector).scrollIntoViewIfNeeded();
-  const handle = await page.locator(selector).elementHandle();
-  expect(handle, "iframe element present").not.toBeNull();
-  const frame = await handle!.contentFrame();
-  expect(frame, "iframe content frame present").not.toBeNull();
-  return frame!;
-}
+test.describe("Chapter 6 built page — JupyterLite transition page", () => {
+  test("has no embedded iframe and links to the JupyterLite notebook", async ({ page }) => {
+    await page.goto(CHAPTER_URL);
+    await expect(page.locator("iframe")).toHaveCount(0);
+    const liteLink = page.locator(`a[href="${LITE_HREF}"]`);
+    await expect(liteLink).toHaveCount(1);
+    await expect(liteLink).toHaveText("Open Exercise 6");
+  });
 
-test.describe("Chapter 6 built page — title and structure", () => {
-  test("shows the exact title, no stale placeholder text, both activities, and a Colab button", async ({
+  test("clicking Open Exercise 6 actually opens the JupyterLite notebook", async ({ page }) => {
+    await page.goto(CHAPTER_URL);
+    await page.click(`a[href="${LITE_HREF}"]`);
+    await page.waitForURL(/lite\/notebooks\/index\.html\?path=exercise_06\.ipynb/, {
+      timeout: 10_000,
+    });
+    expect(page.url()).toContain("lite/notebooks/index.html?path=exercise_06.ipynb");
+  });
+
+  test("links to the downloadable portable notebook with a real, working href", async ({
     page,
   }) => {
     await page.goto(CHAPTER_URL);
-    const h1Text = await page.locator(".bd-article h1").first().innerText();
-    expect(h1Text.replace(/#\s*$/, "").trim()).toBe("Exercise 6: Decision Trees");
+    const downloadLink = page.locator(`a[href="${DOWNLOAD_HREF}"]`);
+    await expect(downloadLink).toHaveCount(1);
+    await expect(downloadLink).toBeVisible();
 
-    const bodyText = await page.locator(".bd-article").innerText();
-    expect(bodyText).not.toMatch(/Materials for this exercise will be added before the practice session\./);
-    expect(bodyText.toLowerCase()).not.toContain("adaboost");
-    expect(bodyText.toLowerCase()).not.toContain("gradient boosting");
-    expect(bodyText.toLowerCase()).not.toContain("xgboost");
-    // WP30 sec 4: the conditional classification-tree complexity curve's
-    // inclusion rule passed for this audit, so a classification-tree panel
-    // is expected in the built page (unlike WP29, which never added one).
-
-    await expect(page.locator(GREEDY_IFRAME_SELECTOR)).toHaveCount(1);
-    await expect(page.locator(ENSEMBLE_IFRAME_SELECTOR)).toHaveCount(1);
-    await expect(page.locator("iframe")).toHaveCount(2);
-
-    await expect(page.locator('[data-testid="colab-launch-button"]')).toBeVisible();
-  });
-});
-
-test.describe("Chapter 6 built page — embedded Build a Tree Greedily activity", () => {
-  test("iframe loads, config+data are 200, both panels render, no optimum revealed yet", async ({ page }) => {
-    const responses: { url: string; status: number }[] = [];
-    page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
-
-    await page.goto(CHAPTER_URL);
-    const frame = await frameFor(page, GREEDY_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-
-    const configResp = responses.find((r) => r.url.endsWith("/configs/tree_greedy_split.json"));
-    const dataResp = responses.find((r) => r.url.endsWith("/data/tree_greedy_split.json"));
-    expect(configResp?.status, "config HTTP status").toBe(200);
-    expect(dataResp?.status, "data HTTP status").toBe(200);
-
-    await expect(frame.locator('[data-testid="tree-greedy-feature-plot"]')).toHaveAttribute(
-      "data-render-count",
-      /[1-9]/,
+    const response = await page.request.get(
+      new URL(DOWNLOAD_HREF, page.url()).toString(),
     );
-    await expect(frame.locator('[data-testid="tree-greedy-mse-plot"]')).toHaveAttribute("data-render-count", /[1-9]/);
-    await expect(frame.locator('[data-testid="tree-greedy-reveal-panel"]')).toBeHidden();
+    expect(response.status()).toBe(200);
   });
 
-  test("lock and reveal shows the greedy optimum for the root node", async ({ page }) => {
+  test("has no top-bar Colab button and no raw-GitHub link", async ({ page }) => {
     await page.goto(CHAPTER_URL);
-    const frame = await frameFor(page, GREEDY_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-
-    await frame.locator('[data-testid="tree-greedy-lock-button"]').click();
-    await frame.locator('[data-testid="tree-greedy-reveal-button"]').click();
-    const revealText = await frame.locator('[data-testid="tree-greedy-reveal-panel"]').innerText();
-    expect(revealText).toContain("Greedy optimum");
-    // WP30: the widget shows the student-facing "Brain measure 1/2" labels,
-    // not the raw "x1"/"x2" schema field names.
-    expect(revealText.toLowerCase()).toContain("brain measure 1");
-  });
-});
-
-test.describe("Chapter 6 built page — embedded One Tree or Many? activity", () => {
-  test("iframe loads, config+data are 200, defaults to Random Forest, all panels render", async ({ page }) => {
-    const responses: { url: string; status: number }[] = [];
-    page.on("response", (r) => responses.push({ url: r.url(), status: r.status() }));
-
-    await page.goto(CHAPTER_URL);
-    const frame = await frameFor(page, ENSEMBLE_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-
-    const configResp = responses.find((r) => r.url.endsWith("/configs/tree_ensemble_compare.json"));
-    const dataResp = responses.find((r) => r.url.endsWith("/data/tree_ensemble_compare.json"));
-    expect(configResp?.status, "config HTTP status").toBe(200);
-    expect(dataResp?.status, "data HTTP status").toBe(200);
-
-    await expect(frame.locator('[data-testid="tree-ensemble-model-select"]')).toHaveValue("random-forest");
-    await expect(frame.locator('[data-testid="tree-ensemble-replicate-select"]')).toHaveCount(0);
-    await expect(frame.locator('[data-testid="tree-ensemble-distribution-plot"]')).toHaveAttribute(
-      "data-render-count",
-      /[1-9]/,
-    );
-    await expect(frame.locator('[data-testid="tree-ensemble-size-plot"]')).toHaveAttribute(
-      "data-render-count",
-      /[1-9]/,
-    );
-    await expect(frame.locator('[data-testid="tree-ensemble-prediction-plot"]')).toHaveAttribute(
-      "data-render-count",
-      /[1-9]/,
-    );
-  });
-
-  test("browser refresh restores the configured default model", async ({ page }) => {
-    await page.goto(CHAPTER_URL);
-    let frame = await frameFor(page, ENSEMBLE_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await frame.locator('[data-testid="tree-ensemble-model-select"]').selectOption("single-tree");
-
-    await page.reload();
-    frame = await frameFor(page, ENSEMBLE_IFRAME_SELECTOR);
-    await expect(frame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    await expect(frame.locator('[data-testid="tree-ensemble-model-select"]')).toHaveValue("random-forest");
-  });
-});
-
-test.describe("Chapter 6 built page — narrow-viewport layout", () => {
-  test("both activities remain usable at 390px without horizontal document scroll", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 900 });
-    await page.goto(CHAPTER_URL);
-
-    const greedyFrame = await frameFor(page, GREEDY_IFRAME_SELECTOR);
-    await expect(greedyFrame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    let overflow = await greedyFrame.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
-
-    const ensembleFrame = await frameFor(page, ENSEMBLE_IFRAME_SELECTOR);
-    await expect(ensembleFrame.locator("#app")).toHaveAttribute("data-widget-ready", "true");
-    overflow = await ensembleFrame.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
+    await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+    const bodyHtml = await page.locator(".bd-article").innerHTML();
+    expect(bodyHtml).not.toContain("raw.githubusercontent.com");
+    expect(bodyHtml).not.toContain("colab.research.google.com/github");
   });
 });

@@ -62,26 +62,24 @@ function iframeByTitle(title: string): string {
   return `iframe[title="${title}"]`;
 }
 
-// Exercises 1-5 are intentionally absent from this list: WP41/WP42/WP44
-// migrated Exercises 1-3, and WP45 migrated Exercises 4-5, to
-// JupyterLite-native notebooks, whose interactive activities are native
-// ipywidgets/Matplotlib figures inside the notebook document itself, not
-// iframes -- there is no iframe-height contract left to check for any of
-// them (the widgets live in the browser kernel's own DOM, with no
-// parent/child postMessage handshake at all). This is a genuine structural
-// difference from every still-legacy exercise below, not a skipped or
-// forgotten case: their own platform-appropriate coverage (390px usability,
-// light/dark, control operability, persistence) lives in
+// Exercises 1-7 are intentionally absent from this list: WP41/WP42/WP44
+// migrated Exercises 1-3, WP45 migrated Exercises 4-5, and WP46 migrated
+// Exercises 6-7, to JupyterLite-native notebooks, whose interactive
+// activities are native ipywidgets/Matplotlib figures inside the notebook
+// document itself, not iframes -- there is no iframe-height contract left
+// to check for any of them (the widgets live in the browser kernel's own
+// DOM, with no parent/child postMessage handshake at all). This is a
+// genuine structural difference from every still-legacy exercise below, not
+// a skipped or forgotten case: their own platform-appropriate coverage
+// (390px usability, light/dark, control operability, persistence) lives in
 // interactive/e2e-book/exercise-01-lite.spec.ts,
 // interactive/e2e-book/exercise-02-lite.spec.ts,
 // interactive/e2e-book/exercise-03-lite.spec.ts,
-// interactive/e2e-book/exercise-04-lite.spec.ts, and
-// interactive/e2e-book/exercise-05-lite.spec.ts instead.
+// interactive/e2e-book/exercise-04-lite.spec.ts,
+// interactive/e2e-book/exercise-05-lite.spec.ts,
+// interactive/e2e-book/exercise-06-lite.spec.ts, and
+// interactive/e2e-book/exercise-07-lite.spec.ts instead.
 const CASES: ActivityCase[] = [
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html", iframeSelector: iframeByTitle("Interactive greedy-splitting activity for a small synthetic regression tree") },
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_06/exercise_06.html", iframeSelector: iframeByTitle("Interactive comparison of a single tree, bagging, and Random Forest for predicting age from brain structure") },
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html", iframeSelector: iframeByTitle("Interactive stage-by-stage gradient boosting activity on a small simulated dataset") },
-  { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_07/exercise_07.html", iframeSelector: iframeByTitle("Interactive gradient-boosting parameter explorer for predicting age from brain structure") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html", iframeSelector: iframeByTitle("Interactive projection-angle activity for a small simulated two-dimensional dataset") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_08/exercise_08.html", iframeSelector: iframeByTitle("Interactive PCA and K-means explorer for ABIDE-II participants") },
   { chapterUrl: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html", iframeSelector: iframeByTitle("Interactive PCR-versus-PLS activity for a small simulated two-dimensional dataset") },
