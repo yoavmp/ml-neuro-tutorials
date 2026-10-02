@@ -269,7 +269,10 @@ _QUESTION_CSS = """
     width: 100% !important;
     max-width: 100% !important;
     white-space: normal !important;
+    height: auto !important;
     box-sizing: border-box;
+    padding: 3px 0;
+    line-height: 1.3;
 }
 </style>
 """
@@ -326,13 +329,11 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 
 # Question content lives here, not in the visible cell that displays it: a
 # visible call like show_question("q-boosting-residuals") never prints or
-# displays a correct_index/correct_indices value (WP48's "Multiple-choice
-# answer visibility" requirement -- see
-# scripts/generate_exercise_08_notebook.py for the pattern this mirrors).
-# This is visual concealment, not secure assessment: the hidden cell is
-# fully expandable, and a downloaded, fully offline, editable notebook must
-# contain enough information to check an answer locally, so a technically
-# curious student can always recover it from source or the running kernel.
+# displays a correct_index/correct_indices value. This is visual concealment,
+# not secure assessment: the hidden cell is fully expandable, and a downloaded,
+# fully offline, editable notebook must contain enough information to check an
+# answer locally, so a technically curious student can always recover it from
+# source or the running kernel.
 _QUESTIONS = {
     "q-boosting-residuals": dict(
         kind="single",

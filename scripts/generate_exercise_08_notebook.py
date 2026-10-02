@@ -290,7 +290,10 @@ _QUESTION_CSS = """
     width: 100% !important;
     max-width: 100% !important;
     white-space: normal !important;
+    height: auto !important;
     box-sizing: border-box;
+    padding: 3px 0;
+    line-height: 1.3;
 }
 </style>
 """

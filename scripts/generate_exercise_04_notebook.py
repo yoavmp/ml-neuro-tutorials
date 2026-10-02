@@ -154,13 +154,14 @@ import warnings
 
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
 
-# WP48: same upstream threadpoolctl/Pyodide RuntimeWarning
-# scripts/generate_exercise_02_notebook.py's setup cell documents and
-# filters (reproduced live in this exact browser build, firing from
-# threadpoolctl's own Pyodide shared-library introspection whenever a model
-# is fit, including this notebook's one-split cell) -- same narrow,
-# message-and-category-scoped filter, applied consistently rather than
-# reinventing it per notebook.
+# This notebook's pinned browser kernel's own threadpoolctl (imported
+# internally by scikit-learn, not by this notebook) emits the same
+# upstream RuntimeWarning as every other notebook in this course that fits
+# a scikit-learn model under Pyodide, reproduced live in this exact browser
+# build, firing from threadpoolctl's own Pyodide shared-library
+# introspection whenever a model is fit, including this notebook's
+# one-split cell -- same narrow, message-and-category-scoped filter,
+# applied consistently rather than reinventing it per notebook.
 warnings.filterwarnings(
     "ignore",
     message=r"JsProxy\\.as_object_map\\(\\) is deprecated",
@@ -287,14 +288,12 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 
 
 # Question content lives here, not in the visible cell that displays it: a
-# visible call like show_question("q-inner-loop-data") never prints or
-# displays a correct_index/correct_indices value (WP48's "Multiple-choice
-# answer visibility" requirement -- see
-# scripts/generate_exercise_08_notebook.py for the pattern this mirrors).
-# This is visual concealment, not secure assessment: the hidden cell is
-# fully expandable, and a downloaded, fully offline, editable notebook must
-# contain enough information to check an answer locally, so a technically
-# curious student can always recover it from source or the running kernel.
+# visible call like show_question("q-inner-loop-data") never prints or displays
+# a correct_index/correct_indices value. This is visual concealment, not
+# secure assessment: the hidden cell is fully expandable, and a downloaded,
+# fully offline, editable notebook must contain enough information to check an
+# answer locally, so a technically curious student can always recover it from
+# source or the running kernel.
 _QUESTIONS = {
     "q-single-split-vs-cv-stability": dict(
         kind="single",

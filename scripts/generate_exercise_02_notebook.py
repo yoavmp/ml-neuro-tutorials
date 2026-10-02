@@ -198,7 +198,7 @@ import warnings
 # warnings in general) keeps output clean without masking a real problem.
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
 
-# WP48: this notebook's pinned browser kernel's own threadpoolctl
+# This notebook's pinned browser kernel's own threadpoolctl
 # (imported internally by scikit-learn, not by this notebook) emits a
 # RuntimeWarning every time a model is fit under Pyodide -- reproduced live
 # in this exact browser build, in Section 7/8's figure cells, as:
@@ -283,7 +283,10 @@ _QUESTION_CSS = """
     width: 100% !important;
     max-width: 100% !important;
     white-space: normal !important;
+    height: auto !important;
     box-sizing: border-box;
+    padding: 3px 0;
+    line-height: 1.3;
 }
 </style>
 """
@@ -341,14 +344,12 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 
 
 # Question content lives here, not in the visible cell that displays it: a
-# visible call like show_question("q-knn-complexity") never prints or
-# displays a correct_index/correct_indices value (WP48's "Multiple-choice
-# answer visibility" requirement -- see scripts/generate_exercise_08_notebook.py
-# for the pattern this mirrors). This is visual concealment, not secure
-# assessment: the hidden cell is fully expandable, and a downloaded, fully
-# offline, editable notebook must contain enough information to check an
-# answer locally, so a technically curious student can always recover it
-# from source or the running kernel.
+# visible call like show_question("q-knn-complexity") never prints or displays
+# a correct_index/correct_indices value. This is visual concealment, not
+# secure assessment: the hidden cell is fully expandable, and a downloaded,
+# fully offline, editable notebook must contain enough information to check an
+# answer locally, so a technically curious student can always recover it from
+# source or the running kernel.
 _QUESTIONS = {
     "q-test-target-use": dict(
         kind="multi",

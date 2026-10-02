@@ -14,7 +14,10 @@ chapters:
       - file: chapters/chapter_06/exercise_06
       - file: chapters/chapter_07/exercise_07
       - file: chapters/chapter_08/exercise_08
-      - file: chapters/chapter_09/exercise_09
-      - file: chapters/chapter_10/exercise_10
-      - file: chapters/chapter_11/exercise_11
-      - file: chapters/chapter_12/exercise_12
+      # WP49: Exercises 9-12 are intentionally excluded from this release's
+      # public toctree -- their JupyterLite-native migration hasn't started
+      # and their legacy iframe-embedded notebook experience should not be
+      # published alongside the Exercises 1-8 Lite hub. Source and git
+      # history for book/chapters/chapter_{09,10,11,12} are untouched and
+      # stay available for local inspection/redesign (see
+      # WPs/reports/WP49_REPORT.md for the local-viewing procedure).

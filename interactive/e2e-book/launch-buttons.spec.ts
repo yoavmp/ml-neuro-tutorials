@@ -15,84 +15,18 @@ import { expect, test } from "@playwright/test";
 // book/_static/launch-buttons.js and the "gets no top-bar Colab button"
 // tests below) rather than pointed at a URL that would stop working once
 // the repository goes private.
-
-const REPO = "yoavmp/ml-neuro-tutorials";
-const CHAPTERS = [
-  {
-    // WP34 §6: Exercise 9 is now a complete notebook, with its own portable
-    // notebook and Colab button.
-    name: "Chapter 9",
-    url: "/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html",
-    portable: "book/downloads/chapter_09/exercise_09_portable.ipynb",
-  },
-  {
-    // WP38 §6: Exercise 10 is now a complete notebook, with its own portable
-    // notebook and Colab button.
-    name: "Chapter 10",
-    url: "/ml-neuro-tutorials/chapters/chapter_10/exercise_10.html",
-    portable: "book/downloads/chapter_10/exercise_10_portable.ipynb",
-  },
-];
-
-for (const { name, url, portable } of CHAPTERS) {
-  test.describe(`${name} — Colab / download destinations`, () => {
-    test("opening admonition links to this chapter's own portable notebook (Colab + raw)", async ({
-      page,
-    }) => {
-      await page.goto(url);
-      const colabHref = `https://colab.research.google.com/github/${REPO}/blob/main/${portable}`;
-      const rawHref = `https://raw.githubusercontent.com/${REPO}/main/${portable}`;
-
-      // Scope to the opening admonition's own links: the article-header Colab
-      // button (tested separately below) targets the same URL, so an
-      // unscoped page-wide locator would double-count it.
-      const admonition = page.locator(".bd-article .admonition.how-to-use");
-      const colabLink = admonition.locator(`a[href="${colabHref}"]`);
-      const rawLink = admonition.locator(`a[href="${rawHref}"]`);
-      await expect(colabLink).toHaveCount(1);
-      await expect(rawLink).toHaveCount(1);
-
-      // never the OTHER chapter's, and never a canonical/source path
-      for (const other of CHAPTERS) {
-        if (other.portable === portable) continue;
-        await expect(page.locator(`a[href*="${other.portable}"]`)).toHaveCount(0);
-      }
-    });
-
-    test("article-header Colab button targets this chapter's portable notebook", async ({
-      page,
-    }) => {
-      await page.goto(url);
-      const button = page.locator('[data-testid="colab-launch-button"]');
-      await expect(button).toBeVisible();
-      await expect(button).toHaveAttribute(
-        "href",
-        `https://colab.research.google.com/github/${REPO}/blob/main/${portable}`,
-      );
-      await expect(button).toHaveAttribute("target", "_blank");
-    });
-
-    test("the theme's own download-.ipynb control is still present", async ({ page }) => {
-      await page.goto(url);
-      const download = page.locator(".dropdown-download-buttons");
-      await expect(download).toHaveCount(1);
-    });
-  });
-}
+//
+// WP49: the former Chapter 9/Chapter 10 admonition-link cases, and the
+// Exercise 11 placeholder case, are removed here (not just skipped):
+// Exercises 9-12 are intentionally excluded from book/_toc.yml for this
+// release, so chapters/chapter_{09,10,11,12}/*.html no longer exist in the
+// built book at all. Their source is untouched for a future redesign; see
+// WPs/reports/WP49_REPORT.md.
 
 test("a page with no portable-notebook mapping (Introduction) gets no Colab button", async ({
   page,
 }) => {
   await page.goto("/ml-neuro-tutorials/intro.html");
-  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
-});
-
-// WP38 §6: Exercises 11-12 remain placeholders after WP38 (Exercise 10 is now
-// a complete notebook -- see the Chapter 10 case in CHAPTERS above). This
-// replaces the earlier stale assertion (WP34 §6) that Exercise 10 had no
-// Colab button.
-test("a placeholder exercise page (Exercise 11) gets no Colab button", async ({ page }) => {
-  await page.goto("/ml-neuro-tutorials/chapters/chapter_11/exercise_11.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });
 

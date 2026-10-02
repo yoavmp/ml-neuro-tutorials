@@ -1,11 +1,10 @@
 """Offline schema/consistency tests for book/config/exercise_manifest.json.
 
 WP41 section 4.3/12: one machine-readable manifest for Exercises 1-12, with
-Exercises 1-2 marked migrated (WP41/WP42) and unique routes/paths across
-entries. Exercise 3's JupyterLite migration is built (WP44) but deliberately
-kept migrationState=legacy pending real-Colab acceptance -- see
-book/config/exercise_manifest.json's own $comment and
-WPs/reports/WP44_REPORT.md.
+unique routes/paths across entries. WP49 deploys Exercises 1-8 (migrated)
+to production; Exercises 9-12 stay legacy and are excluded from
+book/_toc.yml for this release -- see book/config/exercise_manifest.json's
+own $comment and WPs/reports/WP49_REPORT.md.
 
 Run:
     .venv/bin/python -m unittest discover -s tests -p 'test_exercise_manifest.py'
@@ -52,12 +51,12 @@ class ExerciseManifest(unittest.TestCase):
         for e in self.exercises:
             self.assertEqual(set(e.keys()), REQUIRED_FIELDS, e)
 
-    def test_only_exercises_1_and_2_are_migrated(self):
-        # Exercise 3's migration is built and locally verified (WP44) but
-        # stays legacy here until the real-Colab acceptance gate passes --
+    def test_only_exercises_1_through_8_are_migrated(self):
+        # WP49: Exercises 1-8 are deployed to production; Exercises 9-12
+        # stay legacy (and excluded from book/_toc.yml for this release) --
         # see book/config/exercise_manifest.json's own $comment.
         migrated = [e["number"] for e in self.exercises if e["migrationState"] == "migrated"]
-        self.assertEqual(migrated, [1, 2])
+        self.assertEqual(migrated, [1, 2, 3, 4, 5, 6, 7, 8])
         for e in self.exercises:
             self.assertIn(e["migrationState"], {"migrated", "legacy"})
 

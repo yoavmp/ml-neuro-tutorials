@@ -189,6 +189,15 @@ class StudentTemplateStructure(unittest.TestCase):
             self.assertIn(f'"{qid}"', source)
         self.assertIn("def show_question(question_id):", source)
 
+    def test_question_radio_labels_do_not_clip_wrapped_rows(self):
+        # WP49: applying WP48 E.3's fix (originally Exercise-4-only) to the
+        # identical duplicated CSS block here too -- a long option that wraps
+        # to two lines must not overlap the option below it, since the
+        # ipywidgets default fixes each radio label's row height to one line
+        # unless explicitly overridden.
+        self.assertIn(".widget-radio-box label", self.code)
+        self.assertIn("height: auto !important", self.code)
+
     def test_question_widgets_use_full_width_wrap_css(self):
         self.assertIn("checked-question", self.code)
         self.assertIn("white-space: normal", self.code)

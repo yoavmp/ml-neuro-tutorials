@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. Exercises 1-2 are migrated/active. Exercises 3-8's JupyterLite migrations are built and locally verified (see feature/wp44-colab-portability-exercise-3, WPs/reports/WP44_REPORT.md; feature/wp45-active-exercises-4-and-5, WPs/reports/WP45_REPORT.md; feature/wp46-active-exercises-6-and-7, WPs/reports/WP46_REPORT.md; feature/wp47-active-exercise-8-unsupervised-learning, WPs/reports/WP47_REPORT.md) but are deliberately kept migrationState=legacy here pending the real-Colab acceptance gate (WP41_MAINTAINER_GUIDE.md section 11) -- flip each to migrated only after that gate passes for that exercise. Every other entry keeps its existing legacy static Jupyter Book page untouched.",
+  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. WP49 deploys Exercises 1-8's JupyterLite migrations to production (see feature/wp44-colab-portability-exercise-3, WPs/reports/WP44_REPORT.md; feature/wp45-active-exercises-4-and-5, WPs/reports/WP45_REPORT.md; feature/wp46-active-exercises-6-and-7, WPs/reports/WP46_REPORT.md; feature/wp47-active-exercise-8-unsupervised-learning, WPs/reports/WP47_REPORT.md; WPs/reports/WP49_REPORT.md) with the author's explicit authorization while real-Colab acceptance of the revised notebooks remains separately pending -- migrationState=migrated here reflects what is actually published, not a claim that the Colab gate (WP41_MAINTAINER_GUIDE.md section 11) has passed. Exercises 9-12 are intentionally excluded from book/_toc.yml for this release (their source and git history are preserved for local inspection/redesign) and keep migrationState=legacy here unchanged.",
   "commonPackages": ["numpy", "pandas", "scikit-learn", "matplotlib", "ipywidgets"],
   "exercises": [
     {
@@ -40,78 +40,101 @@
     {
       "number": 3,
       "title": "Classification and Metrics",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_03/exercise_03.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_03.ipynb",
+      "browserWorkingCopyName": "exercise_03.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_03.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json",
+        "book/lite/files/data/abide_age_brain_demographics.csv",
+        "book/lite/files/data/abide_age_brain_demographics.manifest.json"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_03/exercise_03_portable.ipynb"
     },
     {
       "number": 4,
       "title": "Validation and Cross-Validation",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_04/exercise_04.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_04.ipynb",
+      "browserWorkingCopyName": "exercise_04.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_04.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json",
+        "book/lite/files/data/exercise_04_nested_cv_diagram.png"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_04/exercise_04_portable.ipynb"
     },
     {
       "number": 5,
       "title": "Regularization and Feature Selection",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_05/exercise_05.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_05.ipynb",
+      "browserWorkingCopyName": "exercise_05.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_05.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_05/exercise_05_portable.ipynb"
     },
     {
       "number": 6,
       "title": "Decision Trees",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_06/exercise_06.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_06.ipynb",
+      "browserWorkingCopyName": "exercise_06.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_06.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_06/exercise_06_portable.ipynb"
     },
     {
       "number": 7,
       "title": "Boosting and Gradient Boosting",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_07/exercise_07.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_07.ipynb",
+      "browserWorkingCopyName": "exercise_07.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_07.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_07/exercise_07_portable.ipynb"
     },
     {
       "number": 8,
       "title": "Unsupervised Learning",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_08/exercise_08.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_08.ipynb",
+      "browserWorkingCopyName": "exercise_08.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_08.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json",
+        "book/lite/files/data/abide_age_brain_demographics.csv",
+        "book/lite/files/data/abide_age_brain_demographics.manifest.json"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_08/exercise_08_portable.ipynb"
     },

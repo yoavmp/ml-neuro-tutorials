@@ -7,6 +7,20 @@ const PORT = 4174;
 
 export default defineConfig({
   testDir: "./e2e-book",
+  // WP49: Exercises 9-12 are intentionally excluded from book/_toc.yml for
+  // this release (their JupyterLite-native migration hasn't started and
+  // their legacy iframe-embedded notebook experience should not be
+  // published alongside the Exercises 1-8 Lite hub) -- chapters 9 and 10
+  // no longer exist in the built book, so these four specs, which exist
+  // only to exercise those now-unpublished pages, would fail on a 404, not
+  // on a genuine regression. They are excluded here, not deleted: their
+  // source stays for whenever Exercises 9-12 are migrated and republished.
+  testIgnore: [
+    "**/chapter09.spec.ts",
+    "**/chapter09-dark-mode.spec.ts",
+    "**/chapter10.spec.ts",
+    "**/iframe-height-contract.spec.ts",
+  ],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
