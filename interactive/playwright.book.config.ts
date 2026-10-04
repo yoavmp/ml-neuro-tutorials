@@ -24,6 +24,21 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
+  // WP49: the first-ever full combined run across all of Exercises 1-8's
+  // lite specs (WP46/47 each deliberately deferred this exact run --
+  // "once every notebook is migrated," now true) reproduced real
+  // cross-test CPU contention under full default parallelism: 8 failures,
+  // every one in Exercises 1/4/6/7's heaviest tests (each a genuine
+  // scikit-learn fit running inside Pyodide's WASM sandbox), and every one
+  // of those 8 passed cleanly once rerun serialized (`--workers=1`) with
+  // zero other tests running concurrently. This is the same contention
+  // this file's own screenshot/video/trace history already documents for
+  // a smaller exercise count (comment below) -- now reproducing more
+  // broadly simply because there are more Pyodide-heavy files to contend
+  // with. CI's runner has fewer cores than most local dev machines, so it
+  // is more exposed to this, not less. Capped to 1 worker on CI only --
+  // slower, not flakier; local runs stay fully parallel for fast iteration.
+  ...(process.env.CI ? { workers: 1 } : {}),
   reporter: [["list"]],
   use: {
     baseURL: `http://localhost:${PORT}`,
