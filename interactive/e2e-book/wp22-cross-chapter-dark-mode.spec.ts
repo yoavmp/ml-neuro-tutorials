@@ -258,10 +258,13 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
   // Plotly `_fullData`/`_fullLayout` color-snapshot technique has no
   // surface left to check on that page -- the same reasoning WP44 already
   // applied to Exercise 3 below. This replacement checks the JupyterLite
-  // app's own theme instead, and additionally confirms the native
-  // nested-cross-validation split diagram (raw HTML in a markdown cell, not
-  // a widget iframe) still picks up the dark palette via its `--ml-ncv-*`
-  // custom properties.
+  // app's own theme instead, and additionally confirms the nested-
+  // cross-validation diagram still renders after switching themes. WP48
+  // replaced the original raw-HTML diagram (whose `--ml-ncv-*` custom
+  // properties this test used to check) with a rendered PNG embedded as a
+  // notebook attachment (see scripts/render_exercise_04_nested_cv_diagram.py)
+  // -- a plain raster image with its own opaque white background, legible
+  // in both themes by construction, with nothing left to toggle.
   test("Exercise 4 — JupyterLite notebook: a rendered figure and the nested-CV diagram survive switching to the app's own dark theme", async ({
     page,
   }) => {
@@ -294,20 +297,11 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     expect(el).toBe(true);
     await page.waitForTimeout(600);
 
-    // Unlike the built Book page (chapters/chapter_04/exercise_04.html,
-    // which loads book/_static/custom.css and toggles its dark palette via
-    // the Sphinx theme's own `html[data-theme="dark"]` selector), the
-    // JupyterLite app is a separate build that never loads that stylesheet
-    // at all -- confirmed live: `--ml-ncv-outer-train` reads back empty
-    // here regardless of the JupyterLab theme, so the diagram always
-    // renders its inline fallback colors (chosen for a light background).
-    // This is a real, found-live limitation (the diagram does not adapt to
-    // JupyterLab's own dark theme the way it adapts to the book's), noted
-    // in the WP45 report rather than asserted as if it were the book
-    // page's own dark-mode contract; what this test can honestly confirm
-    // in this context is that the diagram still renders, visibly, with no
-    // error, after switching themes.
-    const diagram = page.locator(".ml-ncv-diagram");
+    // The diagram is a plain <img> (markdown attachment), not HTML/CSS that
+    // could fail to adapt to JupyterLab's dark theme the way the old
+    // version did -- what this test confirms is that the image still
+    // renders, visibly, with no error, after switching themes.
+    const diagram = page.locator('img[alt^="Nested cross-validation diagram"]');
     await expect(diagram).toBeVisible();
   });
 });

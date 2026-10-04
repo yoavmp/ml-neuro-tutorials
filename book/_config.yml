@@ -49,6 +49,18 @@ html:
 # scripts/generate_exercise_02_transition_page.py.)
 exclude_patterns:
   - downloads/*
+  # WP49: Exercises 9-12 are intentionally excluded from this release's
+  # public hub (scoped to Exercises 1-8) -- their JupyterLite-native
+  # migration hasn't started and their legacy iframe-embedded notebook
+  # experience (9-10) / placeholder stub (11-12) should not be published,
+  # not even unlinked-but-reachable-by-direct-URL. Excluding them from the
+  # Sphinx source set entirely (not just book/_toc.yml's nav) means no HTML
+  # is written for them at all. Source and git history are untouched for a
+  # future migration; see WPs/reports/WP49_REPORT.md.
+  - chapters/chapter_09/*
+  - chapters/chapter_10/*
+  - chapters/chapter_11/*
+  - chapters/chapter_12/*
   # book/lite/ is JupyterLite source material (config, notebooks copied
   # verbatim into the browser app, and a labextension with its own
   # node_modules/build tree) -- not Jupyter Book content. jupyter-lite

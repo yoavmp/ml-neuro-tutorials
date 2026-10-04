@@ -127,6 +127,18 @@ test.describe("Exercise 7 — JupyterLite notebook, untouched template", () => {
   });
 
   test("the Build a Boosted Model activity advances stages and the stage-0 status is shown", async ({ page }) => {
+    // WP49: found live (both a full-suite run and a standalone rerun of
+    // just this file) that the fixed 1_500ms post-click wait + 5_000ms
+    // assertion timeout this test used to budget is occasionally too
+    // tight right after the preceding 180s of heavy Section 4
+    // (GradientBoostingRegressor sweep) computation -- a diagnostic run
+    // with full console/crash/navigation instrumentation confirmed the
+    // widget itself works correctly (no crash, no reload, no error), just
+    // sometimes taking several seconds longer than this test budgeted to
+    // settle (~12s observed once, against JupyterLite's own main-thread/GC
+    // pressure from the computation just finished, not a functional
+    // defect). Widened margins here, same assertion content.
+    test.setTimeout(300_000);
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
@@ -134,16 +146,19 @@ test.describe("Exercise 7 — JupyterLite notebook, untouched template", () => {
 
     const widget = await scrollToVisible(page, "Next Step", ".jp-CodeCell");
     await expect(page.locator("body")).toContainText("Stage 0: the model predicts the training-target mean", {
-      timeout: 5_000,
+      timeout: 20_000,
     });
     await widget.locator("button", { hasText: "Next Step" }).click();
-    await page.waitForTimeout(1_500);
-    await expect(page.locator("body")).toContainText("Stage 1: a new shallow tree was fitted", { timeout: 5_000 });
+    await page.waitForTimeout(3_000);
+    await expect(page.locator("body")).toContainText("Stage 1: a new shallow tree was fitted", { timeout: 20_000 });
   });
 
   test("the Explore the Boosting Parameters widget changes its metrics line when depth changes", async ({
     page,
   }) => {
+    // WP49: same widened-margin fix as the stage-advance test above, and
+    // for the same found-live reason (not a functional defect).
+    test.setTimeout(300_000);
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
@@ -151,13 +166,13 @@ test.describe("Exercise 7 — JupyterLite notebook, untouched template", () => {
 
     const widget = await scrollToVisible(page, "Tree depth:", ".jp-CodeCell");
     await expect(page.locator("body")).toContainText("learning rate = 0.1   depth = 2   trees = 100", {
-      timeout: 5_000,
+      timeout: 20_000,
     });
     // Plain-int Dropdown options: select by fixed position, not by value
     // (WP44/45 documented ipywidgets.Dropdown value/HTML-option mismatch).
     await widget.locator("select").nth(1).selectOption({ index: 2 });
     await page.waitForTimeout(3_000);
-    await expect(page.locator("body")).toContainText("depth = 3", { timeout: 10_000 });
+    await expect(page.locator("body")).toContainText("depth = 3", { timeout: 20_000 });
   });
 
   test("stays usable at a 390px viewport", async ({ page }) => {
