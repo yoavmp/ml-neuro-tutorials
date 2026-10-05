@@ -20,7 +20,12 @@ import path from "node:path";
 // cross-validation MSE and nested-CV result and exercises every native
 // widget and checked question.
 
-test.setTimeout(180_000);
+// WP49: bumped from 180_000 -- waitForKernelIdle's own up-to-600_000ms
+// budget needs headroom beyond the old fixed-wait assumption this default
+// was sized for (found live on CI: this file's teacher-completed test
+// failed with the old fixed 140_000ms wait, even running completely
+// serialized with nothing else contending).
+test.setTimeout(300_000);
 
 const NOTEBOOK_URL = "/lite/notebooks/index.html?path=exercise_04.ipynb";
 
@@ -47,10 +52,26 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
+// WP49: found live on CI -- this file's teacher-completed test failed
+// with the old fixed 140_000ms wait, even running completely isolated
+// (nothing else contending). `.jp-Notebook-ExecutionIndicator[data-status]`
+// is JupyterLab's own semantic kernel-status attribute (unknown -> busy ->
+// idle), confirmed live by watching it transition across a real Run All
+// Cells -- polling for "idle" is environment-independent, unlike any
+// fixed duration (see exercise-07-lite.spec.ts for the full writeup).
+async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
+  await page.waitForFunction(
+    () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+    undefined,
+    { timeout: timeoutMs, polling: 1_000 },
+  );
+}
+
 async function runAllCells(page: Page) {
   await page.click("text=Run");
   await page.waitForTimeout(200);
   await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+  await waitForKernelIdle(page);
 }
 
 async function fillBlank(page: Page, anchorText: string, solution: string) {
@@ -80,7 +101,6 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     await scrollWindowed(page, 0.05);
     await expect(page.locator("body")).toContainText("1004 participants, 360 brain predictors, target = age", {
@@ -101,7 +121,6 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     expect(await page.locator(".jp-mod-error").count()).toBe(0);
 
@@ -118,7 +137,6 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     const widget = await scrollToVisible(page, "sample size:", ".jp-CodeCell");
     await expect(page.locator("body")).toContainText("sample size = 100   seed = 0", { timeout: 5_000 });
@@ -161,11 +179,16 @@ test.describe("Exercise 4 — JupyterLite notebook, teacher-completed path", () 
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
+    // WP49: found live -- WP45's original "# cv_fold_mse = ..." starter
+    // comment was rewritten by WP48 (section E.2) into a multi-step
+    // guidance block that never contains that literal text any more;
+    // this anchor had gone stale and this test had not actually been run
+    // since (WP48's own report used ad-hoc scripts, not this file).
+    // "Required names: cv_fold_mse" is still unique and present.
     await fillBlank(
       page,
-      "# cv_fold_mse = ...",
+      "Required names: cv_fold_mse",
       "cv_pipe = make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=K_EXAMPLE))\n" +
         "cv_folds = KFold(n_splits=5, shuffle=True, random_state=0)\n" +
         "cv_scores = cross_validate(cv_pipe, X, y, cv=cv_folds, scoring=('neg_mean_squared_error', 'r2'))\n" +
@@ -230,7 +253,7 @@ test.describe("Exercise 4 — JupyterLite notebook, teacher-completed path", () 
     const savePath = path.join(downloadDir, "exercise_04.ipynb");
     await download.saveAs(savePath);
     const downloaded = fs.readFileSync(savePath, "utf8");
-    expect(downloaded).not.toContain('"# YOUR CODE HERE\\n# cv_fold_mse');
+    expect(downloaded).not.toContain('"# YOUR CODE HERE\\n# 1. create the model/pipeline');
     expect(downloaded).toContain("cv_pipe = make_pipeline");
   });
 });

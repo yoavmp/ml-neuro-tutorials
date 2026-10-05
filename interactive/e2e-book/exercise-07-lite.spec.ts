@@ -17,7 +17,10 @@ import path from "node:path";
 // blank's GridSearchCV fit (12 candidates x 5 folds) is the slowest step in
 // this notebook; this file budgets extra time for it accordingly.
 
-test.setTimeout(240_000);
+// WP49: bumped from 240_000 -- waitForKernelIdle's own up-to-600_000ms
+// budget needs headroom beyond the old fixed-wait assumption this default
+// was sized for.
+test.setTimeout(300_000);
 
 const NOTEBOOK_URL = "/lite/notebooks/index.html?path=exercise_07.ipynb";
 
@@ -44,10 +47,33 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
+// WP49: found live on CI -- this notebook's heaviest cells (Section 4's
+// sweep, Section 6's GridSearchCV pipeline in the teacher-completed path)
+// genuinely do not always finish within this file's old fixed wait
+// (180_000ms): one local diagnostic run (console/pageerror/crash
+// instrumentation, no other test running) measured JupyterLab's own
+// kernel-busy indicator going idle at 190s, past the fixed budget, and a
+// real CI run with the fixed wait still in place failed every one of
+// this file's own tests that depend on it. `.jp-Notebook-
+// ExecutionIndicator[data-status]` is JupyterLab's own semantic kernel-
+// status attribute (unknown -> busy -> idle), not a guessed selector --
+// confirmed live by watching it transition across a real Run All Cells.
+// Polling for "idle" is environment-independent (works the same whether
+// the machine is fast or slow, contended or not), unlike any fixed
+// duration.
+async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
+  await page.waitForFunction(
+    () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+    undefined,
+    { timeout: timeoutMs, polling: 1_000 },
+  );
+}
+
 async function runAllCells(page: Page) {
   await page.click("text=Run");
   await page.waitForTimeout(200);
   await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+  await waitForKernelIdle(page);
 }
 
 async function fillBlank(page: Page, anchorText: string, solution: string) {
@@ -90,7 +116,6 @@ test.describe("Exercise 7 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(180_000);
 
     await scrollWindowed(page, 0.05);
     await expect(page.locator("body")).toContainText("n_train (development) = 753", { timeout: 5_000 });
@@ -109,7 +134,6 @@ test.describe("Exercise 7 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(180_000);
 
     expect(await page.locator(".jp-mod-error").count()).toBe(0);
 
@@ -142,7 +166,6 @@ test.describe("Exercise 7 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(180_000);
 
     const widget = await scrollToVisible(page, "Next Step", ".jp-CodeCell");
     await expect(page.locator("body")).toContainText("Stage 0: the model predicts the training-target mean", {
@@ -162,7 +185,6 @@ test.describe("Exercise 7 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(180_000);
 
     const widget = await scrollToVisible(page, "Tree depth:", ".jp-CodeCell");
     await expect(page.locator("body")).toContainText("learning rate = 0.1   depth = 2   trees = 100", {
@@ -209,7 +231,6 @@ test.describe("Exercise 7 — JupyterLite notebook, teacher-completed path", () 
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(180_000);
 
     await fillBlank(
       page,

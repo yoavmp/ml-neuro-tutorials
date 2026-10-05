@@ -174,22 +174,26 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
   test("Exercise 7 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
     page,
   }) => {
-    // WP49: found live -- this test's own internal wait below
-    // (180_000ms, Exercise 7's heaviest Section 4 sweep needing the
-    // longest of every exercise in this file) exactly equalled its
-    // test.setTimeout, leaving zero time for every step after it
-    // (switching themes, checking for error cells, scrolling, checking
-    // the figure) -- a guaranteed timeout on every run, not a
-    // contention-dependent flake like this file's other exercises (each
-    // of which budgets 140_000-150_000ms of internal wait against the
-    // same 180_000ms test timeout, leaving real slack). Bumped to match.
-    test.setTimeout(240_000);
+    // WP49: this test's own internal wait below used to be a fixed
+    // 180_000ms that exactly equalled its test.setTimeout, leaving zero
+    // time for every step after it -- a guaranteed timeout on every run.
+    // Replaced the fixed wait with a poll on JupyterLab's own semantic
+    // kernel-status attribute (unknown -> busy -> idle, confirmed live by
+    // watching it transition across a real Run All Cells), which is
+    // environment-independent rather than a guessed duration -- see
+    // exercise-07-lite.spec.ts's own `waitForKernelIdle` for the full
+    // writeup. `test.setTimeout` widened accordingly.
+    test.setTimeout(300_000);
     await page.goto("/lite/notebooks/index.html?path=exercise_07.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await page.waitForTimeout(180_000);
+    await page.waitForFunction(
+      () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+      undefined,
+      { timeout: 240_000, polling: 1_000 },
+    );
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);
