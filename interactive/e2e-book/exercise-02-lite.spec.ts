@@ -29,7 +29,10 @@ import path from "node:path";
 //     has been observed to need up to 140s in practice (not just download
 //     time -- Section 8's own KNN refits + matplotlib rendering add to it).
 
-test.setTimeout(180_000);
+// WP49: bumped from 180_000 -- waitForKernelIdle's own up-to-
+// 600_000ms budget needs headroom beyond the old fixed-wait
+// assumption this default was sized for.
+test.setTimeout(300_000);
 
 const NOTEBOOK_URL = "/lite/notebooks/index.html?path=exercise_02.ipynb";
 
@@ -63,10 +66,27 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
+// WP49: replaced this file's old fixed 140_000ms wait with a poll on
+// JupyterLab's own semantic kernel-status attribute (unknown -> busy ->
+// idle, confirmed live by watching it transition across a real Run All
+// Cells) -- environment-independent, unlike a fixed duration. Found live
+// (exercise-04/06/07-lite.spec.ts, WP49): a fixed wait that is usually
+// enough can still leave the kernel genuinely busy when a test
+// interacts right after, which can trigger a JupyterLite app-level
+// reload. See exercise-07-lite.spec.ts for the full writeup.
+async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
+  await page.waitForFunction(
+    () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+    undefined,
+    { timeout: timeoutMs, polling: 1_000 },
+  );
+}
+
 async function runAllCells(page: Page) {
   await page.click("text=Run");
   await page.waitForTimeout(200);
   await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+  await waitForKernelIdle(page);
 }
 
 test.describe("Exercise 2 — JupyterLite notebook", () => {
@@ -119,7 +139,6 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   test("Section 8 slider is operable and updates the figure", async ({ page }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     // Sweep for the slider by its own handle rather than a fixed scroll
     // fraction: this notebook's exact cell heights (and so which fraction
@@ -143,7 +162,6 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   test("a checked question grades correctly", async ({ page }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     await scrollWindowed(page, 0.12);
     // Every checked question stays mounted once rendered, and more than one
@@ -169,7 +187,6 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
     await context.grantPermissions?.([]);
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     const target = await scrollToVisible(page, "knn_model = ...");
     const editor = target.locator(".cm-content").first();
@@ -227,7 +244,6 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     const target = await scrollToVisible(
       page,
@@ -267,7 +283,6 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   test("reset restores the template and Back returns to Contents", async ({ page }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     await page.click("text=Reset from course template");
     await page.waitForTimeout(800);
@@ -333,7 +348,6 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
   }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     const target = await scrollToVisible(
       page,

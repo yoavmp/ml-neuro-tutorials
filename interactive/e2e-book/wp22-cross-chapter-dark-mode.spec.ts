@@ -1,4 +1,21 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+// WP49: replaced every fixed 140_000/150_000ms post-"Run All Cells" wait
+// in this file with a poll on JupyterLab's own semantic kernel-status
+// attribute (unknown -> busy -> idle, confirmed live by watching it
+// transition across a real Run All Cells) -- environment-independent,
+// unlike a fixed duration. Found live (exercise-04/06/07-lite.spec.ts):
+// a fixed wait that is usually enough can still leave the kernel
+// genuinely busy when a test interacts right after, which can trigger a
+// JupyterLite app-level reload. See exercise-07-lite.spec.ts for the full
+// writeup.
+async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
+  await page.waitForFunction(
+    () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+    undefined,
+    { timeout: timeoutMs, polling: 1_000 },
+  );
+}
 
 // WP22 addendum: `chapter01-dark-mode.spec.ts` covers Exercise 1 (histogram,
 // correlation scatter) end to end, including the full light/dark/reload
@@ -47,13 +64,13 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     // Overrides this file's 60s describe-level timeout: a cold JupyterLite
     // start (Pyodide + the scientific stack) can take up to ~140s, the same
     // budget exercise-02-lite.spec.ts uses for this same notebook.
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
     await page.goto("/lite/notebooks/index.html?path=exercise_02.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await page.waitForTimeout(140_000);
+    await waitForKernelIdle(page);
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);
@@ -88,13 +105,13 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
   test("Exercise 5 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
     page,
   }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
     await page.goto("/lite/notebooks/index.html?path=exercise_05.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await page.waitForTimeout(140_000);
+    await waitForKernelIdle(page);
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);
@@ -133,13 +150,13 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
   test("Exercise 6 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
     page,
   }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
     await page.goto("/lite/notebooks/index.html?path=exercise_06.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await page.waitForTimeout(150_000);
+    await waitForKernelIdle(page);
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);
@@ -233,13 +250,13 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
   test("Exercise 3 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
     page,
   }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
     await page.goto("/lite/notebooks/index.html?path=exercise_03.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await page.waitForTimeout(140_000);
+    await waitForKernelIdle(page);
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);
@@ -281,13 +298,13 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
   test("Exercise 4 — JupyterLite notebook: a rendered figure and the nested-CV diagram survive switching to the app's own dark theme", async ({
     page,
   }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
     await page.goto("/lite/notebooks/index.html?path=exercise_04.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await page.waitForTimeout(140_000);
+    await waitForKernelIdle(page);
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);

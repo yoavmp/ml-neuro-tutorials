@@ -17,7 +17,10 @@ import path from "node:path";
 // gracefully to "Not complete yet" instead, so "Run All Cells" on the
 // UNTOUCHED template produces zero error cells at all.
 
-test.setTimeout(180_000);
+// WP49: bumped from 180_000 -- waitForKernelIdle's own up-to-
+// 600_000ms budget needs headroom beyond the old fixed-wait
+// assumption this default was sized for.
+test.setTimeout(300_000);
 
 const NOTEBOOK_URL = "/lite/notebooks/index.html?path=exercise_05.ipynb";
 
@@ -44,10 +47,27 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
+// WP49: replaced this file's old fixed 140_000ms wait with a poll on
+// JupyterLab's own semantic kernel-status attribute (unknown -> busy ->
+// idle, confirmed live by watching it transition across a real Run All
+// Cells) -- environment-independent, unlike a fixed duration. Found live
+// (exercise-04/06/07-lite.spec.ts, WP49): a fixed wait that is usually
+// enough can still leave the kernel genuinely busy when a test
+// interacts right after, which can trigger a JupyterLite app-level
+// reload. See exercise-07-lite.spec.ts for the full writeup.
+async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
+  await page.waitForFunction(
+    () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+    undefined,
+    { timeout: timeoutMs, polling: 1_000 },
+  );
+}
+
 async function runAllCells(page: Page) {
   await page.click("text=Run");
   await page.waitForTimeout(200);
   await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+  await waitForKernelIdle(page);
 }
 
 async function fillBlank(page: Page, anchorText: string, solution: string) {
@@ -77,7 +97,6 @@ test.describe("Exercise 5 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     await scrollWindowed(page, 0.03);
     await expect(page.locator("body")).toContainText("360 predictors, e.g.", { timeout: 5_000 });
@@ -94,7 +113,6 @@ test.describe("Exercise 5 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     expect(await page.locator(".jp-mod-error").count()).toBe(0);
 
@@ -118,7 +136,6 @@ test.describe("Exercise 5 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     const widget = await scrollToVisible(page, "Model A:", ".jp-CodeCell");
     const before = await widget.locator(".jp-OutputArea-output").first().innerText();
@@ -172,7 +189,6 @@ test.describe("Exercise 5 — JupyterLite notebook, teacher-completed path", () 
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     await fillBlank(
       page,

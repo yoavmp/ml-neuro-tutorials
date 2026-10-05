@@ -19,7 +19,10 @@ import path from "node:path";
 // in the blanks) that reproduces the established accuracy/AUC and exercises
 // every native widget and checked question.
 
-test.setTimeout(180_000);
+// WP49: bumped from 180_000 -- waitForKernelIdle's own up-to-
+// 600_000ms budget needs headroom beyond the old fixed-wait
+// assumption this default was sized for.
+test.setTimeout(300_000);
 
 const NOTEBOOK_URL = "/lite/notebooks/index.html?path=exercise_03.ipynb";
 
@@ -46,10 +49,27 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
+// WP49: replaced this file's old fixed 140_000ms wait with a poll on
+// JupyterLab's own semantic kernel-status attribute (unknown -> busy ->
+// idle, confirmed live by watching it transition across a real Run All
+// Cells) -- environment-independent, unlike a fixed duration. Found live
+// (exercise-04/06/07-lite.spec.ts, WP49): a fixed wait that is usually
+// enough can still leave the kernel genuinely busy when a test
+// interacts right after, which can trigger a JupyterLite app-level
+// reload. See exercise-07-lite.spec.ts for the full writeup.
+async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
+  await page.waitForFunction(
+    () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+    undefined,
+    { timeout: timeoutMs, polling: 1_000 },
+  );
+}
+
 async function runAllCells(page: Page) {
   await page.click("text=Run");
   await page.waitForTimeout(200);
   await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+  await waitForKernelIdle(page);
 }
 
 
@@ -128,7 +148,6 @@ test.describe("Exercise 3 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     const featuresCheck = await scrollToVisible(page, "define FEATURES above first");
     await expect(featuresCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
@@ -186,7 +205,6 @@ test.describe("Exercise 3 — JupyterLite notebook, teacher-completed path", () 
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     await fillBlank(page, "# FEATURES = ...", 'FEATURES = [c for c in df.columns if c.startswith("fsCT_")]');
     await fillBlank(

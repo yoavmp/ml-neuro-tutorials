@@ -65,10 +65,27 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
+// WP49: replaced this file's old fixed 90_000ms wait with a poll on
+// JupyterLab's own semantic kernel-status attribute (unknown -> busy ->
+// idle, confirmed live by watching it transition across a real Run All
+// Cells) -- environment-independent, unlike a fixed duration. Found live
+// (exercise-04/06/07-lite.spec.ts, WP49): a fixed wait that is usually
+// enough can still leave the kernel genuinely busy when a test
+// interacts right after, which can trigger a JupyterLite app-level
+// reload. See exercise-07-lite.spec.ts for the full writeup.
+async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
+  await page.waitForFunction(
+    () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+    undefined,
+    { timeout: timeoutMs, polling: 1_000 },
+  );
+}
+
 async function runAllCells(page: Page) {
   await page.click("text=Run");
   await page.waitForTimeout(200);
   await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+  await waitForKernelIdle(page);
 }
 
 async function fillBlank(page: Page, anchorText: string, solution: string) {
@@ -100,7 +117,6 @@ test.describe("Exercise 8 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(90_000);
 
     expect(await page.locator(".jp-mod-error").count()).toBe(0);
 
@@ -161,7 +177,6 @@ test.describe("Exercise 8 — JupyterLite notebook, teacher-completed path", () 
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(90_000);
 
     await fillBlank(
       page,
