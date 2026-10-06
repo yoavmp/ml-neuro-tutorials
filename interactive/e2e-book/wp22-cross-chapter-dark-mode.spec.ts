@@ -206,11 +206,7 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await page.waitForFunction(
-      () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
-      undefined,
-      { timeout: 240_000, polling: 1_000 },
-    );
+    await waitForKernelIdle(page);
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);
@@ -250,13 +246,22 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
   test("Exercise 3 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
     page,
   }) => {
-    test.setTimeout(300_000);
+    // WP49: unlike every other exercise in this file, this notebook's
+    // untouched template deliberately halts "Run All Cells" partway
+    // through via a guarded RuntimeError (WP44, by design -- see
+    // exercise-03-lite.spec.ts) -- confirmed live that this leaves
+    // `.jp-Notebook-ExecutionIndicator` stuck at "busy" indefinitely
+    // (it never reaches "idle"), so `waitForKernelIdle` (used elsewhere
+    // in this file) hangs here specifically. Kept this one case's
+    // original fixed wait rather than force the idle-poll mechanism onto
+    // a notebook it does not fit.
+    test.setTimeout(180_000);
     await page.goto("/lite/notebooks/index.html?path=exercise_03.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await waitForKernelIdle(page);
+    await page.waitForTimeout(140_000);
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);
