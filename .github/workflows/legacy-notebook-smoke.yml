@@ -1,0 +1,41 @@
+name: Legacy notebook smoke test (Exercises 9-10)
+
+# WP49: split out of deploy.yml's release gate. Exercises 9-10's portable
+# notebooks are legacy, unpublished content (excluded from book/_toc.yml
+# and book/_config.yml's exclude_patterns as of WP49) -- a transient
+# failure in their own smoke test has no bearing on whether Exercises
+# 1-8's published site is safe to deploy, and must not block that
+# deployment. This workflow keeps that broader check available on demand
+# without gating the release.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/smoke_portable_notebook.py"
+      - "book/downloads/chapter_09/**"
+      - "book/downloads/chapter_10/**"
+
+jobs:
+  smoke-legacy-notebooks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt -r requirements-lite.txt
+
+      - name: Execute Exercise 9's portable notebook outside the repository
+        run: python scripts/smoke_portable_notebook.py --notebook chapter_09
+
+      - name: Execute Exercise 10's portable notebook outside the repository
+        run: python scripts/smoke_portable_notebook.py --notebook chapter_10

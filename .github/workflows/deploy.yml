@@ -123,8 +123,20 @@ jobs:
           path: interactive/test-results
           retention-days: 14
 
-      - name: Execute the portable notebook outside the repository
-        run: python scripts/smoke_portable_notebook.py
+      - name: Execute the portable notebook outside the repository (Exercises 1-8 only)
+        # WP49: smoke_portable_notebook.py's default ("all") also executes
+        # Exercises 9-10's portable notebooks -- legacy, unpublished
+        # content this release's own gate has no reason to depend on (see
+        # book/_toc.yml and book/_config.yml's exclude_patterns). Scoped
+        # to chapter_02, the only Exercise-1-8 notebook this script can
+        # currently smoke-test at all (every other migrated exercise's
+        # portable copy is deliberately excluded from SMOKE for the
+        # documented ipywidgets.Output()/nbclient hang -- see the script's
+        # own module docstring). A separate, non-blocking workflow
+        # (.github/workflows/legacy-notebook-smoke.yml) still runs the
+        # full set, including Exercises 9-10, without gating this
+        # deployment.
+        run: python scripts/smoke_portable_notebook.py --notebook chapter_02
 
       - name: Publish website
         uses: peaceiris/actions-gh-pages@v4
