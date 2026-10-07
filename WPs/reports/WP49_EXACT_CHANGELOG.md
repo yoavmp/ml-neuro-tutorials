@@ -81,7 +81,36 @@ Found, by inspection, before touching anything:
      equal to its own internal 180s wait, a guaranteed timeout on every
      run).
    - `interactive/playwright.book.config.ts`: `workers: 1` on CI only.
-4. This report + this changelog (committed together as this WP's closing
+4. `cfb5304` — "WP49: replace fragile fixed-wait assumptions with real
+   kernel-idle polling; fix a second stale WP48 test anchor" (5 files
+   changed, +586/−24):
+   - `exercise-07-lite.spec.ts`, `exercise-04-lite.spec.ts`: added
+     `waitForKernelIdle()` polling
+     `.jp-Notebook-ExecutionIndicator[data-status]`, folded into each
+     file's `runAllCells()`, replacing every fixed 140_000/180_000ms wait.
+   - `wp22-cross-chapter-dark-mode.spec.ts`: same fix for its Exercise 7
+     case.
+   - `exercise-04-lite.spec.ts`: fixed the second stale anchor (D.5 of the
+     report) — `fillBlank`'s anchor and the downloaded-notebook check both
+     referenced text WP48 had already rewritten away.
+5. `624d733` — "WP49: apply the kernel-idle-polling fix uniformly across
+   all remaining exercise specs" (7 files changed, +150/−41): the same
+   `waitForKernelIdle()` fix applied to
+   `exercise-01/02/03/05/06/08-lite.spec.ts` and
+   `wp22-cross-chapter-dark-mode.spec.ts`'s remaining four cases, plus a
+   (later found incomplete — see commit 6 below) `.jp-mod-error` fallback
+   condition.
+6. `93f656f` — "WP49: keep Exercise 3's fixed wait -- its guarded-error
+   template cannot reach 'idle'" (2 files changed, +23/−28): reverted
+   `exercise-03-lite.spec.ts` to its original fixed-wait implementation in
+   full, and wp22's Exercise 3 case likewise; removed the disproven
+   `.jp-mod-error` fallback from the other seven files.
+7. `36d84d3` — "WP49: scope the deploy release gate to Exercises 1-8;
+   move legacy Exercises 9-10's smoke test out" (2 files changed,
+   +55/−2): `deploy.yml`'s portable-notebook-smoke step scoped to
+   `--notebook chapter_02`; new `.github/workflows/legacy-notebook-
+   smoke.yml` for Exercises 9–10, non-blocking.
+8. This report + this changelog (committed together as this WP's closing
    commit — see `git log -1` after that commit for the final SHA).
 
 ## Merge and push
@@ -92,10 +121,23 @@ git merge --ff-only feature/wp49-deploy-jupyterlite-exercises-1-8   # pure fast-
 git push origin main                                                 # dcc5365..6a91ae2
 ```
 
-GitHub Actions run triggered by that push:
-**https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37222242595**
+Four pushes to `main` in total this WP (the fast-forward merge above,
+then three further commits as CI's own failure logs were read and acted
+on — commits 4–7 above each triggered their own push). Every GitHub
+Actions run this WP triggered, in order:
 
-<!-- WP49-CI-RESULT-PLACEHOLDER -->
+| # | Commit | Run | Result | Duration |
+| --- | --- | --- | --- | --- |
+| 1 | `6a91ae2` | [37222242595](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37222242595) | failure (8 failed in book suite) | 2h28m57s |
+| 2 | `cfb5304` | [37279360563](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37279360563) | failure (5 failed) | 2h41m30s |
+| 3 | `624d733` | [37312844957](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37312844957) | failure (4 failed, all Exercise 3) | 2h10m3s |
+| 4 | `93f656f` | [37445520518](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37445520518) | **success** — "Publish website" ran | 1h44m41s |
+| 5 | `36d84d3` | [37472812299](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37472812299) | **success** — "Publish website" ran | 1h30m34s |
+
+Every failing run above was inspected via `gh run view --log-failed`
+(the actual step-by-step log, not the summary) before deciding on the
+next fix — never assumed, never guessed from the local result alone. No
+run was left uninspected; none was retried blindly.
 
 ## Local test/build evidence (before pushing)
 
@@ -158,18 +200,46 @@ the content-leak fix (rerun after regenerating).
 | 8 (isolation rerun, Exercise 1 alone) | `--workers=1` on `exercise-01-lite.spec.ts` | **8/8 passed** (confirms its one full-run failure was contention) | 14.9 min |
 | 9 (final full-suite confirmation, same config as run 1) | `CI=1 npx playwright test --config playwright.book.config.ts` (full default parallelism, all fixes applied, pre-worker-cap) | 95 passed, 8 failed — every failure independently reconfirmed as full-parallelism contention (runs 4–8 above, each isolated) | 20.5 min |
 
-Runs 4–9 are the targeted, isolated reruns the task asked for ("rerun
-only a failing focused check after a specific fix"); run 1 and run 9 are
-the two full-suite runs this WP needed (the first to find every issue at
-once, the second — under identical full-parallelism conditions — to prove
-the three real fixes hold and that only genuine full-parallelism
-contention remains, which the CI `workers: 1` cap then addresses).
+| 10 (isolation rerun, post-idle-poll) | `--workers=1` on `exercise-07-lite.spec.ts` | **7/7 passed** | 32.6 min |
+| 11 (isolation rerun, post-idle-poll + anchor fix) | `--workers=1` on `exercise-04-lite.spec.ts` | **6/6 passed** | 3.0 min |
+| 12 (isolation rerun, post-idle-poll) | `--workers=1` on `exercise-06-lite.spec.ts` | **7/7 passed** | 9.1 min |
+| 13 (isolation rerun, post-idle-poll) | `--workers=1` on `exercise-01-lite.spec.ts` | **8/8 passed** | 2.6 min |
+| 14 (diagnostic, Exercise 3, instrumented) | ad hoc poll of `.jp-Notebook-ExecutionIndicator` + `.jp-mod-error`/`RuntimeError` text every 5s for 3 min | indicator stuck at `"busy"` throughout; no error-class or error-text match found — root cause of CI run 3's 4 failures | 3.1 min |
+| 15 (isolation rerun, Exercise 3, reverted to fixed-wait) | `--workers=1` on `exercise-03-lite.spec.ts` | **5/5 passed** | 8.7 min |
+| 16 (isolation rerun, wp22, all 6 cases) | `--workers=1` on `wp22-cross-chapter-dark-mode.spec.ts` | **6/6 passed** | 7.8 min |
 
-<!-- WP49-CI-E2E-RESULT-PLACEHOLDER -->
+Runs 4–16 are the targeted, isolated reruns the task asked for ("rerun
+only a failing focused check after a specific fix"); run 1 is the one
+full local-suite run this WP needed to find every issue at once (not
+repeated again locally — every subsequent local check was scoped to the
+specific file(s) a given fix touched). The actual green confirmation for
+the suite as a whole came from the real CI runs in the commit table
+above (section "Merge and push"), not from another full local run.
 
 ## Live-site verification
 
-<!-- WP49-LIVE-SITE-PLACEHOLDER -->
+Fetched the real, served production site directly after the green CI
+run (`37445520518`) published it — confirmed against the actual
+`gh-pages` branch tip (`deploy: 93f656f`, i.e. this WP's own commit, via
+`git fetch origin gh-pages && git log origin/gh-pages -1`), not assumed
+from the workflow's own "success" status alone:
+
+| Check | URL | Result |
+| --- | --- | --- |
+| Hub lists exactly 1–8 | `/contents.html` | 8 exercises listed, 1–8 in order; no 9–12 |
+| Exercise 9 unpublished | `/chapters/chapter_09/exercise_09.html` | HTTP 404 |
+| Exercise 11 unpublished | `/chapters/chapter_11/exercise_11.html` | HTTP 404 |
+| Exercise 3 transition page | `/chapters/chapter_03/exercise_03.html` | real content; links to `../../lite/notebooks/index.html?path=exercise_03.ipynb` |
+| Exercise 3 Lite app route | `/lite/notebooks/index.html?path=exercise_03.ipynb` | JupyterLite SPA shell loads (pre-hydration "Loading JupyterLite..." state, as expected from a bare HTTP fetch with no JS execution) |
+| Exercise 3 Lite template file | `/lite/files/exercise_03.ipynb` | HTTP 200, `content-type: application/x-ipynb+json` |
+| Exercise 3 portable download | `/lite/files/exercise_03_portable.ipynb` | HTTP 200, `content-type: application/x-ipynb+json` |
+
+The deeper, per-exercise behavioral verification (kernel start, data
+load, question grading, widget interaction, save/download) for all of
+Exercises 1–8 is the real Playwright suite in section D above, run
+against this exact build *before* it was published — this live-site
+check confirms the *deployed* artifact matches what that suite already
+verified, not a re-assertion of the same claims from a bare HTTP fetch.
 
 ## Numeric parity
 

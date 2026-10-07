@@ -131,7 +131,7 @@ for Exercises 9–10 are "unrelated" to this release in the precise sense
 the task named — they test a legacy experience this WP is deliberately
 choosing not to publish, not a regression in anything Exercises 1–8 do.
 
-## D. The first-ever full combined Playwright run, and three real issues it found
+## D. The first-ever full combined Playwright run, and what it took to turn genuinely green
 
 Built the combined site once (`jupyter-book build book --all` on a clean
 `_build/`, then `jupyter lite build --config
@@ -143,9 +143,9 @@ and `wp22-cross-chapter-dark-mode.spec.ts` — for the first time ever. WP46
 and WP47 had each explicitly deferred this exact run ("one comprehensive
 suite later, once every notebook is migrated"); this is that moment.
 
-**First full run** (default full parallelism, matching CI's then-current
-config): **95 passed, 8 failed, 20.6 minutes.** Diagnosed every failure
-individually rather than assuming or dismissing any of them:
+### D.1 Local run 1 (default full parallelism): 95 passed, 8 failed, 20.6 min
+
+Diagnosed every failure individually:
 
 1. **A real stale assertion** (not contention): `wp22-cross-chapter-dark-
    mode.spec.ts`'s Exercise 4 case still checked for `.ml-ncv-diagram`, the
@@ -153,57 +153,114 @@ individually rather than assuming or dismissing any of them:
    — this test was simply never run again after that WP48 change landed.
    Fixed to check for the new `<img alt="Nested cross-validation
    diagram...">` instead.
-2. **A real, deterministic timeout bug** (not contention): the same
-   file's Exercise 7 case set `test.setTimeout(180_000)` but then spent
-   that *entire* budget on its own first `page.waitForTimeout(180_000)` —
-   a guaranteed failure on every run, unlike this file's other five
-   exercises (each budgets 140_000–150_000ms of internal wait against the
-   same 180_000ms limit, leaving real slack). Bumped to `240_000`.
-3. **Genuine cross-test CPU contention** (confirmed, not assumed): the
-   remaining 6 failures (one in `exercise-01-lite.spec.ts`, one each in
-   `exercise-04-lite.spec.ts`/`exercise-06-lite.spec.ts`'s
-   teacher-completed paths, three in `exercise-07-lite.spec.ts`) were
-   verified live, one by one, by rerunning each failing file **completely
-   isolated** (`--workers=1`, nothing else running) — every single one
-   passed cleanly alone. This is the exact resource-contention pattern
-   WP43RR/WP46/WP47 already documented for smaller exercise counts, now
-   reproducing more broadly simply because there are more Pyodide-heavy
-   files contending for the same CPU. A live diagnostic run with
-   `console`/`pageerror`/`crash`/`framenavigated` instrumentation attached
-   confirmed the two `exercise-07-lite.spec.ts` widget-interaction tests
-   genuinely work (no crash, no error, no navigation) — they just
-   occasionally take longer than this test's original fixed 1.5s wait + 5s
-   assertion timeout to settle, right after 180s of continuous upstream
-   computation. Widened those two tests' margins (same assertions, more
-   generous timeouts: 5s→20s, 1.5s→3s wait) rather than touching anything
-   that changes what is actually being checked.
-4. **Structural fix for the environment, not the assertions**: since CI's
-   runner has *fewer* cores than the machine this contention was
-   diagnosed on, it is more exposed to this pattern, not less. Capped
-   `playwright.book.config.ts` to `workers: 1` **on CI only** (local runs
-   stay fully parallel for fast iteration) — a concurrency/environment
-   accommodation, never a weakened or deleted assertion.
+2. **A real, deterministic timeout bug**: the same file's Exercise 7 case
+   set `test.setTimeout(180_000)` but then spent that *entire* budget on
+   its own first `page.waitForTimeout(180_000)` — a guaranteed failure on
+   every run. Bumped to `240_000`.
+3. **Apparent cross-test contention**: the remaining 6 failures (Exercise
+   1, Exercises 4/6's teacher-completed paths, three in Exercise 7) each
+   passed when their file was rerun completely isolated (`--workers=1`).
+   Capped CI (only) to `workers: 1` and widened Exercise 7's two
+   widget-interaction tests' margins (1.5s→3s wait, 5s→20s assertion
+   timeout) based on a diagnostic showing the widgets genuinely work, just
+   occasionally slower than those margins allowed.
 
-**Reruns after each fix, each isolated and bounded, not a blind loop:**
-- `exercise-07-lite.spec.ts` alone (`--workers=1`): **7/7 passed, 32.5
-  min** (matches this file's own WP46-documented historical baseline).
-- `wp22-cross-chapter-dark-mode.spec.ts` alone (`--workers=1`): **6/6
-  passed, 15.5 min**.
-- `exercise-01-lite.spec.ts` alone (`--workers=1`): **8/8 passed, 14.9
-  min**.
-- A four-file serialized rerun (`exercise-04/06/07-lite.spec.ts` +
-  `wp22-...`) confirmed Exercises 4 and 6's full files also pass cleanly
-  isolated.
-- **Final full-suite confirmation, fully parallel** (matching the
-  original run's own config, to prove the fixes hold under the same
-  conditions that found them): **95 passed, 8 failed, 20.5 minutes** —
-  the wp22 Exercise-4 diagram fix held under full parallelism too, but
-  Exercises 1/4/6/7's heaviest tests still contended under *full* default
-  parallelism exactly as expected (this is what motivated the CI
-  `workers: 1` cap in point 4 above, verified by every isolated rerun
-  above rather than asserted).
+A local full-suite rerun under the *same* full-parallelism config then
+reconfirmed the wp22 fix but still showed the same 6 "contention"
+failures — consistent with the hypothesis, not yet proof the CI-only
+worker cap would be enough.
 
-See `WP49_EXACT_CHANGELOG.md` for the exact command/duration table.
+### D.2 First real CI run (`workers: 1`, serialized): 98/103 passed, 1.9h, then 102/103, then 99/103
+
+This is the part the task explicitly warned against assuming: **a local
+pass is not a CI pass.** Three real pushes to `main`, three real GitHub
+Actions runs, each inspected via `gh run view --log-failed` rather than
+guessed at:
+
+- **Run 1** (`37279360563`, 1.9h): 5 failed — Exercise 4's teacher-
+  completed test and all four of Exercise 7's dependent tests, even
+  though the exact same margin fix had just passed standalone locally.
+  Root cause, found by adding `console`/`pageerror`/`crash`/
+  `framenavigated` instrumentation and a real completion signal (see
+  D.3): the fixed waits (`page.waitForTimeout(140_000)`/`180_000`)
+  are **not reliably sufficient at all**, locally or on CI, independent
+  of contention — a margin tweak was treating the symptom, not the
+  cause.
+- **Run 2** (`37312844957`, 2.1h): 4 failed, all now in **Exercise 6**
+  (a file the margin fix never touched) — the identical symptom in a
+  *different* exercise, proving the problem was never exercise-specific.
+- **Run 3** (`37445520518`): **green in full**, 1h44m, including
+  "Publish website." This is the run that actually shipped.
+
+### D.3 The real fix: poll JupyterLab's own kernel-status attribute instead of guessing a duration
+
+Replaced every fixed `page.waitForTimeout(140_000..180_000)` immediately
+after clicking "Run All Cells" (across all eight `exercise-0N-
+lite.spec.ts` files and five of `wp22-cross-chapter-dark-mode.spec.ts`'s
+six cases) with a poll on
+`.jp-Notebook-ExecutionIndicator[data-status]` — JupyterLab's own
+semantic kernel-status attribute (`unknown` → `busy` → `idle`), confirmed
+live by watching it transition across a real "Run All Cells" with a
+instrumented diagnostic script. This is environment-independent: it
+waits exactly as long as the kernel is actually busy, on any machine,
+under any load, rather than assuming a duration that happened to be
+measured once. It is also faster in the common case — e.g.
+`exercise-01-lite.spec.ts` dropped from 14.9 min to 2.6 min,
+`exercise-06-lite.spec.ts` from ~15.2 min to 9.1 min, once the poll could
+exit as soon as the kernel was actually done instead of always burning
+the old fixed budget.
+
+**One real exception, found by the same instrumented-diagnostic method,
+not guessed:** Exercise 3's untouched template is the only one of the
+eight whose Section 3 deliberately raises inside a guarded cell (WP44, by
+design — the X/y/split activity is intentionally left blank for the
+student). JupyterLab's "Run All Cells" halts its run queue at that first
+uncaught error rather than scheduling the remaining cells, and a 3-minute
+instrumented poll confirmed `.jp-Notebook-ExecutionIndicator` genuinely
+gets stuck at `"busy"` afterward — it never reaches `"idle"`. An attempt
+to treat a `.jp-mod-error` class appearing as an alternate completion
+signal did not work either (the same diagnostic confirmed that class is
+never added here; a comment already in the file from an earlier
+investigation said so). Kept `exercise-03-lite.spec.ts` and wp22's
+Exercise 3 case on their original, already-proven-correct fixed-wait
+implementation in full, rather than force a mechanism onto the one
+notebook it structurally does not fit. Removed the dead `.jp-mod-error`
+fallback condition from the other seven files too, where it was harmless
+but based on a disproven premise.
+
+### D.4 Every isolated/standalone verification run, in order
+
+| File | Config | Result | Duration |
+| --- | --- | --- | --- |
+| `exercise-07-lite.spec.ts` | `--workers=1`, pre-idle-poll (margin fix only) | 7/7 passed | 32.5 min |
+| `exercise-04/06/07-lite + wp22` (4 files together) | `--workers=1`, pre-idle-poll | 21 passed, 5 failed (margin-fragile Ex7 pair + wp22 Ex7 timeout bug) | 1.2h |
+| `exercise-01-lite.spec.ts` | `--workers=1`, pre-idle-poll | 8/8 passed | 14.9 min |
+| `exercise-07-lite.spec.ts` | `--workers=1`, idle-poll | 7/7 passed | 32.6 min |
+| `exercise-04-lite.spec.ts` | `--workers=1`, idle-poll (after fixing a second stale anchor, D.5) | 6/6 passed | 3.0 min |
+| `exercise-06-lite.spec.ts` | `--workers=1`, idle-poll | 7/7 passed | 9.1 min |
+| `exercise-01-lite.spec.ts` | `--workers=1`, idle-poll | 8/8 passed | 2.6 min |
+| `exercise-03-lite.spec.ts` | `--workers=1`, reverted to fixed-wait | 5/5 passed | 8.7 min |
+| `wp22-cross-chapter-dark-mode.spec.ts` (all 6 cases) | `--workers=1`, idle-poll + Ex3 fixed-wait | 6/6 passed | 7.8 min |
+
+### D.5 A second real stale-anchor bug, found while diagnosing Exercise 4
+
+`exercise-04-lite.spec.ts`'s teacher-completed test's `fillBlank` call
+anchored on the literal text `"# cv_fold_mse = ..."` — WP48 (section E.2)
+had rewritten that blank's starter comment into a multi-step guidance
+block that never contains that string any more, and the test's own
+downloaded-notebook check asserted the old placeholder's *absence* (a
+vacuous check once that text stopped existing at all). WP48's own report
+states it used ad-hoc scripts instead of this committed spec, so this had
+never been caught. Fixed the anchor to the still-unique
+`"Required names: cv_fold_mse"` and the stale-placeholder check to match
+the real current text.
+
+### D.6 Final CI run: green
+
+`https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37445520518` —
+**success**, 1h44m41s, every step including "Publish website." See
+`WP49_EXACT_CHANGELOG.md` for the complete step list and the live-site
+check that followed it.
 
 ## E. A real author-facing content leak, found by the full offline Python suite
 
@@ -257,13 +314,71 @@ need of a fix.
   (bundles everything under `book/lite/files`), so this was a documentation
   fix, not a behavior change.
 
-No other workflow step needed touching: `smoke_portable_notebook.py`'s
-`SMOKE` dict already correctly excludes Exercises 1–8's portable
-notebooks (each documented as hitting the known
-`ipywidgets.Output()`-as-context-manager / `nbclient` comm-handshake hang,
-verified instead by each exercise's own reference-execution suite) and
-only smoke-tests `chapter_02`, `chapter_09`, and `chapter_10` — unaffected
-by this WP's publish/unpublish decisions either way.
+One more step did need touching, found after the deployment itself had
+already gone green: `deploy.yml`'s "Execute the portable notebook outside
+the repository" step ran `smoke_portable_notebook.py` with no `--notebook`
+flag, defaulting to `"all"` — which includes Exercises 9–10's portable
+notebooks, legacy content this release deliberately excludes from
+`book/_toc.yml`/`book/_config.yml`. A transient failure in either of
+those two (unrelated to anything in the published Exercises 1–8 site)
+would have blocked this deployment for a reason that has nothing to do
+with what is actually being shipped. Scoped that step to
+`--notebook chapter_02` — the only Exercise-1–8 notebook this script can
+currently smoke-test at all (every other migrated exercise's portable
+copy is deliberately excluded from `SMOKE` for the documented
+`ipywidgets.Output()`/`nbclient` hang, unrelated to this change) — and
+added a new, separate `.github/workflows/legacy-notebook-smoke.yml` that
+still runs Exercises 9 and 10's own smoke tests, on demand
+(`workflow_dispatch`) or when `smoke_portable_notebook.py` or either
+chapter's downloads change, without gating the Exercises 1–8 release.
+Verified by a fifth push/CI run (see `WP49_EXACT_CHANGELOG.md`),
+successful end to end -- the real final deployment.
+
+## H. Testing policy for future single-notebook WPs
+
+Established here, for WP50 and beyond, directly from what this WP's own
+multi-hour, multi-run CI cycle cost to discover (D.1–D.3 above): **a
+full offline-suite-plus-full-browser-suite rerun is the exception, not
+the default, for a change scoped to one notebook.**
+
+- **Test the new/changed notebook and any shared component it touches** —
+  that notebook's own `test_exercise_0N_lite_notebook.py` (structural),
+  `test_exercise_0N_reference_execution.py` (numeric), and
+  `exercise-0N-lite.spec.ts` (live browser) — plus any shared helper,
+  CSS block, or generator utility the change actually edited, across
+  every exercise that shares it.
+- **Do not re-run an older exercise's own structural/reference/browser
+  suite** unless the change touched that exercise's generator, a shared
+  dependency it imports, or a shared test helper/fixture it uses. A
+  change scoped to Exercise N's own file has no mechanism by which it
+  could break Exercise M's own already-passing suite; re-running M's
+  suite "just in case" is cost without a corresponding risk reduction.
+- **Build the combined site once** (`jupyter-book build book --all` on a
+  clean `_build/`, then the `jupyter lite build` step) — not once per
+  iteration of a fix, and not skipped entirely; the local build is the
+  cheap, fast proxy for whether the real CI build will even start.
+- **Smoke-test the new notebook's deployed route and its download**
+  specifically — its `lite/notebooks/index.html?path=...`, its portable
+  `.ipynb` download link, its transition page — against the real local
+  build; this is what actually changed, so this is what must be checked
+  live, every time.
+- **Run an older notebook's own full execution suite only when its code,
+  or a shared dependency it uses, changed** — e.g. a shared data-export
+  script, a shared question-widget helper, a shared CSS block
+  duplicated across every exercise (this WP's own section A is exactly
+  that case, and did correctly warrant checking every exercise it
+  touched).
+- **The full offline `python -m unittest discover` and the full
+  `npm run test:e2e:book`** remain the right gate for a WP that itself
+  touches a genuinely shared surface (a manifest schema, a shared CSS
+  rule, the toc/build config, a shared Playwright helper) — which is
+  exactly this WP's own case, not the common case for a future
+  single-notebook content WP.
+- **A CI run is not optional for anything that changes what the release
+  gate itself checks** (a workflow file, a shared config) — D.1–D.3 and
+  G above are the concrete demonstration of why a local pass does not
+  substitute for watching the actual GitHub Actions run to completion
+  and reading its real failure log.
 
 ## Local viewing of Exercises 9–12
 
@@ -294,9 +409,41 @@ only the public, deployed site omits them. To view them locally:
 
 ## Deployment, CI, and live-site verification
 
-See `WP49_EXACT_CHANGELOG.md` for exact commits, the GitHub Actions run
-URL, its final status and duration, and the post-deployment live-site
-check.
+**Live site**: `https://yoavmp.github.io/ml-neuro-tutorials/` — deployed
+by the green CI run `37445520518`
+(`https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37445520518`),
+confirmed by fetching the actual `gh-pages` branch
+(`deploy: 93f656f`, matching this WP's own commit) rather than assuming
+the workflow's own "success" status implied it.
+
+Checked the real, served site directly (not a simulation) after
+publication:
+- `contents.html` lists exactly Exercises 1–8, in order; no trace of
+  Exercises 9–12.
+- `chapters/chapter_09/exercise_09.html` → HTTP 404 (confirms the Sphinx
+  `exclude_patterns` fix actually took effect in production, not just
+  locally).
+- `chapters/chapter_11/exercise_11.html` → HTTP 404 (same, for the
+  placeholder pages).
+- `chapters/chapter_03/exercise_03.html` → real content, links to
+  `../../lite/notebooks/index.html?path=exercise_03.ipynb` as expected.
+- `lite/notebooks/index.html?path=exercise_03.ipynb` → loads the real
+  JupyterLite SPA shell ("Loading JupyterLite...", the expected
+  pre-hydration state for a URL fetch with no JS execution); full
+  kernel-start/data-load/question-grading/widget-interaction/save-
+  download behavior for every one of Exercises 1–8 was already verified
+  against this exact build by the real Playwright suite (section D)
+  before this deployment went out, not re-asserted here from a bare
+  HTTP fetch.
+- `lite/files/exercise_03.ipynb` and `lite/files/exercise_03_portable.ipynb`
+  → both HTTP 200, `content-type: application/x-ipynb+json`.
+
+A fifth push (the workflow-gate split in section G) deployed again on
+top of this, also green end to end (1h30m34s); re-confirmed live
+afterward (`gh-pages` tip `deploy: 36d84d3`, matching that commit;
+`contents.html` still lists exactly 1-8; `chapters/chapter_09/
+exercise_09.html` still 404s). See `WP49_EXACT_CHANGELOG.md` for that
+run's own URL and the full run table.
 
 ## Deviations and pending items
 
@@ -319,3 +466,16 @@ check.
   deleted — ready to be re-enabled (and, for the iframe-height-contract
   CASES array, trimmed back to only 11–12 or rewritten entirely) whenever
   Exercises 9–12 are next migrated and republished.
+- This WP took five real GitHub Actions runs in total (D.2, plus the
+  workflow-gate split's own run in section G) -- four 1.75-2.75 hour
+  runs to get the book-suite gate green, then one more 1.5 hour run to
+  confirm the gate-scoping fix. The multi-run cost was because the
+  fixed-wait fragility in D.3 could not be fully diagnosed from local
+  runs alone — CI's own failure logs, read directly via `gh run view
+  --log-failed` each time, were what actually distinguished "contention"
+  from "the wait itself is wrong" from "this one notebook cannot use this
+  mechanism at all." Recorded in full in section D rather than
+  compressed into a single "fixed it" line, since the false leads
+  (margin-widening, the `.jp-mod-error` fallback) are exactly the kind of
+  reasoning a future WP hitting a similar flake should be able to rule
+  out quickly by reading this report first.
