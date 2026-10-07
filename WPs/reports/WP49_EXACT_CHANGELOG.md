@@ -133,6 +133,11 @@ Actions run this WP triggered, in order:
 | 3 | `624d733` | [37312844957](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37312844957) | failure (4 failed, all Exercise 3) | 2h10m3s |
 | 4 | `93f656f` | [37445520518](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37445520518) | **success** — "Publish website" ran | 1h44m41s |
 | 5 | `36d84d3` | [37472812299](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37472812299) | **success** — "Publish website" ran | 1h30m34s |
+| 6 | `38e941c` | [37584483247](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/37584483247) | **success** — confirms the `paths-ignore` fix (section G) doesn't break the trigger | 1h27m49s |
+
+A seventh push (this report's own further edits, touching only
+`WPs/reports/*.md`) was **not** followed by another CI run — confirming
+the `paths-ignore: ["WPs/**"]` fix from run 6 works as intended.
 
 Every failing run above was inspected via `gh run view --log-failed`
 (the actual step-by-step log, not the summary) before deciding on the
