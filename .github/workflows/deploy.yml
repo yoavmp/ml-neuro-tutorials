@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - main
+    # WP49: WP specs/reports under WPs/ are plain documentation -- never
+    # read by any script or test at runtime (only referenced in comments/
+    # docstrings; confirmed by grep before adding this), and never part of
+    # the published book. A WP's own closing report-and-changelog commit
+    # should not cost a ~1.5-2h full rebuild+deploy+republish of an
+    # otherwise-unchanged site.
+    paths-ignore:
+      - "WPs/**"
 
 permissions:
   contents: write

@@ -334,6 +334,19 @@ chapter's downloads change, without gating the Exercises 1–8 release.
 Verified by a fifth push/CI run (see `WP49_EXACT_CHANGELOG.md`),
 successful end to end -- the real final deployment.
 
+One more, found immediately afterward: the sixth push (this report's own
+closing commit, touching only `WPs/reports/*.md`) triggered `deploy.yml`
+again — it has no path filter, so *any* push to `main` costs the full
+~1.5–2h rebuild/redeploy, even a documentation-only one that cannot
+change the published site at all. Canceled that run (confirmed safe:
+`WPs/` is never read by any script or test at runtime, only referenced
+in comments) and added `paths-ignore: ["WPs/**"]` to the trigger — every
+WP's own closing report-and-changelog commit going forward no longer
+costs a redundant full deploy cycle. This change itself (to
+`deploy.yml`, not under `WPs/`) still triggered one final, real CI run
+to confirm the trigger change itself works — see
+`WP49_EXACT_CHANGELOG.md`.
+
 ## H. Testing policy for future single-notebook WPs
 
 Established here, for WP50 and beyond, directly from what this WP's own
