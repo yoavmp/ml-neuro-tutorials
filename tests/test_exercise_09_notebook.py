@@ -496,6 +496,15 @@ class StrengthsWeaknessesAndSummary(unittest.TestCase):
 
 
 class LaunchButtonsAndPortable(unittest.TestCase):
+    # WP51 (local-only; see WPs/WP51_ACTIVE_EXERCISE_09_LOCAL.md) replaced
+    # this class's PORTABLE_PATH target -- book/downloads/chapter_09/
+    # exercise_09_portable.ipynb -- with scripts/generate_exercise_09_notebook.py's
+    # own output, superseding build_portable_notebook.py's old
+    # MyST-directive-rewriting pipeline for this one file (see that
+    # generator's own module docstring). book/chapters/chapter_09/
+    # exercise_09.ipynb (this test module's NB_PATH, tested above) is
+    # untouched, still excluded from the Sphinx build, and still the
+    # legacy content every other test class in this module describes.
     def test_registered_in_launch_buttons_js(self):
         self.assertIn('"chapters/chapter_09/exercise_09.html"', LAUNCH_BUTTONS_JS)
         self.assertIn('"book/downloads/chapter_09/exercise_09_portable.ipynb"', LAUNCH_BUTTONS_JS)
@@ -514,12 +523,21 @@ class LaunchButtonsAndPortable(unittest.TestCase):
             if c["cell_type"] == "code":
                 self.assertIsNone(c.get("execution_count"))
 
-    def test_portable_notebook_keeps_the_nested_cv_comparison_visible_and_runnable(self):
+    def test_portable_notebook_no_longer_embeds_the_old_five_model_nested_cv_as_its_own_result(self):
+        # Superseded by WP51's own "Results and runtime discipline": the
+        # old embedded five-model nested-CV summary is a historical result,
+        # not the result of the new notebook's active single-split
+        # comparison, and must not be presented as this notebook's own
+        # live result. A clearly labeled, collapsed, non-graded pointer to
+        # that historical procedure is allowed (and present) -- running its
+        # five-model full grid as this notebook's own code is not.
         portable = nbformat.read(PORTABLE_PATH, as_version=4)
-        found = any(
+        found_live_grid = any(
             c["cell_type"] == "code" and "outer_cv = KFold" in _src(c) and "LinearSVR" in _src(c) for c in portable.cells
         )
-        self.assertTrue(found)
+        self.assertFalse(found_live_grid)
+        full_md = "\n".join(_src(c) for c in portable.cells if c["cell_type"] == "markdown")
+        self.assertIn("historical", full_md.lower())
 
     def test_exercises_11_through_12_have_no_launch_button(self):
         for n in range(11, 13):

@@ -40,19 +40,19 @@ Notebooks and their expected strings:
   notebook's cell sources in
   ``tests/test_exercise_04_reference_execution.py`` and
   ``tests/test_exercise_05_reference_execution.py``).
-* chapter_06, chapter_07, and chapter_08 are intentionally absent (WP46,
-  WP47) -- see the comment above their old ``SMOKE`` entries for why (each
-  notebook's native interactive activities use an ``ipywidgets.Output()``
-  widget as a context manager, the same pattern documented to hang
-  ``nbclient`` with no real frontend attached; the same numbers are
-  verified instead by directly executing the reference notebook's cell
-  sources in ``tests/test_exercise_06_reference_execution.py``,
-  ``tests/test_exercise_07_reference_execution.py``, and
-  ``tests/test_exercise_08_reference_execution.py``).
-* ``chapter_09/exercise_09_portable.ipynb`` (WP34) -- the same brain table;
-  the PCR/PLS and SVM synthetic-data reproductions, and the nested-cross-
-  validation comparison of five models (standardized OLS, PCR, PLS, linear
-  SVR, RBF SVR), all run and print their audited numbers.
+* chapter_06, chapter_07, chapter_08, and chapter_09 are intentionally
+  absent (WP46, WP47, WP51) -- see the comment above their old ``SMOKE``
+  entries for why (each notebook's native interactive activities use an
+  ``ipywidgets.Output()`` widget as a context manager, the same pattern
+  documented to hang ``nbclient`` with no real frontend attached; the same
+  numbers are verified instead by directly executing the reference
+  notebook's cell sources in ``tests/test_exercise_06_reference_execution.py``,
+  ``tests/test_exercise_07_reference_execution.py``,
+  ``tests/test_exercise_08_reference_execution.py``, and
+  ``tests/test_exercise_09_reference_execution.py``). chapter_09's old
+  WP34-era entry here (the legacy, non-interactive nested-CV notebook) no
+  longer applies -- WP51 replaced that notebook's generator entirely; see
+  WPs/WP51_ACTIVE_EXERCISE_09_LOCAL.md.
 
 Needs network access (the notebooks download pinned public CSVs). Used by CI and
 runnable locally:
@@ -149,15 +149,22 @@ SMOKE = {
     # already verified, correctly, by directly executing the completed
     # reference notebook's cell sources (not nbclient) in
     # tests/test_exercise_08_reference_execution.py.
-    "chapter_09": {
-        "path": REPO_ROOT / "book" / "downloads" / "chapter_09" / "exercise_09_portable.ipynb",
-        "expect": (
-            "data table: 1004 participants x 360 cortical-thickness predictors",
-            "mean outer-fold performance (5 outer folds, nested cross-validation):",
-            "Standardized OLS     mean MSE = 49.1   mean R2 = +0.427",
-            "RBF SVR              mean MSE = 20.4   mean R2 = +0.772",
-        ),
-    },
+    # chapter_09 is intentionally absent: WP51 replaced the legacy, static,
+    # nested-cross-validation notebook this entry used to smoke-test with a
+    # JupyterLite-native notebook (scripts/generate_exercise_09_notebook.py)
+    # whose two native interactives ("PCR or PLS?", "Explore an SVM
+    # Boundary") each use an ipywidgets.Output() widget as a context
+    # manager -- the same pattern that hangs nbclient (chapter_01's own
+    # exclusion above is the precedent). The same numbers this script would
+    # have checked are already verified, correctly, by directly executing
+    # the completed reference notebook's cell sources (not nbclient) in
+    # tests/test_exercise_09_reference_execution.py. WP51 is local-only
+    # (see WPs/WP51_ACTIVE_EXERCISE_09_LOCAL.md) -- this notebook is not
+    # wired into any CI workflow, including this script's own former
+    # chapter_09 entry's trigger in .github/workflows/legacy-notebook-
+    # smoke.yml, which still references "--notebook chapter_09" and is a
+    # known follow-up for a later, explicitly authorized deployment WP, not
+    # fixed here.
     "chapter_10": {
         "path": REPO_ROOT / "book" / "downloads" / "chapter_10" / "exercise_10_portable.ipynb",
         "expect": (
