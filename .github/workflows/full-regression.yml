@@ -1,0 +1,146 @@
+name: Full regression (manual)
+
+# WP50: a manually runnable, never-publishing full regression -- the same
+# broad Python + browser coverage `.github/workflows/deploy.yml`'s own full
+# gate runs, available on demand without waiting for (or depending on) a
+# change that actually triggers the full gate. Use this to re-verify
+# everything after a run of local fixes, before a release you want extra
+# confidence in, or any time you want the full suite without pushing.
+#
+# No `schedule:` trigger: the full suite is a real ~1.5-2h run (see
+# WPs/reports/WP49_REPORT.md section D), not the "inexpensive" bar the WP50
+# spec sets for an automatic recurring run. `workflow_dispatch` keeps this
+# available on demand instead.
+#
+# This workflow intentionally has no "Publish website" step anywhere in it
+# -- it cannot publish, no matter what passes or fails. It mirrors
+# deploy.yml's own full-gate steps; if you change one pipeline's steps,
+# check whether the other needs the same change (see
+# WPs/reports/WP50_MAINTAINER_GUIDE.md).
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  full-regression:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt -r requirements-lite.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: interactive/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: interactive
+        run: npm ci
+
+      - name: Install and build the course-toolbar JupyterLite extension
+        working-directory: book/lite/extensions/course-toolbar
+        run: |
+          npm ci
+          npx tsc
+          jupyter labextension build --development True .
+
+      - name: Type-check and unit-test the frontend
+        working-directory: interactive
+        run: |
+          npm run typecheck
+          npm run test:unit
+
+      - name: Audit production frontend dependencies
+        working-directory: interactive
+        run: npm audit --omit=dev
+
+      - name: Build the interactive widget app
+        working-directory: interactive
+        run: npm run build
+
+      - name: Validate both committed ABIDE data artifacts (offline)
+        run: python scripts/export_widget_data.py --check --artifact all
+
+      - name: Validate the JupyterLite exercise data exports (offline)
+        run: |
+          python scripts/export_abide_lite_data.py --check
+          python scripts/export_abide_phenotypes_lite_data.py --check
+
+      - name: Check every migrated exercise generator is not stale (offline)
+        run: |
+          for n in 01 02 03 04 05 06 07 08; do
+            python scripts/generate_exercise_${n}_notebook.py --check
+            python scripts/generate_exercise_${n}_transition_page.py --check
+          done
+
+      - name: Unit-test the Python scripts (offline)
+        run: python -m unittest discover -s tests -v
+
+      - name: Check the portable notebook is not stale (offline)
+        run: python scripts/build_portable_notebook.py --check
+
+      - name: Install Playwright Chromium
+        working-directory: interactive
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end test the standalone widget app
+        working-directory: interactive
+        run: npx playwright test
+
+      - name: Build Jupyter Book
+        run: jupyter-book build book
+
+      - name: Fail on notebook execution errors
+        run: |
+          shopt -s globstar nullglob
+          reports=(book/_build/**/*.err.log)
+          if (( ${#reports[@]} )); then
+            echo "::error::Notebook execution-error reports were produced:"
+            for f in "${reports[@]}"; do
+              echo "---- $f ----"
+              cat "$f"
+            done
+            exit 1
+          fi
+          echo "No notebook execution-error reports found."
+
+      - name: Build JupyterLite (Exercises 1-8)
+        run: |
+          jupyter lite build \
+            --config book/lite/jupyter_lite_config.json \
+            --lite-dir book/lite \
+            --output-dir book/_build/html/lite
+
+      - name: End-to-end test the combined book + JupyterLite build
+        working-directory: interactive
+        run: npm run test:e2e:book
+
+      - name: Upload Playwright failure evidence (book suite)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-book-failure-evidence
+          path: interactive/test-results
+          retention-days: 14
+
+      - name: Execute the portable notebook outside the repository (Exercises 1-8 only)
+        run: python scripts/smoke_portable_notebook.py --notebook chapter_02
+
+      # No publish step. This workflow builds and tests everything the full
+      # release gate does and stops there.

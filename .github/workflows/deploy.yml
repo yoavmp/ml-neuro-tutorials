@@ -17,7 +17,41 @@ permissions:
   contents: write
 
 jobs:
+  # WP50: deterministic change classifier (scripts/classify_release_change.py)
+  # decides, once, how much of the release gate the rest of this workflow
+  # actually needs to run. See WPs/reports/WP50_MAINTAINER_GUIDE.md for the
+  # policy this implements and how to read its output.
+  classify:
+    runs-on: ubuntu-latest
+    outputs:
+      gate: ${{ steps.classify.outputs.gate }}
+      exercises: ${{ steps.classify.outputs.exercises }}
+      reason: ${{ steps.classify.outputs.reason }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch gh-pages (for the last-successful-publish marker)
+        # Shallow and allowed to fail: a missing gh-pages branch (e.g. the
+        # very first run ever) is exactly the "missing marker" case
+        # scripts/classify_release_change.py is required to default to the
+        # full gate for -- not a workflow error.
+        run: git fetch origin gh-pages --depth=1 || true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Classify this change
+        id: classify
+        run: python scripts/classify_release_change.py --format both --github-output "$GITHUB_OUTPUT"
+
   build-and-deploy:
+    needs: classify
+    if: needs.classify.outputs.gate != 'skip'
     runs-on: ubuntu-latest
 
     steps:
@@ -46,6 +80,9 @@ jobs:
         run: npm ci
 
       - name: Install and build the course-toolbar JupyterLite extension
+        # Needed by every gate that builds the site (prose/exercise/full alike)
+        # -- the JupyterLite build packages this extension's output regardless
+        # of which exercise changed.
         working-directory: book/lite/extensions/course-toolbar
         run: |
           npm ci
@@ -53,16 +90,19 @@ jobs:
           jupyter labextension build --development True .
 
       - name: Type-check and unit-test the frontend
+        if: needs.classify.outputs.gate == 'full'
         working-directory: interactive
         run: |
           npm run typecheck
           npm run test:unit
 
       - name: Audit production frontend dependencies
+        if: needs.classify.outputs.gate == 'full'
         working-directory: interactive
         run: npm audit --omit=dev
 
       - name: Build the interactive widget app
+        if: needs.classify.outputs.gate == 'full'
         working-directory: interactive
         run: npm run build
 
@@ -74,24 +114,38 @@ jobs:
           python scripts/export_abide_lite_data.py --check
           python scripts/export_abide_phenotypes_lite_data.py --check
 
-      - name: Check the migrated exercise generators are not stale (offline)
+      - name: Check every migrated exercise generator is not stale (offline, full gate)
+        if: needs.classify.outputs.gate == 'full'
         run: |
           for n in 01 02 03 04 05 06 07 08; do
             python scripts/generate_exercise_${n}_notebook.py --check
             python scripts/generate_exercise_${n}_transition_page.py --check
           done
 
-      - name: Unit-test the Python scripts (offline)
+      - name: Run change-aware pretest checks (prose/exercise gate only)
+        # WP50: the classifier-selected generator --check(s) and
+        # structural/reference unittest files for only the touched
+        # exercise(s) -- see scripts/run_selected_checks.py. The full gate's
+        # equivalent, broader coverage is the two steps immediately above
+        # and below instead.
+        if: needs.classify.outputs.gate == 'prose' || needs.classify.outputs.gate == 'exercise'
+        run: python scripts/run_selected_checks.py --phase pretest
+
+      - name: Unit-test the Python scripts (offline, full gate)
+        if: needs.classify.outputs.gate == 'full'
         run: python -m unittest discover -s tests -v
 
-      - name: Check the portable notebook is not stale (offline)
+      - name: Check the portable notebook is not stale (offline, full gate)
         run: python scripts/build_portable_notebook.py --check
+        if: needs.classify.outputs.gate == 'full'
 
       - name: Install Playwright Chromium
+        if: needs.classify.outputs.gate == 'full' || needs.classify.outputs.gate == 'exercise'
         working-directory: interactive
         run: npx playwright install --with-deps chromium
 
       - name: End-to-end test the standalone widget app
+        if: needs.classify.outputs.gate == 'full'
         working-directory: interactive
         run: npx playwright test
 
@@ -119,19 +173,29 @@ jobs:
             --lite-dir book/lite \
             --output-dir book/_build/html/lite
 
-      - name: End-to-end test the combined book + JupyterLite build
+      - name: End-to-end test the combined book + JupyterLite build (full gate)
+        if: needs.classify.outputs.gate == 'full'
         working-directory: interactive
         run: npm run test:e2e:book
 
+      - name: Run change-aware browser + route smoke checks (prose/exercise gate only)
+        # WP50: scripts/run_selected_checks.py --phase postbuild -- targeted
+        # route/notebook/download smoke checks always; the touched
+        # exercise(s)' own exercise-0N-lite.spec.ts + chapterNN.spec.ts
+        # Playwright specs only for the "exercise" gate (prose never needs a
+        # browser at all).
+        if: needs.classify.outputs.gate == 'prose' || needs.classify.outputs.gate == 'exercise'
+        run: python scripts/run_selected_checks.py --phase postbuild
+
       - name: Upload Playwright failure evidence (book suite)
-        if: failure()
+        if: failure() && (needs.classify.outputs.gate == 'full' || needs.classify.outputs.gate == 'exercise')
         uses: actions/upload-artifact@v4
         with:
           name: playwright-book-failure-evidence
           path: interactive/test-results
           retention-days: 14
 
-      - name: Execute the portable notebook outside the repository (Exercises 1-8 only)
+      - name: Execute the portable notebook outside the repository (Exercises 1-8 only, full gate)
         # WP49: smoke_portable_notebook.py's default ("all") also executes
         # Exercises 9-10's portable notebooks -- legacy, unpublished
         # content this release's own gate has no reason to depend on (see
@@ -143,7 +207,11 @@ jobs:
         # own module docstring). A separate, non-blocking workflow
         # (.github/workflows/legacy-notebook-smoke.yml) still runs the
         # full set, including Exercises 9-10, without gating this
-        # deployment.
+        # deployment. WP50: only the full gate pays for this heavier,
+        # real-kernel smoke; the prose/exercise gates' own lighter
+        # scripts/smoke_release_routes.py (run above) covers the targeted
+        # case a single-exercise change actually needs.
+        if: needs.classify.outputs.gate == 'full'
         run: python scripts/smoke_portable_notebook.py --notebook chapter_02
 
       - name: Publish website
