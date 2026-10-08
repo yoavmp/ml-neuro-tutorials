@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="./" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Syllabus &#8212; Machine Learning for Neuroscience</title>
+    <title>Exercise 9: Advanced Models &#8212; Machine Learning for Neuroscience</title>
   
   
   
@@ -27,59 +27,58 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=5cd63e90" />
-    <link rel="stylesheet" type="text/css" href="_static/widgets/app/assets/index-B6lFPKNx.css?v=652b4995" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=5cd63e90" />
+    <link rel="stylesheet" type="text/css" href="../../_static/widgets/app/assets/index-B6lFPKNx.css?v=652b4995" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="_static/copybutton.js?v=f281be69"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'syllabus';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'chapters/chapter_09/exercise_09';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
-    <script src="_static/launch-buttons.js?v=d2a49f76"></script>
-    <script src="_static/activity-resize.js?v=0d9766a4"></script>
-    <script src="_static/widgets/app/assets/index-BBv7OQYS.js?v=f69c674c"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Contents" href="contents.html" />
-    <link rel="prev" title="Introduction" href="intro.html" />
+    <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
+    <script src="../../_static/launch-buttons.js?v=d2a49f76"></script>
+    <script src="../../_static/activity-resize.js?v=0d9766a4"></script>
+    <script src="../../_static/widgets/app/assets/index-BBv7OQYS.js?v=f69c674c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="Exercise 8: Unsupervised Learning" href="../chapter_08/exercise_08.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
     
-    <script src="_static/searchtools.js"></script>
-    <script src="_static/language_data.js"></script>
-    <script src="searchindex.js"></script>
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
   
   </head>
   <body data-default-mode="">
@@ -99,7 +98,7 @@
   <dialog id="pst-search-dialog">
     
 <form class="bd-search d-flex align-items-center"
-      action="search.html"
+      action="../../search.html"
       method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
   <input type="search"
@@ -188,7 +187,7 @@
     
   
 
-<a class="navbar-brand logo" href="intro.html">
+<a class="navbar-brand logo" href="../../intro.html">
   
   
   
@@ -210,23 +209,23 @@
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
-                <a class="reference internal" href="intro.html">
+                <a class="reference internal" href="../../intro.html">
                     Introduction
                 </a>
             </li>
         </ul>
         <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Syllabus</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="contents.html">Contents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_01/exercise_01.html">Exercise 1: Exploratory Data Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_02/exercise_02.html">Exercise 2: Regression and Bias-Variance Trade-Off</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_03/exercise_03.html">Exercise 3: Classification and Metrics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_04/exercise_04.html">Exercise 4: Validation and Cross-Validation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_07/exercise_07.html">Exercise 7: Boosting and Gradient Boosting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_08/exercise_08.html">Exercise 8: Unsupervised Learning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chapters/chapter_09/exercise_09.html">Exercise 9: Advanced Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../syllabus.html">Syllabus</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../contents.html">Contents</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1: Exploratory Data Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_02/exercise_02.html">Exercise 2: Regression and Bias-Variance Trade-Off</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_03/exercise_03.html">Exercise 3: Classification and Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_04/exercise_04.html">Exercise 4: Validation and Cross-Validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Boosting and Gradient Boosting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_08/exercise_08.html">Exercise 8: Unsupervised Learning</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 9: Advanced Models</a></li>
 </ul>
 </details></li>
 </ul>
@@ -305,7 +304,7 @@
       
       
       
-      <li><a href="https://github.com/yoavmp/ml-neuro-tutorials/issues/new?title=Issue%20on%20page%20%2Fsyllabus.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/yoavmp/ml-neuro-tutorials/issues/new?title=Issue%20on%20page%20%2Fchapters/chapter_09/exercise_09.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -335,7 +334,7 @@
       
       
       
-      <li><a href="_sources/syllabus.md" target="_blank"
+      <li><a href="../../_sources/chapters/chapter_09/exercise_09.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -345,7 +344,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.ipynb</span>
 </a>
 </li>
       
@@ -409,7 +408,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Syllabus</h1>
+    <h1>Exercise 9: Advanced Models</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -423,8 +422,21 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="syllabus">
-<h1>Syllabus<a class="headerlink" href="#syllabus" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-9-advanced-models">
+<h1>Exercise 9: Advanced Models<a class="headerlink" href="#exercise-9-advanced-models" title="Link to this heading">#</a></h1>
+<p>This exercise now runs as a single interactive notebook, directly in your
+browser – supplied code, your own code, written answers, checked questions,
+and figures all live together in one place.</p>
+<p><strong><a href="../../lite/notebooks/index.html?path=exercise_09.ipynb">Open Exercise 9</a></strong></p>
+<p>The notebook opens with a <strong>Back to course contents</strong> button, and a
+<strong>Download my notebook</strong> button that saves your current work (including your
+edits) at any time. Your edits are stored only in this browser; use download
+if you want a copy that survives clearing your browser data or moving to a
+different device or browser.</p>
+<p>If you would rather work outside the browser, <a href="../../lite/files/exercise_09_portable.ipynb">download
+the same notebook</a> and open it in a local Jupyter installation, or in
+<a class="reference external" href="https://colab.research.google.com/">Google Colab</a> using <strong>File &gt; Upload
+notebook</strong>.</p>
 </section>
 
     <script type="text/x-thebe-config">
@@ -440,7 +452,7 @@
         },
         kernelOptions: {
             name: "python3",
-            path: "./."
+            path: "./chapters/chapter_09"
         },
         predefinedOutput: true
     }
@@ -458,22 +470,13 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="intro.html"
+       href="../chapter_08/exercise_08.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Introduction</p>
+        <p class="prev-next-title">Exercise 8: Unsupervised Learning</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="contents.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Contents</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -525,8 +528,8 @@ By Yoav Melamed
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
 
   <footer class="bd-footer">
   </footer>
