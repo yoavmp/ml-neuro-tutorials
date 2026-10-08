@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. WP49 deploys Exercises 1-8's JupyterLite migrations to production (see feature/wp44-colab-portability-exercise-3, WPs/reports/WP44_REPORT.md; feature/wp45-active-exercises-4-and-5, WPs/reports/WP45_REPORT.md; feature/wp46-active-exercises-6-and-7, WPs/reports/WP46_REPORT.md; feature/wp47-active-exercise-8-unsupervised-learning, WPs/reports/WP47_REPORT.md; WPs/reports/WP49_REPORT.md) with the author's explicit authorization while real-Colab acceptance of the revised notebooks remains separately pending -- migrationState=migrated here reflects what is actually published, not a claim that the Colab gate (WP41_MAINTAINER_GUIDE.md section 11) has passed. Exercises 9-12 are intentionally excluded from book/_toc.yml for this release (their source and git history are preserved for local inspection/redesign) and keep migrationState=legacy here unchanged.",
+  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. WP49 deploys Exercises 1-8's JupyterLite migrations to production (see feature/wp44-colab-portability-exercise-3, WPs/reports/WP44_REPORT.md; feature/wp45-active-exercises-4-and-5, WPs/reports/WP45_REPORT.md; feature/wp46-active-exercises-6-and-7, WPs/reports/WP46_REPORT.md; feature/wp47-active-exercise-8-unsupervised-learning, WPs/reports/WP47_REPORT.md; WPs/reports/WP49_REPORT.md) with the author's explicit authorization while real-Colab acceptance of the revised notebooks remains separately pending -- migrationState=migrated here reflects what is actually published, not a claim that the Colab gate (WP41_MAINTAINER_GUIDE.md section 11) has passed. WP52 adds Exercise 9 to the published, migrated set on the same basis (WPs/reports/WP52_REPORT.md). Exercises 10-12 are intentionally excluded from book/_toc.yml for this release (their source and git history are preserved for local inspection/redesign) and keep migrationState=legacy here unchanged.",
   "commonPackages": ["numpy", "pandas", "scikit-learn", "matplotlib", "ipywidgets"],
   "exercises": [
     {
@@ -141,13 +141,16 @@
     {
       "number": 9,
       "title": "Advanced Models",
-      "migrationState": "legacy",
+      "migrationState": "migrated",
       "legacyStaticPagePath": "chapters/chapter_09/exercise_09.ipynb",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "templateNotebookPath": "book/lite/files/exercise_09.ipynb",
+      "browserWorkingCopyName": "exercise_09.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_09.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json"
+      ],
       "extraPackages": [],
       "fallbackDownloadablePath": "downloads/chapter_09/exercise_09_portable.ipynb"
     },

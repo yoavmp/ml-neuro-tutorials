@@ -117,10 +117,11 @@ jobs:
       - name: Check every migrated exercise generator is not stale (offline, full gate)
         if: needs.classify.outputs.gate == 'full'
         run: |
-          for n in 01 02 03 04 05 06 07 08; do
+          for n in 01 02 03 04 05 06 07 08 09; do
             python scripts/generate_exercise_${n}_notebook.py --check
             python scripts/generate_exercise_${n}_transition_page.py --check
           done
+          python scripts/compute_exercise_09_svr_benchmark.py --check
 
       - name: Run change-aware pretest checks (prose/exercise gate only)
         # WP50: the classifier-selected generator --check(s) and
@@ -166,7 +167,7 @@ jobs:
           fi
           echo "No notebook execution-error reports found."
 
-      - name: Build JupyterLite (Exercises 1-8)
+      - name: Build JupyterLite (Exercises 1-9)
         run: |
           jupyter lite build \
             --config book/lite/jupyter_lite_config.json \
@@ -195,18 +196,18 @@ jobs:
           path: interactive/test-results
           retention-days: 14
 
-      - name: Execute the portable notebook outside the repository (Exercises 1-8 only, full gate)
-        # WP49: smoke_portable_notebook.py's default ("all") also executes
-        # Exercises 9-10's portable notebooks -- legacy, unpublished
+      - name: Execute the portable notebook outside the repository (Exercises 1-9 only, full gate)
+        # WP49/WP52: smoke_portable_notebook.py's default ("all") also
+        # executes Exercise 10's portable notebook -- legacy, unpublished
         # content this release's own gate has no reason to depend on (see
         # book/_toc.yml and book/_config.yml's exclude_patterns). Scoped
-        # to chapter_02, the only Exercise-1-8 notebook this script can
+        # to chapter_02, the only Exercise-1-9 notebook this script can
         # currently smoke-test at all (every other migrated exercise's
-        # portable copy is deliberately excluded from SMOKE for the
-        # documented ipywidgets.Output()/nbclient hang -- see the script's
-        # own module docstring). A separate, non-blocking workflow
-        # (.github/workflows/legacy-notebook-smoke.yml) still runs the
-        # full set, including Exercises 9-10, without gating this
+        # portable copy, Exercise 9 included, is deliberately excluded
+        # from SMOKE for the documented ipywidgets.Output()/nbclient hang
+        # -- see the script's own module docstring). A separate, non-
+        # blocking workflow (.github/workflows/legacy-notebook-smoke.yml)
+        # still runs Exercise 10's own smoke test without gating this
         # deployment. WP50: only the full gate pays for this heavier,
         # real-kernel smoke; the prose/exercise gates' own lighter
         # scripts/smoke_release_routes.py (run above) covers the targeted

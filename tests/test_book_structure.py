@@ -45,30 +45,29 @@ class Toc(unittest.TestCase):
             chapters[1]["sections"][0]["file"], "chapters/chapter_01/exercise_01"
         )
 
-    def test_exercises_one_through_eight_follow_in_order(self):
-        # WP49: Exercises 9-12 are intentionally excluded from the public
-        # toctree for this release (see test_exercises_nine_through_twelve_
-        # source_preserved_but_not_published below) -- only 1-8 are
-        # published, in order.
+    def test_exercises_one_through_nine_follow_in_order(self):
+        # WP49/WP52: Exercises 10-12 are intentionally excluded from the
+        # public toctree for this release (see
+        # test_exercises_ten_through_twelve_source_preserved_but_not_published
+        # below) -- 1-9 are published, in order.
         sections = self.toc["chapters"][1]["sections"]
         files = [s["file"] for s in sections]
         self.assertEqual(
             files,
-            [f"chapters/chapter_{n:02d}/exercise_{n:02d}" for n in range(1, 9)],
+            [f"chapters/chapter_{n:02d}/exercise_{n:02d}" for n in range(1, 10)],
         )
-        for n in range(1, 9):
+        for n in range(1, 10):
             self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb").exists())
 
-    def test_exercises_nine_through_twelve_source_preserved_but_not_published(self):
+    def test_exercises_ten_through_twelve_source_preserved_but_not_published(self):
         # WP49: unpublished, not deleted -- their source stays on disk (and
         # in git history) for later inspection/redesign, but must not appear
-        # in the public toctree alongside Exercises 1-8.
+        # in the public toctree alongside Exercises 1-9.
         sections = self.toc["chapters"][1]["sections"]
         files = [s["file"] for s in sections]
-        for n in (9, 10, 11, 12):
+        for n in (10, 11, 12):
             self.assertNotIn(f"chapters/chapter_{n:02d}/exercise_{n:02d}", files)
-        for n in (9, 10):
-            self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb").exists())
+        self.assertTrue((BOOK / "chapters" / "chapter_10" / "exercise_10.ipynb").exists())
         for n in (11, 12):
             self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md").exists())
 
@@ -76,7 +75,7 @@ class Toc(unittest.TestCase):
         sections = self.toc["chapters"][1]["sections"]
         files = [s["file"] for s in sections]
         self.assertNotIn("chapters/chapter_13/exercise_13", files)
-        self.assertEqual(len(files), 8)
+        self.assertEqual(len(files), 9)
 
 
 class Pages(unittest.TestCase):

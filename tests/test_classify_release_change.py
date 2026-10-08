@@ -96,8 +96,9 @@ class PathClassification(unittest.TestCase):
         self.assertEqual(classify_path("interactive/e2e-book/wp22-cross-chapter-dark-mode.spec.ts").kind, "shared")
 
     def test_legacy_exercise_paths_are_not_fast_pathed(self):
-        # Exercises 9-12 stay legacy/unpublished -- WP50 does not optimize their gate.
-        c = classify_path("book/chapters/chapter_09/exercise_09.ipynb")
+        # Exercises 10-12 stay legacy/unpublished (WP52 migrated Exercise 9) --
+        # WP50 does not optimize their gate.
+        c = classify_path("book/chapters/chapter_10/exercise_10.ipynb")
         self.assertIn(c.kind, ("shared",))
 
     def test_truly_unknown_path(self):

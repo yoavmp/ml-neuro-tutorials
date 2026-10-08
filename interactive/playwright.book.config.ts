@@ -7,20 +7,24 @@ const PORT = 4174;
 
 export default defineConfig({
   testDir: "./e2e-book",
-  // WP49: Exercises 9-12 are intentionally excluded from book/_toc.yml for
-  // this release (their JupyterLite-native migration hasn't started and
-  // their legacy iframe-embedded notebook experience should not be
-  // published alongside the Exercises 1-8 Lite hub) -- chapters 9 and 10
-  // no longer exist in the built book, so these four specs, which exist
-  // only to exercise those now-unpublished pages, would fail on a 404, not
-  // on a genuine regression. They are excluded here, not deleted: their
-  // source stays for whenever Exercises 9-12 are migrated and republished.
-  testIgnore: [
-    "**/chapter09.spec.ts",
-    "**/chapter09-dark-mode.spec.ts",
-    "**/chapter10.spec.ts",
-    "**/iframe-height-contract.spec.ts",
-  ],
+  // WP49/WP52: Exercises 10-12 are intentionally excluded from
+  // book/_toc.yml for this release (their JupyterLite-native migration
+  // hasn't started and their legacy iframe-embedded notebook experience
+  // should not be published alongside the Exercises 1-9 Lite hub) --
+  // chapter 10 no longer exists in the built book, so chapter10.spec.ts,
+  // which exists only to exercise that now-unpublished page, would fail on
+  // a 404, not on a genuine regression. It is excluded here, not deleted:
+  // its source stays for whenever Exercises 10-12 are migrated and
+  // republished. WP52 migrated Exercise 9 (see chapter09.spec.ts and
+  // exercise-09-lite.spec.ts, both now part of this run) -- its own former
+  // iframe-based page, and chapter09-dark-mode.spec.ts's Plotly-color
+  // regression guard for that page's iframes, no longer exist at all
+  // (deleted, not excluded; see WPs/reports/WP52_REPORT.md).
+  // iframe-height-contract.spec.ts stays excluded for an unrelated reason:
+  // it generically enumerates every iframe in the built book, and every
+  // migrated exercise's transition page (now 1-9) has none -- there is
+  // nothing left for it to check until Exercise 10+ migrates too.
+  testIgnore: ["**/chapter10.spec.ts", "**/iframe-height-contract.spec.ts"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,

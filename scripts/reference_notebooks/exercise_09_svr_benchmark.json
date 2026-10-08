@@ -1,0 +1,22 @@
+{
+  "description": "Instructor/reference full-training-data SVR benchmark for Exercise 9, Section 6 -- NOT the student's own small-subset SVR activity result, and NOT the old pre-migration nested-CV summary. Computed offline by scripts/compute_exercise_09_svr_benchmark.py.",
+  "model": "SVR (scikit-learn library defaults, StandardScaler-scaled, full training partition)",
+  "n_features": 360,
+  "n_train": 753,
+  "n_val": 251,
+  "params": {
+    "C": 1.0,
+    "epsilon": 0.1,
+    "gamma": "scale",
+    "kernel": "rbf"
+  },
+  "params_chosen_without_validation_tuning": true,
+  "split": {
+    "random_state": 42,
+    "source": "book/lite/files/data/abide_age_brain.csv",
+    "stratify": "group",
+    "test_size": 0.25
+  },
+  "val_mse": 54.083,
+  "val_r2": 0.421
+}

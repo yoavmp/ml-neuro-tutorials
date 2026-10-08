@@ -23,7 +23,7 @@ What it computes, in order:
 2. The **changed paths** between that base and HEAD (`git diff --name-status
    -M`), with renames contributing both their old and new path.
 3. Each path's **classification**: WP docs (`WPs/**`), one exercise's own
-   scoped surface (1-8 only -- 9-12 stay unpublished, see
+   scoped surface (1-9 only -- 10-12 stay unpublished, see
    `book/config/exercise_manifest.json`), a shared/global surface, or an
    unrecognized ("unknown") path. No changed path is ever silently dropped.
 4. For a change confined to one or more exercises' own scoped paths (no
@@ -67,7 +67,7 @@ from typing import Callable
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-PUBLISHED_EXERCISE_NUMBERS = range(1, 9)  # Exercises 1-8 only; 9-12 stay legacy/unpublished.
+PUBLISHED_EXERCISE_NUMBERS = range(1, 10)  # Exercises 1-9 only; 10-12 stay legacy/unpublished.
 
 GATE_SKIP = "skip"
 GATE_PROSE = "prose"
@@ -238,35 +238,35 @@ def classify_path(path: str) -> PathClass:
     if path == "WPs" or path.startswith("WPs/"):
         return PathClass(path, "wp_docs", None, "WP report/spec documentation (never read at runtime)")
 
-    match = re.fullmatch(r"scripts/generate_exercise_(0[1-8])_(notebook|transition_page)\.py", path)
+    match = re.fullmatch(r"scripts/generate_exercise_(0[1-9])_(notebook|transition_page)\.py", path)
     if match:
         return PathClass(path, "exercise", int(match.group(1)), "exercise generator script")
 
-    match = re.fullmatch(r"scripts/reference_notebooks/exercise_(0[1-8])_reference\.ipynb", path)
+    match = re.fullmatch(r"scripts/reference_notebooks/exercise_(0[1-9])_reference\.ipynb", path)
     if match:
         return PathClass(path, "exercise", int(match.group(1)), "exercise reference notebook")
 
-    match = re.fullmatch(r"book/chapters/chapter_(0[1-8])/exercise_(0[1-8])\.ipynb", path)
+    match = re.fullmatch(r"book/chapters/chapter_(0[1-9])/exercise_(0[1-9])\.ipynb", path)
     if match and match.group(1) == match.group(2):
         return PathClass(path, "exercise", int(match.group(1)), "exercise transition page")
 
-    match = re.fullmatch(r"book/lite/files/exercise_(0[1-8])(?:_portable)?\.ipynb", path)
+    match = re.fullmatch(r"book/lite/files/exercise_(0[1-9])(?:_portable)?\.ipynb", path)
     if match:
         return PathClass(path, "exercise", int(match.group(1)), "exercise JupyterLite template/portable copy")
 
-    match = re.fullmatch(r"book/downloads/chapter_(0[1-8])/exercise_(0[1-8])_portable\.ipynb", path)
+    match = re.fullmatch(r"book/downloads/chapter_(0[1-9])/exercise_(0[1-9])_portable\.ipynb", path)
     if match and match.group(1) == match.group(2):
         return PathClass(path, "exercise", int(match.group(1)), "exercise portable download")
 
-    match = re.fullmatch(r"tests/test_exercise_(0[1-8])_(lite_notebook|reference_execution|transition_page)\.py", path)
+    match = re.fullmatch(r"tests/test_exercise_(0[1-9])_(lite_notebook|reference_execution|transition_page)\.py", path)
     if match:
         return PathClass(path, "exercise", int(match.group(1)), "exercise's own test file")
 
-    match = re.fullmatch(r"interactive/e2e-book/exercise-(0[1-8])-lite\.spec\.ts", path)
+    match = re.fullmatch(r"interactive/e2e-book/exercise-(0[1-9])-lite\.spec\.ts", path)
     if match:
         return PathClass(path, "exercise", int(match.group(1)), "exercise's own JupyterLite browser spec")
 
-    match = re.fullmatch(r"interactive/e2e-book/chapter(0[1-8])\.spec\.ts", path)
+    match = re.fullmatch(r"interactive/e2e-book/chapter(0[1-9])\.spec\.ts", path)
     if match:
         return PathClass(path, "exercise", int(match.group(1)), "exercise's own transition-page browser spec")
 

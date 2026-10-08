@@ -1,12 +1,22 @@
-name: Legacy notebook smoke test (Exercises 9-10)
+name: Legacy notebook smoke test (Exercise 10)
 
-# WP49: split out of deploy.yml's release gate. Exercises 9-10's portable
-# notebooks are legacy, unpublished content (excluded from book/_toc.yml
-# and book/_config.yml's exclude_patterns as of WP49) -- a transient
-# failure in their own smoke test has no bearing on whether Exercises
-# 1-8's published site is safe to deploy, and must not block that
-# deployment. This workflow keeps that broader check available on demand
-# without gating the release.
+# WP49: split out of deploy.yml's release gate. Exercise 10's portable
+# notebook is legacy, unpublished content (excluded from book/_toc.yml and
+# book/_config.yml's exclude_patterns) -- a transient failure in its own
+# smoke test has no bearing on whether the published site is safe to
+# deploy, and must not block that deployment. This workflow keeps that
+# broader check available on demand without gating the release.
+#
+# WP52: Exercise 9 migrated to the JupyterLite-native architecture and is
+# now part of the published, gated release (see .github/workflows/
+# deploy.yml and book/config/exercise_manifest.json) -- its own former step
+# here, `smoke_portable_notebook.py --notebook chapter_09`, is removed:
+# that script's `chapter_09` SMOKE entry was already retired in WP51 for
+# the same ipywidgets.Output()/nbclient hang every other migrated
+# exercise's portable copy shares (see scripts/smoke_portable_notebook.py's
+# own module docstring), so that argument would now fail argparse's
+# `choices` check outright. Exercise 9's equivalent numeric coverage is
+# tests/test_exercise_09_reference_execution.py (no nbclient involved).
 
 on:
   workflow_dispatch: {}
@@ -15,7 +25,6 @@ on:
       - main
     paths:
       - "scripts/smoke_portable_notebook.py"
-      - "book/downloads/chapter_09/**"
       - "book/downloads/chapter_10/**"
 
 jobs:
@@ -33,9 +42,6 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt -r requirements-lite.txt
-
-      - name: Execute Exercise 9's portable notebook outside the repository
-        run: python scripts/smoke_portable_notebook.py --notebook chapter_09
 
       - name: Execute Exercise 10's portable notebook outside the repository
         run: python scripts/smoke_portable_notebook.py --notebook chapter_10
