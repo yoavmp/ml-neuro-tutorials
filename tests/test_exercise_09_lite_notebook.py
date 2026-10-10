@@ -346,6 +346,32 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("set_ylim(0, _PCRPLS_MSE_YLIM)", source)
         self.assertIn("_pcrpls_global_max_mse", source)  # computed from the global max
 
+    def test_pcr_pls_legend_and_annotations_do_not_collide_with_the_colorbar(self):
+        # WP53: the legend used to sit at loc="lower right", directly
+        # against the colorbar occupying the right edge of this axes, and
+        # the fixed-radius direction annotations could extend into it too.
+        # Moved the legend away (upper-left) and widened the data margins
+        # so annotation text stays comfortably inside the view.
+        cell = next(c for c in self.cells if c.get("id") == "wp51-310-widget")
+        source = _src(cell)
+        self.assertIn('axes[0].legend(fontsize=7, loc="upper left")', source)
+        self.assertIn("axes[0].margins(0.3)", source)
+        self.assertNotIn('loc="lower right"', source)
+
+    def test_pcr_pls_note_no_longer_claims_clearly_labeled_above(self):
+        # WP53: "clearly labeled above" removed from the synthetic-data
+        # disclaimer (the activity's own markdown no longer makes that
+        # claim about itself).
+        self.assertIn("This activity uses entirely synthetic data -- not ABIDE.", self.md)
+        self.assertNotIn("clearly\nlabeled above", self.md)
+        self.assertNotIn("clearly labeled above", self.md)
+
+    def test_svr_task_computational_reasons_wording(self):
+        # WP53: the unsupported blanket Pyodide/GPU claim replaced with a
+        # plain computational-reasons statement.
+        self.assertIn("we skip that here for computational reasons", self.code)
+        self.assertNotIn("Pyodide has no GPU/multiple threads", self.code)
+
     def test_svm_activity_is_notebook_native_and_shows_train_val_distinction(self):
         cell = next(c for c in self.cells if c.get("id") == "wp51-407-widget")
         source = _src(cell)

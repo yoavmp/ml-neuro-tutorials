@@ -206,9 +206,25 @@ def _feature_list_literal() -> str:
 # (see the closing summary's own note).
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import random
 import warnings
 
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
+
+# This notebook's K-means activity (Section 3) fits scikit-learn
+# models under Pyodide, which triggers the same upstream threadpoolctl
+# RuntimeWarning already reproduced live and filtered in Exercises 2 and 4
+# (threadpoolctl's own Pyodide shared-library introspection call,
+# LDSO.loadedLibsByName.as_object_map(), not anything this notebook's code
+# calls) -- this notebook never had the filter, so the warning reached
+# students here. Filtered by the identical exact message match, scoped to
+# RuntimeWarning only -- never a blanket RuntimeWarning/DeprecationWarning
+# suppression.
+warnings.filterwarnings(
+    "ignore",
+    message=r"JsProxy\\.as_object_map\\(\\) is deprecated",
+    category=RuntimeWarning,
+)
 
 if sys.platform == "emscripten":
     # Running in the browser (JupyterLite). ipywidgets has no prebuilt
@@ -354,6 +370,7 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 _QUESTIONS = {
     "q-unsupervised-explore": dict(
         kind="single",
+        shuffle_seed=126,
         prompt=(
             "Without a target label, what can an unsupervised analysis help us "
             "explore?"
@@ -368,6 +385,7 @@ _QUESTIONS = {
     ),
     "q-unsupervised-info": dict(
         kind="single",
+        shuffle_seed=127,
         prompt=(
             "With no target column supplied, what information can an unsupervised "
             "algorithm actually use to group or summarize participants?"
@@ -382,6 +400,7 @@ _QUESTIONS = {
     ),
     "q-pca-separation": dict(
         kind="single",
+        shuffle_seed=128,
         prompt="What can visible separation (or lack of separation) in a PC1-vs-PC2 scatter plot establish?",
         options=[
             "That the colored characteristic relates to some of the variance PCA captured -- not that PCA is a good predictor of it, and not that no relationship exists if the plot looks mixed.",
@@ -393,6 +412,7 @@ _QUESTIONS = {
     ),
     "q-kmeans-reflection": dict(
         kind="single",
+        shuffle_seed=2129,
         prompt="As k increases, what happens to inertia and silhouette, and what does a higher silhouette score prove?",
         options=[
             "Inertia keeps decreasing (or staying flat) as k grows; silhouette can help compare candidate k values, but a higher score does not prove the clusters reflect a real biological or diagnostic category.",
@@ -404,6 +424,7 @@ _QUESTIONS = {
     ),
     "q-activity-kmeans": dict(
         kind="single",
+        shuffle_seed=2130,
         prompt="In the activity above, does increasing the number of retained components change which brain-measurement patterns feed K-means?",
         options=[
             "Yes -- K-means always clusters using every retained component you select, even though the scatter plot only ever shows PC1 and PC2.",
@@ -415,6 +436,7 @@ _QUESTIONS = {
     ),
     "q-pipeline-leakage": dict(
         kind="single",
+        shuffle_seed=1131,
         prompt=(
             "Why must Section 5's pipeline refit StandardScaler and PCA inside "
             "every cross-validation fold, instead of reusing Section 2's "
@@ -433,19 +455,23 @@ _QUESTIONS = {
 
 def show_question(question_id):
     q = _QUESTIONS[question_id]
+    order = list(range(len(q["options"])))
+    random.Random(q["shuffle_seed"]).shuffle(order)
+    shuffled_options = [q["options"][i] for i in order]
     if q["kind"] == "single":
         widget = make_single_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_index"],
+            shuffled_options,
+            order.index(q["correct_index"]),
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
     else:
+        shuffled_correct = {order.index(i) for i in q["correct_indices"]}
         widget = make_multi_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_indices"],
+            shuffled_options,
+            shuffled_correct,
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
@@ -608,11 +634,11 @@ scores, `pca_explore.transform(Xs)`).
             "wp47-203-pca-instructions",
         ),
         blank(
-            f"""
+            """
 # YOUR CODE HERE
-# Xs = StandardScaler().fit_transform(df[FEATURES].to_numpy(float))
-# pca_explore = PCA(n_components={N_PCA_COMPONENTS}, random_state=0).fit(Xs)
-# X_pca = pca_explore.transform(Xs)
+# Xs = ...           # standardized brain predictors
+# pca_explore = ...  # a fitted PCA
+# X_pca = ...        # pca_explore applied to Xs
 """,
             f"""
 Xs = StandardScaler().fit_transform(df[FEATURES].to_numpy(float))
@@ -670,7 +696,7 @@ Make a two-panel figure from your `pca_explore`:
   percentage, starting at 0%), with a dashed horizontal line at 50% and an
   annotation marking PC1 alone.
 
-Required output name: `pca_variance_fig`.
+Your figure should be defined under the name `pca_variance_fig`.
 """,
             "wp47-206-variance-instructions",
         ),
@@ -749,7 +775,7 @@ a **reversed sequential colormap** (for example `"viridis_r"`) so that
 characteristic are used here only to color an already-fitted plot -- never
 as an input to PCA.
 
-Required output name: `pca_scatter_fig`.
+Your figure should be defined under the name `pca_scatter_fig`.
 """,
             "wp47-209-scatter-instructions",
         ),
@@ -836,7 +862,7 @@ underlying solution; a flipped sign on every loading in a component is not
 an error.) Avoid declaring any individual region causal or diagnostic from
 this alone.
 
-Required output name: `pca_loadings_fig`.
+Your figure should be defined under the name `pca_loadings_fig`.
 """,
             "wp47-214-loadings-instructions",
         ),

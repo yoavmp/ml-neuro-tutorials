@@ -108,6 +108,7 @@ def _curated_columns_literal() -> str:
 
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import random
 import warnings
 
 # This pinned browser kernel's matplotlib/backend combination emits a
@@ -248,9 +249,17 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 # fully offline, editable notebook must contain enough information to check an
 # answer locally, so a technically curious student can always recover it from
 # source or the running kernel.
+#
+# Every option list below is written with its correct answer(s) first,
+# for readability -- show_question shuffles the DISPLAYED order with a fixed,
+# per-question shuffle_seed, so the shuffle is computed once when the
+# notebook is generated (reproducible across reruns/reopens of the same
+# notebook), not reshuffled on every display or click, and the correct
+# answer no longer lands on the same position for every question.
 _QUESTIONS = {
     "q-categorical-columns": dict(
         kind="multi",
+        shuffle_seed=101,
         prompt="Which of these columns should be treated as categorical, even though some are stored as numbers?",
         options=[
             "DX_GROUP (diagnosis code)",
@@ -263,6 +272,7 @@ _QUESTIONS = {
     ),
     "q-histogram-bins": dict(
         kind="single",
+        shuffle_seed=102,
         prompt="Using very few histogram bins mainly risks:",
         options=[
             "Hiding real structure in the distribution (e.g. two separate peaks).",
@@ -273,6 +283,7 @@ _QUESTIONS = {
     ),
     "q-fiq-correlation": dict(
         kind="multi",
+        shuffle_seed=103,
         prompt="FIQ correlates strongly with VIQ and PIQ (r ~ 0.83). What does that tell you?",
         options=[
             "Full-scale IQ is computed from the verbal and performance scores, so a strong correlation is expected by construction.",
@@ -287,19 +298,23 @@ _QUESTIONS = {
 
 def show_question(question_id):
     q = _QUESTIONS[question_id]
+    order = list(range(len(q["options"])))
+    random.Random(q["shuffle_seed"]).shuffle(order)
+    shuffled_options = [q["options"][i] for i in order]
     if q["kind"] == "single":
         widget = make_single_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_index"],
+            shuffled_options,
+            order.index(q["correct_index"]),
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
     else:
+        shuffled_correct = {order.index(i) for i in q["correct_indices"]}
         widget = make_multi_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_indices"],
+            shuffled_options,
+            shuffled_correct,
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )

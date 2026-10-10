@@ -100,6 +100,43 @@ test.describe("Exercise 6 — JupyterLite notebook, untouched template", () => {
     await expect(smallTree.locator(".jp-OutputArea-output").last()).toContainText("leaves = 8");
   });
 
+  test("the regression-tree diagram renders as a real, high-resolution image", async ({ page }) => {
+    // WP53: plot_tree's default fontsize auto-shrunk text to fit a small
+    // figsize=(9, 5) canvas -- unreadable even before any CSS display
+    // width was applied. Checks the actual rendered <img>'s own natural
+    // pixel dimensions, not just that something displays.
+    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
+    await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
+    await runAllCells(page);
+
+    // This cell's own output is now a much taller image than the windowed
+    // panel's virtualizer expects for an average row -- found live that
+    // scrollToVisible's coarse 5%-of-scrollHeight steps can jump straight
+    // over the narrow scrollTop range where this specific cell is actually
+    // rendered, even though the maths says a step should land inside it.
+    // A finer, fixed-pixel sweep (down from the bottom "Run All Cells"
+    // leaves the view at) reliably lands on it instead.
+    const diagramLocator = page.locator(".jp-CodeCell", { hasText: "format_tree_diagram(small_tree" });
+    const scrollHeight = await page.evaluate(
+      () => document.querySelector(".jp-WindowedPanel-outer")?.scrollHeight ?? 0,
+    );
+    for (let st = 0; st <= scrollHeight; st += 300) {
+      await page.evaluate((v) => {
+        const el = document.querySelector(".jp-WindowedPanel-outer");
+        if (el) el.scrollTop = v;
+      }, st);
+      await page.waitForTimeout(300);
+      if ((await diagramLocator.count()) > 0 && (await diagramLocator.first().boundingBox())) break;
+    }
+    const diagramCell = diagramLocator.first();
+    const img = diagramCell.locator(".jp-OutputArea-output img").first();
+    await expect(img).toBeVisible({ timeout: 10_000 });
+    const naturalWidth = await img.evaluate((el: HTMLImageElement) => el.naturalWidth);
+    const naturalHeight = await img.evaluate((el: HTMLImageElement) => el.naturalHeight);
+    expect(naturalWidth).toBeGreaterThanOrEqual(1800); // figsize=(15, 9) at dpi=140
+    expect(naturalHeight).toBeGreaterThanOrEqual(1000);
+  });
+
   test("no error cells anywhere on an untouched Run All Cells; both blanks degrade to their own guidance", async ({
     page,
   }) => {
@@ -122,6 +159,31 @@ test.describe("Exercise 6 — JupyterLite notebook, untouched template", () => {
     await runAllCells(page);
 
     const widget = await scrollToVisible(page, "Lock My Answer", ".jp-CodeCell");
+    // WP53: ax.legend() used to be called unconditionally, even before any
+    // labeled artist existed (no "your proposal"/"greedy optimum" line yet)
+    // -- "No artists with labels found to put in legend" printed to this
+    // exact cell's own output on the very first, untouched render.
+    const widgetTextBeforeLock = await widget.innerText();
+    expect(widgetTextBeforeLock).not.toMatch(/Warning/);
+
+    // WP53 item 4: changing the Feature or Threshold dropdown must
+    // redraw immediately, previewing the current (not-yet-locked)
+    // selection -- verified by the rendered figure's own image actually
+    // changing, not just by nothing crashing.
+    const img = widget.locator("img").last();
+    await expect(img).toBeVisible({ timeout: 5_000 });
+    const srcBeforeFeatureChange = await img.getAttribute("src");
+    await widget.locator("select").first().selectOption({ index: 1 }); // Brain measure 2
+    await page.waitForTimeout(800);
+    const srcAfterFeatureChange = await widget.locator("img").last().getAttribute("src");
+    expect(srcAfterFeatureChange).not.toEqual(srcBeforeFeatureChange);
+
+    const srcBeforeThresholdChange = srcAfterFeatureChange;
+    await widget.locator("select").nth(1).selectOption({ index: 2 }); // a different threshold
+    await page.waitForTimeout(800);
+    const srcAfterThresholdChange = await widget.locator("img").last().getAttribute("src");
+    expect(srcAfterThresholdChange).not.toEqual(srcBeforeThresholdChange);
+
     await widget.locator("button", { hasText: "Lock My Answer" }).click();
     await page.waitForTimeout(400);
     const revealBtn = widget.locator("button", { hasText: "Reveal Best Split" });
@@ -129,6 +191,7 @@ test.describe("Exercise 6 — JupyterLite notebook, untouched template", () => {
     await revealBtn.click();
     await page.waitForTimeout(400);
     await expect(page.locator("body")).toContainText("Greedy optimum", { timeout: 5_000 });
+    expect(await widget.innerText()).not.toMatch(/Warning/);
   });
 
   test("the One Tree or Many? widget changes its summary table when the number of trees changes", async ({
@@ -139,6 +202,14 @@ test.describe("Exercise 6 — JupyterLite notebook, untouched template", () => {
     await runAllCells(page);
 
     const widget = await scrollToVisible(page, "Number of trees:", ".jp-CodeCell");
+    // WP53: ipywidgets' default Dropdown description label has a fixed,
+    // narrow width with no wrapping -- confirmed live to truncate "Number
+    // of trees:" before the fix. scrollWidth > clientWidth is the direct
+    // signature of CSS text-overflow/ellipsis clipping.
+    const label = widget.locator(".widget-label", { hasText: "Number of trees" }).first();
+    await expect(label).toBeVisible({ timeout: 5_000 });
+    const [scrollW, clientW] = await label.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+    expect(scrollW).toBeLessThanOrEqual(clientW + 1); // +1: subpixel rounding
     // This widget's plots/print run inside an ipywidgets.Output() context,
     // whose content is not part of the notebook cell's own
     // .jp-OutputArea-output tree (it lives in the widget's own
@@ -209,10 +280,13 @@ test.describe("Exercise 6 — JupyterLite notebook, teacher-completed path", () 
     const depthCheck = await scrollToVisible(page, "Looks good: best depth by validation MSE");
     await expect(depthCheck.locator(".jp-OutputArea-output").last()).toContainText("best depth by validation MSE = 2");
 
+    // Every question now shuffles its displayed option order with a fixed
+    // per-question seed (course-wide review item 2) -- select by the
+    // option's own TEXT, never by position.
     const q1 = await scrollToVisible(page, "Which depth should we select before predicting the test set?", ".jp-OutputArea-output");
     const q1Labels = q1.locator(".widget-radio-box label");
     await expect(q1Labels.first()).toBeVisible({ timeout: 5_000 });
-    await q1Labels.first().click();
+    await q1.locator(".widget-radio-box label", { hasText: "The depth that minimizes validation MSE" }).click();
     await q1.locator("button", { hasText: "Check answer" }).click();
     await page.waitForTimeout(500);
     await expect(q1.locator("text=/^Correct:/")).toBeVisible();

@@ -164,6 +164,18 @@ class StudentTemplateStructure(unittest.TestCase):
             self.assertIn(f'"{qid}"', source)
         self.assertIn("def show_question(question_id):", source)
 
+    def test_every_question_declares_a_shuffle_seed(self):
+        # WP53 course-wide review item 2: the shuffle mechanism itself
+        # lives in the hidden setup cell; see
+        # tests/test_exercise_04_reference_execution.py for the executed
+        # proof that shuffling is reproducible and varies positions across
+        # questions.
+        setup_source = _src(self.cells[1])
+        for qid in self.QUESTION_IDS:
+            block_match = re.search(rf'"{re.escape(qid)}":\s*dict\((.*?)\n    \),', setup_source, re.DOTALL)
+            self.assertIsNotNone(block_match, qid)
+            self.assertIn("shuffle_seed=", block_match.group(1), qid)
+
     def test_threadpoolctl_warning_narrowly_filtered(self):
         # WP48 E.1: same upstream threadpoolctl/Pyodide RuntimeWarning
         # reproduced live for Exercise 2 (see
@@ -199,6 +211,31 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("widgets.Dropdown", source)
         self.assertIn("sample size:", source)
         self.assertIn("seed:", source)
+
+    def test_sample_sizes_begin_at_150_250_not_30_50(self):
+        # WP53: low sample-size choices (30, 50, 75, 100) replaced with a
+        # progression beginning at 150, 250, then larger sizes; the checked
+        # question's own worked example updated to match.
+        cell = next(c for c in self.cells if c.get("id") == "wp45-403-widget")
+        source = _src(cell)
+        self.assertIn('_STABILITY_SAMPLE_SIZES = [150, 250, 500, "all"]', source)
+        self.assertNotIn("30", source)
+        self.assertNotIn(" 50,", source)
+        setup_source = _src(self.cells[1])
+        self.assertIn("150 or 250 participants", setup_source)
+        self.assertNotIn("30 or 50 participants", setup_source)
+
+    def test_nested_cv_diagram_is_a_reasonably_sized_committed_asset(self):
+        # WP53: the course author's own replacement image (no overlapping
+        # labels), not the old matplotlib rendering -- a sanity size check
+        # that it is a real, non-trivial, but not bloated PNG.
+        diagram = next(c for c in self.cells if c.get("id") == "wp45-503-diagram")
+        encoded = diagram["attachments"]["exercise_04_nested_cv_diagram.png"]["image/png"]
+        import base64
+        raw = base64.b64decode(encoded)
+        self.assertEqual(raw[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertGreater(len(raw), 50_000)
+        self.assertLess(len(raw), 1_000_000)
 
     def test_nested_cv_conceptual_diagram_present(self):
         # WP48 E.4: the old raw-HTML/inline-CSS diagram is replaced by a

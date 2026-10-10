@@ -140,14 +140,20 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertNotIn('boosting_sweep_results.append({"n_estimators"', source)
 
     def test_pipeline_blank_is_not_pre_populated_with_the_solution(self):
+        # WP53 course-wide audit: a prose, numbered hint describes each
+        # required step and name, but the blank must not contain a
+        # complete, directly-runnable GridSearchCV solution, even commented
+        # out -- matching the stronger standard already applied to Exercise
+        # 9's own blanks (see tests/test_exercise_09_lite_notebook.py's
+        # test_blanks_contain_no_executable_solution_even_commented).
         cell = next(c for c in self.cells if "wp46-activity-pipeline" in c.get("metadata", {}).get("tags", []))
         source = _src(cell)
         self.assertIn("YOUR CODE HERE", source)
-        # The hint comments show the shape of the solution, but every line
-        # is commented out -- nothing here is executable as-is.
-        for line in source.splitlines():
-            if "boosting_search.fit(X_train, y_train)" in line:
-                self.assertTrue(line.strip().startswith("#"), line)
+        # Mentioning an attribute/call BY NAME in a prose hint is fine (not
+        # executable); what must never appear is the actual, directly
+        # runnable construction/fit call.
+        for needle in ("GridSearchCV(", "boosting_search.fit("):
+            self.assertNotIn(needle, source, f"blank contains a solution fragment: {needle!r}")
 
     def test_bars_blank_is_not_pre_populated_with_the_solution(self):
         cell = next(c for c in self.cells if "wp46-activity-bars" in c.get("metadata", {}).get("tags", []))
@@ -210,6 +216,18 @@ class StudentTemplateStructure(unittest.TestCase):
             self.assertIn(f'"{qid}"', source)
         self.assertIn("def show_question(question_id):", source)
 
+    def test_every_question_declares_a_shuffle_seed(self):
+        # WP53 course-wide review item 2: the shuffle mechanism itself
+        # lives in the hidden setup cell; see
+        # tests/test_exercise_07_reference_execution.py for the executed
+        # proof that shuffling is reproducible and varies positions across
+        # questions.
+        setup_source = _src(self.cells[1])
+        for qid in self.QUESTION_IDS:
+            block_match = re.search(rf'"{re.escape(qid)}":\s*dict\((.*?)\n    \),', setup_source, re.DOTALL)
+            self.assertIsNotNone(block_match, qid)
+            self.assertIn("shuffle_seed=", block_match.group(1), qid)
+
     def test_question_radio_labels_do_not_clip_wrapped_rows(self):
         # WP49: applying WP48 E.3's fix (originally Exercise-4-only) to the
         # identical duplicated CSS block here too -- a long option that wraps
@@ -236,6 +254,19 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("Previous Step", source)
         self.assertIn("Next Step", source)
         self.assertIn("IntSlider", source)
+
+    def test_scaled_correction_checkbox_label_is_not_clipped(self):
+        # WP53: ipywidgets' default Checkbox label has a fixed, fairly
+        # narrow width with no wrapping -- confirmed live to truncate this
+        # long label. Reuses the exact "checked-question" wrap rules
+        # already verified live elsewhere in this notebook's own
+        # _QUESTION_CSS, applied via a dedicated wrapper row.
+        cell = next(c for c in self.cells if c.get("id") == "wp46-204-step-widget")
+        source = _src(cell)
+        self.assertIn("Show the newest tree's correction after scaling by the learning rate", source)
+        self.assertIn('layout=widgets.Layout(width="100%")', source)
+        self.assertIn("_step_scaled_toggle_row", source)
+        self.assertIn('.add_class("checked-question")', source)
 
     def test_parameter_explorer_activity_is_notebook_native(self):
         cell = next(c for c in self.cells if c.get("id") == "wp46-407-explorer-widget")

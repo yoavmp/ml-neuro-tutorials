@@ -180,7 +180,7 @@ test.describe("Exercise 8 — JupyterLite notebook, teacher-completed path", () 
 
     await fillBlank(
       page,
-      "# Xs = StandardScaler().fit_transform",
+      "# Xs = ...",
       "Xs = StandardScaler().fit_transform(df[FEATURES].to_numpy(float))\n" +
         "pca_explore = PCA(n_components=50, random_state=0).fit(Xs)\n" +
         "X_pca = pca_explore.transform(Xs)\n" +
@@ -273,19 +273,54 @@ test.describe("Exercise 8 — JupyterLite notebook, teacher-completed path", () 
     await page.waitForTimeout(2_000);
     await expect(page.locator("body")).toContainText("k=4", { timeout: 10_000 });
 
-    // Every checked question: correct feedback.
-    for (const [anchor, correctSubstring] of [
-      ["Without a target label, what can an unsupervised analysis help us explore?", "Correct"],
-      ["With no target column supplied, what information", "Correct"],
-      ["What can visible separation", "Correct"],
-      ["As k increases, what happens to inertia and silhouette", "Correct"],
-      ["does increasing the number of retained components change", "Correct"],
-      ["Why must Section 5's pipeline refit StandardScaler and PCA", "Correct"],
+    // WP53: this exact widget (fitting KMeans live, under Pyodide) used to
+    // print the upstream threadpoolctl "JsProxy.as_object_map() is
+    // deprecated" RuntimeWarning into its own cell output every time a
+    // control changed -- confirmed live before the fix. Checked directly
+    // against the actual rendered output text, not just offline.
+    const widgetCellText = await widget.innerText();
+    expect(widgetCellText).not.toMatch(/Warning/);
+
+    // Every checked question: correct feedback. Each one now shuffles its
+    // displayed option order with a fixed per-question seed (course-wide
+    // review item 2) -- select by the correct option's own TEXT, never by
+    // position, which no longer reliably maps to the correct answer.
+    for (const [anchor, correctOptionText, correctSubstring] of [
+      [
+        "Without a target label, what can an unsupervised analysis help us explore?",
+        "without promising it has recovered real diagnostic classes",
+        "Correct",
+      ],
+      [
+        "With no target column supplied, what information",
+        "Only the predictor measurements themselves",
+        "Correct",
+      ],
+      [
+        "What can visible separation",
+        "not that PCA is a good predictor of it",
+        "Correct",
+      ],
+      [
+        "As k increases, what happens to inertia and silhouette",
+        "does not prove the clusters reflect a real biological",
+        "Correct",
+      ],
+      [
+        "does increasing the number of retained components change",
+        "K-means always clusters using every retained component",
+        "Correct",
+      ],
+      [
+        "Why must Section 5's pipeline refit StandardScaler and PCA",
+        "reusing it lets information about those rows leak into preprocessing",
+        "Correct",
+      ],
     ] as const) {
       const q = await scrollToVisible(page, anchor, ".jp-OutputArea-output");
       const labels = q.locator(".widget-radio-box label");
       await expect(labels.first()).toBeVisible({ timeout: 5_000 });
-      await labels.first().click();
+      await q.locator(".widget-radio-box label", { hasText: correctOptionText }).click();
       await q.locator("button", { hasText: "Check answer" }).click();
       await page.waitForTimeout(400);
       await expect(q.locator(`text=/^${correctSubstring}/`)).toBeVisible();
@@ -310,7 +345,7 @@ test.describe("Exercise 8 — JupyterLite notebook, teacher-completed path", () 
     const savePath = path.join(downloadDir, "exercise_08.ipynb");
     await download.saveAs(savePath);
     const downloaded = fs.readFileSync(savePath, "utf8");
-    expect(downloaded).not.toContain("# YOUR CODE HERE\\n# Xs = StandardScaler");
+    expect(downloaded).not.toContain("# YOUR CODE HERE\\n# Xs = ...");
     expect(downloaded).toContain("kmeans_results = []");
   });
 });

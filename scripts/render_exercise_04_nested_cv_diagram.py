@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 """Render Exercise 4's nested-cross-validation diagram as a static PNG.
 
+WP53: SUPERSEDED. The matplotlib rendering below still had overlapping
+labels in some panels when reviewed live; the committed
+book/lite/files/data/exercise_04_nested_cv_diagram.png is now the course
+author's own replacement image (same layout/legend/captions, laid out with
+no overlap), placed there directly -- not produced by this script. Do not
+run this script to "refresh" that file; it would silently overwrite the
+replacement with the old, flawed rendering. Kept only as a historical
+record of the diagram's original construction.
+
 WP48: replaces a raw-HTML/inline-CSS markdown diagram
 (``_NCV_DIAGRAM_HTML`` in scripts/generate_exercise_04_notebook.py) whose
 fold-color bars rendered as invisible/ineffective in a real JupyterLite

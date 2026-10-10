@@ -39,6 +39,35 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
+// A tall cell's output (e.g. a wide figure squeezed to a narrow 390px
+// viewport, which lengthens it) can make the windowed panel's internal
+// row-height bookkeeping land scrollToVisible's coarse 5%-of-scrollHeight
+// steps just past the narrow scrollTop range where that one cell is
+// actually rendered, even though the maths says a step should land inside
+// it -- found live. A finer, fixed-pixel sweep reliably lands on it
+// instead.
+async function scrollToVisibleFine(
+  page: Page,
+  text: string,
+  cellSelector = ".jp-CodeCell",
+): Promise<import("@playwright/test").Locator> {
+  const locator = page.locator(cellSelector, { hasText: text }).first();
+  const scrollHeight = await page.evaluate(
+    () => document.querySelector(".jp-WindowedPanel-outer")?.scrollHeight ?? 0,
+  );
+  for (let st = 0; st <= scrollHeight; st += 300) {
+    await page.evaluate((v) => {
+      const el = document.querySelector(".jp-WindowedPanel-outer");
+      if (el) el.scrollTop = v;
+    }, st);
+    await page.waitForTimeout(300);
+    if ((await locator.count()) > 0 && (await locator.boundingBox())) {
+      return locator;
+    }
+  }
+  throw new Error(`cell containing "${text}" never became visible while fine-scrolling`);
+}
+
 async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
   await page.waitForFunction(
     () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
@@ -151,10 +180,16 @@ test.describe("Exercise 9 — JupyterLite notebook, untouched template", () => {
 
     // WP52 items 3/8: scroll to each widget and confirm every control
     // label is neither clipped within its own box nor overlapping the
-    // control next to it.
+    // control next to it. Run once, up front -- found live that calling
+    // "Run All Cells" a second time mid-loop (re-running every cell,
+    // including the slow SVM grid search, a second time at this narrow
+    // viewport) can leave the notebook in a state where the second
+    // anchor's own scroll search times out, for no benefit: nothing here
+    // needs a second execution pass once the first has already rendered
+    // every widget.
+    await runAllCells(page);
     for (const anchor of ["_pcrpls_w1_dd = widgets.Dropdown", "_svm_dataset_dd = widgets.Dropdown"]) {
-      await runAllCells(page).catch(() => {}); // no-op if already idle; ensures widgets have rendered
-      const cell = await scrollToVisible(page, anchor);
+      const cell = await scrollToVisibleFine(page, anchor);
       const labels = cell.locator(".widget-controls-row .widget-label");
       const count = await labels.count();
       expect(count).toBeGreaterThan(0);
@@ -264,6 +299,22 @@ test.describe("Exercise 9 — JupyterLite notebook, teacher-completed path", () 
     await widgetCell.locator("select").nth(1).selectOption({ index: 1 }, { timeout: 15_000 }); // Components -> 2
     await page.waitForTimeout(1_000);
     await expect(page.locator("body")).toContainText("components=2", { timeout: 5_000 });
+
+    // WP53: the legend and direction annotations used to overlap this
+    // same figure's own colorbar at the right edge -- weight on PC1=0.9
+    // (just exercised above) is exactly the setting where the true-signal/
+    // PLS-direction arrows swing closest to the colorbar. The rendered
+    // image itself can't be asserted on by text, but a real image must be
+    // present and the page must not have been pushed into horizontal
+    // overflow by it.
+    const pcrplsImg = widgetCell.locator("img").last();
+    await expect(pcrplsImg).toBeVisible({ timeout: 5_000 });
+    const pcrplsWidth = await pcrplsImg.evaluate((el: HTMLImageElement) => el.naturalWidth);
+    expect(pcrplsWidth).toBeGreaterThan(400);
+    const pageOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(pageOverflow).toBeLessThanOrEqual(2);
 
     await fillBlank(
       page,

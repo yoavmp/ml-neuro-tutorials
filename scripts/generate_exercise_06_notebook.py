@@ -182,6 +182,7 @@ def _feature_list_literal() -> str:
 # regenerable source of truth (WP41 maintainer guide section 4.7).
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import random
 import warnings
 
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
@@ -317,6 +318,7 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 _QUESTIONS = {
     "q-greedy-splitting": dict(
         kind="single",
+        shuffle_seed=119,
         prompt="Why is this splitting procedure called 'greedy'?",
         options=[
             "Each split is chosen to minimize error at that node right now, without considering whether a different split would produce a better tree several levels later.",
@@ -328,6 +330,7 @@ _QUESTIONS = {
     ),
     "q-depth-selection": dict(
         kind="single",
+        shuffle_seed=120,
         prompt="Which depth should we select before predicting the test set?",
         options=[
             "The depth that minimizes validation MSE.",
@@ -339,6 +342,7 @@ _QUESTIONS = {
     ),
     "q-bagging-forest-variance": dict(
         kind="multi",
+        shuffle_seed=121,
         prompt="Which of the following correctly describe why bagging and Random Forest usually beat a single tree here?",
         options=[
             "Averaging many trees trained on different resamples reduces sensitivity to any one training sample (variance reduction).",
@@ -350,6 +354,7 @@ _QUESTIONS = {
     ),
     "q-bagging-reduces-variance": dict(
         kind="single",
+        shuffle_seed=137,
         prompt="Bagging fits many trees on bootstrap resamples and averages their predictions. What does this primarily reduce?",
         options=[
             "The model's sensitivity to which particular training sample it saw (variance).",
@@ -364,19 +369,23 @@ _QUESTIONS = {
 
 def show_question(question_id):
     q = _QUESTIONS[question_id]
+    order = list(range(len(q["options"])))
+    random.Random(q["shuffle_seed"]).shuffle(order)
+    shuffled_options = [q["options"][i] for i in order]
     if q["kind"] == "single":
         widget = make_single_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_index"],
+            shuffled_options,
+            order.index(q["correct_index"]),
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
     else:
+        shuffled_correct = {order.index(i) for i in q["correct_indices"]}
         widget = make_multi_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_indices"],
+            shuffled_options,
+            shuffled_correct,
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
@@ -521,8 +530,14 @@ def format_tree_diagram(tree, feature_names, aliases):
     \"\"\"Relabel plot_tree's default text ('X[0] <= t\\nsquared_error = ...\\n
     samples = n\\nvalue = v') with short aliases, 'Mean age =', and, for
     leaves, 'Predicted age ='.\"\"\"
-    fig, ax = plt.subplots(figsize=(9, 5))
-    artists = plot_tree(tree, feature_names=[aliases.get(f, f) for f in feature_names], ax=ax)
+    # plot_tree's default fontsize=None auto-shrinks text to cram
+    # every node into a small figsize=(9, 5) canvas -- unreadable even
+    # before any CSS display width is applied, and widening the displayed
+    # <img> via CSS alone only blows up that same low-resolution raster.
+    # A larger figure at higher DPI with an explicit, generously sized
+    # fontsize fixes the actual rendered pixels instead.
+    fig, ax = plt.subplots(figsize=(15, 9), dpi=140)
+    artists = plot_tree(tree, feature_names=[aliases.get(f, f) for f in feature_names], fontsize=12, ax=ax)
     is_leaf = tree.tree_.children_left == -1
     order = []
 
@@ -541,7 +556,8 @@ def format_tree_diagram(tree, feature_names, aliases):
         else:
             lines = artist.get_text().split("\\n")
             artist.set_text(f"{{lines[0]}}\\nMean age = {{v:.1f}}\\nn = {{n}}")
-    ax.set_title("Resulting Regression Tree")
+    ax.set_title("Resulting Regression Tree", fontsize=14)
+    fig.tight_layout()
     return fig
 
 
@@ -617,7 +633,7 @@ can never draw a diagonal decision boundary.
         ),
         md(
             """
-> **Think first:** Why must every split boundary in the plot above be
+> **Think:** Why must every split boundary in the plot above be
 > either perfectly vertical or perfectly horizontal? What would it mean for
 > a leaf to contain only one participant? Why might a very deep tree
 > memorize its training participants rather than generalize?
@@ -764,14 +780,25 @@ def _greedy_render(_change=None):
                 ax.plot([thr, thr], [ylo, yhi], "k--", linewidth=1)
             else:
                 ax.plot([xlo, xhi], [thr, thr], "k--", linewidth=1)
+        _plot_xlo, _plot_xhi = _gx1.min() - 0.5, _gx1.max() + 0.5
+        _plot_ylo, _plot_yhi = _gx2.min() - 0.5, _gx2.max() + 0.5
         if _greedy_state.locked is not None:
             feat, thr = _greedy_state.locked
-            xlo, xhi = _gx1.min() - 0.5, _gx1.max() + 0.5
-            ylo, yhi = _gx2.min() - 0.5, _gx2.max() + 0.5
             if feat == "x1":
-                ax.plot([thr, thr], [ylo, yhi], color="tab:orange", linewidth=2, label="your proposal")
+                ax.plot([thr, thr], [_plot_ylo, _plot_yhi], color="tab:orange", linewidth=2, label="your proposal")
             else:
-                ax.plot([xlo, xhi], [thr, thr], color="tab:orange", linewidth=2, label="your proposal")
+                ax.plot([_plot_xlo, _plot_xhi], [thr, thr], color="tab:orange", linewidth=2, label="your proposal")
+        elif _greedy_threshold_dd.value is not None:
+            # Live preview of the currently selected (not yet locked)
+            # feature/threshold -- the left plot now updates immediately as
+            # either dropdown changes. "Lock My Answer" still commits the
+            # choice (and enables Reveal/scoring); it is no longer a
+            # prerequisite for previewing what a choice would look like.
+            feat, thr = _greedy_feature_dd.value, _greedy_threshold_dd.value
+            if feat == "x1":
+                ax.plot([thr, thr], [_plot_ylo, _plot_yhi], color="tab:orange", linewidth=1.5, linestyle="--", label="current selection")
+            else:
+                ax.plot([_plot_xlo, _plot_xhi], [thr, thr], color="tab:orange", linewidth=1.5, linestyle="--", label="current selection")
         if _greedy_state.revealed:
             feat, thr = optimal["feature"], optimal["threshold"]
             xlo, xhi = _gx1.min() - 0.5, _gx1.max() + 0.5
@@ -782,7 +809,8 @@ def _greedy_render(_change=None):
                 ax.plot([xlo, xhi], [thr, thr], color="tab:green", linewidth=2, linestyle=":", label="greedy optimum")
         ax.set_xlabel(GREEDY_FEATURES["x1"])
         ax.set_ylabel(GREEDY_FEATURES["x2"])
-        ax.legend(fontsize=7, loc="best")
+        if ax.get_legend_handles_labels()[0]:
+            ax.legend(fontsize=7, loc="best")
         fig.colorbar(sc, ax=ax, label="target value")
 
         ax2 = axes[1]
@@ -871,6 +899,13 @@ _greedy_lock_btn.on_click(_on_lock)
 _greedy_reveal_btn.on_click(_on_reveal)
 _greedy_continue_btn.on_click(_on_continue)
 _greedy_reset_btn.on_click(_on_reset)
+# Both dropdowns must redraw immediately on every change, not only
+# after a button click -- the feature dropdown already refreshed the
+# threshold dropdown's own options; it must also redraw the (feature-
+# dependent) candidate-threshold figure, and the threshold dropdown must
+# redraw the left plot's threshold line as soon as a new value is picked.
+_greedy_feature_dd.observe(_greedy_render, names="value")
+_greedy_threshold_dd.observe(_greedy_render, names="value")
 _refresh_thresholds()
 display(widgets.VBox([
     widgets.HBox([_greedy_feature_dd, _greedy_threshold_dd]),
@@ -1041,7 +1076,7 @@ test_pos = np.sort(test_pos)
 dev_subjects, test_subjects = set(dev_pos.tolist()), set(test_pos.tolist())
 assert dev_subjects.isdisjoint(test_subjects)
 assert dev_subjects | test_subjects == set(subjects_eligible.tolist())
-print(f"eligible = {len(subjects_eligible)}   development = {len(dev_pos)}   outer test (excluded) = {len(test_pos)}")
+print(f"eligible = {len(subjects_eligible)}   train-val = {len(dev_pos)}   outer test (excluded) = {len(test_pos)}")
 
 X_cls, y_cls = X[dev_pos], y_eligible[dev_pos]
 cls_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
@@ -1060,7 +1095,7 @@ fig, ax = plt.subplots(figsize=(5.6, 3.6))
 ax.plot(MAX_DEPTHS, cls_val_auc, marker="o", color="tab:purple")
 ax.set_xlabel("max_depth")
 ax.set_ylabel("validation ROC AUC (higher is better)")
-ax.set_title("Classification: predicting autism diagnosis (development data only)")
+ax.set_title("Classification: predicting autism diagnosis (train-val data only)")
 plt.tight_layout()
 plt.show()
 """,
@@ -1126,7 +1161,7 @@ further.
         md("## 5. One Tree or Many?", "wp46-501-header"),
         md(
             """
-> **Think first:** Averaging many trees reduces *variance* (sensitivity to
+> **Think:** Averaging many trees reduces *variance* (sensitivity to
 > the training sample). Does it also reduce *bias* (a tree family's
 > systematic tendency to under- or over-predict in some region)? Why might
 > bagging and Random Forest perform similarly here, or differently?
@@ -1166,7 +1201,34 @@ for _seed in _ens_replicate_seeds:
             "random_forest": mean_squared_error(y_val, _rf.predict(X_val)),
         }}
 
-_ens_ntrees_dd = widgets.Dropdown(options=_ENS_N_TREES_GRID, value=_ENS_N_TREES_GRID[-2], description="Number of trees:")
+# ipywidgets' own stylesheet gives a Dropdown's description label a fixed,
+# fairly narrow width with no wrapping -- confirmed live (a real JupyterLite
+# browser, desktop and 390px) to truncate "Number of trees:" against its own
+# control. description_width=initial (below) is the primary fix (lets the
+# label size to its own content instead of being clipped); this small
+# scoped CSS is the layout backstop that lets the label wrap onto its own
+# line at a narrow viewport instead of overflowing the page, the same
+# pattern already verified live elsewhere in this course (e.g. Exercise 9's
+# own widget-controls-row).
+_ENS_WIDGET_CSS = '''
+<style>
+.ens-ntrees-row .widget-label {{
+    width: auto !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+}}
+</style>
+'''
+_ens_ntrees_dd = widgets.Dropdown(
+    options=_ENS_N_TREES_GRID, value=_ENS_N_TREES_GRID[-2], description="Number of trees:",
+    style={{"description_width": "initial"}},
+)
+_ens_ntrees_row = widgets.HBox(
+    [widgets.HTML(_ENS_WIDGET_CSS, layout=widgets.Layout(height="0px", margin="0px", padding="0px")), _ens_ntrees_dd],
+    layout=widgets.Layout(width="100%", flex_flow="row wrap"),
+)
+_ens_ntrees_row.add_class("ens-ntrees-row")
 _ens_output = widgets.Output()
 
 
@@ -1210,7 +1272,7 @@ def _ens_render(_change=None):
 
 
 _ens_ntrees_dd.observe(_ens_render, names="value")
-display(widgets.VBox([_ens_ntrees_dd, _ens_output]))
+display(widgets.VBox([_ens_ntrees_row, _ens_output]))
 _ens_render()
 """,
             "wp46-503-ensemble-widget",

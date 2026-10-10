@@ -105,12 +105,14 @@ class ReferenceExecution(unittest.TestCase):
         self.assertEqual(list(nested["selected_k"]), c["selected_k_per_fold"])
 
     def test_stability_widget_default_matches_wp27_audit(self):
-        # The Section 4 widget's default (sample size = 100, seed = 0) is
-        # computed live by the same algorithm scripts/wp27_validation_audit.py
-        # used for its own Part A audit; re-derive it directly here (rather
-        # than reading the widget's printed Output, which this direct
-        # cell-execution technique does not capture) and compare against the
-        # committed audit JSON.
+        # WP53 item: the Section 4 widget's sample-size choices now begin at
+        # 150, 250 (not 30, 50) -- its default (sample size = 150, seed = 0)
+        # is computed live by the same algorithm
+        # scripts/wp27_validation_audit.py used for its own Part A audit;
+        # re-derive it directly here (rather than reading the widget's
+        # printed Output, which this direct cell-execution technique does
+        # not capture) and compare against the committed audit JSON (which
+        # already covers every size, including 150, from before this WP).
         import numpy as np
         from sklearn.metrics import mean_squared_error, r2_score
         from sklearn.model_selection import KFold, cross_validate, train_test_split
@@ -120,7 +122,7 @@ class ReferenceExecution(unittest.TestCase):
 
         X, y = self.ns["X"], self.ns["y"]
         pools = self.ns["_stability_pools_cache"]
-        idx = pools[100]
+        idx = pools[150]
         Xp, yp = X[idx], y[idx]
 
         Xtr, Xte, ytr, yte = train_test_split(Xp, yp, test_size=0.25, random_state=0)
@@ -135,11 +137,40 @@ class ReferenceExecution(unittest.TestCase):
         )
         cv_mse = (-scores["test_neg_mean_squared_error"]).mean()
 
-        size_entry = next(s for s in AUDIT_RESULT["part_a_sample_size_stability"]["sizes"] if s["sample_size"] == 100)
+        size_entry = next(s for s in AUDIT_RESULT["part_a_sample_size_stability"]["sizes"] if s["sample_size"] == 150)
         audited_single = next(s for s in size_entry["single_split"] if s["seed"] == 0)
         audited_cv = next(c for c in size_entry["cv_by_folds"]["5"] if c["seed"] == 0)
         self.assertAlmostEqual(single_mse, audited_single["test_mse"], places=2)
         self.assertAlmostEqual(cv_mse, audited_cv["mean_mse"], places=2)
+
+    def test_shuffle_is_reproducible_and_varies_positions_across_questions(self):
+        # WP53 course-wide review item 2: correct answers must not all land
+        # first, and the same per-question seed must always give the same
+        # order (so rerunning a show_question() cell never unpredictably
+        # changes it) -- the same check already established for Exercise 9
+        # (see tests/test_exercise_09_reference_execution.py).
+        import random
+
+        questions = self.ns["_QUESTIONS"]
+        self.assertEqual(len(questions), 3)
+        positions = []
+        for qid, q in questions.items():
+            seed = q["shuffle_seed"]
+            n = len(q["options"])
+            order = list(range(n))
+            random.Random(seed).shuffle(order)
+            order2 = list(range(n))
+            random.Random(seed).shuffle(order2)
+            self.assertEqual(order, order2, qid)
+            if q["kind"] == "multi":
+                positions.append(sorted(order.index(i) for i in q["correct_indices"]))
+            else:
+                positions.append(order.index(q["correct_index"]))
+
+        flat_first_positions = [p[0] if isinstance(p, list) else p for p in positions]
+        self.assertGreater(len(set(flat_first_positions)), 1)
+        single_positions = [p for p in positions if isinstance(p, int)]
+        self.assertTrue(any(p != 0 for p in single_positions))
 
 
 def _check_cell_source(cell_id: str) -> str:

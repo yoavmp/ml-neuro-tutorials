@@ -135,11 +135,14 @@ test.describe("Exercise 1 — JupyterLite notebook", () => {
     const question = page.locator(".jp-OutputArea-output", {
       hasText: "Which of these columns should be treated as categorical",
     });
+    // This question now shuffles its displayed option order with a fixed
+    // per-question seed (course-wide review item 2) -- select by each
+    // option's own TEXT, never by position.
     const checkboxes = question.locator("input[type='checkbox']");
     await expect(checkboxes.first()).toBeVisible({ timeout: 5_000 });
-    await checkboxes.nth(0).click(); // DX_GROUP
-    await checkboxes.nth(2).click(); // SEX
-    await checkboxes.nth(4).click(); // HANDEDNESS_CATEGORY
+    await question.locator("label", { hasText: "DX_GROUP (diagnosis code)" }).click();
+    await question.locator("label", { hasText: "SEX (coded 1/2)" }).click();
+    await question.locator("label", { hasText: "HANDEDNESS_CATEGORY (coded 1/2/3)" }).click();
     await question.locator("button", { hasText: "Check answer" }).click();
     await page.waitForTimeout(500);
     await expect(question.locator("text=Correct.")).toBeVisible();

@@ -187,6 +187,7 @@ def _reference_image_data_uri() -> str:
 # Colab) -- not a JupyterLite-only trick.
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import random
 import warnings
 
 # This notebook's pinned browser kernel renders every matplotlib figure
@@ -353,6 +354,7 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 _QUESTIONS = {
     "q-test-target-use": dict(
         kind="multi",
+        shuffle_seed=104,
         prompt="Which uses of the test target y_test are allowed at this point in the notebook?",
         options=[
             "Plotting its distribution to sanity-check the split (as above).",
@@ -364,6 +366,7 @@ _QUESTIONS = {
     ),
     "q-correlation-vs-coefficient": dict(
         kind="multi",
+        shuffle_seed=105,
         prompt="Why can a feature's correlation with age and its fitted regression coefficient tell different stories?",
         options=[
             "Correlation is a marginal (feature-by-itself) relationship; a coefficient is conditional on every other feature already being in the model.",
@@ -375,6 +378,14 @@ _QUESTIONS = {
     ),
     "q-honest-evaluation": dict(
         kind="single",
+        # No shuffle_seed, deliberately: these three options are the exact
+        # "A. correct" / "B. training score" / "C. invalid" row labels of
+        # the comparison table displayed just above, and the markdown right
+        # below references them by letter ("B is not a competing model...
+        # C is not a competing model either") -- permuting the options here
+        # would desynchronize the question from both the table and that
+        # explanation: a question whose options carry meaningful, referenced
+        # ordered labels is deliberately not shuffled.
         prompt="Which evaluation can estimate performance for a new participant?",
         options=["A. correct", "B. training score", "C. invalid"],
         correct_index=0,
@@ -383,12 +394,14 @@ _QUESTIONS = {
     ),
     "q-knn-complexity": dict(
         kind="single",
+        shuffle_seed=2106,
         prompt="Which of these changes increases KNN's model complexity?",
         options=["Decreasing k", "Increasing k", "Model complexity does not depend on k"],
         correct_index=0,
     ),
     "q-knn-large-k-variance": dict(
         kind="single",
+        shuffle_seed=107,
         prompt="In this activity, what happens to the three training-sample resamples' scatter as k grows very large?",
         options=[
             "They converge toward the same near-constant predictions.",
@@ -403,19 +416,25 @@ _QUESTIONS = {
 
 def show_question(question_id):
     q = _QUESTIONS[question_id]
+    seed = q.get("shuffle_seed")
+    order = list(range(len(q["options"])))
+    if seed is not None:
+        random.Random(seed).shuffle(order)
+    shuffled_options = [q["options"][i] for i in order]
     if q["kind"] == "single":
         widget = make_single_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_index"],
+            shuffled_options,
+            order.index(q["correct_index"]),
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
     else:
+        shuffled_correct = {order.index(i) for i in q["correct_indices"]}
         widget = make_multi_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_indices"],
+            shuffled_options,
+            shuffled_correct,
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )

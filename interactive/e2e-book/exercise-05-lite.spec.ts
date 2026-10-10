@@ -226,11 +226,14 @@ test.describe("Exercise 5 — JupyterLite notebook, teacher-completed path", () 
     const lassoCheck = await scrollToVisible(page, "coefficients are nonzero.");
     await expect(lassoCheck.locator(".jp-OutputArea-output").last()).toContainText("Looks good");
 
-    // Section 3's checked question.
+    // Section 3's checked question. Every question now shuffles its
+    // displayed option order with a fixed per-question seed (course-wide
+    // review item 2) -- select by the option's own TEXT, never by
+    // position, which no longer reliably maps to the correct answer.
     const q1 = await scrollToVisible(page, "Why must SelectKBest be fit on X_train/y_train only", ".jp-OutputArea-output");
     const q1Labels = q1.locator(".widget-radio-box label");
     await expect(q1Labels.first()).toBeVisible({ timeout: 5_000 });
-    await q1Labels.first().click();
+    await q1.locator(".widget-radio-box label", { hasText: "data leakage that makes the test score" }).click();
     await q1.locator("button", { hasText: "Check answer" }).click();
     await page.waitForTimeout(500);
     await expect(q1.locator("text=Correct")).toBeVisible();

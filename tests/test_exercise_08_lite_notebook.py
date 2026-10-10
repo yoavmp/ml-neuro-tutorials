@@ -152,12 +152,23 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertNotIn("!pip install", self.code)
         self.assertNotIn("%pip install", self.code)
 
+    def test_threadpoolctl_warning_narrowly_filtered(self):
+        # WP53 item: this notebook's K-means activity fits scikit-learn
+        # models under Pyodide, triggering the same upstream threadpoolctl
+        # RuntimeWarning already filtered in Exercises 2 and 4 (see
+        # tests/test_exercise_02_lite_notebook.py's own version of this
+        # test) -- this notebook never had the filter until now. Filtered
+        # by exact message AND category=RuntimeWarning, never a blanket
+        # RuntimeWarning filter.
+        self.assertIn("JsProxy\\.as_object_map", self.code)
+        self.assertIn("category=RuntimeWarning", self.code)
+        self.assertNotIn('warnings.filterwarnings("ignore", category=RuntimeWarning)', self.code)
+
     def test_blanks_are_not_pre_populated_with_the_solution(self):
         # The hint comments show the shape of the solution, but every such
         # line is commented out -- nothing here is executable as-is (the
         # same convention test_exercise_07_lite_notebook.py uses).
         for tag, forbidden in [
-            ("wp47-activity-pca", "pca_explore = PCA(n_components=50, random_state=0).fit(Xs)"),
             ("wp47-activity-variance", "pca_variance_fig, axes = plt.subplots(1, 2, figsize=(11, 4))"),
             ("wp47-activity-scatter", "scatter = ax.scatter(X_pca[:, 0]"),
             ("wp47-activity-loadings", "ax.barh(range(N_TOP), values[::-1]"),
@@ -169,6 +180,21 @@ class StudentTemplateStructure(unittest.TestCase):
             for line in source.splitlines():
                 if forbidden in line:
                     self.assertTrue(line.strip().startswith("#"), line)
+
+    def test_pca_blank_has_no_executable_solution_even_commented(self):
+        # WP53 course-wide audit: unlike the other four blanks above (short
+        # hint comments with one or two trivial given lines), this blank
+        # used to contain a complete, directly-runnable
+        # StandardScaler/PCA/transform solution, fully commented out --
+        # removed entirely, matching the stronger standard already applied
+        # to Exercise 9's own blanks (see
+        # tests/test_exercise_09_lite_notebook.py's
+        # test_blanks_contain_no_executable_solution_even_commented).
+        cell = next(c for c in self.cells if "wp47-activity-pca" in c.get("metadata", {}).get("tags", []))
+        source = _src(cell)
+        self.assertIn("YOUR CODE HERE", source)
+        for needle in ("StandardScaler(", "PCA(", ".fit(", ".transform("):
+            self.assertNotIn(needle, source, f"blank contains a solution fragment: {needle!r}")
 
     def test_required_output_names_appear_in_instructions(self):
         pca_instructions = next(c for c in self.cells if c.get("id") == "wp47-203-pca-instructions")
@@ -214,6 +240,18 @@ class StudentTemplateStructure(unittest.TestCase):
             self.assertIn(f'"{qid}"', source)
         self.assertIn("correct_index", source)
         self.assertIn("def show_question(question_id):", source)
+
+    def test_every_question_declares_a_shuffle_seed(self):
+        # WP53 course-wide review item 2: the shuffle mechanism itself
+        # lives in the hidden setup cell; see
+        # tests/test_exercise_08_reference_execution.py for the executed
+        # proof that shuffling is reproducible and varies positions across
+        # questions.
+        setup_source = _src(self.cells[1])
+        for qid in QUESTION_IDS:
+            block_match = re.search(rf'"{re.escape(qid)}":\s*dict\((.*?)\n    \),', setup_source, re.DOTALL)
+            self.assertIsNotNone(block_match, qid)
+            self.assertIn("shuffle_seed=", block_match.group(1), qid)
 
     def test_question_radio_labels_do_not_clip_wrapped_rows(self):
         # WP49: applying WP48 E.3's fix (originally Exercise-4-only) to the

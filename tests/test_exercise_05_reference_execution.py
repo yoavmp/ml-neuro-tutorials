@@ -125,6 +125,35 @@ class ReferenceExecution(unittest.TestCase):
         self.assertAlmostEqual(self.ns["lasso_cv_alpha"], 0.21544346900318823, places=4)
         self.assertAlmostEqual(self.ns["lasso_cv_test_mse"], 30.874983952668835, places=2)
 
+    def test_shuffle_is_reproducible_and_varies_positions_across_questions(self):
+        # WP53 course-wide review item 2: correct answers must not all land
+        # first, and the same per-question seed must always give the same
+        # order (so rerunning a show_question() cell never unpredictably
+        # changes it) -- the same check already established for Exercise 9
+        # (see tests/test_exercise_09_reference_execution.py).
+        import random
+
+        questions = self.ns["_QUESTIONS"]
+        self.assertEqual(len(questions), 3)
+        positions = []
+        for qid, q in questions.items():
+            seed = q["shuffle_seed"]
+            n = len(q["options"])
+            order = list(range(n))
+            random.Random(seed).shuffle(order)
+            order2 = list(range(n))
+            random.Random(seed).shuffle(order2)
+            self.assertEqual(order, order2, qid)
+            if q["kind"] == "multi":
+                positions.append(sorted(order.index(i) for i in q["correct_indices"]))
+            else:
+                positions.append(order.index(q["correct_index"]))
+
+        flat_first_positions = [p[0] if isinstance(p, list) else p for p in positions]
+        self.assertGreater(len(set(flat_first_positions)), 1)
+        single_positions = [p for p in positions if isinstance(p, int)]
+        self.assertTrue(any(p != 0 for p in single_positions))
+
 
 def _check_cell_source(cell_id: str) -> str:
     nb = nbformat.read(REFERENCE_PATH, as_version=4)

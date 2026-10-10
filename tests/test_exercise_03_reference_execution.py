@@ -126,6 +126,63 @@ class ReferenceExecution(unittest.TestCase):
         ])
         self.assertEqual(len(chosen), 400)
 
+    def test_data_setup_cell_emits_no_performance_warning(self):
+        # WP53 item: SEX/SITE used to be appended to the already-wide
+        # (~360-column) predictor table one column at a time, which pandas
+        # flags as PerformanceWarning ("DataFrame is highly fragmented ...
+        # Consider using pd.concat instead"), reproduced live in
+        # JupyterLite. Re-executes just the data/setup cell in isolation,
+        # under warnings.catch_warnings(record=True), and asserts zero
+        # PerformanceWarnings -- the exact cell the WP names.
+        import warnings
+
+        nb_cells = nbformat.read(REFERENCE_PATH, as_version=4).cells
+        setup_cell = next(c for c in nb_cells if c.get("id") == "wp44-000-setup")
+        load_cell = next(c for c in nb_cells if c.get("id") == "wp44-102-load")
+        old_cwd = os.getcwd()
+        os.chdir(REPO_ROOT / "book" / "lite" / "files")
+        try:
+            ns: dict = {}
+            asyncio.run(_run_cell(setup_cell["source"], ns, "wp44-000-setup"))
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                asyncio.run(_run_cell(load_cell["source"], ns, "wp44-102-load"))
+        finally:
+            os.chdir(old_cwd)
+        perf_warnings = [w for w in caught if "PerformanceWarning" in type(w.message).__name__]
+        self.assertEqual(perf_warnings, [])
+        self.assertEqual(ns["df"].shape[1], len(ns["_ABIDE_LITE_FEATURES"]) + 3)  # + group, SEX, SITE
+        self.assertEqual(list(ns["df"].columns[-2:]), ["SEX", "SITE"])
+
+    def test_shuffle_is_reproducible_and_varies_positions_across_questions(self):
+        # WP53 course-wide review item 2: correct answers must not all land
+        # first, and the same per-question seed must always give the same
+        # order (so rerunning a show_question() cell never unpredictably
+        # changes it) -- the same check already established for Exercise 9
+        # (see tests/test_exercise_09_reference_execution.py).
+        import random
+
+        questions = self.ns["_QUESTIONS"]
+        self.assertEqual(len(questions), 5)
+        positions = []
+        for qid, q in questions.items():
+            seed = q["shuffle_seed"]
+            n = len(q["options"])
+            order = list(range(n))
+            random.Random(seed).shuffle(order)
+            order2 = list(range(n))
+            random.Random(seed).shuffle(order2)
+            self.assertEqual(order, order2, qid)
+            if q["kind"] == "multi":
+                positions.append(sorted(order.index(i) for i in q["correct_indices"]))
+            else:
+                positions.append(order.index(q["correct_index"]))
+
+        flat_first_positions = [p[0] if isinstance(p, list) else p for p in positions]
+        self.assertGreater(len(set(flat_first_positions)), 1)
+        single_positions = [p for p in positions if isinstance(p, int)]
+        self.assertTrue(any(p != 0 for p in single_positions))
+
 
 def _check_cell_source(cell_id: str) -> str:
     nb = nbformat.read(REFERENCE_PATH, as_version=4)

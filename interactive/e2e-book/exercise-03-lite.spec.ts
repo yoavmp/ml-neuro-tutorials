@@ -9,15 +9,21 @@ import path from "node:path";
 // `jupyter lite build --config book/lite/jupyter_lite_config.json --lite-dir
 // book/lite --output-dir book/_build/html/lite` to have already run.
 //
-// Unlike Exercise 2, this notebook's model-fit cell depends on three student
-// "YOUR CODE HERE" blanks (FEATURES, X/y, the train/test split) rather than
-// fully supplied code -- so "Run All Cells" on the UNTOUCHED template
-// deliberately stops at one guarded, actionable RuntimeError (WP44's own
-// no-cascade requirement), not a fully reproduced result. This file tests
-// both: the untouched template's graceful, single-point failure, and a
-// teacher-only completed path (typed in live, exactly like a student filling
-// in the blanks) that reproduces the established accuracy/AUC and exercises
-// every native widget and checked question.
+// This notebook's model-fit cell depends on three student "YOUR CODE HERE"
+// blanks (FEATURES, X/y, the train/test split) rather than fully supplied
+// code. It used to raise an actionable RuntimeError when those blanks were
+// unfilled, which halted "Run All Cells" partway through (WP44's original
+// design). A later fix replaced that raise with the same graceful
+// "Not complete yet" guard pattern every other check cell in this notebook
+// already uses, so "Run All Cells" on the UNTOUCHED template now runs to
+// genuine completion with zero error cells, exactly like every other
+// migrated exercise -- every downstream activity that depends on the
+// unfilled blanks degrades to its own "Not complete yet"/"Complete Section
+// N first" message instead of cascading into a crash. This file tests both:
+// the untouched template's graceful, no-cascade behavior, and a
+// teacher-only completed path (typed in live, exactly like a student
+// filling in the blanks) that reproduces the established accuracy/AUC and
+// exercises every native widget and checked question.
 
 test.setTimeout(180_000);
 
@@ -46,18 +52,25 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
-// WP49: deliberately kept this file on its own fixed post-click wait
-// (unlike every other exercise-0N-lite.spec.ts, which now polls
-// `.jp-Notebook-ExecutionIndicator[data-status]` for genuine "idle") --
-// confirmed live that this notebook's untouched template's guarded
-// RuntimeError (WP44, by design, see below) halts "Run All Cells"
-// partway through and leaves that indicator stuck at "busy"
-// indefinitely, so an idle-poll would hang here specifically where every
-// other exercise's notebook runs to genuine completion.
+// Polls JupyterLab's own semantic kernel-status attribute (unknown -> busy
+// -> idle) rather than a fixed wait -- environment-independent, and now
+// safe to use here too: the untouched template's guarded model-fit cell no
+// longer raises (see this file's own header comment), so "Run All Cells"
+// genuinely reaches "idle" instead of hanging partway through busy, the
+// same pattern every other exercise-0N-lite.spec.ts already uses.
+async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
+  await page.waitForFunction(
+    () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
+    undefined,
+    { timeout: timeoutMs, polling: 1_000 },
+  );
+}
+
 async function runAllCells(page: Page) {
   await page.click("text=Run");
   await page.waitForTimeout(200);
   await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
+  await waitForKernelIdle(page);
 }
 
 
@@ -86,9 +99,6 @@ test.describe("Exercise 3 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    // Cold start budget matches exercise-02-lite.spec.ts for the same
-    // Pyodide + scientific-stack cold fetch.
-    await page.waitForTimeout(140_000);
 
     await scrollWindowed(page, 0.05);
     await expect(page.locator("body")).toContainText("463 autism (group=1 -> 1), 541 control (group=2 -> 0)", {
@@ -106,9 +116,12 @@ test.describe("Exercise 3 — JupyterLite notebook, untouched template", () => {
     // the actual clickable per-option labels live specifically inside
     // ".widget-radio-box" (the same scoping the setup cell's own CSS fix
     // already targets for text-wrapping, see SETUP_SOURCE_TEMPLATE).
+    // This question shuffles its displayed option order with a fixed
+    // per-question seed (course-wide review item 2) -- select by the
+    // option's own TEXT, never by position.
     const labels = question.locator(".widget-radio-box label");
     await expect(labels.first()).toBeVisible({ timeout: 5_000 });
-    await labels.nth(1).click();
+    await question.locator(".widget-radio-box label", { hasText: "barely changing the model's actual evidence" }).click();
     await question.locator("button", { hasText: "Check answer" }).click();
     await page.waitForTimeout(500);
     // This question's own feedback_correct text starts "Correct:" (a colon,
@@ -117,26 +130,26 @@ test.describe("Exercise 3 — JupyterLite notebook, untouched template", () => {
     await expect(question.locator("text=/^Correct:/")).toBeVisible();
   });
 
-  // WP44: JupyterLab's "Run All Cells" halts at the first uncaught error
-  // (confirmed live) -- it does not keep queuing later cells past a raised
-  // exception the way a plain top-to-bottom script would. This means the
-  // "no cascade" requirement is satisfied by construction for whatever runs
-  // AFTER the guard (nothing does, so nothing can cascade); what this test
-  // verifies live is the part that is not automatic: every activity BEFORE
-  // the guard (which the run queue does reach) degrades to its own helpful
-  // "Not complete yet" message rather than a raw NameError, and the guard
-  // cell itself raises the intended, actionable RuntimeError, not a bare
-  // traceback. (Offline, tests/test_exercise_03_reference_execution.py and
-  // the direct cell-by-cell executor already confirm the untouched
-  // template raises in exactly one place, top to bottom -- see WP44's
-  // report.)
-  test("activities before the guarded model-fit cell degrade gracefully, and the guard itself is actionable", async ({
+  // The model-fit cell's guard used to raise an actionable RuntimeError,
+  // which halted "Run All Cells" there by construction -- nothing after it
+  // could ever run, so "no cascade" held trivially. Now that the guard
+  // degrades gracefully instead (see this file's header comment), this test
+  // verifies the stronger claim live: EVERY activity that depends on the
+  // unfilled blanks, all the way through the end of the notebook, shows its
+  // own helpful "Not complete yet"/"Complete Section N first" message, zero
+  // cells end up in JupyterLab's own error state, and the kernel genuinely
+  // reaches "idle" (not stuck "busy" behind a silent hang). (Offline,
+  // tests/test_exercise_03_reference_execution.py's direct cell-by-cell
+  // executor already confirms the untouched template raises nowhere, top
+  // to bottom.)
+  test("every activity depending on the unfilled blanks degrades gracefully, with zero error cells end to end", async ({
     page,
   }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
+
+    expect(await page.locator(".jp-mod-error").count()).toBe(0);
 
     const featuresCheck = await scrollToVisible(page, "define FEATURES above first");
     await expect(featuresCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
@@ -147,14 +160,29 @@ test.describe("Exercise 3 — JupyterLite notebook, untouched template", () => {
     const splitCheck = await scrollToVisible(page, "define X_train, X_test, y_train, and y_test above first");
     await expect(splitCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
 
-    const guarded = await scrollToVisible(page, "X_train/X_test/y_train/y_test are not defined yet");
-    const guardedOutput = guarded.locator(".jp-OutputArea-output");
-    await expect(guardedOutput).toContainText("RuntimeError");
-    await expect(guardedOutput).toContainText("Complete the FEATURES, X/y, and train/test split activities");
-    // The traceback itself (an nbformat "error" output, confirmed by the
-    // RuntimeError text above) is the load-bearing proof; JupyterLab does
-    // not add a "jp-mod-error" class to the outer .jp-Cell element the way
-    // an earlier version of this test assumed (confirmed live).
+    // The former guard cell: no RuntimeError, no red traceback -- a plain,
+    // friendly printed instruction instead, and the fit/predict code never
+    // ran (so the cell has no real output beyond that one line).
+    const fitCell = await scrollToVisible(page, "complete the FEATURES, X/y, and train/test split activities above first");
+    const fitOutput = fitCell.locator(".jp-OutputArea-output");
+    await expect(fitOutput).toContainText("Not complete yet");
+    await expect(fitOutput).not.toContainText("RuntimeError");
+
+    // Downstream of the fit cell: Section 4's confusion-matrix and ROC/AUC
+    // blanks' own checks, Section 5's threshold widget, and Section 6's
+    // imbalance dropdown all degrade too, rather than cascading into a
+    // NameError.
+    const cmCheck = await scrollToVisible(page, "complete Section 3's activities above first");
+    await expect(cmCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
+
+    const aucCheck = await scrollToVisible(page, "define auc above first");
+    await expect(aucCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
+
+    await scrollToVisible(page, "y_test and y_proba are not defined yet", ".jp-CodeCell");
+    await expect(page.locator("body")).toContainText("Complete Section 3 first: y_test and y_proba are not defined yet");
+
+    const imbalanceGuard = await scrollToVisible(page, "Section 3's X/y activity first", ".jp-CodeCell");
+    await expect(imbalanceGuard).toBeVisible();
   });
 
   test("stays usable at a 390px viewport", async ({ page }) => {
@@ -194,7 +222,6 @@ test.describe("Exercise 3 — JupyterLite notebook, teacher-completed path", () 
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
-    await page.waitForTimeout(140_000);
 
     await fillBlank(page, "# FEATURES = ...", 'FEATURES = [c for c in df.columns if c.startswith("fsCT_")]');
     await fillBlank(

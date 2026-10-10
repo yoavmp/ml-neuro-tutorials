@@ -202,6 +202,7 @@ def _bundle_features_literal() -> str:
 # regenerable source of truth (WP41 maintainer guide section 4.7).
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import random
 import warnings
 
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
@@ -338,6 +339,7 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 _QUESTIONS = {
     "q-selectkbest-leakage": dict(
         kind="single",
+        shuffle_seed=2116,
         prompt=(
             "Why must SelectKBest be fit on X_train/y_train only, rather than on "
             "the full X/y before splitting?"
@@ -352,6 +354,7 @@ _QUESTIONS = {
     ),
     "q-alpha-tuning-leakage": dict(
         kind="single",
+        shuffle_seed=117,
         prompt=(
             "Why does tuning alpha with cross-validation on the training set, "
             "rather than by checking which alpha gives the lowest held-out test "
@@ -367,6 +370,7 @@ _QUESTIONS = {
     ),
     "q-ridge-lasso-properties": dict(
         kind="multi",
+        shuffle_seed=118,
         prompt="Which of the following are true about Ridge and Lasso coefficients?",
         options=[
             "Ridge shrinks coefficients toward zero but rarely sets any exactly to zero.",
@@ -381,19 +385,23 @@ _QUESTIONS = {
 
 def show_question(question_id):
     q = _QUESTIONS[question_id]
+    order = list(range(len(q["options"])))
+    random.Random(q["shuffle_seed"]).shuffle(order)
+    shuffled_options = [q["options"][i] for i in order]
     if q["kind"] == "single":
         widget = make_single_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_index"],
+            shuffled_options,
+            order.index(q["correct_index"]),
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
     else:
+        shuffled_correct = {order.index(i) for i in q["correct_indices"]}
         widget = make_multi_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_indices"],
+            shuffled_options,
+            shuffled_correct,
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )

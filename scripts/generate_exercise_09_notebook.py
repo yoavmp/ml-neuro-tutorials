@@ -1085,21 +1085,35 @@ def _pcrpls_render(_change=None):
 
         # Fixed regardless of w1: the predictor coordinates, and PC1/PC2 --
         # both come only from X2's own covariance (see _pcrpls_make_data).
+        # At some settings (e.g. weight on PC1 = 0 or 1) the true
+        # signal/PLS direction arrows become collinear with PC1 or PC2 --
+        # a real, informative fact about the data, not a bug -- which used
+        # to stack their text labels exactly on top of each other. Each
+        # label now gets its own small, fixed pixel-space offset (never
+        # based on the data angle), so the four labels stay legible even
+        # when their arrows coincide.
         axes[0].arrow(0, 0, 2 * pc1_dir[0], 2 * pc1_dir[1], color="black", width=0.015, length_includes_head=True)
-        axes[0].annotate("PC1 (fixed)", 2.2 * pc1_dir, fontsize=8)
+        axes[0].annotate("PC1 (fixed)", 2.0 * pc1_dir, xytext=(4, 10), textcoords="offset points", fontsize=8)
         axes[0].arrow(0, 0, 1.3 * pc2_dir[0], 1.3 * pc2_dir[1], color="0.4", width=0.015, length_includes_head=True)
-        axes[0].annotate("PC2 (fixed)", 1.5 * pc2_dir, fontsize=8)
+        axes[0].annotate("PC2 (fixed)", 1.3 * pc2_dir, xytext=(4, -10), textcoords="offset points", fontsize=8, color="0.4")
 
         # Target-dependent: the TRUE signal direction (rotates with w1) and
         # the direction PLS actually learned from this w1's own data.
         axes[0].arrow(0, 0, 2 * signal_dir[0], 2 * signal_dir[1], color="crimson", width=0.015, length_includes_head=True)
-        axes[0].annotate("true signal", 2.2 * signal_dir, fontsize=8, color="crimson")
+        axes[0].annotate("true signal", 1.7 * signal_dir, xytext=(6, 14), textcoords="offset points", fontsize=8, color="crimson")
         axes[0].arrow(0, 0, 1.6 * pls_dir[0], 1.6 * pls_dir[1], color="tab:green", width=0.015, length_includes_head=True, linestyle="--")
-        axes[0].annotate("PLS direction", 1.8 * pls_dir, fontsize=8, color="tab:green")
+        axes[0].annotate("PLS direction", 1.2 * pls_dir, xytext=(-62, -12), textcoords="offset points", fontsize=8, color="tab:green")
 
         axes[0].set_xlabel("feature 1"); axes[0].set_ylabel("feature 2")
         axes[0].set_title(f"Synthetic data (weight on PC1 = {w1:.2f})")
-        axes[0].legend(fontsize=7, loc="lower right")
+        # The colorbar occupies the right edge of this axes -- a
+        # lower-right legend and the directional annotations (which can
+        # point toward that same corner, depending on w1) used to overlap
+        # it. Generous margins keep every annotation's text comfortably
+        # inside the data view instead of right at its edge, and the
+        # legend moves to the upper-left corner, away from the colorbar.
+        axes[0].margins(0.3)
+        axes[0].legend(fontsize=7, loc="upper left")
         axes[0].set_aspect("equal")
 
         axes[1].bar(["PCR", "PLS"], [pcr_mse, pls_mse], color=["tab:blue", "tab:green"])
@@ -1130,8 +1144,7 @@ answer, then check it against what the activity shows):
 - Does a component that explains more predictor variance necessarily
   predict the target better?
 
-*(This activity uses entirely synthetic data -- not ABIDE -- clearly
-labeled above.)*
+*(This activity uses entirely synthetic data -- not ABIDE.)*
 """,
             "wp51-311-widget-note",
         ),
@@ -1344,9 +1357,9 @@ svr_results = []
 # validation set named earlier in this notebook.
 # Outside the browser, a wider search (e.g. GridSearchCV over a larger
 # C/gamma grid) would normally replace this fixed short parameter list --
-# not run here, since Pyodide has no GPU/multiple threads and
-# GridSearchCV's own internal cross-validation would multiply an already
-# slow fit cost several times over.
+# we skip that here for computational reasons: GridSearchCV's own internal
+# cross-validation would multiply an already slow fit cost several times
+# over.
 """,
             f"""
 from sklearn.svm import SVR

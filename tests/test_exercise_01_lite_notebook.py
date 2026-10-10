@@ -169,6 +169,18 @@ class StudentTemplateStructure(unittest.TestCase):
             self.assertIn(f'"{qid}"', source)
         self.assertIn("def show_question(question_id):", source)
 
+    def test_every_question_declares_a_shuffle_seed(self):
+        # WP53 course-wide review item 2: the shuffle mechanism itself
+        # lives in the hidden setup cell; see
+        # tests/test_exercise_01_reference_execution.py for the executed
+        # proof that shuffling is reproducible and varies positions across
+        # questions.
+        setup_source = _src(self.cells[1])
+        for qid in self.QUESTION_IDS:
+            block_match = re.search(rf'"{re.escape(qid)}":\s*dict\((.*?)\n    \),', setup_source, re.DOTALL)
+            self.assertIsNotNone(block_match, qid)
+            self.assertIn("shuffle_seed=", block_match.group(1), qid)
+
     def test_question_radio_labels_do_not_clip_wrapped_rows(self):
         # WP49: applying WP48 E.3's fix (originally Exercise-4-only) to the
         # identical duplicated CSS block here too -- a long option that wraps

@@ -171,10 +171,13 @@ test.describe("Exercise 2 — JupyterLite notebook", () => {
     const question = page.locator(".jp-OutputArea-output", {
       hasText: "Which uses of the test target",
     });
-    const checkboxes = question.locator("input[type='checkbox']");
-    await expect(checkboxes.first()).toBeVisible({ timeout: 5_000 });
-    await checkboxes.nth(0).click();
-    await checkboxes.nth(2).click();
+    // Each question now shuffles its displayed option order with a fixed
+    // per-question seed (course-wide review item 2) -- select by each
+    // option's own TEXT, never by position, which no longer reliably maps
+    // to the correct answer.
+    await expect(question.locator(".widget-checkbox").first()).toBeVisible({ timeout: 5_000 });
+    await question.locator(".widget-checkbox label", { hasText: "Plotting its distribution to sanity-check the split" }).click();
+    await question.locator(".widget-checkbox label", { hasText: "Reporting its mean and standard deviation" }).click();
     await question.locator("button", { hasText: "Check answer" }).click();
     await page.waitForTimeout(500);
     await expect(question.locator("text=Correct.")).toBeVisible();

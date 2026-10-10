@@ -203,6 +203,7 @@ def _feature_list_literal() -> str:
 # regenerable source of truth (WP41 maintainer guide section 4.7).
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import random
 import warnings
 
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
@@ -337,6 +338,7 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 _QUESTIONS = {
     "q-boosting-residuals": dict(
         kind="single",
+        shuffle_seed=123,
         prompt="Does a new tree in gradient boosting predict the target directly, or the current residuals?",
         options=[
             "The current residuals -- the errors the ensemble still makes.",
@@ -348,6 +350,7 @@ _QUESTIONS = {
     ),
     "q-learning-rate-trees": dict(
         kind="single",
+        shuffle_seed=124,
         prompt="Why does a smaller learning rate usually require more trees to reach the same fit?",
         options=[
             "Each tree's correction is scaled down more, so more corrections are needed to accumulate the same total change.",
@@ -359,6 +362,7 @@ _QUESTIONS = {
     ),
     "q-boosting-vs-bagging": dict(
         kind="multi",
+        shuffle_seed=125,
         prompt="Which of the following correctly distinguish boosting from bagging?",
         options=[
             "Boosting fits trees sequentially, each correcting the current ensemble's residuals; bagging fits trees independently on resampled data.",
@@ -373,19 +377,23 @@ _QUESTIONS = {
 
 def show_question(question_id):
     q = _QUESTIONS[question_id]
+    order = list(range(len(q["options"])))
+    random.Random(q["shuffle_seed"]).shuffle(order)
+    shuffled_options = [q["options"][i] for i in order]
     if q["kind"] == "single":
         widget = make_single_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_index"],
+            shuffled_options,
+            order.index(q["correct_index"]),
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
     else:
+        shuffled_correct = {order.index(i) for i in q["correct_indices"]}
         widget = make_multi_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_indices"],
+            shuffled_options,
+            shuffled_correct,
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
@@ -596,7 +604,20 @@ _step_lr_dd = widgets.Dropdown(options=[(f"{{eta}}", eta) for eta in STEP_LEARNI
 _step_stage_slider = widgets.IntSlider(min=0, max=STEP_N_STAGES, value=0, description="Stage:")
 _step_prev_btn = widgets.Button(description="Previous Step")
 _step_next_btn = widgets.Button(description="Next Step")
-_step_scaled_toggle = widgets.Checkbox(value=False, description="Show the newest tree's correction after scaling by the learning rate")
+_step_scaled_toggle = widgets.Checkbox(
+    value=False,
+    description="Show the newest tree's correction after scaling by the learning rate",
+    indent=False,
+    layout=widgets.Layout(width="100%"),
+)
+# ipywidgets' default Checkbox label has a fixed, fairly narrow width
+# with no wrapping -- confirmed live to truncate this long label, desktop
+# and 390px, hiding most of the sentence. Reuses the exact
+# "checked-question" wrap rules already verified live elsewhere in this
+# notebook's own _QUESTION_CSS (full-width label, white-space: normal)
+# rather than a new, separate CSS rule.
+_step_scaled_toggle_row = widgets.VBox([_question_style_widget(), _step_scaled_toggle])
+_step_scaled_toggle_row.add_class("checked-question")
 _step_output = widgets.Output()
 
 
@@ -656,7 +677,7 @@ _step_next_btn.on_click(_step_on_next)
 display(widgets.VBox([
     widgets.HBox([_step_lr_dd, _step_prev_btn, _step_next_btn]),
     _step_stage_slider,
-    _step_scaled_toggle,
+    _step_scaled_toggle_row,
     _step_output,
 ]))
 _step_render()
@@ -991,17 +1012,15 @@ lr_n_estimators_pairs = [{pairs_literal}]
 max_depth_grid = {CV_DEPTH_GRID!r}
 
 # YOUR CODE HERE
-# param_grid = [
-#     {{"learning_rate": [lr], "n_estimators": [n], "max_depth": max_depth_grid}}
-#     for lr, n in lr_n_estimators_pairs
-# ]
-# cv = KFold(n_splits=5, shuffle=True, random_state={CV_RANDOM_STATE})
-# boosting_search = GridSearchCV(GradientBoostingRegressor(random_state=42), param_grid, scoring="neg_mean_squared_error", cv=cv)
-# boosting_search.fit(X_train, y_train)  # development data only
-# boosting_best_model = boosting_search.best_estimator_
-# boosting_test_pred = ...  # boosting_best_model.predict(X_test) -- the locked test set, read once
-# boosting_test_mse = ...
-# boosting_test_r2 = ...
+# 1. param_grid = ...  # one dict per (learning_rate, n_estimators) pair in
+#    lr_n_estimators_pairs, each offering all of max_depth_grid
+# 2. cv = ...           # KFold(n_splits=5, shuffle=True, random_state={CV_RANDOM_STATE})
+# 3. boosting_search = ...  # a GridSearchCV over param_grid, scoring="neg_mean_squared_error", cv=cv
+# 4. fit boosting_search on X_train, y_train ONLY (development data only)
+# 5. boosting_best_model = ...  # boosting_search.best_estimator_
+# 6. boosting_test_pred = ...   # boosting_best_model.predict(X_test) -- the locked test set, read once
+# 7. boosting_test_mse = ...
+# 8. boosting_test_r2 = ...
 """,
             f"""
 lr_n_estimators_pairs = [{pairs_literal}]

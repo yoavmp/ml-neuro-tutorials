@@ -150,6 +150,7 @@ def _feature_list_literal() -> str:
 # regenerable source of truth (WP41 maintainer guide section 4.7).
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import random
 import warnings
 
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
@@ -297,8 +298,9 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 _QUESTIONS = {
     "q-single-split-vs-cv-stability": dict(
         kind="single",
+        shuffle_seed=113,
         prompt=(
-            "At a small sample size (for example, 30 or 50 participants), why can "
+            "At a small sample size (for example, 150 or 250 participants), why can "
             "changing only the random seed swing the single-split test R^2 by a "
             "large amount, while the 5-fold cross-validation mean tends to move "
             "less?"
@@ -313,6 +315,7 @@ _QUESTIONS = {
     ),
     "q-inner-loop-data": dict(
         kind="single",
+        shuffle_seed=114,
         prompt=(
             "Inside the pipeline above, which participants does the inner "
             "GridSearchCV use to choose k for a given outer fold?"
@@ -327,6 +330,7 @@ _QUESTIONS = {
     ),
     "q-outer-test-mse-meaning": dict(
         kind="single",
+        shuffle_seed=115,
         prompt=(
             "What does the mean outer-test MSE (averaged across the 5 outer folds) "
             "actually estimate?"
@@ -344,19 +348,23 @@ _QUESTIONS = {
 
 def show_question(question_id):
     q = _QUESTIONS[question_id]
+    order = list(range(len(q["options"])))
+    random.Random(q["shuffle_seed"]).shuffle(order)
+    shuffled_options = [q["options"][i] for i in order]
     if q["kind"] == "single":
         widget = make_single_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_index"],
+            shuffled_options,
+            order.index(q["correct_index"]),
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
     else:
+        shuffled_correct = {order.index(i) for i in q["correct_indices"]}
         widget = make_multi_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_indices"],
+            shuffled_options,
+            shuffled_correct,
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
@@ -633,7 +641,7 @@ tuning.
 
 # --- Section 4: One Split or Several Folds? (native widget) ---------------
 
-_SAMPLE_SIZES_LITERAL = "[30, 50, 75, 100, 150, 250, 500, 'all']"
+_SAMPLE_SIZES_LITERAL = "[150, 250, 500, 'all']"
 
 
 def _section_4() -> list[dict]:
@@ -657,7 +665,7 @@ purely due to which participants fell on each side.
         ),
         code(
             """
-_STABILITY_SAMPLE_SIZES = [30, 50, 75, 100, 150, 250, 500, "all"]
+_STABILITY_SAMPLE_SIZES = [150, 250, 500, "all"]
 _STABILITY_POOL_MASTER_SEED = 20270  # one fixed permutation of the eligible cohort; pools nest
 
 
@@ -689,7 +697,7 @@ if all(name in globals() for name in ("X", "y")):
     _stability_pools_cache = _stability_pools(len(y))
 
     _stability_size_dropdown = widgets.Dropdown(
-        options=[(str(s), s) for s in _STABILITY_SAMPLE_SIZES], value=100, description="sample size:"
+        options=[(str(s), s) for s in _STABILITY_SAMPLE_SIZES], value=150, description="sample size:"
     )
     _stability_seed_dropdown = widgets.Dropdown(
         options=[0, 1, 2, 3, 4], value=0, description="seed:"
@@ -741,9 +749,14 @@ show_question("q-single-split-vs-cv-stability")
 # a notebook attachment (nbformat's own mechanism, already used for
 # scripts/generate_exercise_02_notebook.py's Activity 3B reference image)
 # is always allowed through -- in JupyterLite, local Jupyter, and Colab
-# alike -- so it replaces the HTML entirely. Render with
-# scripts/render_exercise_04_nested_cv_diagram.py; this is a fixed
-# conceptual illustration, not derived from student data.
+# alike -- so it replaces the HTML entirely.
+#
+# WP53: the matplotlib-rendered replacement (scripts/render_exercise_04_
+# nested_cv_diagram.py, now superseded -- see that script's own docstring)
+# still had labels overlapping in places when reviewed live. The committed
+# PNG at NCV_DIAGRAM_IMAGE_PATH is now the course author's own replacement
+# image instead, same layout/legend/captions, laid out with no overlap.
+# This is a fixed conceptual illustration, not derived from student data.
 NCV_DIAGRAM_IMAGE_FILENAME = "exercise_04_nested_cv_diagram.png"
 
 

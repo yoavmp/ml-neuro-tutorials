@@ -139,10 +139,10 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     await runAllCells(page);
 
     const widget = await scrollToVisible(page, "sample size:", ".jp-CodeCell");
-    await expect(page.locator("body")).toContainText("sample size = 100   seed = 0", { timeout: 5_000 });
+    await expect(page.locator("body")).toContainText("sample size = 150   seed = 0", { timeout: 5_000 });
 
-    await widget.locator("select").first().selectOption("30");
-    await expect(page.locator("body")).toContainText("sample size = 30   seed = 0", { timeout: 10_000 });
+    await widget.locator("select").first().selectOption("250");
+    await expect(page.locator("body")).toContainText("sample size = 250   seed = 0", { timeout: 10_000 });
   });
 
   test("stays usable at a 390px viewport", async ({ page }) => {
@@ -150,6 +150,44 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await page.waitForTimeout(4000);
     const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(2);
+  });
+
+  test("the nested-CV diagram renders without clipping at desktop and 390px", async ({
+    page,
+  }) => {
+    // WP53: the course author's own replacement image (no overlapping
+    // labels) must display at a readable size, fully inside the notebook
+    // content area, with no horizontal page overflow, at both desktop and
+    // a 390px viewport.
+    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
+    await page.waitForTimeout(3000);
+    // The image's own alt text (its real DOM-text proxy, since the diagram
+    // itself is a PNG with no extractable text) is the only content of this
+    // markdown cell -- scrollToVisible's hasText matching does not see
+    // `alt=`, so locate the <img> directly by that attribute instead and
+    // scroll it into view by hand.
+    const img = page.locator('img[alt*="Nested cross-validation diagram"]').first();
+    for (let f = 0; f <= 1.001; f += 0.05) {
+      await scrollWindowed(page, f);
+      if ((await img.count()) > 0 && (await img.boundingBox())) break;
+    }
+    await expect(img).toBeVisible({ timeout: 10_000 });
+    const naturalWidth = await img.evaluate((el: HTMLImageElement) => el.naturalWidth);
+    expect(naturalWidth).toBeGreaterThan(400); // a real, non-trivial image, not a broken/blank one
+    let overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(2);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(500);
+    const box = await img.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.width).toBeLessThanOrEqual(390);
+    overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(2);
@@ -209,9 +247,12 @@ test.describe("Exercise 4 — JupyterLite notebook, teacher-completed path", () 
       "why can changing only the random seed swing the single-split test R",
       ".jp-OutputArea-output",
     );
+    // Every question now shuffles its displayed option order with a fixed
+    // per-question seed (course-wide review item 2) -- select by the
+    // option's own TEXT, never by position.
     const q1Labels = q1.locator(".widget-radio-box label");
     await expect(q1Labels.first()).toBeVisible({ timeout: 5_000 });
-    await q1Labels.first().click();
+    await q1.locator(".widget-radio-box label", { hasText: "unusually easy or hard subsets tend to cancel out" }).click();
     await q1.locator("button", { hasText: "Check answer" }).click();
     await page.waitForTimeout(500);
     await expect(q1.locator("text=/^Correct:/")).toBeVisible();

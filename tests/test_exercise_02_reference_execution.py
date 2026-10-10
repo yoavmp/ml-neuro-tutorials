@@ -112,6 +112,43 @@ class ReferenceExecution(unittest.TestCase):
             set(self.ns["SAMPLE_SIZE_ROIS"]), {"4", "3a", "3b", "1", "2"}
         )
 
+    def test_shuffle_is_reproducible_and_varies_positions_across_questions(self):
+        # WP53 course-wide review item 2: correct answers must not all land
+        # first, and the same per-question seed must always give the same
+        # order (so rerunning a show_question() cell never unpredictably
+        # changes it) -- the same check already established for Exercise 9
+        # (see tests/test_exercise_09_reference_execution.py).
+        # q-honest-evaluation is deliberately excluded: its options are the
+        # same lettered row labels as the comparison table displayed above
+        # it, referenced by letter in the markdown right below -- the
+        # course-wide review's own named exception for meaningfully
+        # ordered, referenced labels.
+        import random
+
+        questions = self.ns["_QUESTIONS"]
+        self.assertEqual(len(questions), 5)
+        self.assertNotIn("shuffle_seed", questions["q-honest-evaluation"])
+        positions = []
+        for qid, q in questions.items():
+            if qid == "q-honest-evaluation":
+                continue
+            seed = q["shuffle_seed"]
+            n = len(q["options"])
+            order = list(range(n))
+            random.Random(seed).shuffle(order)
+            order2 = list(range(n))
+            random.Random(seed).shuffle(order2)
+            self.assertEqual(order, order2, qid)
+            if q["kind"] == "multi":
+                positions.append(sorted(order.index(i) for i in q["correct_indices"]))
+            else:
+                positions.append(order.index(q["correct_index"]))
+
+        flat_first_positions = [p[0] if isinstance(p, list) else p for p in positions]
+        self.assertGreater(len(set(flat_first_positions)), 1)
+        single_positions = [p for p in positions if isinstance(p, int)]
+        self.assertTrue(any(p != 0 for p in single_positions))
+
 
 def _knn_check_source() -> str:
     nb = nbformat.read(REFERENCE_PATH, as_version=4)

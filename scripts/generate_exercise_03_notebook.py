@@ -134,6 +134,7 @@ def _feature_list_literal() -> str:
 # 4.7) -- neither generator imports the other.
 SETUP_SOURCE_TEMPLATE = '''
 import sys
+import random
 import warnings
 
 # Same benign, pinned-kernel-wide MatplotlibDeprecationWarning Exercise 2's
@@ -220,8 +221,15 @@ def load_abide_classification_table():
     table = table[_ABIDE_LITE_FEATURES + ["group"]].reset_index(drop=True)
     demographics = load_demographics_table()
     assert len(demographics) == len(table), "participant count mismatch between the brain-predictor and demographics tables"
-    table["SEX"] = demographics["SEX"].to_numpy()
-    table["SITE"] = demographics["SITE"].to_numpy()
+    # SEX/SITE used to be appended one column at a time
+    # (table["SEX"] = ..., then table["SITE"] = ...) onto a DataFrame already
+    # carrying ~360 feature columns -- pandas emits a PerformanceWarning for
+    # exactly this pattern ("DataFrame is highly fragmented ... Consider
+    # using pd.concat instead"), reproduced live in JupyterLite. A single
+    # concat builds the final table in one block instead, with the same
+    # column values, names, order (SEX/SITE still appended last), and row
+    # alignment (both frames share the same reset 0..N-1 RangeIndex).
+    table = pd.concat([table, demographics[["SEX", "SITE"]].reset_index(drop=True)], axis=1)
     return table
 
 
@@ -310,6 +318,7 @@ def make_multi_choice_question(prompt, options, correct_indices, feedback_correc
 _QUESTIONS = {
     "q-probability-near-threshold": dict(
         kind="single",
+        shuffle_seed=1108,
         prompt=(
             "Two participants receive autism probabilities of 0.48 and 0.52. At the "
             "default 0.50 threshold their predicted labels differ. What does that "
@@ -325,6 +334,7 @@ _QUESTIONS = {
     ),
     "q-threshold-tradeoff": dict(
         kind="single",
+        shuffle_seed=109,
         prompt=(
             "If failing to identify an autistic participant were considered more "
             "costly than falsely flagging a control, would you generally lower or "
@@ -340,6 +350,7 @@ _QUESTIONS = {
     ),
     "q-roc-needs-proba": dict(
         kind="single",
+        shuffle_seed=110,
         prompt="Why is predict_proba(), not predict(), needed to compute the ROC curve and AUC?",
         options=[
             "predict() only returns the label already decided at one fixed threshold -- a single point, not a curve; predict_proba() gives the probability needed to sweep every possible threshold.",
@@ -350,6 +361,7 @@ _QUESTIONS = {
     ),
     "q-threshold-false-negatives": dict(
         kind="single",
+        shuffle_seed=111,
         prompt="What generally happens to false negatives when the decision threshold is lowered?",
         options=[
             "They generally decrease -- a lower threshold predicts autism more readily, so fewer actually-autistic participants are missed.",
@@ -360,6 +372,7 @@ _QUESTIONS = {
     ),
     "q-accuracy-under-imbalance": dict(
         kind="multi",
+        shuffle_seed=112,
         prompt="Why can 95% accuracy describe a useless classifier under severe class imbalance, and what should you look at instead?",
         options=[
             "At a severe enough imbalance, predicting the majority class for everyone can itself reach ~95% accuracy while detecting none of the minority class.",
@@ -374,19 +387,23 @@ _QUESTIONS = {
 
 def show_question(question_id):
     q = _QUESTIONS[question_id]
+    order = list(range(len(q["options"])))
+    random.Random(q["shuffle_seed"]).shuffle(order)
+    shuffled_options = [q["options"][i] for i in order]
     if q["kind"] == "single":
         widget = make_single_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_index"],
+            shuffled_options,
+            order.index(q["correct_index"]),
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
     else:
+        shuffled_correct = {order.index(i) for i in q["correct_indices"]}
         widget = make_multi_choice_question(
             q["prompt"],
-            q["options"],
-            q["correct_indices"],
+            shuffled_options,
+            shuffled_correct,
             q.get("feedback_correct", "Correct."),
             q.get("feedback_incorrect", "Not quite -- try again."),
         )
@@ -723,19 +740,15 @@ Uses your `X_train`, `X_test`, `y_train`, and `y_test` from above.
         ),
         code(
             """
-try:
+if all(name in globals() for name in ("X_train", "X_test", "y_train", "y_test")):
     model = make_pipeline(StandardScaler(), LogisticRegression(C=C_EXAMPLE, max_iter=5000))
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, list(model.classes_).index(1)]
     print("predicted labels and probabilities computed for the held-out test set.")
     print(f"Every metric below uses only these {len(y_test)} test participants -- none of them were used to fit the model.")
-except NameError as exc:
-    raise RuntimeError(
-        "X_train/X_test/y_train/y_test are not defined yet. Complete the "
-        "FEATURES, X/y, and train/test split activities above first, then "
-        "run this cell again."
-    ) from exc
+else:
+    print("Not complete yet: complete the FEATURES, X/y, and train/test split activities above first.")
 """,
             "wp44-342-fit",
         ),

@@ -177,6 +177,18 @@ class StudentTemplateStructure(unittest.TestCase):
             self.assertIn(f'"{qid}"', source)
         self.assertIn("def show_question(question_id):", source)
 
+    def test_every_question_declares_a_shuffle_seed(self):
+        # WP53 course-wide review item 2: the shuffle mechanism itself
+        # lives in the hidden setup cell; see
+        # tests/test_exercise_06_reference_execution.py for the executed
+        # proof that shuffling is reproducible and varies positions across
+        # questions.
+        setup_source = _src(self.cells[1])
+        for qid in self.QUESTION_IDS:
+            block_match = re.search(rf'"{re.escape(qid)}":\s*dict\((.*?)\n    \),', setup_source, re.DOTALL)
+            self.assertIsNotNone(block_match, qid)
+            self.assertIn("shuffle_seed=", block_match.group(1), qid)
+
     def test_question_radio_labels_do_not_clip_wrapped_rows(self):
         # WP49: applying WP48 E.3's fix (originally Exercise-4-only) to the
         # identical duplicated CSS block here too -- a long option that wraps
@@ -221,6 +233,55 @@ class StudentTemplateStructure(unittest.TestCase):
         source = _src(cell)
         self.assertIn("widgets.Dropdown", source)
         self.assertIn("Number of trees:", source)
+
+    def test_number_of_trees_label_is_not_clipped(self):
+        # WP53: ipywidgets' default Dropdown description width truncated
+        # "Number of trees:" live -- description_width=initial plus a
+        # scoped CSS backstop (verified pattern from Exercise 9) fixes it.
+        cell = next(c for c in self.cells if c.get("id") == "wp46-503-ensemble-widget")
+        source = _src(cell)
+        self.assertIn('style={"description_width": "initial"}', source)
+        self.assertIn("ens-ntrees-row", source)
+        self.assertIn("white-space: normal !important", source)
+
+    def test_regression_tree_diagram_uses_a_larger_higher_resolution_figure(self):
+        # WP53: plot_tree's default fontsize auto-shrinks to fit a small
+        # figsize=(9, 5) canvas -- unreadable even before any CSS display
+        # width is applied. A larger, higher-DPI figure with an explicit
+        # fontsize fixes the actual rendered pixels.
+        self.assertIn("figsize=(15, 9), dpi=140", self.code)
+        self.assertIn("fontsize=12", self.code)
+
+    def test_think_first_replaced_with_think(self):
+        self.assertNotIn("Think first:", self.code + self.md)
+        self.assertIn("**Think:**", self.code + self.md)
+
+    def test_greedy_legend_only_requested_when_labels_exist(self):
+        # WP53: ax.legend() used to be called unconditionally, even before
+        # any labeled artist existed (before "Lock My Answer"), emitting
+        # "No artists with labels found to put in legend".
+        self.assertIn("ax.get_legend_handles_labels()[0]", self.code)
+
+    def test_greedy_widget_redraws_on_every_dropdown_change(self):
+        # WP53 item 4: both the feature and threshold dropdowns must
+        # redraw immediately -- not only after a button click -- and the
+        # left plot must preview the current (not-yet-locked) selection.
+        cell = next(c for c in self.cells if c.get("id") == "wp46-204-greedy-widget")
+        source = _src(cell)
+        self.assertIn("_greedy_feature_dd.observe(_greedy_render, names=\"value\")", source)
+        self.assertIn("_greedy_threshold_dd.observe(_greedy_render, names=\"value\")", source)
+        self.assertIn("current selection", source)
+
+    def test_train_val_wording_used_instead_of_development(self):
+        # WP53: "(development data only)" / "development = N" -> "train-val"
+        # wording in the classification-depth-contrast cell; the actual
+        # counts (753 train-val participants) are unchanged.
+        cell = next(c for c in self.cells if c.get("id") == "wp46-310-classification")
+        source = _src(cell)
+        self.assertIn("train-val data only", source)
+        self.assertIn("train-val = {len(dev_pos)}", source)
+        self.assertNotIn("development data only", source)
+        self.assertNotIn("development =", source)
 
     # -- editable answer cells -------------------------------------------
 

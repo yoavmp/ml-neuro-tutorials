@@ -174,6 +174,32 @@ test.describe("Exercise 7 — JupyterLite notebook, untouched template", () => {
     await widget.locator("button", { hasText: "Next Step" }).click();
     await page.waitForTimeout(3_000);
     await expect(page.locator("body")).toContainText("Stage 1: a new shallow tree was fitted", { timeout: 20_000 });
+
+    // WP53: ipywidgets' default Checkbox label has a fixed, fairly narrow
+    // width with no wrapping -- confirmed live to truncate this long label
+    // before the fix. Full text must render, and every other control
+    // (Previous/Next Step, the learning-rate dropdown) must stay visible
+    // alongside it, at both desktop and a 390px viewport.
+    const toggleLabel = page.locator(".widget-checkbox", {
+      hasText: "Show the newest tree's correction after scaling by the learning rate",
+    });
+    await expect(toggleLabel).toBeVisible({ timeout: 5_000 });
+    let label = toggleLabel.locator(".widget-label-basic, label").first();
+    let [scrollW, clientW] = await label.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+    expect(scrollW).toBeLessThanOrEqual(clientW + 1);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(500);
+    await expect(toggleLabel).toBeVisible();
+    await expect(widget.locator("button", { hasText: "Previous Step" })).toBeVisible();
+    await expect(widget.locator("button", { hasText: "Next Step" })).toBeVisible();
+    label = toggleLabel.locator(".widget-label-basic, label").first();
+    [scrollW, clientW] = await label.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+    expect(scrollW).toBeLessThanOrEqual(clientW + 1);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(2);
   });
 
   test("the Explore the Boosting Parameters widget changes its metrics line when depth changes", async ({
@@ -263,7 +289,7 @@ test.describe("Exercise 7 — JupyterLite notebook, teacher-completed path", () 
 
     await fillBlank(
       page,
-      "# param_grid = [",
+      "# 1. param_grid = ...",
       "param_grid = [\n" +
         "    {'learning_rate': [lr], 'n_estimators': [n], 'max_depth': max_depth_grid}\n" +
         "    for lr, n in lr_n_estimators_pairs\n" +
@@ -332,9 +358,12 @@ test.describe("Exercise 7 — JupyterLite notebook, teacher-completed path", () 
       "Does a new tree in gradient boosting predict the target directly",
       ".jp-OutputArea-output",
     );
+    // Every question now shuffles its displayed option order with a fixed
+    // per-question seed (course-wide review item 2) -- select by the
+    // option's own TEXT, never by position.
     const q1Labels = q1.locator(".widget-radio-box label");
     await expect(q1Labels.first()).toBeVisible({ timeout: 5_000 });
-    await q1Labels.first().click();
+    await q1.locator(".widget-radio-box label", { hasText: "The current residuals" }).click();
     await q1.locator("button", { hasText: "Check answer" }).click();
     await page.waitForTimeout(500);
     await expect(q1.locator("text=/^Correct:/")).toBeVisible();

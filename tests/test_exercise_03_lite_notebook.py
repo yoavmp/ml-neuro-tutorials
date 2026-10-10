@@ -103,10 +103,19 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("notebook's first code cell", source)
 
     def test_model_fit_cell_is_guarded_against_unfinished_prerequisites(self):
+        # WP53: an unfinished student activity above (X_train/X_test/
+        # y_train/y_test not yet defined) used to surface as a raised
+        # RuntimeError -- a red traceback for entirely expected incomplete
+        # work. Replaced with the same graceful "Not complete yet" guard
+        # pattern already used by the check cell just above this one; a
+        # genuine programming error inside the try body (if there were one)
+        # would still propagate normally, since nothing here is caught.
         fit_cell = next(c for c in self.cells if c.get("id") == "wp44-342-fit")
         source = _src(fit_cell)
-        self.assertIn("except NameError", source)
-        self.assertIn("raise RuntimeError", source)
+        self.assertNotIn("except NameError", source)
+        self.assertNotIn("raise RuntimeError", source)
+        self.assertIn("Not complete yet", source)
+        self.assertIn('if all(name in globals() for name in ("X_train", "X_test", "y_train", "y_test")):', source)
 
     # -- YOUR CODE HERE tasks -------------------------------------------
 
@@ -188,6 +197,18 @@ class StudentTemplateStructure(unittest.TestCase):
         for qid in self.QUESTION_IDS:
             self.assertIn(f'"{qid}"', source)
         self.assertIn("def show_question(question_id):", source)
+
+    def test_every_question_declares_a_shuffle_seed(self):
+        # WP53 course-wide review item 2: the shuffle mechanism itself
+        # lives in the hidden setup cell; see
+        # tests/test_exercise_03_reference_execution.py for the executed
+        # proof that shuffling is reproducible and varies positions across
+        # questions.
+        setup_source = _src(self.cells[1])
+        for qid in self.QUESTION_IDS:
+            block_match = re.search(rf'"{re.escape(qid)}":\s*dict\((.*?)\n    \),', setup_source, re.DOTALL)
+            self.assertIsNotNone(block_match, qid)
+            self.assertIn("shuffle_seed=", block_match.group(1), qid)
 
     def test_question_radio_labels_do_not_clip_wrapped_rows(self):
         # WP49: applying WP48 E.3's fix (originally Exercise-4-only) to the

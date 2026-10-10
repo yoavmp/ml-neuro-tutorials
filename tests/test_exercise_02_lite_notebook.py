@@ -25,6 +25,7 @@ Run:
 
 from __future__ import annotations
 
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -225,6 +226,27 @@ class StudentTemplateStructure(unittest.TestCase):
         for qid in self.QUESTION_IDS:
             self.assertIn(f'"{qid}"', source)
         self.assertIn("def show_question(question_id):", source)
+
+    def test_every_question_declares_a_shuffle_seed_except_the_lettered_one(self):
+        # WP53 course-wide review item 2: every question gets a fixed,
+        # per-question shuffle_seed, EXCEPT q-honest-evaluation, whose three
+        # options ("A. correct" / "B. training score" / "C. invalid") are
+        # the same lettered row labels as the comparison table displayed
+        # just above it, referenced by letter in the markdown right below
+        # -- the course-wide review's own named exception for options with
+        # meaningful, referenced ordered labels. See
+        # tests/test_exercise_02_reference_execution.py for the executed
+        # proof that the shuffled questions are reproducible and vary
+        # positions across questions.
+        setup_source = _src(self.cells[1])
+        for qid in self.QUESTION_IDS - {"q-honest-evaluation"}:
+            block_match = re.search(rf'"{re.escape(qid)}":\s*dict\((.*?)\n    \),', setup_source, re.DOTALL)
+            self.assertIsNotNone(block_match, qid)
+            self.assertIn("shuffle_seed=", block_match.group(1), qid)
+
+        honest_match = re.search(r'"q-honest-evaluation":\s*dict\((.*?)\n    \),', setup_source, re.DOTALL)
+        self.assertIsNotNone(honest_match)
+        self.assertNotIn("shuffle_seed=", honest_match.group(1))
 
     # -- item 29: curse-of-dimensionality text is absent ---------------------
 
