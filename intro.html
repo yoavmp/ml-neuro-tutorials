@@ -234,6 +234,8 @@
 <li class="toctree-l2"><a class="reference internal" href="chapters/chapter_09/exercise_09.html">Exercise 9: Advanced Models</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
 </ul>
 
     </div>
@@ -426,8 +428,11 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-notebooks">Using the notebooks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#about-the-questions">About the questions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-notebooks">Using the notebooks</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#opening-an-old-downloaded-copy-later">Opening an old downloaded copy later</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#working-locally-optional">Working locally (optional)</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -447,23 +452,53 @@ which is available on Moodle; the notebook is where those ideas are put to work
 on real data.</p>
 <section id="using-the-notebooks">
 <h2>Using the notebooks<a class="headerlink" href="#using-the-notebooks" title="Link to this heading">#</a></h2>
-<p>The notebooks can be worked through together during the in-class practice
-session, or on your own at home at your own pace. Each one is written to be
-read from top to bottom.</p>
-<p>Some activities are interactive and run directly on this published page, with
-nothing to install. For the rest, you are encouraged to run the code yourself
-and to experiment by changing it: every notebook provides a <strong>Colab</strong> link and a
-downloadable <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> file for exactly that.</p>
+<p>Each notebook is a single interactive document: supplied code you can run as
+is, <strong>YOUR CODE HERE</strong> sections you complete yourself, notebook-native
+interactive activities (figures and controls that update live as you change
+them), and checked understanding questions – including some that ask you to
+select more than one correct option – that give you feedback once you
+answer. Work through each notebook from top to bottom, together during the
+in-class practice session or on your own at home at your own pace.</p>
+<p><strong>Open the exercise directly in this site’s notebook platform</strong> – nothing to
+install, it runs in your browser. Your edits (code, written answers, and
+question results) are saved automatically in that browser as you work, and a
+<strong>Download my notebook</strong> button in the notebook’s own toolbar saves your
+current work, edits included, as an <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> file at any time. That saved
+browser copy lives only in that browser: it will not follow you to a
+different browser, device, or a cleared browser profile, so download it if
+you want a copy that does.</p>
+<p>If you would rather work outside the browser, download the notebook and open
+it in <a class="reference external" href="https://colab.research.google.com/">Google Colab</a> (<strong>File &gt; Upload
+notebook</strong>), or in a local Jupyter installation.</p>
+<section id="opening-an-old-downloaded-copy-later">
+<h3>Opening an old downloaded copy later<a class="headerlink" href="#opening-an-old-downloaded-copy-later" title="Link to this heading">#</a></h3>
+<p>If you previously downloaded an edited <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> and open it again later
+(locally, or re-uploaded to Colab), it still holds exactly the edits you made
+at the time you downloaded it – a downloaded file never updates itself. If
+you instead want the exercise open <strong>in your browser</strong> to go back to the
+original, current template, <strong>download your edited copy first</strong> if you want
+to keep it, then use that notebook’s own <strong>Reset from course template</strong>
+button. This discards your in-browser edits for that one notebook and
+replaces them with the latest published template; it does not touch any
+<code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> file you already downloaded, and it only resets the notebook you run
+it in.</p>
 </section>
-<section id="about-the-questions">
-<h2>About the questions<a class="headerlink" href="#about-the-questions" title="Link to this heading">#</a></h2>
-<p>Questions are placed throughout each notebook, and some of them come <em>before</em>
-the explanation or result they refer to. This is deliberate: committing to an
-answer first, and then checking it, builds a deeper understanding than reading
-the conclusion straight away. The reasoning these questions ask for is close to
-what course assessment and exam questions expect.</p>
-<p>Some questions have a revealable guide that walks through the reasoning. Others
-are genuinely open and have no single correct answer.</p>
+<section id="working-locally-optional">
+<h3>Working locally (optional)<a class="headerlink" href="#working-locally-optional" title="Link to this heading">#</a></h3>
+<p>Local Jupyter or VS Code’s own notebook support both work with every
+exercise. <strong>Python 3.11</strong> is the tested and recommended version; install it
+together with <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>, <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">ipywidgets</span></code>, plus JupyterLab (or VS Code’s Jupyter extension) and
+<code class="docutils literal notranslate"><span class="pre">ipykernel</span></code> to run notebooks locally, for example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>numpy<span class="w"> </span>pandas<span class="w"> </span>matplotlib<span class="w"> </span>scikit-learn<span class="w"> </span>ipywidgets<span class="w"> </span>jupyterlab
+</pre></div>
+</div>
+<p>Retrieving a notebook’s dataset the first time may require an internet
+connection. This site’s own in-browser notebooks run their own bundled
+Python (Pyodide), not a locally installed one, and Google Colab’s runtime
+Python version is set by Colab itself – neither is guaranteed to be exactly
+3.11.</p>
+</section>
 </section>
 <div class="toctree-wrapper compound">
 </div>
@@ -526,8 +561,11 @@ are genuinely open and have no single correct answer.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-notebooks">Using the notebooks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#about-the-questions">About the questions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-notebooks">Using the notebooks</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#opening-an-old-downloaded-copy-later">Opening an old downloaded copy later</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#working-locally-optional">Working locally (optional)</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
