@@ -24,7 +24,8 @@ This assignment uses a gated work-package process. Execute **only the single cur
 10. Do not silently change teaching prose or analysis results.
 11. Do not download participant imaging data. Export only small required tabular fields; represent missing values as JSON `null`; avoid participant identifiers unless required.
 12. Complete the specified tests. If something remains broken after reasonable diagnosis, report it honestly as partial success or failure.
-13. After committing the WP report, stop. Do not draft or begin the next WP.
+13. For any local command expected to run more than a couple of minutes (a full test suite, a Jupyter Book/JupyterLite build, the Playwright suite, a CI watch loop), launch it fully detached from the harness's own process tree (`nohup <command> > <durable-log-path> 2>&1 < /dev/null & disown`), record its PID and log path, and recover state after any session interruption by checking the PID and the log's actual content -- never by assuming success or failure, and never by re-launching a check without first confirming the previous one is not still running or did not already finish. Poll autonomously; do not ask the user whether it is done. For a pushed commit, recover the GitHub Actions run via `gh run list` / `gh run view <run-id>` rather than re-pushing. See `WPs/reports/WP50_MAINTAINER_GUIDE.md` section 8 for the full procedure.
+14. After committing the WP report, stop. Do not draft or begin the next WP.
 
 ## Intended architecture for later WPs
 

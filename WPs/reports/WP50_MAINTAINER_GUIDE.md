@@ -153,3 +153,95 @@ Exercises 9-12 are not fast-pathed either: they are legacy, unpublished
 content (see `book/config/exercise_manifest.json`'s own `$comment`), and a
 change confined to their source always takes the full gate, same as before
 this WP, since optimizing their gate was never in scope here.
+
+## 8. Long-running local commands and CI watches must survive session interruptions
+
+WP54 hit this directly: the harness's own background-task tracking
+(`run_in_background: true`, and a `Monitor`/`until`-loop wrapper waiting on
+it) does not reliably survive a session restart. The first two times a
+full offline-suite run (`python -m unittest discover -s tests`, ~20-25
+minutes) was launched that way, the *actual process was killed*, not just
+the harness's record of it -- the run had to start over from zero both
+times. The third attempt, launched fully detached from the harness's
+process tree, survived three separate session restarts and completed
+normally, with its full output intact on disk the whole time. Follow this
+pattern for any local command expected to run more than a couple of
+minutes: the full offline suite, `jupyter-book build`, `jupyter lite
+build`, `npm run test:e2e:book`, and any `gh run` poll loop.
+
+**Launch detached, not only via the harness's own background flag:**
+
+```
+nohup <command> > <durable-log-path> 2>&1 < /dev/null &
+disown
+echo "launched PID $!"
+```
+
+`nohup` blocks `SIGHUP`; `disown` removes the job from the shell's own job
+table so it is not signaled when that shell exits. Redirect both
+stdout/stderr to a durable log path under your scratchpad directory (never
+a path that gets cleaned between sessions) -- this is the authoritative
+record of what the command actually did, independent of whether anything
+else watching it survives. Confirm the process actually detached (`ppid`
+reparented to `1`, not the interactive shell) before trusting it to
+survive a restart:
+
+```
+ps -o pid,ppid,pgid,command -p <PID>
+```
+
+**Record the PID and the log path in your own response to the user**, not
+only in your own reasoning -- a session restart loses anything that was
+only in context and never written down.
+
+**Recover after a restart by checking real state, never by assuming either
+success or failure:**
+
+```
+ps -p <PID>                 # still running?
+tail -c 2000 <log-path>     # what has it actually produced so far?
+grep -n "Ran .* tests\|OK$\|FAILED\|Error\|Traceback" <log-path>
+```
+
+A log file with no final summary line and no live process most often means
+the harness's own watcher was killed, not the underlying computation --
+check the log's actual content and modification time before concluding a
+job failed, hung, or needs restarting. **Never re-launch a check "to be
+safe" without first confirming, from the PID and log, that the previous
+one is not still running and did not already finish.** A duplicate launch
+wastes the full run time again and, for anything that writes output files
+(a build, a regenerated notebook, a report), can race the first run and
+corrupt the result.
+
+**Poll autonomously once a command is launched detached** -- do not ask
+the user whether it is done. A lightweight wrapper
+(`until ! kill -0 <PID> 2>/dev/null; do sleep N; done; tail ...`, via
+`run_in_background: true`) is a convenience for getting an in-session
+notification when the command exits, but it is not load-bearing: if that
+wrapper itself dies to a restart, re-check the log/PID directly instead of
+re-running the underlying command. Report real progress (lines produced,
+elapsed time) at reasonable intervals, matching the existing WP50-spec
+rule for long commands: record its process ID, monitor it until exit, read
+its exit status and actual failure output immediately, and report a status
+update at least every five minutes -- never leave a finished or crashed
+job idle awaiting a prompt.
+
+**A pushed commit's GitHub Actions run survives independently of any local
+process** -- it runs on GitHub's own infrastructure and does not depend on
+this session staying alive at all. Record the run ID from the `git
+push`/`gh run list` output immediately, and recover it after any
+interruption with:
+
+```
+gh run list --branch main --limit 5
+gh run view <run-id>                       # status, per-job summary
+gh run view <run-id> --job=<job-id>        # per-step status for one job
+gh run view <run-id> --job=<job-id> --log  # full step log, for exact
+                                            # counts/durations/failures
+```
+
+**Never re-push to "restart" a CI run** that is merely slow or whose local
+watcher died -- `gh run view` always has the authoritative current status,
+and GitHub Actions keeps the run and its full log regardless of local
+session state. Re-pushing wastes another full release-gate run (up to
+~2 hours) and, if the first run is still in progress, can race it.
