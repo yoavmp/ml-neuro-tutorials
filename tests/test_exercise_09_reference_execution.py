@@ -106,6 +106,58 @@ class ReferenceExecution(unittest.TestCase):
         matplotlib_warnings = [w for w in caught if "matplotlib" in str(w.category.__module__).lower() or "Fixed" in str(w.message)]
         self.assertEqual(matplotlib_warnings, [], [str(w.message) for w in matplotlib_warnings])
 
+    def test_pcr_pls_pc2_and_pls_labels_sit_in_a_fixed_corner_never_on_an_arrow(self):
+        # WP54: "PLS direction" used to be anchored at its own (w1-
+        # dependent, rotating) arrow tip -- which put the label on top of
+        # points/other arrows at some settings. Both "PC2 (fixed)" and
+        # "PLS direction" are now anchored at fixed axes-fraction positions
+        # in a dedicated corner, PLS directly below PC2 as the author
+        # requested. Verified live across all five checked weights and
+        # both component counts by actually re-running the widget and
+        # inspecting the real rendered Annotation/arrow objects -- not
+        # merely by reading the generator's source.
+        import matplotlib.pyplot as plt
+
+        w1_dd = self.ns["_pcrpls_w1_dd"]
+        n_dd = self.ns["_pcrpls_n_dd"]
+        render = self.ns["_pcrpls_render"]
+
+        for w1 in (0.0, 0.25, 0.5, 0.9, 1.0):
+            for n_components in (1, 2):
+                w1_dd.value = w1
+                n_dd.value = n_components
+                render()
+                fig = plt.gcf()
+                ax = fig.axes[0]
+                texts = {t.get_text(): t for t in ax.texts}
+                self.assertIn("PC2 (fixed)", texts)
+                self.assertIn("PLS direction", texts)
+                pc2_text = texts["PC2 (fixed)"]
+                pls_text = texts["PLS direction"]
+
+                # Fixed, never-rotating axes-fraction anchors -- unaffected
+                # by w1 or component count.
+                self.assertEqual(pc2_text.xycoords, "axes fraction")
+                self.assertEqual(pls_text.xycoords, "axes fraction")
+                self.assertEqual(pc2_text.xy, (0.98, 0.09))
+                self.assertEqual(pls_text.xy, (0.98, 0.025))
+                # PLS sits directly below PC2: same x anchor, lower y.
+                self.assertEqual(pc2_text.xy[0], pls_text.xy[0])
+                self.assertLess(pls_text.xy[1], pc2_text.xy[1])
+
+                # Neither label's own rendered bounding box overlaps any of
+                # the four arrow patches (PC1, PC2, true signal, PLS).
+                fig.canvas.draw()
+                renderer = fig.canvas.get_renderer()
+                for label_text in (pc2_text, pls_text):
+                    label_bbox = label_text.get_window_extent(renderer)
+                    for patch in ax.patches:
+                        self.assertFalse(
+                            label_bbox.overlaps(patch.get_window_extent(renderer)),
+                            f"{label_text.get_text()!r} overlaps an arrow at w1={w1}, n={n_components}",
+                        )
+                plt.close(fig)
+
     def test_participant_and_predictor_counts(self):
         self.assertEqual(len(self.ns["df"]), 1004)
         self.assertEqual(len(self.ns["FEATURES"]), 360)

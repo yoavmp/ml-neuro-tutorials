@@ -358,6 +358,19 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("axes[0].margins(0.3)", source)
         self.assertNotIn('loc="lower right"', source)
 
+    def test_pcr_pls_direction_label_is_fixed_below_pc2_not_tied_to_its_own_arrow(self):
+        # WP54: "PLS direction" used to be anchored to its own rotating
+        # arrow tip (1.2 * pls_dir) -- at some weight settings that put the
+        # label on top of points or other arrows. Both "PC2 (fixed)" and
+        # "PLS direction" are now anchored at fixed axes-fraction positions
+        # in a dedicated corner, PLS directly below PC2, independent of w1.
+        cell = next(c for c in self.cells if c.get("id") == "wp51-310-widget")
+        source = _src(cell)
+        self.assertIn('axes[0].annotate("PC2 (fixed)", (0.98, 0.09), xycoords="axes fraction"', source)
+        self.assertIn('axes[0].annotate("PLS direction", (0.98, 0.025), xycoords="axes fraction"', source)
+        self.assertNotIn("1.2 * pls_dir", source)
+        self.assertNotIn("xytext=(-62, -12)", source)
+
     def test_pcr_pls_note_no_longer_claims_clearly_labeled_above(self):
         # WP53: "clearly labeled above" removed from the synthetic-data
         # disclaimer (the activity's own markdown no longer makes that

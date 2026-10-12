@@ -1095,14 +1095,27 @@ def _pcrpls_render(_change=None):
         axes[0].arrow(0, 0, 2 * pc1_dir[0], 2 * pc1_dir[1], color="black", width=0.015, length_includes_head=True)
         axes[0].annotate("PC1 (fixed)", 2.0 * pc1_dir, xytext=(4, 10), textcoords="offset points", fontsize=8)
         axes[0].arrow(0, 0, 1.3 * pc2_dir[0], 1.3 * pc2_dir[1], color="0.4", width=0.015, length_includes_head=True)
-        axes[0].annotate("PC2 (fixed)", 1.3 * pc2_dir, xytext=(4, -10), textcoords="offset points", fontsize=8, color="0.4")
+        # "PC2 (fixed)"'s own label used to sit right at the arrow's tip
+        # (1.3 * pc2_dir) -- fine on its own, but at w1 = 0 the true-signal/
+        # PLS arrows become exactly collinear with PC2's arrow and can draw
+        # straight across that same spot. Anchored here in a dedicated,
+        # always-empty corner of the margin instead (axes-fraction, not
+        # data coordinates), so neither this label nor "PLS direction"
+        # below it ever sits on an arrow's path, at any weight setting.
+        axes[0].annotate("PC2 (fixed)", (0.98, 0.09), xycoords="axes fraction", ha="right", fontsize=8, color="0.4")
 
         # Target-dependent: the TRUE signal direction (rotates with w1) and
         # the direction PLS actually learned from this w1's own data.
         axes[0].arrow(0, 0, 2 * signal_dir[0], 2 * signal_dir[1], color="crimson", width=0.015, length_includes_head=True)
         axes[0].annotate("true signal", 1.7 * signal_dir, xytext=(6, 14), textcoords="offset points", fontsize=8, color="crimson")
         axes[0].arrow(0, 0, 1.6 * pls_dir[0], 1.6 * pls_dir[1], color="tab:green", width=0.015, length_includes_head=True, linestyle="--")
-        axes[0].annotate("PLS direction", 1.2 * pls_dir, xytext=(-62, -12), textcoords="offset points", fontsize=8, color="tab:green")
+        # The PLS-direction arrow itself still rotates with w1 (target-
+        # dependent) and points wherever the data says -- unchanged. Its
+        # own TEXT label used to be anchored to that same rotating tip,
+        # which put the label on top of points/other arrows at some
+        # settings. Placed in the same dedicated corner as "PC2 (fixed)"
+        # instead, directly below it, as the author requested.
+        axes[0].annotate("PLS direction", (0.98, 0.025), xycoords="axes fraction", ha="right", fontsize=8, color="tab:green")
 
         axes[0].set_xlabel("feature 1"); axes[0].set_ylabel("feature 2")
         axes[0].set_title(f"Synthetic data (weight on PC1 = {w1:.2f})")

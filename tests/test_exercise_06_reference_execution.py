@@ -89,6 +89,71 @@ class ReferenceExecution(unittest.TestCase):
         self.assertAlmostEqual(self.ns["small_tree_val_mse"], 45.9783, places=2)
         self.assertAlmostEqual(self.ns["small_tree_val_r2"], 0.361081, places=3)
 
+    def test_tree_diagram_renders_every_node_directly_from_tree_(self):
+        # WP54: format_tree_diagram used to pair plot_tree's own returned
+        # artist list against a separately-walked preorder node list via
+        # zip(order, artists) -- that desynchronizes after the root's two
+        # children, because plot_tree injects an extra "True"/"False"
+        # edge-label annotation for each of them, so every later node got
+        # some other node's custom label (or kept plot_tree's own default
+        # text, for whichever nodes zip ran out of pairs for). The fixed
+        # version draws every node directly from small_tree.tree_, so
+        # verify every node's own rendered text here -- not merely the
+        # image's pixel dimensions (that alone cannot catch mislabeling).
+        tree = self.ns["small_tree"]
+        ct = tree.tree_
+        is_leaf = ct.children_left == -1
+        aliases = self.ns["SMALL_TREE_ALIASES"]
+        features = self.ns["SMALL_TREE_FEATURES"]
+        names = [aliases.get(f, f) for f in features]
+
+        self.assertEqual(ct.node_count, 15)
+        self.assertEqual(int(is_leaf.sum()), 8)
+
+        # Every parent's sample count equals the sum of its two children's.
+        for node_id in range(ct.node_count):
+            if not is_leaf[node_id]:
+                left, right = ct.children_left[node_id], ct.children_right[node_id]
+                self.assertEqual(
+                    ct.n_node_samples[node_id],
+                    ct.n_node_samples[left] + ct.n_node_samples[right],
+                    f"node {node_id}",
+                )
+
+        fig = self.ns["format_tree_diagram"](tree, features, aliases)
+        rendered_texts = {
+            child.get_text()
+            for ax in fig.axes
+            for child in ax.get_children()
+            if hasattr(child, "get_text") and child.get_text().strip()
+        }
+
+        # Each node's identity/count/value, computed independently here
+        # (not reused from the generator), must appear verbatim somewhere
+        # in the rendered figure.
+        for node_id in range(ct.node_count):
+            n = ct.n_node_samples[node_id]
+            v = ct.value[node_id][0][0]
+            if is_leaf[node_id]:
+                expected = f"Leaf\nPredicted age = {v:.1f}\nn = {n}"
+            else:
+                feat = names[ct.feature[node_id]]
+                thr = ct.threshold[node_id]
+                expected = f"{feat}\n<= {thr:.3f}\nMean age = {v:.1f}   n = {n}"
+                if node_id == 0:
+                    expected = f"Root\n{expected}"
+            self.assertIn(expected, rendered_texts, f"node {node_id} not rendered correctly")
+
+        # The figure's own default plot_tree-style label ("squared_error =
+        # ...") must never leak through for any node left unprocessed by a
+        # mismatched zip.
+        for text in rendered_texts:
+            self.assertNotIn("squared_error", text)
+
+        import matplotlib.pyplot as plt
+
+        plt.close(fig)
+
     def test_complexity_curve_matches_the_audit_exactly(self):
         # Not order-sensitive at these shallow depths: matches
         # scripts/decision_tree_model_audit_result.json.complexity_curve exactly.

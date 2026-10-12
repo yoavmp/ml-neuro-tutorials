@@ -23,3 +23,7 @@ chapters:
       # book/chapters/chapter_{10,11,12} are untouched and stay available
       # for local inspection/redesign (see WPs/reports/WP49_REPORT.md for
       # the local-viewing procedure).
+
+  - file: resources
+
+  - file: references

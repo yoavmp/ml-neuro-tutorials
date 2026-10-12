@@ -101,10 +101,14 @@ test.describe("Exercise 6 — JupyterLite notebook, untouched template", () => {
   });
 
   test("the regression-tree diagram renders as a real, high-resolution image", async ({ page }) => {
-    // WP53: plot_tree's default fontsize auto-shrunk text to fit a small
-    // figsize=(9, 5) canvas -- unreadable even before any CSS display
-    // width was applied. Checks the actual rendered <img>'s own natural
-    // pixel dimensions, not just that something displays.
+    // WP54: format_tree_diagram no longer calls plot_tree at all -- it
+    // draws every node directly from the fitted tree's own tree_ arrays,
+    // with the root at top and its two complete subtrees stacked in their
+    // own labeled "<=" / ">" panels (verified node-by-node against tree_
+    // in tests/test_exercise_06_reference_execution.py, which can inspect
+    // the figure's own Text artists directly -- this live browser check
+    // confirms the real rendered <img>'s own natural pixel dimensions and
+    // portrait (stacked-panel) aspect, not just that something displays.
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
@@ -133,8 +137,19 @@ test.describe("Exercise 6 — JupyterLite notebook, untouched template", () => {
     await expect(img).toBeVisible({ timeout: 10_000 });
     const naturalWidth = await img.evaluate((el: HTMLImageElement) => el.naturalWidth);
     const naturalHeight = await img.evaluate((el: HTMLImageElement) => el.naturalHeight);
-    expect(naturalWidth).toBeGreaterThanOrEqual(1800); // figsize=(15, 9) at dpi=140
-    expect(naturalHeight).toBeGreaterThanOrEqual(1000);
+    // figsize=(10.5, 10.8) at dpi=150 is the canvas before saving; Jupyter's
+    // inline backend saves with a tight bbox, cropping the figure's own
+    // empty margin, so the actual raster is smaller than canvas x dpi --
+    // measured live at naturalWidth=1250, naturalHeight=1311. Thresholds
+    // here are set with headroom below that real measurement, not the raw
+    // canvas math (which overstates the saved image size).
+    expect(naturalWidth).toBeGreaterThanOrEqual(1100);
+    expect(naturalHeight).toBeGreaterThanOrEqual(1150);
+    // Portrait, not landscape: the root-plus-two-stacked-panels layout is
+    // taller than it is wide, which is what keeps it legible at narrow
+    // (390px) page widths without per-node text shrinking as much as a
+    // wide single-row tree would.
+    expect(naturalHeight).toBeGreaterThan(naturalWidth);
   });
 
   test("no error cells anywhere on an untouched Run All Cells; both blanks degrade to their own guidance", async ({
@@ -230,6 +245,51 @@ test.describe("Exercise 6 — JupyterLite notebook, untouched template", () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(2);
+  });
+
+  test("the regression-tree diagram itself does not overflow a 390px viewport", async ({ page }) => {
+    // WP54: a page-level no-overflow check alone (the test above) does not
+    // catch an internally illegible or cropped figure -- it only proves
+    // the page itself does not scroll sideways. Run the cells for real at
+    // 390px and inspect the diagram's own rendered box.
+    // The toolbar's "Python (Pyodide)" kernel-status label is hidden by
+    // responsive CSS at this narrow width (established live elsewhere,
+    // e.g. exercise-09-lite.spec.ts's own 390px test) -- waiting on it
+    // here would time out for a reason unrelated to this notebook. A
+    // fixed settle delay before driving the menu-based "Run All Cells" is
+    // the same pattern already proven at 390px by that other spec.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
+    await page.waitForTimeout(4000);
+    await runAllCells(page);
+
+    const diagramLocator = page.locator(".jp-CodeCell", { hasText: "format_tree_diagram(small_tree" });
+    const scrollHeight = await page.evaluate(
+      () => document.querySelector(".jp-WindowedPanel-outer")?.scrollHeight ?? 0,
+    );
+    for (let st = 0; st <= scrollHeight; st += 300) {
+      await page.evaluate((v) => {
+        const el = document.querySelector(".jp-WindowedPanel-outer");
+        if (el) el.scrollTop = v;
+      }, st);
+      await page.waitForTimeout(300);
+      if ((await diagramLocator.count()) > 0 && (await diagramLocator.first().boundingBox())) break;
+    }
+    const img = diagramLocator.first().locator(".jp-OutputArea-output img").first();
+    await expect(img).toBeVisible({ timeout: 10_000 });
+    const box = await img.boundingBox();
+    expect(box).not.toBeNull();
+    // Displayed width fits the narrow viewport (CSS scales the image down,
+    // it does not crop it)...
+    expect(box!.width).toBeLessThanOrEqual(390);
+    // ...while the underlying raster keeps its full high-resolution pixel
+    // count, so scaling down for display does not blur per-node text.
+    const naturalWidth = await img.evaluate((el: HTMLImageElement) => el.naturalWidth);
+    expect(naturalWidth).toBeGreaterThanOrEqual(1100); // see the measured-value note above
+    const pageOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(pageOverflow).toBeLessThanOrEqual(2);
   });
 
   test("reset restores the template and Back returns to Contents", async ({ page }) => {

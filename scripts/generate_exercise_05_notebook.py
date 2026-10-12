@@ -521,9 +521,11 @@ structure changes with age across most of the brain, not in one
 circumscribed system (Bethlehem et al., 2022,
 [doi:10.1038/s41586-022-04554-y](https://doi.org/10.1038/s41586-022-04554-y);
 Storsve et al., 2014,
-[doi:10.1523/JNEUROSCI.0391-14.2014](https://doi.org/10.1523/JNEUROSCI.0391-14.2014)),
-so there is no single small region set this course's own age literature
-prefers. The bundles below are used simply as several differently sized,
+[doi:10.1523/JNEUROSCI.0391-14.2014](https://doi.org/10.1523/JNEUROSCI.0391-14.2014);
+full bibliographic entries on this course's own
+[References](https://yoavmp.github.io/ml-neuro-tutorials/references.html)
+page), so there is no single small region set this course's own age
+literature prefers. The bundles below are used simply as several differently sized,
 differently located cortical-thickness comparisons, each chosen before
 looking at how well it predicts age in this cohort.
 

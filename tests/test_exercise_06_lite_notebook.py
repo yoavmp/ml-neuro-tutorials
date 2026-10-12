@@ -244,13 +244,33 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("ens-ntrees-row", source)
         self.assertIn("white-space: normal !important", source)
 
-    def test_regression_tree_diagram_uses_a_larger_higher_resolution_figure(self):
-        # WP53: plot_tree's default fontsize auto-shrinks to fit a small
-        # figsize=(9, 5) canvas -- unreadable even before any CSS display
-        # width is applied. A larger, higher-DPI figure with an explicit
-        # fontsize fixes the actual rendered pixels.
-        self.assertIn("figsize=(15, 9), dpi=140", self.code)
-        self.assertIn("fontsize=12", self.code)
+    def test_regression_tree_diagram_draws_every_node_directly_from_tree_(self):
+        # WP54: the previous version called plot_tree(...) and then paired
+        # its returned artist list against a separately manually-walked
+        # node order via zip(order, artists) -- that pairing silently
+        # desynchronizes after the root's two children (plot_tree injects
+        # an extra "True"/"False" edge-label annotation for each of them),
+        # so later nodes got another node's custom label, or kept
+        # plot_tree's own uncustomized "squared_error = .../samples =
+        # .../value = ..." text whenever zip ran out of pairs. The fixed
+        # version never calls plot_tree at all -- it reads children_left/
+        # children_right/feature/threshold/n_node_samples/value straight
+        # off the fitted tree's own tree_ for every node, once.
+        self.assertNotIn("plot_tree(", self.code)
+        self.assertNotIn("zip(order, artists)", self.code)
+        self.assertIn("ct.children_left", self.code)
+        self.assertIn("ct.children_right", self.code)
+        self.assertIn("ct.n_node_samples", self.code)
+        self.assertIn("ct.threshold", self.code)
+        self.assertIn("ct.value", self.code)
+        self.assertNotIn("squared_error = ", self.code)  # plot_tree's own default node label text
+        # Root at top, its two complete subtrees stacked in their own
+        # labeled "<=" / ">" panels (four leaves each), for legibility at
+        # notebook width -- not one cramped single-row rendering.
+        self.assertIn("draw_panel(ax_left, left_id", self.code)
+        self.assertIn("draw_panel(ax_right, right_id", self.code)
+        self.assertIn("branch (n = {left_n})", self.code)
+        self.assertIn("branch (n = {right_n})", self.code)
 
     def test_think_first_replaced_with_think(self):
         self.assertNotIn("Think first:", self.code + self.md)

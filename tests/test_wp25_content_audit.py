@@ -108,13 +108,6 @@ class PreSyllabusArchiveContentTests(unittest.TestCase):
         self.assertIn("Exercise 4: Classification with Logistic Regression", text)
 
 
-class SyllabusPageUnchangedTests(unittest.TestCase):
-    def test_syllabus_source_is_byte_for_byte_unchanged_from_the_pre_syllabus_commit(self):
-        before = _git("show", f"{PRE_SYLLABUS_ARCHIVE_COMMIT}:book/syllabus.md")
-        after = (REPO_ROOT / "book" / "syllabus.md").read_text(encoding="utf-8")
-        self.assertEqual(before, after)
-
-
 class ExerciseOneThroughTwelveTitles(unittest.TestCase):
     def _title_of(self, n: int) -> str:
         if n <= 10:

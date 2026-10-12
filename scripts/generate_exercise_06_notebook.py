@@ -476,7 +476,7 @@ except NameError as exc:
     ) from exc
 
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, plot_tree
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.ensemble import BaggingRegressor, RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, roc_auc_score
 
@@ -527,37 +527,102 @@ SMALL_TREE_ALIASES = {{{aliases_literal}}}
 
 
 def format_tree_diagram(tree, feature_names, aliases):
-    \"\"\"Relabel plot_tree's default text ('X[0] <= t\\nsquared_error = ...\\n
-    samples = n\\nvalue = v') with short aliases, 'Mean age =', and, for
-    leaves, 'Predicted age ='.\"\"\"
-    # plot_tree's default fontsize=None auto-shrinks text to cram
-    # every node into a small figsize=(9, 5) canvas -- unreadable even
-    # before any CSS display width is applied, and widening the displayed
-    # <img> via CSS alone only blows up that same low-resolution raster.
-    # A larger figure at higher DPI with an explicit, generously sized
-    # fontsize fixes the actual rendered pixels instead.
-    fig, ax = plt.subplots(figsize=(15, 9), dpi=140)
-    artists = plot_tree(tree, feature_names=[aliases.get(f, f) for f in feature_names], fontsize=12, ax=ax)
-    is_leaf = tree.tree_.children_left == -1
-    order = []
+    \"\"\"Draw every node directly from the fitted tree's own arrays
+    (children_left/right, feature, threshold, n_node_samples, value) --
+    not plot_tree's returned artist list, whose order does not match a
+    manual node traversal (plot_tree inserts extra 'True'/'False' edge
+    labels for the root's two children, which desynchronizes a pairing
+    against a separately-walked node order for every later node). Draws
+    the root once at the top, then its two complete subtrees stacked in
+    their own '<=' and '>' panels so the diagram stays legible at
+    notebook width.\"\"\"
+    ct = tree.tree_
+    is_leaf = ct.children_left == -1
+    names = [aliases.get(f, f) for f in feature_names]
 
-    def _walk(node_id):
-        order.append(node_id)
-        if not is_leaf[node_id]:
-            _walk(tree.tree_.children_left[node_id])
-            _walk(tree.tree_.children_right[node_id])
-
-    _walk(0)
-    for node_id, artist in zip(order, artists):
-        n = tree.tree_.n_node_samples[node_id]
-        v = tree.tree_.value[node_id][0][0]
+    def node_label(node_id):
+        n = ct.n_node_samples[node_id]
+        v = ct.value[node_id][0][0]
         if is_leaf[node_id]:
-            artist.set_text(f"Leaf\\nPredicted age = {{v:.1f}}\\nn = {{n}}")
-        else:
-            lines = artist.get_text().split("\\n")
-            artist.set_text(f"{{lines[0]}}\\nMean age = {{v:.1f}}\\nn = {{n}}")
-    ax.set_title("Resulting Regression Tree", fontsize=14)
-    fig.tight_layout()
+            return f"Leaf\\nPredicted age = {{v:.1f}}\\nn = {{n}}"
+        feat = names[ct.feature[node_id]]
+        thr = ct.threshold[node_id]
+        return f"{{feat}}\\n<= {{thr:.3f}}\\nMean age = {{v:.1f}}   n = {{n}}"
+
+    def layout(root_id):
+        \"\"\"In-order leaf x positions, internal x = mean of children, y = -depth.\"\"\"
+        positions = {{}}
+        next_x = [0]
+
+        def place(node_id, depth):
+            if is_leaf[node_id]:
+                x = next_x[0]
+                next_x[0] += 1
+            else:
+                place(ct.children_left[node_id], depth + 1)
+                place(ct.children_right[node_id], depth + 1)
+                lx = positions[ct.children_left[node_id]][0]
+                rx = positions[ct.children_right[node_id]][0]
+                x = (lx + rx) / 2
+            positions[node_id] = (x, -depth)
+
+        place(root_id, 0)
+        return positions
+
+    def draw_panel(ax, root_id, title):
+        positions = layout(root_id)
+        xs = [p[0] for p in positions.values()]
+        ys = [p[1] for p in positions.values()]
+        ax.set_xlim(min(xs) - 0.6, max(xs) + 0.6)
+        ax.set_ylim(min(ys) - 0.75, max(ys) + 0.6)
+        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.axis("off")
+
+        def walk(node_id):
+            x, y = positions[node_id]
+            pad = 0.55 if is_leaf[node_id] else 0.45
+            ax.text(
+                x, y, node_label(node_id), ha="center", va="center", fontsize=9.5,
+                bbox=dict(boxstyle=f"round,pad={{pad}}", fc="#eafaf1" if is_leaf[node_id] else "#eef3fb", ec="0.3"),
+                zorder=3,
+            )
+            if not is_leaf[node_id]:
+                for child_id, branch in ((ct.children_left[node_id], "<="), (ct.children_right[node_id], ">")):
+                    cx, cy = positions[child_id]
+                    ax.annotate(
+                        "", xy=(cx, cy + 0.42), xytext=(x, y - 0.42),
+                        arrowprops=dict(arrowstyle="-|>", color="0.35", lw=1.2), zorder=2,
+                    )
+                    mx, my = (x + cx) / 2, (y + cy) / 2
+                    ax.text(mx, my, branch, fontsize=10, color="0.35", ha="center", va="center",
+                            bbox=dict(boxstyle="round,pad=0.1", fc="white", ec="none"), zorder=4)
+                    walk(child_id)
+
+        walk(root_id)
+
+    root_n = ct.n_node_samples[0]
+    root_feat = names[ct.feature[0]]
+    root_thr = ct.threshold[0]
+    left_id, right_id = ct.children_left[0], ct.children_right[0]
+    left_n, right_n = ct.n_node_samples[left_id], ct.n_node_samples[right_id]
+
+    fig = plt.figure(figsize=(10.5, 10.8), dpi=150)
+    gs = fig.add_gridspec(3, 1, height_ratios=[0.55, 1.7, 1.7], hspace=0.28)
+    ax_root = fig.add_subplot(gs[0])
+    ax_root.axis("off")
+    ax_root.text(
+        0.5, 0.5,
+        f"Root\\n{{root_feat}}\\n<= {{root_thr:.3f}}\\nMean age = {{ct.value[0][0][0]:.1f}}   n = {{root_n}}",
+        ha="center", va="center", fontsize=11,
+        bbox=dict(boxstyle="round,pad=0.5", fc="#eef3fb", ec="0.3"), transform=ax_root.transAxes,
+    )
+    ax_root.set_title("Resulting Regression Tree (max_depth=3)", fontsize=14)
+
+    ax_left = fig.add_subplot(gs[1])
+    draw_panel(ax_left, left_id, f"<= {{root_thr:.3f}} branch (n = {{left_n}})")
+    ax_right = fig.add_subplot(gs[2])
+    draw_panel(ax_right, right_id, f"> {{root_thr:.3f}} branch (n = {{right_n}})")
+
     return fig
 
 
