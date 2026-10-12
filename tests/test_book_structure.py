@@ -128,15 +128,26 @@ class Pages(unittest.TestCase):
         self.assertIn("bootstrap *(tentative)*", text.lower())
         self.assertIn("llms *(tentative)*", text.lower())
 
-    def test_syllabus_does_not_invent_a_room_or_due_dates(self):
+    def test_syllabus_states_the_real_room_and_does_not_invent_due_dates(self):
+        # WP55: the author supplied the room after WP54 shipped this page
+        # with an explicit "not provided" placeholder; that placeholder is
+        # now gone, replaced with the real room.
         text = (BOOK / "syllabus.md").read_text(encoding="utf-8").lower()
-        self.assertIn("location not provided", text)
-        self.assertNotIn("room ", text)
+        self.assertIn("dan david building, room 110", text)
+        self.assertNotIn("location not provided", text)
         self.assertNotIn("due date", text)
 
     def test_syllabus_does_not_imply_exercises_10_to_12_are_published(self):
+        # WP55: the old disclaimer paragraph (which spelled out "Only
+        # Exercises 1-9 are published") was replaced with a neutral link to
+        # Contents, per the author's own instruction not to add a claim
+        # that an unpublished exercise exists -- Contents itself is still
+        # the source of truth for what is actually published.
         text = (BOOK / "syllabus.md").read_text(encoding="utf-8")
-        self.assertIn("Only Exercises 1-9 are published", text)
+        self.assertIn("Practice notebooks: see [Contents](contents.md)", text)
+        self.assertNotIn("Exercise 10", text)
+        self.assertNotIn("Exercise 11", text)
+        self.assertNotIn("Exercise 12", text)
 
     def test_resources_covers_the_required_minimum_links(self):
         text = (BOOK / "resources.md").read_text(encoding="utf-8")
@@ -147,7 +158,7 @@ class Pages(unittest.TestCase):
             "statlearning.com",
             "fcon_1000.projects.nitrc.org/indi/abide/abide_ii.html",  # official ABIDE II site
             "abideii_data_legend.pdf",  # phenotypic legend
-            "raw.githubusercontent.com/neurohackademy/nh2020-curriculum",  # pinned abide2.tsv
+            "github.com/neurohackademy/nh2020-curriculum",  # WP55: student-facing credit link (the pinned raw.githubusercontent.com URL is now only inside the notebooks' own loaders, not this page)
             "lite/files/data/abide_age_brain.csv",  # same-origin course export
         ):
             self.assertIn(needle, low, f"Resources is missing: {needle!r}")
