@@ -104,6 +104,18 @@ class ReferenceExecution(unittest.TestCase):
         matrix = self.ns["pearson_matrix"]
         self.assertAlmostEqual(matrix.loc["FIQ", "VIQ"], 0.833, places=2)
 
+    def test_fiq_viq_scatter_activity_matches_established_result(self):
+        # WP55 D.2: the student activity's own paired-dropna Pearson r,
+        # computed independently of pearson_matrix above, on the same two
+        # columns.
+        self.assertEqual(len(self.ns["paired"]), 796)
+        self.assertAlmostEqual(self.ns["fiq_viq_r"], 0.833, places=2)
+
+    def test_scatter_matrix_complete_cases_match_established_result(self):
+        # WP55 D.4: complete cases across all four variables (a stricter
+        # subset than any single pair above).
+        self.assertEqual(len(self.ns["complete_for_matrix"]), 783)
+
     def test_shuffle_is_reproducible_and_varies_positions_across_questions(self):
         # WP53 course-wide review item 2: correct answers must not all land
         # first, and the same per-question seed must always give the same

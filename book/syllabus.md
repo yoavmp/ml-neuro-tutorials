@@ -2,7 +2,7 @@
 
 **Machine Learning for Neuroscience** &middot; Course **1501.1027** &middot;
 Semester A, 2026-27
-Mondays, 08:30-11:00 (location not provided in the source syllabus)
+Mondays, 08:30-11:00, Dan David building, room 110
 
 ## Aims and prerequisites
 
@@ -48,11 +48,7 @@ Homework and the final project are submitted **in pairs**.
 
 ## Schedule
 
-The two topics marked *(tentative)* below are provisional in the source
-syllabus, not confirmed. Only Exercises 1-9 are published on this site so
-far; a scheduled lecture topic for Weeks 10-13 does not mean that week's
-practice notebook is available yet -- see [Contents](contents.md) for the
-currently published exercises.
+Practice notebooks: see [Contents](contents.md).
 
 | Week | Date | Lecture | Practice | Homework |
 |---|---|---|---|---|
@@ -64,10 +60,8 @@ currently published exercises.
 | 6 | 23 Nov 2026 | Decision trees, bagging, Random Forest | Trees (start) | &mdash; |
 | 7 | 30 Nov 2026 | Boosting, gradient boosting | Trees, boosting | Classification using trees/LDA |
 | 8 | 7 Dec 2026 | Unsupervised learning, PCA, clustering | PCA, clustering | &mdash; |
-| 9 | 14 Dec 2026 | Advanced models: PCR, PLS, SVM, kernels | Advanced models, code and comparisons | PCA and kernels applied to previous models: KNN, Ridge, SVM* |
+| 9 | 14 Dec 2026 | Advanced models: PCR, PLS, SVM, kernels | Advanced models, code and comparisons | PCA and kernels applied to previous models: KNN, Ridge, SVM |
 | 10 | 21 Dec 2026 | Introduction to deep learning | Common mistakes, realistic examples | &mdash; |
 | 11 | 28 Dec 2026 | Embeddings, representational similarity analysis | Embeddings, RSA | Embeddings and RSA (bonus task) |
 | 12 | 4 Jan 2027 | Introduction to LLMs *(tentative)* | Practice, exam-style questions | &mdash; |
 | 13 | 11 Jan 2027 | Oral tests | Oral tests | &mdash; |
-
-\* The source syllabus lists this row's last homework item as "sum"; rendered here as "SVM" to match this week's own advanced-models topic (PCR, PLS, SVM, kernels) -- flagged as a likely source typo, not independently confirmed with the course author.

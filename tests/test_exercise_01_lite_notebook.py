@@ -291,6 +291,7 @@ class StructuralSynchronization(unittest.TestCase):
             "wp42-activity-missing-summary",
             "wp42-activity-drop-incomplete",
             "wp42-activity-fill-median",
+            "wp42-activity-fiq-viq-scatter",
         }
         for a, b in zip(self.lite_cells, self.reference_cells):
             self.assertEqual(a["id"], b["id"])

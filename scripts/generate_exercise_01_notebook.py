@@ -33,6 +33,7 @@ Modes:
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 from pathlib import Path
 
@@ -42,6 +43,7 @@ from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CURATED_COLUMNS_PATH = REPO_ROOT / "book" / "config" / "eda_phenotype_columns.json"
 DATA_SIDECAR = REPO_ROOT / "book" / "lite" / "files" / "data" / "abide_phenotypes.manifest.json"
+FIQ_VIQ_REFERENCE_IMAGE_PATH = REPO_ROOT / "book" / "lite" / "files" / "data" / "exercise_01_fiq_viq_reference.png"
 
 LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_01.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb"
@@ -57,10 +59,31 @@ KERNELSPEC = {
 }
 
 
-def md(source: str, cell_id: str) -> dict:
+def md(source: str, cell_id: str, attachments: dict | None = None) -> dict:
     c = new_markdown_cell(source.strip() + "\n")
     c["id"] = cell_id
+    if attachments:
+        c["attachments"] = attachments
     return c
+
+
+FIQ_VIQ_REFERENCE_IMAGE_FILENAME = "exercise_01_fiq_viq_reference.png"
+
+
+def _fiq_viq_reference_image_attachments() -> dict:
+    # Same nbformat attachment mechanism Exercise 2's Activity 3B reference
+    # image uses (see scripts/generate_exercise_02_notebook.py): the base64
+    # payload lives in the cell's own attachments dict, not inline in the
+    # markdown source, so a student editing the cell sees only the short
+    # "attachment:<filename>" reference, not a page-length data URI -- and
+    # it is core nbformat, so it renders identically in JupyterLite, local
+    # Jupyter/nbclient, and a downloaded notebook opened in Colab.
+    encoded = base64.b64encode(FIQ_VIQ_REFERENCE_IMAGE_PATH.read_bytes()).decode("ascii")
+    return {FIQ_VIQ_REFERENCE_IMAGE_FILENAME: {"image/png": encoded}}
+
+
+def _fiq_viq_reference_image_markdown() -> str:
+    return f"![Approved FIQ-vs-VIQ reference result](attachment:{FIQ_VIQ_REFERENCE_IMAGE_FILENAME})"
 
 
 def code(source: str, cell_id: str, hidden: bool = False) -> dict:
@@ -778,9 +801,19 @@ plt.show()
             "wp42-607-group-plot",
         ),
         md(
-            "> **The two `FIQ` distributions above overlap heavily. Name one other "
-            "variable that could differ between sites *and* be related to `FIQ`, "
-            "which would make a raw group comparison misleading.**",
+            "> **The two `FIQ` distributions above overlap heavily -- can a gap "
+            "like this always be read as \"one group's true IQ is lower\"?**\n\n"
+            "Not necessarily. ABIDE-II pools data from 19 different research "
+            "sites, and sites can differ both in which IQ instrument they used "
+            "and in their mix of participants by diagnosis. So part of an "
+            "apparent pooled-group difference in `FIQ` could reflect site or "
+            "measurement differences rather than a real IQ difference between "
+            "the groups. The original ABIDE-II phenotype source has test-type "
+            "fields recording which instrument was used at each site, but this "
+            "course's 13-column teaching table does not include them, so that "
+            "possibility can't be checked directly in this sample -- it is a "
+            "possibility worth keeping in mind here, not something this notebook "
+            "has demonstrated.",
             "wp42-608-group-answer",
         ),
         md(
@@ -818,6 +851,109 @@ plt.show()
 show_question("q-fiq-correlation")
 """,
             "wp42-611-checked",
+        ),
+        md("### Your turn -- FIQ vs VIQ", "wp42-612-fiq-viq-header"),
+        md(
+            """
+Write code that:
+- builds a paired table of `FIQ` and `VIQ` with `dropna()`, keeping only
+  participants with **both** values present;
+- computes the Pearson `r` between them on that same paired table (e.g.
+  with `.corr()`), and stores it in a variable called `fiq_viq_r`;
+- draws a scatter plot of `FIQ` (x-axis) against `VIQ` (y-axis);
+- labels both axes, and gives the plot a title that includes the Pearson
+  `r` value you computed.
+""",
+            "wp42-613-fiq-viq-instructions",
+        ),
+        md(
+            "For reference, here is the approved current result:",
+            "wp42-614-fiq-viq-reference-intro",
+        ),
+        md(
+            _fiq_viq_reference_image_markdown(),
+            "wp42-615-fiq-viq-reference-image",
+            attachments=_fiq_viq_reference_image_attachments(),
+        ),
+        blank(
+            "# YOUR CODE HERE\n"
+            "# Hint: a DataFrame's .dropna() on just the FIQ and VIQ columns keeps\n"
+            "# only rows where both are present.\n"
+            "# Hint: a pandas Series has a .corr() method for Pearson r.\n",
+            """
+paired = data[["FIQ", "VIQ"]].dropna()
+fiq_viq_r = paired["FIQ"].corr(paired["VIQ"])
+
+fig, ax = plt.subplots(figsize=(5, 4))
+ax.scatter(paired["FIQ"], paired["VIQ"], s=12, alpha=0.4, color="#2a6f9e")
+ax.set_xlabel("FIQ (full-scale IQ)")
+ax.set_ylabel("VIQ (verbal IQ)")
+ax.set_title(f"FIQ vs VIQ (n={len(paired)}, Pearson r = {fiq_viq_r:.2f})")
+plt.tight_layout()
+plt.show()
+""",
+            "wp42-616-fiq-viq-blank",
+            tags=["wp42-activity-fiq-viq-scatter"],
+        ),
+        code(
+            """
+# Run this to check your work. It only checks fiq_viq_r (computed the same
+# way, independently, from data itself), not your plot's exact code or
+# appearance, and never raises -- an incomplete attempt just prints a
+# message instead of blocking the rest of the notebook.
+if "fiq_viq_r" in globals():
+    _fiq_viq_paired_check = data[["FIQ", "VIQ"]].dropna()
+    _fiq_viq_expected_r = _fiq_viq_paired_check["FIQ"].corr(_fiq_viq_paired_check["VIQ"])
+    if abs(fiq_viq_r - _fiq_viq_expected_r) < 0.01:
+        print(f"Looks good: FIQ-VIQ Pearson r = {fiq_viq_r:.2f} (n={len(_fiq_viq_paired_check)}).")
+    else:
+        print(
+            f"Not quite: on the paired FIQ/VIQ observations, r should be about "
+            f"{_fiq_viq_expected_r:.2f}; got {fiq_viq_r:.2f}. Check that you "
+            "dropped rows where either value is missing before computing r."
+        )
+else:
+    print("Not complete yet: define fiq_viq_r above first.")
+""",
+            "wp42-617-fiq-viq-check",
+        ),
+        md("### A four-variable scatter matrix (supplied)", "wp42-618-scatter-matrix-header"),
+        md(
+            """
+This cell is supplied and runs on its own, independently of your blank
+above -- it is descriptive EDA, not a model-fitting exercise. It compares
+four numeric variables at once: scatter plots off the diagonal, a histogram
+of each variable on the diagonal.
+""",
+            "wp42-619-scatter-matrix-intro",
+        ),
+        code(
+            """
+scatter_matrix_variables = ["AGE_AT_SCAN", "FIQ", "VIQ", "PIQ"]
+# Uses only participants with all four values present (complete cases for
+# these four columns); `data` itself is left unchanged.
+complete_for_matrix = data[scatter_matrix_variables].dropna()
+print(
+    f"Complete cases across {scatter_matrix_variables}: "
+    f"{len(complete_for_matrix)} of {len(data)} participants."
+)
+
+axes = pd.plotting.scatter_matrix(
+    complete_for_matrix,
+    figsize=(8, 8),
+    diagonal="hist",
+    alpha=0.4,
+    s=10,
+    color="#2a6f9e",
+)
+for ax in axes.flatten():
+    ax.tick_params(labelsize=7)
+    ax.set_xlabel(ax.get_xlabel(), fontsize=8)
+    ax.set_ylabel(ax.get_ylabel(), fontsize=8)
+plt.suptitle(f"Scatter matrix: {', '.join(scatter_matrix_variables)} (complete cases)", y=1.02)
+plt.show()
+""",
+            "wp42-620-scatter-matrix",
         ),
     ]
 
@@ -869,7 +1005,8 @@ def _build_cells(mode: str) -> list[dict]:
     cells += [c.render(mode) if isinstance(c, Blank) else c for c in section_4]
     section_5 = _section_5()
     cells += [c.render(mode) if isinstance(c, Blank) else c for c in section_5]
-    cells += _section_6()
+    section_6 = _section_6()
+    cells += [c.render(mode) if isinstance(c, Blank) else c for c in section_6]
     return cells
 
 

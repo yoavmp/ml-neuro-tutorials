@@ -168,6 +168,92 @@ function addButtons(
   panel.toolbar.addItem('courseToolbarReset', resetButton);
 }
 
+// WP55 item E: recover from JupyterLite's own intermittent "No Kernel"
+// startup race.
+//
+// Root cause (confirmed by reading the shipped
+// @jupyterlab/apputils SessionContext source, not assumed):
+// ``SessionContext.startKernel()`` reads ``this.specsManager.specs``
+// *synchronously*, without awaiting ``specsManager.ready`` first. That
+// call happens as soon as a notebook's document context is ready, racing
+// the Pyodide kernel's own federated extension, which registers its
+// kernelspec asynchronously (it is a separate lazily-loaded JS chunk). If
+// the chunk hasn't registered yet at that exact moment, ``specs`` is
+// still null, no kernel name can be picked, ``startKernel()`` returns
+// "needs selection" -- and, critically, *nothing ever retries*: no
+// listener on ``specsManager.specsChanged`` is wired to this path, so the
+// session is left on "No Kernel" permanently. A full page reload "fixes"
+// this only because the browser's cache makes the second load's
+// federated-extension fetch fast enough to win the race -- it is not a
+// real fix, just a favorable rerun. This also compounds with a separate,
+// permanent (non-racy) mismatch: every exercise notebook's own saved
+// kernelspec metadata asks for "python3" by name, but this deployment's
+// Pyodide kernel is actually registered as "python" (see book/lite's
+// built jupyter-lite.json -> "defaultKernelName"), confirmed live against
+// the deployed site -- every single page load (8/8 fresh/returning/
+// launch-button attempts) logs JupyterLab's own name-mismatch fallback
+// notice in the browser console, though that fallback alone did not
+// reproduce a stuck "No Kernel" in those 8 runs. Both are fixed at the
+// root here: not a sleep, not a reload, not a broad cache purge.
+async function ensureKernelStarted(
+  app: JupyterFrontEnd,
+  panel: NotebookPanel
+): Promise<void> {
+  // The normal automatic path (SessionContext.initialize(), already
+  // in flight by the time a notebook's document context becomes ready)
+  // either already won the race above, or already lost it -- either way
+  // it has settled by now, synchronously from this function's point of
+  // view, so check the outcome directly instead of awaiting
+  // sessionContext.ready: in the exact failure this recovers from, that
+  // promise never resolves (see above), so awaiting it here would just
+  // trade "stuck on No Kernel" for "stuck awaiting here" instead.
+  if (panel.sessionContext.session?.kernel) {
+    return;
+  }
+
+  // No kernel yet -- wait, bounded, for the kernelspec registry itself
+  // (not a fixed sleep: resolves as soon as the registry is actually
+  // ready, which is the real event this is waiting on).
+  const kernelSpecs = app.serviceManager.kernelspecs;
+  const specs = await Promise.race([
+    kernelSpecs.ready.then(() => kernelSpecs.specs),
+    new Promise<null>(resolve => setTimeout(() => resolve(null), 30_000))
+  ]);
+
+  if (panel.sessionContext.session?.kernel) {
+    return; // started on its own while this function was waiting
+  }
+
+  const defaultName = specs?.default;
+  if (!specs || !defaultName || !specs.kernelspecs[defaultName]) {
+    // A genuine failure (e.g. the kernel's own assets never loaded --
+    // offline, or a CDN outage): report it plainly instead of leaving an
+    // unexplained "No Kernel" or waiting indefinitely.
+    void showDialog({
+      title: 'Kernel did not start',
+      body:
+        'The Python (Pyodide) kernel did not become available after ' +
+        'waiting 30 seconds. This usually means a network or CDN problem ' +
+        'while loading the kernel. Try reloading this page; if it keeps ' +
+        'happening, check your network connection.',
+      buttons: [Dialog.okButton()]
+    });
+    return;
+  }
+
+  try {
+    await panel.sessionContext.changeKernel({ name: defaultName });
+  } catch (err) {
+    void showDialog({
+      title: 'Kernel did not start',
+      body: `Could not start the Python (Pyodide) kernel: ${
+        err instanceof Error ? err.message : String(err)
+      }. Try reloading this page.`,
+      buttons: [Dialog.okButton()]
+    });
+  }
+}
+
 const plugin: JupyterFrontEndPlugin<void> = {
   id: PLUGIN_ID,
   description:
@@ -175,7 +261,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   requires: [INotebookTracker, IDocumentManager],
   activate: (
-    _app: JupyterFrontEnd,
+    app: JupyterFrontEnd,
     tracker: INotebookTracker,
     _docManager: IDocumentManager
   ) => {
@@ -183,6 +269,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       void panel.context.ready.then(() => {
         addButtons(panel, DEFAULT_SETTINGS);
         addStatusReadout(panel);
+        void ensureKernelStarted(app, panel);
       });
     });
   }
