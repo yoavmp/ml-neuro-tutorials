@@ -1,7 +1,6 @@
 # Resources
 
-A practical link directory for material actually used in Exercises 1-9 --
-not a general collection. For citable works, see [References](references.md).
+For citable works, see [References](references.md).
 
 ## Course text
 
@@ -17,16 +16,14 @@ not a general collection. For citable works, see [References](references.md).
   all work with ABIDE II phenotypic and derived cortical-thickness data.
 - [ABIDE II Phenotypic Data Legend](https://fcon_1000.projects.nitrc.org/indi/abide/ABIDEII_Data_Legend.pdf) --
   the official column/field definitions for the ABIDE II phenotypic tables.
-- [NeuroHackademy `abide2.tsv`](https://raw.githubusercontent.com/neurohackademy/nh2020-curriculum/e4eed3c4daa7f40b0ba931182a8c7e5e691dba6b/tu-machine-learning-yarkoni/data/abide2.tsv) --
-  the pinned, checksummed public copy every exercise's data loader falls
-  back to when this site's own same-origin file isn't available (a bare
-  downloaded `.ipynb`, or Colab).
+- [NeuroHackademy 2020 machine-learning tutorial data](https://github.com/neurohackademy/nh2020-curriculum/tree/master/tu-machine-learning-yarkoni/data) --
+  background/source material from [Prof. Tal Yarkoni](https://talyarkoni.org/)'s
+  workshop at [NeuroHackademy](https://neurohackademy.org/) 2020.
 - This course's own <a href="lite/files/data/abide_age_brain.csv"><code>abide_age_brain.csv</code></a>,
   <a href="lite/files/data/abide_age_brain_demographics.csv"><code>abide_age_brain_demographics.csv</code></a>,
   and <a href="lite/files/data/abide_phenotypes.csv"><code>abide_phenotypes.csv</code></a> --
-  curated exports selected to the columns each exercise actually uses, built
-  from the ABIDE II source above. These are this course's own derived
-  files, not the original ABIDE II release.
+  subsets built from the ABIDE II source above, using the columns each
+  exercise requires.
 
 ## Python and Jupyter documentation
 
