@@ -195,29 +195,55 @@ function addButtons(
 // notice in the browser console, though that fallback alone did not
 // reproduce a stuck "No Kernel" in those 8 runs. Both are fixed at the
 // root here: not a sleep, not a reload, not a broad cache purge.
+const KERNEL_RECOVERY_TIMEOUT_MS = 30_000;
+
+function afterTimeout<T>(value: T, ms: number): Promise<T> {
+  return new Promise(resolve => setTimeout(() => resolve(value), ms));
+}
+
 async function ensureKernelStarted(
   app: JupyterFrontEnd,
   panel: NotebookPanel
 ): Promise<void> {
-  // The normal automatic path (SessionContext.initialize(), already
-  // in flight by the time a notebook's document context becomes ready)
-  // either already won the race above, or already lost it -- either way
-  // it has settled by now, synchronously from this function's point of
-  // view, so check the outcome directly instead of awaiting
-  // sessionContext.ready: in the exact failure this recovers from, that
-  // promise never resolves (see above), so awaiting it here would just
-  // trade "stuck on No Kernel" for "stuck awaiting here" instead.
   if (panel.sessionContext.session?.kernel) {
     return;
   }
 
-  // No kernel yet -- wait, bounded, for the kernelspec registry itself
-  // (not a fixed sleep: resolves as soon as the registry is actually
-  // ready, which is the real event this is waiting on).
+  // No kernel yet -- but the normal automatic path (SessionContext.
+  // initialize(), already in flight by the time a notebook's document
+  // context becomes ready) may simply still be in progress, not
+  // necessarily stuck: a session-start request can be outstanding for a
+  // little while before session?.kernel becomes set. Racing
+  // sessionContext.ready against a bounded timeout distinguishes "merely
+  // still settling" (ready resolves on its own -- do nothing further,
+  // this function existing only to recover the *stuck* case) from the
+  // actual failure this function recovers from: in that exact case,
+  // ready never resolves at all (see the comment above), so this wait is
+  // bounded precisely so it cannot hang forever the way sessionContext.
+  // ready itself would. Without this check, starting a second kernel
+  // here while the first request is still merely slow (not actually
+  // stuck) would race JupyterLab's own session-preemption logic for no
+  // reason -- confirmed live: the first version of this fix, which
+  // skipped straight to its own recovery attempt, intermittently left a
+  // benign-but-real "<id> was disposed" console error from exactly that
+  // harmless collision, caught by this repo's own browser test suite.
+  await Promise.race([
+    panel.sessionContext.ready,
+    afterTimeout(undefined, KERNEL_RECOVERY_TIMEOUT_MS)
+  ]).catch(() => undefined);
+
+  if (panel.sessionContext.session?.kernel) {
+    return; // the automatic path settled on its own while this waited
+  }
+
+  // Still no kernel after a full timeout window: this is the actual
+  // stuck case. Wait, bounded, for the kernelspec registry itself (not a
+  // fixed sleep: resolves as soon as the registry is actually ready,
+  // which is the real event this is waiting on).
   const kernelSpecs = app.serviceManager.kernelspecs;
   const specs = await Promise.race([
     kernelSpecs.ready.then(() => kernelSpecs.specs),
-    new Promise<null>(resolve => setTimeout(() => resolve(null), 30_000))
+    afterTimeout(null, KERNEL_RECOVERY_TIMEOUT_MS)
   ]);
 
   if (panel.sessionContext.session?.kernel) {
@@ -233,7 +259,7 @@ async function ensureKernelStarted(
       title: 'Kernel did not start',
       body:
         'The Python (Pyodide) kernel did not become available after ' +
-        'waiting 30 seconds. This usually means a network or CDN problem ' +
+        'waiting a minute. This usually means a network or CDN problem ' +
         'while loading the kernel. Try reloading this page; if it keeps ' +
         'happening, check your network connection.',
       buttons: [Dialog.okButton()]
