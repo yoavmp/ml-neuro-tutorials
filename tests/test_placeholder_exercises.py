@@ -10,13 +10,20 @@ test_exercise_06_notebook.py); WP32 did the same for Exercise 7 (see
 test_exercise_07_notebook.py); WP33 did the same for Exercise 8 (see
 test_exercise_08_notebook.py); WP34 did the same for Exercise 9 (see
 test_exercise_09_notebook.py); WP38 did the same for Exercise 10 (see
-test_exercise_10_notebook.py), so none of the seven is covered here any
-more. This file confirms each remaining placeholder (11-12) exists, carries
-exactly its required title and one placeholder sentence, and contains none
-of the material the task explicitly excludes from a placeholder (no
-learning objectives, dates, final-project reminders, Colab/download
-buttons, interactive content, empty code cells, syllabus quotations, or
-section outlines).
+test_exercise_10_notebook.py); WP57 did the same for Exercise 12 (a
+from-scratch "Common Mistakes and Pitfalls" notebook, not the WP38
+Exercise 10 content it was once envisioned to reuse -- see
+WPs/reports/WP57_RELEASE_REPORT.md), so none of those eight is covered
+here any more. Exercise 10's slot in the book now carries a separate,
+differently-named "coming later" stub (book/chapters/chapter_10/
+placeholder.md, not this file's exercise_NN.md convention) -- see
+tests/test_book_structure.py for its own title/content checks. This file
+confirms the one remaining placeholder in this file's convention
+(Exercise 11) exists, carries exactly its required title and one
+placeholder sentence, and contains none of the material the task
+explicitly excludes from a placeholder (no learning objectives, dates,
+final-project reminders, Colab/download buttons, interactive content,
+empty code cells, syllabus quotations, or section outlines).
 
 Standard-library ``unittest``; no network, no build.
 
@@ -32,8 +39,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 PLACEHOLDER_TITLES = {
-    11: "Exercise 11: Embeddings and Representational Similarity Analysis",
-    12: "Exercise 12: Review and Exam-Style Questions",
+    11: "Exercise 11: Embeddings and RSA",
 }
 
 PLACEHOLDER_SENTENCE = "Materials for this exercise will be added before the practice session."

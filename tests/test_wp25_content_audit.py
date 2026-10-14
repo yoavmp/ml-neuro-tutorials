@@ -56,8 +56,15 @@ EXERCISE_TITLES = {
     # Word course overview are unchanged and still show the WP25 placeholder
     # wording "Common Machine Learning Mistakes" -- out of scope for WP38).
     10: "Exercise 10: Examples and Common Mistakes",
-    11: "Exercise 11: Embeddings and Representational Similarity Analysis",
-    12: "Exercise 12: Review and Exam-Style Questions",
+    # WP57 renamed Exercise 11's placeholder title (the syllabus/Word course
+    # overview wording, if any, is unchanged and out of scope here, same as
+    # Exercise 10's own precedent above).
+    11: "Exercise 11: Embeddings and RSA",
+    # WP57 built Exercise 12 as a real, published "Common Mistakes and
+    # Pitfalls" notebook -- reassigned from the Exercise 10 slot it was once
+    # envisioned to reuse, not the WP25 placeholder wording below. See
+    # WPs/reports/WP57_RELEASE_REPORT.md.
+    12: "Exercise 12: Common Mistakes and Pitfalls",
 }
 
 FINAL_PROJECT_NEEDLES = (
@@ -110,7 +117,10 @@ class PreSyllabusArchiveContentTests(unittest.TestCase):
 
 class ExerciseOneThroughTwelveTitles(unittest.TestCase):
     def _title_of(self, n: int) -> str:
-        if n <= 10:
+        # Exercises 1-10 and 12 are real, published notebooks (their own
+        # canonical page is the .ipynb, title in the first cell). Exercise
+        # 11 is still a plain-Markdown placeholder stub.
+        if n <= 10 or n == 12:
             import json
 
             path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
@@ -132,8 +142,8 @@ class ExerciseOneThroughTwelveTitles(unittest.TestCase):
             "Validation and Cross-Validation",
             "Regularization and Feature Selection",
             "Advanced Models",
-            "Representational Similarity Analysis",
-            "Exam-Style Questions",
+            "Embeddings and RSA",
+            "Common Mistakes and Pitfalls",
         )
         all_titles = " | ".join(EXERCISE_TITLES.values())
         for phrase in required_phrases:
@@ -147,7 +157,7 @@ class ExerciseOneThroughTwelveTitles(unittest.TestCase):
 class NoFinalProjectReferences(unittest.TestCase):
     def test_no_final_project_reference_in_any_exercise_1_to_12_page(self):
         for n in range(1, 13):
-            if n <= 10:
+            if n <= 10 or n == 12:
                 path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb"
             else:
                 path = REPO_ROOT / "book" / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md"
@@ -156,7 +166,7 @@ class NoFinalProjectReferences(unittest.TestCase):
                 self.assertNotIn(needle, text, (n, needle))
 
     def test_no_final_project_reference_in_portable_notebooks(self):
-        for n in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
+        for n in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12):
             path = (
                 REPO_ROOT
                 / "book"
