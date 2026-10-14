@@ -46,6 +46,7 @@ from classify_release_change import (  # noqa: E402
     classify_path,
     classify_release,
     notebooks_differ_beyond_prose,
+    page_differs_beyond_prose,
     resolve_base,
 )
 
@@ -55,6 +56,14 @@ TRUSTWORTHY_BASE = BaseResolution("0" * 40, True, "test fixture")
 def _stub_prose_checker(verdicts: dict[int, bool]):
     def _checker(n, base_sha, head_ref, repo_root):
         ok = verdicts.get(n, False)
+        return ok, "stub" if ok else "stub: escalated"
+
+    return _checker
+
+
+def _stub_page_checker(verdicts: dict[str, bool]):
+    def _checker(name, base_sha, head_ref, repo_root):
+        ok = verdicts.get(name, False)
         return ok, "stub" if ok else "stub: escalated"
 
     return _checker
@@ -104,6 +113,20 @@ class PathClassification(unittest.TestCase):
     def test_truly_unknown_path(self):
         self.assertEqual(classify_path("some/brand/new/surface.txt").kind, "unknown")
 
+    def test_top_level_pages_are_page_kind(self):
+        # WP56: Introduction, Contents, Resources, and References are
+        # prose-fast-pathable top-level pages.
+        for name in ("intro", "contents", "resources", "references"):
+            c = classify_path(f"book/{name}.md")
+            self.assertEqual(c.kind, "page")
+            self.assertEqual(c.page, name)
+
+    def test_removed_syllabus_page_is_not_special_cased(self):
+        # WP56: Syllabus was removed and is deliberately not given a "page"
+        # classification -- if its path ever reappears, it falls through to
+        # "unknown" (conservative, full gate), not silently fast-pathed.
+        self.assertEqual(classify_path("book/syllabus.md").kind, "unknown")
+
 
 class NotebookProseDiff(unittest.TestCase):
     @staticmethod
@@ -148,6 +171,65 @@ class NotebookProseDiff(unittest.TestCase):
         new_cells = [{**self._code("x = 1"), "outputs": [{"output_type": "stream", "text": "1\n"}]}]
         new = self._nb(new_cells)
         self.assertIsNotNone(notebooks_differ_beyond_prose(old, new))
+
+
+class PageProseDiff(unittest.TestCase):
+    """WP56: book/{intro,contents,resources,references}.md prose-only diff."""
+
+    def test_wording_only_body_change_is_prose_only(self):
+        old = "# Introduction\n\nThis course covers machine learning.\n"
+        new = "# Introduction\n\nThis course covers machine learning methods.\n"
+        self.assertIsNone(page_differs_beyond_prose(old, new))
+
+    def test_wording_change_around_an_unchanged_link_is_prose_only(self):
+        old = "# Resources\n\nSee [References](references.md) for citations.\n"
+        new = "# Resources\n\nFor citable works, see [References](references.md).\n"
+        self.assertIsNone(page_differs_beyond_prose(old, new))
+
+    def test_heading_text_change_escalates(self):
+        old = "# Introduction\n\nBody text.\n"
+        new = "# Intro\n\nBody text.\n"
+        self.assertIsNotNone(page_differs_beyond_prose(old, new))
+
+    def test_added_heading_escalates(self):
+        old = "# Contents\n\nBody text.\n"
+        new = "# Contents\n\n## New section\n\nBody text.\n"
+        self.assertIsNotNone(page_differs_beyond_prose(old, new))
+
+    def test_markdown_link_destination_change_escalates(self):
+        old = "# Resources\n\nSee [References](references.md).\n"
+        new = "# Resources\n\nSee [References](references.html).\n"
+        self.assertIsNotNone(page_differs_beyond_prose(old, new))
+
+    def test_markdown_link_visible_text_change_is_prose_only(self):
+        old = "# Resources\n\nSee [the References page](references.md).\n"
+        new = "# Resources\n\nSee [References](references.md).\n"
+        self.assertIsNone(page_differs_beyond_prose(old, new))
+
+    def test_image_destination_change_escalates(self):
+        old = "# Introduction\n\n![logo](logo.png)\n"
+        new = "# Introduction\n\n![logo](logo2.png)\n"
+        self.assertIsNotNone(page_differs_beyond_prose(old, new))
+
+    def test_raw_html_href_change_escalates(self):
+        old = '# Resources\n\nSee <a href="lite/files/data/a.csv">data</a>.\n'
+        new = '# Resources\n\nSee <a href="lite/files/data/b.csv">data</a>.\n'
+        self.assertIsNotNone(page_differs_beyond_prose(old, new))
+
+    def test_fenced_directive_change_escalates(self):
+        old = "# Contents\n\n```{tableofcontents}\n```\n"
+        new = "# Contents\n\n```{tableofcontents}\nmaxdepth: 2\n```\n"
+        self.assertIsNotNone(page_differs_beyond_prose(old, new))
+
+    def test_fenced_code_block_change_escalates(self):
+        old = "# Introduction\n\n```bash\npip install numpy\n```\n"
+        new = "# Introduction\n\n```bash\npip install numpy pandas\n```\n"
+        self.assertIsNotNone(page_differs_beyond_prose(old, new))
+
+    def test_frontmatter_change_escalates(self):
+        old = "---\ntitle: A\n---\n# Introduction\n\nBody.\n"
+        new = "---\ntitle: B\n---\n# Introduction\n\nBody.\n"
+        self.assertIsNotNone(page_differs_beyond_prose(old, new))
 
 
 class ClassifyPureGateDecisions(unittest.TestCase):
@@ -234,6 +316,79 @@ class ClassifyPureGateDecisions(unittest.TestCase):
         bad_base = BaseResolution(None, False, "missing marker")
         result = classify(base=bad_base, head_ref="HEAD", raw_changed=changed, repo_root=Path("."))
         self.assertEqual(result.gate, GATE_FULL)
+
+    def test_prose_only_page_alone_takes_prose_gate(self):
+        changed = [ChangedPath("M", "book/intro.md")]
+        result = classify(
+            base=TRUSTWORTHY_BASE,
+            head_ref="HEAD",
+            raw_changed=changed,
+            repo_root=Path("."),
+            page_checker=_stub_page_checker({"intro": True}),
+        )
+        self.assertEqual(result.gate, GATE_PROSE)
+        self.assertEqual(result.pages, ["intro"])
+
+    def test_non_prose_page_alone_forces_full_gate(self):
+        changed = [ChangedPath("M", "book/intro.md")]
+        result = classify(
+            base=TRUSTWORTHY_BASE,
+            head_ref="HEAD",
+            raw_changed=changed,
+            repo_root=Path("."),
+            page_checker=_stub_page_checker({"intro": False}),
+        )
+        self.assertEqual(result.gate, GATE_FULL)
+
+    def test_prose_page_and_prose_exercise_together_stay_prose(self):
+        changed = [
+            ChangedPath("M", "book/intro.md"),
+            ChangedPath("M", "book/lite/files/exercise_01.ipynb"),
+        ]
+        result = classify(
+            base=TRUSTWORTHY_BASE,
+            head_ref="HEAD",
+            raw_changed=changed,
+            repo_root=Path("."),
+            prose_checker=_stub_prose_checker({1: True}),
+            page_checker=_stub_page_checker({"intro": True}),
+        )
+        self.assertEqual(result.gate, GATE_PROSE)
+        self.assertEqual(result.exercises, [1])
+        self.assertEqual(result.pages, ["intro"])
+
+    def test_non_prose_page_beats_prose_exercise_to_full_not_exercise_gate(self):
+        # A page's own structural change is never merely "exercise"-scoped --
+        # it always wins straight to the full gate, even alongside an
+        # otherwise-prose-only exercise change.
+        changed = [
+            ChangedPath("M", "book/intro.md"),
+            ChangedPath("M", "book/lite/files/exercise_01.ipynb"),
+        ]
+        result = classify(
+            base=TRUSTWORTHY_BASE,
+            head_ref="HEAD",
+            raw_changed=changed,
+            repo_root=Path("."),
+            prose_checker=_stub_prose_checker({1: True}),
+            page_checker=_stub_page_checker({"intro": False}),
+        )
+        self.assertEqual(result.gate, GATE_FULL)
+
+    def test_non_prose_exercise_with_prose_page_is_exercise_gate(self):
+        changed = [
+            ChangedPath("M", "book/intro.md"),
+            ChangedPath("M", "book/lite/files/exercise_01.ipynb"),
+        ]
+        result = classify(
+            base=TRUSTWORTHY_BASE,
+            head_ref="HEAD",
+            raw_changed=changed,
+            repo_root=Path("."),
+            prose_checker=_stub_prose_checker({1: False}),
+            page_checker=_stub_page_checker({"intro": True}),
+        )
+        self.assertEqual(result.gate, GATE_EXERCISE)
 
     def test_rename_contributes_both_old_and_new_path(self):
         changed = [ChangedPath("R100", "scripts/generate_exercise_02_notebook_renamed.py", "scripts/generate_exercise_02_notebook.py")]
@@ -366,6 +521,73 @@ class ClassifyEndToEndRealGit(unittest.TestCase):
         base_sha = self.repo.commit_all("base")
         self.repo.write("README.md", "hello again")
         head_sha = self.repo.commit_all("readme tweak")
+
+        result = classify_release(self.repo.root, head_ref=head_sha, explicit_base=base_sha)
+        self.assertEqual(result.gate, GATE_FULL)
+
+    def test_page_wording_only_edit_end_to_end_is_prose_gate(self):
+        self.repo.write("book/intro.md", "# Introduction\n\nOriginal wording.\n")
+        base_sha = self.repo.commit_all("base")
+        self.repo.write("book/intro.md", "# Introduction\n\nRevised wording.\n")
+        head_sha = self.repo.commit_all("wording tweak")
+
+        result = classify_release(self.repo.root, head_ref=head_sha, explicit_base=base_sha)
+        self.assertEqual(result.gate, GATE_PROSE)
+        self.assertEqual(result.pages, ["intro"])
+        self.assertTrue(result.page_detail["intro"][0])
+
+    def test_page_heading_change_end_to_end_is_full_gate(self):
+        self.repo.write("book/intro.md", "# Introduction\n\nBody.\n")
+        base_sha = self.repo.commit_all("base")
+        self.repo.write("book/intro.md", "# Intro\n\nBody.\n")
+        head_sha = self.repo.commit_all("heading tweak")
+
+        result = classify_release(self.repo.root, head_ref=head_sha, explicit_base=base_sha)
+        self.assertEqual(result.gate, GATE_FULL)
+        self.assertFalse(result.page_detail["intro"][0])
+
+    def test_page_link_destination_change_end_to_end_is_full_gate(self):
+        self.repo.write("book/resources.md", "# Resources\n\nSee [References](references.md).\n")
+        self.repo.write("book/references.md", "# References\n\n1. A citation.\n")
+        base_sha = self.repo.commit_all("base")
+        self.repo.write("book/resources.md", "# Resources\n\nSee [References](references.html).\n")
+        head_sha = self.repo.commit_all("link tweak")
+
+        result = classify_release(self.repo.root, head_ref=head_sha, explicit_base=base_sha)
+        self.assertEqual(result.gate, GATE_FULL)
+
+    def test_page_added_end_to_end_is_full_gate(self):
+        self.repo.write("book/intro.md", "# Introduction\n\nBody.\n")
+        base_sha = self.repo.commit_all("base")
+        self.repo.write("book/resources.md", "# Resources\n\nNew page.\n")
+        head_sha = self.repo.commit_all("add a new page")
+
+        result = classify_release(self.repo.root, head_ref=head_sha, explicit_base=base_sha)
+        self.assertEqual(result.gate, GATE_FULL)
+
+    def test_recognized_page_deleted_end_to_end_is_full_gate(self):
+        # Deleting a recognized page (book/resources.md, book/references.md,
+        # etc.) still classifies as "page" kind, so this exercises
+        # page_is_prose_only()'s own existence-changed branch, not just the
+        # generic "unknown path" blocker below.
+        self.repo.write("book/resources.md", "# Resources\n\nSome content.\n")
+        base_sha = self.repo.commit_all("base")
+        (self.repo.root / "book" / "resources.md").unlink()
+        head_sha = self.repo.commit_all("remove the resources page")
+
+        result = classify_release(self.repo.root, head_ref=head_sha, explicit_base=base_sha)
+        self.assertEqual(result.gate, GATE_FULL)
+        self.assertFalse(result.page_detail["resources"][0])
+
+    def test_unrecognized_removed_page_name_is_full_gate_via_unknown_path(self):
+        # WP56: Syllabus was removed and is deliberately not given its own
+        # "page" classification -- deleting it falls through to the
+        # generic "unknown path" blocker, not the page-existence branch.
+        self.repo.write("book/intro.md", "# Introduction\n\nBody.\n")
+        self.repo.write("book/syllabus.md", "# Syllabus\n\nSome content.\n")
+        base_sha = self.repo.commit_all("base")
+        (self.repo.root / "book" / "syllabus.md").unlink()
+        head_sha = self.repo.commit_all("remove the syllabus page")
 
         result = classify_release(self.repo.root, head_ref=head_sha, explicit_base=base_sha)
         self.assertEqual(result.gate, GATE_FULL)

@@ -1,7 +1,7 @@
 # References
 
-A bibliography for works actually invoked by the published notebooks and
-syllabus. For a practical link directory (datasets, documentation, and other
+A bibliography for works actually invoked by the published notebooks. For a
+practical link directory (datasets, documentation, and other
 non-bibliographic resources), see [Resources](resources.md).
 
 1. Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani, and

@@ -5,6 +5,11 @@ Neuroscience**. Each practice notebook follows a short PowerPoint presentation,
 which is available on Moodle; the notebook is where those ideas are put to work
 on real data.
 
+The full list of exercises is in [Contents](contents.md). For datasets,
+documentation, and other non-bibliographic links, see
+[Resources](resources.md); for a citable bibliography, see
+[References](references.md).
+
 ## Using the notebooks
 
 Each notebook is a single interactive document: supplied code you can run as

@@ -22,13 +22,16 @@ checks do not and should fail fast *before* paying for that build:
 
     --phase pretest    generator --check + structural (+ reference, for the
                         "exercise" gate only) unittest files for every
-                        touched exercise. No site build required.
+                        touched exercise. No site build required. (Top-level
+                        pages, WP56, have no generator/structural test of
+                        their own -- nothing to run here for a touched page.)
     --phase postbuild  scripts/smoke_release_routes.py for every touched
-                        exercise, plus (gate "exercise" only) the touched
-                        exercises' own Playwright specs
-                        (exercise-0N-lite.spec.ts + chapterNN.spec.ts).
-                        Requires book/_build/html (and, for "exercise", the
-                        JupyterLite build under it) to already exist.
+                        exercise and every touched top-level page, plus
+                        (gate "exercise" only) the touched exercises' own
+                        Playwright specs (exercise-0N-lite.spec.ts +
+                        chapterNN.spec.ts). Requires book/_build/html (and,
+                        for "exercise", the JupyterLite build under it) to
+                        already exist.
 
 Usage:
     .venv/bin/python scripts/run_selected_checks.py --phase pretest
@@ -94,15 +97,15 @@ def pretest_commands(exercises: list[int], gate: str) -> list[list[str]]:
     return cmds
 
 
-def postbuild_commands(exercises: list[int], gate: str, build_dir: str) -> list[tuple[list[str], Path]]:
+def postbuild_commands(exercises: list[int], pages: list[str], gate: str, build_dir: str) -> list[tuple[list[str], Path]]:
     cmds: list[tuple[list[str], Path]] = []
-    exercise_csv = ",".join(str(n) for n in exercises)
-    cmds.append(
-        (
-            [sys.executable, "scripts/smoke_release_routes.py", "--build-dir", build_dir, "--exercises", exercise_csv],
-            REPO_ROOT,
-        )
-    )
+    if exercises or pages:
+        cmd = [sys.executable, "scripts/smoke_release_routes.py", "--build-dir", build_dir]
+        if exercises:
+            cmd += ["--exercises", ",".join(str(n) for n in exercises)]
+        if pages:
+            cmd += ["--pages", ",".join(pages)]
+        cmds.append((cmd, REPO_ROOT))
     if gate == GATE_EXERCISE:
         spec_args: list[str] = []
         for n in exercises:
@@ -139,7 +142,7 @@ def main() -> None:
     if args.phase == "pretest":
         commands = [(cmd, REPO_ROOT) for cmd in pretest_commands(c.exercises, c.gate)]
     else:
-        commands = postbuild_commands(c.exercises, c.gate, args.build_dir)
+        commands = postbuild_commands(c.exercises, c.pages, c.gate, args.build_dir)
 
     overall_start = time.monotonic()
     failures: list[str] = []

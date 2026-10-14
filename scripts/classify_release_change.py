@@ -184,9 +184,10 @@ def changed_paths(base_sha: str, head_ref: str, repo_root: Path) -> list[Changed
 @dataclass(frozen=True)
 class PathClass:
     path: str
-    kind: str  # "wp_docs" | "exercise" | "shared" | "unknown"
+    kind: str  # "wp_docs" | "exercise" | "page" | "shared" | "unknown"
     exercise: int | None
     reason: str
+    page: str | None = None
 
 
 # (pattern, human reason) -- order matters, first match wins. These are the
@@ -229,14 +230,26 @@ _SHARED_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"^tests/"), "shared Python test (not one exercise's own test file)"),
     (re.compile(r"^book/chapters/"), "book chapter content outside the published Exercises 1-8 transition pages"),
     (re.compile(r"^book/downloads/"), "portable-notebook download outside Exercises 1-8"),
-    (re.compile(r"^book/(intro|syllabus|contents)\.md$"), "book hub page"),
     (re.compile(r"^Homework_Materials/"), "Homework_Materials (separate nested repository)"),
 ]
+
+# WP56: the top-level book hub pages whose *prose* (body wording only, never
+# navigation, headings/anchors, link/image destinations, directives, code
+# blocks, or configuration/frontmatter) is eligible for the fast gate -- see
+# page_differs_beyond_prose() below. Deliberately excludes "syllabus": that
+# page was removed (WP56); an unrecognized/removed page name is not special-
+# cased here on purpose and instead falls through to "unknown" (full gate).
+PUBLISHED_TOP_LEVEL_PAGES = ("intro", "contents", "resources", "references")
 
 
 def classify_path(path: str) -> PathClass:
     if path == "WPs" or path.startswith("WPs/"):
         return PathClass(path, "wp_docs", None, "WP report/spec documentation (never read at runtime)")
+
+    match = re.fullmatch(r"book/(intro|contents|resources|references)\.md", path)
+    if match:
+        name = match.group(1)
+        return PathClass(path, "page", None, "top-level book hub page (prose-fast-pathable)", page=name)
 
     match = re.fullmatch(r"scripts/generate_exercise_(0[1-9])_(notebook|transition_page)\.py", path)
     if match:
@@ -345,6 +358,100 @@ ProseChecker = Callable[[int, str, str, Path], tuple[bool, str]]
 
 
 # --------------------------------------------------------------------------
+# prose-only verification for top-level book pages (WP56)
+# --------------------------------------------------------------------------
+
+# A fenced block -- a ``` code block *or* a MyST ```{directive} ``` -- in
+# either case the fence syntax this book's pages actually use. Compared
+# whole (fence lines included), in order: this one regex is what makes
+# "code blocks" and "directives" the same kind of structural element below.
+_FENCE_RE = re.compile(r"^```.*?^```[ \t]*$", re.DOTALL | re.MULTILINE)
+# ATX headings ("#" .. "######") -- a heading's text is exactly what MyST/
+# Sphinx derives its anchor slug from, so "headings or anchors" is one check.
+_HEADING_RE = re.compile(r"^#{1,6}[ \t]+.*$", re.MULTILINE)
+# Markdown link/image destinations: [text](dest) or ![alt](dest), optionally
+# followed by a "title" -- captures only the destination, not the visible
+# text/alt (wording), so re-labelling a link's visible text stays prose-only.
+_MD_LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
+# Every raw HTML tag span, e.g. <a href="...">, </a>, <img src="...">,
+# <code>, </code> -- comparing the exact sequence of tags (ignoring the
+# plain-text prose between them) catches a changed href/src/id/class
+# anywhere raw HTML is used (book/resources.md's data-file links) without
+# forbidding ordinary wording changes around or inside those tags.
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+# A leading YAML frontmatter block (not currently used by these pages, but
+# "configuration" per the spec -- compared whole, present or not).
+_FRONTMATTER_RE = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
+
+
+def page_differs_beyond_prose(old_text: str, new_text: str) -> str | None:
+    """Return a human reason if `old_text` -> `new_text` is more than a body-
+    wording change, else None. Mirrors notebooks_differ_beyond_prose()'s
+    shape for markdown pages: extract every structural element (frontmatter/
+    configuration, fenced code blocks and MyST directives, headings and
+    therefore their anchors, link/image destinations, and raw HTML markup)
+    and require each sequence to be byte-identical; only the prose text
+    around and between them may differ.
+    """
+    old_frontmatter = _FRONTMATTER_RE.match(old_text)
+    new_frontmatter = _FRONTMATTER_RE.match(new_text)
+    if (old_frontmatter.group(0) if old_frontmatter else None) != (
+        new_frontmatter.group(0) if new_frontmatter else None
+    ):
+        return "frontmatter/configuration block changed"
+
+    old_fences = _FENCE_RE.findall(old_text)
+    new_fences = _FENCE_RE.findall(new_text)
+    if old_fences != new_fences:
+        return "a fenced code block or MyST directive changed"
+
+    # Strip fences before extracting headings/links so a fence's own
+    # contents (already compared whole, above) can't double-count or
+    # accidentally match the heading/link patterns.
+    old_body = _FENCE_RE.sub("", old_text)
+    new_body = _FENCE_RE.sub("", new_text)
+
+    old_headings = _HEADING_RE.findall(old_body)
+    new_headings = _HEADING_RE.findall(new_body)
+    if old_headings != new_headings:
+        return "a heading changed (and therefore its anchor)"
+
+    old_links = _MD_LINK_RE.findall(old_body)
+    new_links = _MD_LINK_RE.findall(new_body)
+    if old_links != new_links:
+        return "a markdown link or image destination changed"
+
+    old_tags = _HTML_TAG_RE.findall(old_body)
+    new_tags = _HTML_TAG_RE.findall(new_body)
+    if old_tags != new_tags:
+        return "raw HTML markup changed (link, image, or anchor)"
+
+    return None
+
+
+def _page_text_at(ref: str, path: str, repo_root: Path) -> str | None:
+    rc, out, _err = _run(["show", f"{ref}:{path}"], repo_root)
+    if rc != 0:
+        return None
+    return out
+
+
+def page_is_prose_only(name: str, base_sha: str, head_ref: str, repo_root: Path) -> tuple[bool, str]:
+    path = f"book/{name}.md"
+    old = _page_text_at(base_sha, path, repo_root)
+    new = _page_text_at(head_ref, path, repo_root)
+    if old is None or new is None:
+        return False, f"{path} missing or unreadable at base or head -- escalating conservatively (page existence changed)"
+    reason = page_differs_beyond_prose(old, new)
+    if reason is not None:
+        return False, f"{path}: {reason}"
+    return True, f"{path} differs only in prose wording"
+
+
+PageChecker = Callable[[str, str, str, Path], tuple[bool, str]]
+
+
+# --------------------------------------------------------------------------
 # overall classification
 # --------------------------------------------------------------------------
 
@@ -358,6 +465,8 @@ class Classification:
     exercises: list[int] = field(default_factory=list)
     prose_detail: dict[int, tuple[bool, str]] = field(default_factory=dict)
     reason: str = ""
+    pages: list[str] = field(default_factory=list)
+    page_detail: dict[str, tuple[bool, str]] = field(default_factory=dict)
 
 
 def classify(
@@ -367,6 +476,7 @@ def classify(
     raw_changed: list[ChangedPath],
     repo_root: Path,
     prose_checker: ProseChecker = exercise_is_prose_only,
+    page_checker: PageChecker = page_is_prose_only,
 ) -> Classification:
     path_classes: list[PathClass] = []
     for entry in raw_changed:
@@ -409,6 +519,32 @@ def classify(
             f"shared/unknown path(s) changed: {detail}{more}",
         )
 
+    # WP56: a touched top-level page that isn't prose-only (navigation,
+    # headings/anchors, link/image destinations, directives, code blocks,
+    # configuration, or page existence) always wins to the full gate -- it
+    # never merely escalates to the "exercise" gate, since that gate's
+    # narrower checks (a touched exercise's own structural tests/specs) have
+    # nothing to do with a page.
+    pages = sorted({c.page for c in non_doc if c.page is not None})
+    page_detail: dict[str, tuple[bool, str]] = {}
+    for name in pages:
+        page_detail[name] = page_checker(name, base.sha, head_ref, repo_root)
+
+    if pages and not all(ok for ok, _ in page_detail.values()):
+        escalated = ", ".join(name for name, (ok, _) in page_detail.items() if not ok)
+        return Classification(
+            base,
+            head_ref,
+            path_classes,
+            GATE_FULL,
+            sorted({c.exercise for c in non_doc if c.exercise is not None}),
+            {},
+            f"page(s) {escalated} have a non-prose change (navigation, headings/anchors, links, images, "
+            "directives, code blocks, configuration, or existence)",
+            pages,
+            page_detail,
+        )
+
     exercises = sorted({c.exercise for c in non_doc if c.exercise is not None})
     prose_detail: dict[int, tuple[bool, str]] = {}
     for n in exercises:
@@ -416,13 +552,13 @@ def classify(
 
     if all(ok for ok, _ in prose_detail.values()):
         gate = GATE_PROSE
-        reason = "every touched exercise's generated notebooks differ only in markdown wording"
+        reason = "every touched exercise's generated notebooks and/or top-level page(s) differ only in wording"
     else:
         gate = GATE_EXERCISE
         escalated = ", ".join(str(n) for n, (ok, _) in prose_detail.items() if not ok)
         reason = f"exercise(s) {escalated} have a non-prose change (code, metadata, outputs, or structure)"
 
-    return Classification(base, head_ref, path_classes, gate, exercises, prose_detail, reason)
+    return Classification(base, head_ref, path_classes, gate, exercises, prose_detail, reason, pages, page_detail)
 
 
 def classify_release(
@@ -433,6 +569,7 @@ def classify_release(
     gh_pages_ref: str = "origin/gh-pages",
     force_base: bool = False,
     prose_checker: ProseChecker = exercise_is_prose_only,
+    page_checker: PageChecker = page_is_prose_only,
 ) -> Classification:
     base = resolve_base(
         head_ref=head_ref,
@@ -442,9 +579,23 @@ def classify_release(
         force_base=force_base,
     )
     if not base.trustworthy:
-        return classify(base=base, head_ref=head_ref, raw_changed=[], repo_root=repo_root, prose_checker=prose_checker)
+        return classify(
+            base=base,
+            head_ref=head_ref,
+            raw_changed=[],
+            repo_root=repo_root,
+            prose_checker=prose_checker,
+            page_checker=page_checker,
+        )
     raw = changed_paths(base.sha, head_ref, repo_root)
-    return classify(base=base, head_ref=head_ref, raw_changed=raw, repo_root=repo_root, prose_checker=prose_checker)
+    return classify(
+        base=base,
+        head_ref=head_ref,
+        raw_changed=raw,
+        repo_root=repo_root,
+        prose_checker=prose_checker,
+        page_checker=page_checker,
+    )
 
 
 # --------------------------------------------------------------------------
@@ -456,13 +607,16 @@ def to_machine_dict(c: Classification) -> dict:
     return {
         "gate": c.gate,
         "exercises": c.exercises,
+        "pages": c.pages,
         "reason": c.reason,
         "base": {"sha": c.base.sha, "trustworthy": c.base.trustworthy, "reason": c.base.reason},
         "head_ref": c.head_ref,
         "changed_paths": [
-            {"path": p.path, "kind": p.kind, "exercise": p.exercise, "reason": p.reason} for p in c.path_classes
+            {"path": p.path, "kind": p.kind, "exercise": p.exercise, "page": p.page, "reason": p.reason}
+            for p in c.path_classes
         ],
         "prose_detail": {str(n): {"prose_only": ok, "reason": why} for n, (ok, why) in c.prose_detail.items()},
+        "page_detail": {name: {"prose_only": ok, "reason": why} for name, (ok, why) in c.page_detail.items()},
     }
 
 
@@ -473,13 +627,18 @@ def human_report(c: Classification) -> str:
         f"changed paths ({len(c.path_classes)}):",
     ]
     for p in c.path_classes:
-        tag = f"ex{p.exercise}" if p.exercise is not None else p.kind
+        tag = f"ex{p.exercise}" if p.exercise is not None else (f"pg:{p.page}" if p.page is not None else p.kind)
         lines.append(f"  [{tag:>6}] {p.path}  ({p.reason})")
     if c.prose_detail:
-        lines.append("prose-only verification:")
+        lines.append("prose-only verification (exercises):")
         for n, (ok, why) in sorted(c.prose_detail.items()):
             lines.append(f"  exercise {n}: {'PROSE-ONLY' if ok else 'ESCALATED'} -- {why}")
+    if c.page_detail:
+        lines.append("prose-only verification (pages):")
+        for name, (ok, why) in sorted(c.page_detail.items()):
+            lines.append(f"  page {name}: {'PROSE-ONLY' if ok else 'ESCALATED'} -- {why}")
     lines.append(f"affected exercise IDs: {c.exercises or '(none)'}")
+    lines.append(f"affected pages: {c.pages or '(none)'}")
     lines.append(f"GATE: {c.gate}")
     lines.append(f"reason: {c.reason}")
     return "\n".join(lines)
@@ -516,6 +675,7 @@ def main() -> None:
         with open(args.github_output, "a", encoding="utf-8") as fh:
             fh.write(f"gate={c.gate}\n")
             fh.write(f"exercises={json.dumps(c.exercises)}\n")
+            fh.write(f"pages={json.dumps(c.pages)}\n")
             fh.write(f"reason={c.reason}\n")
 
     sys.exit(0)

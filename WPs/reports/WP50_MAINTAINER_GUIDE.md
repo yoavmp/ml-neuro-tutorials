@@ -59,9 +59,9 @@ reason. Pass `--format json` for the machine-readable form CI uses, or
 | Gate | When | What runs before publish |
 | --- | --- | --- |
 | `skip` | Only `WPs/**` changed | Nothing -- no build, no publish (the push doesn't even trigger the workflow, via `paths-ignore`) |
-| `prose` | Every touched exercise's *generated* notebooks differ only in markdown-cell wording from the last published version | That exercise's generator `--check`, its structural tests (`test_exercise_0N_lite_notebook.py` + `test_exercise_0N_transition_page.py`), one combined site build, `scripts/smoke_release_routes.py` for that exercise. No kernel execution, no browser. |
-| `exercise` | A touched exercise has a real code/metadata/structure change (or an uncertain one), and nothing shared changed | The above, plus that exercise's `test_exercise_0N_reference_execution.py` and its own `exercise-0N-lite.spec.ts` + `chapterNN.spec.ts` Playwright specs. Multiple touched exercises: union of all of the above. |
-| `full` | Any shared/global path changed (CSS, a shared script, exported data, the manifest, book/JupyterLite config, a workflow file, a Playwright shared fixture/config, the deploy mechanism itself), or any path the classifier doesn't recognize, or the comparison base itself is untrustworthy | The entire existing release gate, unchanged: full offline Python suite, full `npm run test:e2e:book`, frontend typecheck/unit/audit, the standalone widget app's own e2e, the chapter_02 portable-notebook kernel smoke. |
+| `prose` | Every touched exercise's *generated* notebooks differ only in markdown-cell wording from the last published version, **and** every touched top-level page (`book/intro.md`, `book/contents.md`, `book/resources.md`, `book/references.md`) differs only in prose wording (WP56; see section 9) | That exercise's generator `--check`, its structural tests (`test_exercise_0N_lite_notebook.py` + `test_exercise_0N_transition_page.py`), one combined site build, `scripts/smoke_release_routes.py` for that exercise and/or page. No kernel execution, no browser. |
+| `exercise` | A touched exercise has a real code/metadata/structure change (or an uncertain one), nothing shared changed, and no touched page is non-prose | The above, plus that exercise's `test_exercise_0N_reference_execution.py` and its own `exercise-0N-lite.spec.ts` + `chapterNN.spec.ts` Playwright specs. Multiple touched exercises: union of all of the above. |
+| `full` | Any shared/global path changed (CSS, a shared script, exported data, the manifest, book/JupyterLite config, a workflow file, a Playwright shared fixture/config, the deploy mechanism itself), any path the classifier doesn't recognize, any touched top-level page with a non-prose change, or the comparison base itself is untrustworthy | The entire existing release gate, unchanged: full offline Python suite, full `npm run test:e2e:book`, frontend typecheck/unit/audit, the standalone widget app's own e2e, the chapter_02 portable-notebook kernel smoke. |
 
 **A shared/unknown path always wins.** If your push touches one exercise's
 own files *and* a shared file, it gets the full gate -- the exercise-scoped
@@ -72,6 +72,10 @@ is treated the same as a shared-surface change: conservative by default,
 on purpose. Extending the "safe to skip/scope" pattern list is a deliberate
 future change to `scripts/classify_release_change.py`, not something to
 work around.
+
+**A non-prose page change always wins to `full`, never merely to
+`exercise`.** A touched page with a structural change forces `full` even
+alongside an otherwise-prose-only exercise change -- see section 9.
 
 **Why "prose-only" is based on the generated notebooks, not the commit
 message or the generator diff:** matching a file name or trusting a commit
@@ -245,3 +249,82 @@ watcher died -- `gh run view` always has the authoritative current status,
 and GitHub Actions keeps the run and its full log regardless of local
 session state. Re-pushing wastes another full release-gate run (up to
 ~2 hours) and, if the first run is still in progress, can race it.
+
+## 9. Top-level book pages: prose-only fast gate (WP56)
+
+The same "diff the actual published artifact, not the commit message"
+policy section 3 describes for exercise notebooks now also applies to four
+top-level book hub pages: `book/intro.md`, `book/contents.md`,
+`book/resources.md`, and `book/references.md`. A change confined to one or
+more of these pages (nothing shared, no exercise, no other page with a
+structural change) gets the `prose` gate if every touched page's content
+differs from the last published version **only in prose wording** --
+exactly the same gate, and the same checks, a prose-only exercise edit
+gets (section 3's table).
+
+**`book/syllabus.md` is not one of these pages -- it was removed in WP56.**
+The Syllabus page, its nav entry, and student-facing links to it are gone;
+the published top-level pages are now Introduction, Contents, Resources,
+and References only (`book/_toc.yml`). This is itself exactly the kind of
+change the next paragraph describes as forcing the full gate (navigation
+changed, a page was deleted) -- it is not, and must never become, a
+prose-fast-pathable page itself.
+
+**What counts as "prose" for a page, precisely** (implemented in
+`scripts/classify_release_change.py`'s `page_differs_beyond_prose()`,
+mirroring `notebooks_differ_beyond_prose()`'s shape for notebooks): every
+one of the following must be **byte-identical** between the base and head
+versions of the page, in order -- only the plain prose text around and
+between them may differ:
+
+- **Navigation.** Not checked at the page level at all -- any change to
+  `book/_toc.yml` itself is a pre-existing shared-path pattern that already
+  forces `full` regardless of what else changed (section 3's table).
+- **Headings (and therefore anchors).** Every `#`..`######` line's full
+  text must match. MyST/Sphinx derives a page's anchor slugs from heading
+  text, so a reworded heading is a broken-anchor risk, not a wording change.
+- **Link and image destinations.** Every markdown `[text](dest)` /
+  `![alt](dest)`'s `dest` must match -- the visible link text/alt itself is
+  prose and may change freely, only the destination may not.
+- **Raw HTML markup.** Every HTML tag span (`<a href="...">`, `<img
+  src="...">`, `<code>`, `</a>`, etc. -- `book/resources.md`'s data-file
+  links use this, not markdown links) must match as an exact, ordered
+  sequence; only the prose text between tags may differ.
+- **Fenced code blocks and MyST directives.** Every ` ```...``` ` fenced
+  block (a code sample, or a directive like `` ```{tableofcontents} ``)
+  must match whole, fence lines included -- this book's pages use the same
+  triple-backtick fence for both, so one check covers both.
+- **Configuration/frontmatter.** A leading YAML frontmatter block (not
+  currently used by any of the four pages, but checked regardless) must
+  match whole, or be absent in both.
+- **Page existence.** The page must exist, and be readable, at both base
+  and head -- an added, deleted, or renamed-away-from-a-recognized-name
+  page is a path-existence change, not a content diff, and escalates on
+  its own (`page_is_prose_only()`'s own missing/unreadable check), before
+  any text comparison runs at all.
+
+Any other difference -- including a single changed character inside a
+link's URL, or reflowing a paragraph across a changed heading -- escalates
+that page, and **a non-prose page always wins straight to the full gate**,
+the same way a shared/unknown path does: it never merely narrows to the
+`exercise` gate, even alongside an otherwise-prose-only exercise change
+pushed in the same commit (`classify()` checks touched pages before touched
+exercises for exactly this reason).
+
+**What the prose/exercise gate verifies for a touched page, after the
+build:** `scripts/smoke_release_routes.py --pages <name>[,<name>...]`
+(wired into `scripts/run_selected_checks.py --phase postbuild` alongside
+the existing per-exercise route check) confirms the page's own route
+(`<name>.html`) was actually published and is non-empty, then re-extracts
+every same-repository link/image destination from the page's *source*
+markdown and confirms each one resolves to something that exists in the
+built site (another top-level page resolves to its own built `.html`;
+anything else resolves to that same relative path under `--build-dir`,
+e.g. `book/resources.md`'s links into `lite/files/data/`). External
+(`http(s)://`, `mailto:`) destinations are never fetched -- this is an
+offline smoke check, not a link-rot crawler. The full site build itself
+(`jupyter-book build book`) is unconditional for every gate already (only
+the *additional* full-gate-only suites are skipped), so "the fast gate
+builds the site" was never gate-dependent to begin with -- what's new here
+is only the targeted post-build check of the touched page(s) and their
+links.
