@@ -182,9 +182,9 @@
     },
     {
       "number": 12,
-      "title": "Placeholder",
+      "title": "Common Mistakes and Pitfalls",
       "migrationState": "legacy",
-      "legacyStaticPagePath": "chapters/chapter_12/exercise_12.md",
+      "legacyStaticPagePath": "chapters/chapter_12/exercise_12.ipynb",
       "templateNotebookPath": null,
       "browserWorkingCopyName": null,
       "liteUrl": null,

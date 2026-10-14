@@ -13,14 +13,27 @@ chapters:
       - file: chapters/chapter_07/exercise_07
       - file: chapters/chapter_08/exercise_08
       - file: chapters/chapter_09/exercise_09
-      # WP49/WP52: Exercises 10-12 are intentionally excluded from this
-      # release's public toctree -- their JupyterLite-native migration
-      # hasn't started and their legacy iframe-embedded notebook experience
-      # (10) / placeholder stub (11-12) should not be published alongside
-      # the Exercises 1-9 Lite hub. Source and git history for
-      # book/chapters/chapter_{10,11,12} are untouched and stay available
-      # for local inspection/redesign (see WPs/reports/WP49_REPORT.md for
-      # the local-viewing procedure).
+      # WP49/WP52 intentionally excluded Exercises 10-12 from the released
+      # public toctree. WP57 (LOCAL-ONLY, feature branch
+      # feature/wp57-active-exercise-12-common-mistakes, never merged,
+      # pushed, or deployed -- see WPs/reports/WP57_REPORT.md) adds the
+      # three entries below for the author's own local combined-book
+      # preview of the new Exercise 12, with 10-11 as placeholders the
+      # author must navigate past to reach it:
+      - file: chapters/chapter_10/placeholder
+        # Local-only "Coming later" placeholder -- NOT the real legacy
+        # Exercise 10 notebook (book/chapters/chapter_10/exercise_10.ipynb,
+        # preserved untouched, excluded from this build by
+        # book/_config.yml's exclude_patterns, and not migrated by this WP).
+      - file: chapters/chapter_11/exercise_11
+        # Unchanged pre-existing placeholder stub ("Materials for this
+        # exercise will be added before the practice session.") -- no
+        # runnable notebook, no launch/download button.
+      - file: chapters/chapter_12/exercise_12
+        # The real, new WP57 content: a transition page
+        # (scripts/generate_exercise_12_transition_page.py) linking to the
+        # active JupyterLite notebook built by
+        # scripts/generate_exercise_12_notebook.py.
 
   - file: resources
 
