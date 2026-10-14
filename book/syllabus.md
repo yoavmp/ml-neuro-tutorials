@@ -53,15 +53,15 @@ Practice notebooks: see [Contents](contents.md).
 | Week | Date | Lecture | Practice | Homework |
 |---|---|---|---|---|
 | 1 | 19 Oct 2026 | Intro, EDA, linear regression | EDA | &mdash; |
-| 2 | 26 Oct 2026 | Linear regression continued, KNN regression, bias-variance trade-off | Linear regression, bias-variance trade-off (using a KNN interactive example) | EDA + KNN regression (try different *k*'s; theoretical questions on how *k* relates to the bias-variance trade-off) |
-| 3 | 2 Nov 2026 | Classification metrics, logistic regression, LDA, KNN | Classification metrics, logistic regression | &mdash; |
-| 4 | 9 Nov 2026 | Cross-validation; bootstrap *(tentative)* | CV vs. train/test, with a classification and a regression example | &mdash; |
-| 5 | 16 Nov 2026 | Regularization and feature selection | Regularization (Ridge, Lasso), feature selection | Ridge/Lasso regression + logistic-regression classification, with tuning in nested CV *(tentative)* |
-| 6 | 23 Nov 2026 | Decision trees, bagging, Random Forest | Trees (start) | &mdash; |
-| 7 | 30 Nov 2026 | Boosting, gradient boosting | Trees, boosting | Classification using trees/LDA |
+| 2 | 26 Oct 2026 | Linear regression continued, KNN regression, bias-variance trade-off | Linear regression, bias-variance trade-off | EDA + KNN regression |
+| 3 | 2 Nov 2026 | Classification metrics, logistic regression, KNN | Classification metrics, logistic regression | &mdash; |
+| 4 | 9 Nov 2026 | Cross-validation; bootstrap | Cross-validation and nested cross-validation | &mdash; |
+| 5 | 16 Nov 2026 | Regularization and feature selection | Regularization and feature selection | Ridge/Lasso regression + logistic-regression classification |
+| 6 | 23 Nov 2026 | Decision trees, bagging, Random Forest | Trees and ensembles | &mdash; |
+| 7 | 30 Nov 2026 | Boosting, gradient boosting | Trees, boosting | Trees |
 | 8 | 7 Dec 2026 | Unsupervised learning, PCA, clustering | PCA, clustering | &mdash; |
-| 9 | 14 Dec 2026 | Advanced models: PCR, PLS, SVM, kernels | Advanced models, code and comparisons | PCA and kernels applied to previous models: KNN, Ridge, SVM |
+| 9 | 14 Dec 2026 | Advanced models: PCR, PLS, SVM, kernels | Advanced models | Unsupervised learning and advanced models |
 | 10 | 21 Dec 2026 | Introduction to deep learning | Common mistakes, realistic examples | &mdash; |
 | 11 | 28 Dec 2026 | Embeddings, representational similarity analysis | Embeddings, RSA | Embeddings and RSA (bonus task) |
-| 12 | 4 Jan 2027 | Introduction to LLMs *(tentative)* | Practice, exam-style questions | &mdash; |
+| 12 | 4 Jan 2027 | Introduction to LLMs | Practice, exam-style questions | &mdash; |
 | 13 | 11 Jan 2027 | Oral tests | Oral tests | &mdash; |
