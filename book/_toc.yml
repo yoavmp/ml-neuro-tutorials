@@ -13,14 +13,24 @@ chapters:
       - file: chapters/chapter_07/exercise_07
       - file: chapters/chapter_08/exercise_08
       - file: chapters/chapter_09/exercise_09
-      # WP49/WP52: Exercises 10-12 are intentionally excluded from this
-      # release's public toctree -- their JupyterLite-native migration
-      # hasn't started and their legacy iframe-embedded notebook experience
-      # (10) / placeholder stub (11-12) should not be published alongside
-      # the Exercises 1-9 Lite hub. Source and git history for
-      # book/chapters/chapter_{10,11,12} are untouched and stay available
-      # for local inspection/redesign (see WPs/reports/WP49_REPORT.md for
-      # the local-viewing procedure).
+      # WP49/WP52 released Exercises 1-9. This release (WP57/WP57R,
+      # WPs/reports/WP57_RELEASE_REPORT.md) adds Exercise 12 -- a
+      # transition page (scripts/generate_exercise_12_transition_page.py)
+      # linking to the active JupyterLite notebook built by
+      # scripts/generate_exercise_12_notebook.py -- with Exercises 10-11
+      # as titled placeholder stubs the reader navigates past to reach it.
+      - file: chapters/chapter_10/placeholder
+        # "Exercise 10: Deep Learning" -- a titled "coming later"
+        # placeholder, NOT the real legacy Exercise 10 notebook
+        # (book/chapters/chapter_10/exercise_10.ipynb, preserved untouched
+        # for later redesign, excluded from this build by
+        # book/_config.yml's exclude_patterns, and not migrated).
+      - file: chapters/chapter_11/exercise_11
+        # "Exercise 11: Embeddings and RSA" -- a titled "coming later"
+        # placeholder stub ("Materials for this exercise will be added
+        # before the practice session.") -- no runnable notebook, no
+        # launch/download button.
+      - file: chapters/chapter_12/exercise_12
 
   - file: resources
 

@@ -1,3 +1,3 @@
-# Exercise 12: Review and Exam-Style Questions
+# Exercise 10: Deep Learning
 
 Materials for this exercise will be added before the practice session.

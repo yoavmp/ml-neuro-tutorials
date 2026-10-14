@@ -59,37 +59,55 @@ class Toc(unittest.TestCase):
         files = [c["file"] for c in self.toc["chapters"]]
         self.assertNotIn("syllabus", files)
 
-    def test_exercises_one_through_nine_follow_in_order(self):
-        # WP49/WP52: Exercises 10-12 are intentionally excluded from the
-        # public toctree for this release (see
-        # test_exercises_ten_through_twelve_source_preserved_but_not_published
-        # below) -- 1-9 are published, in order.
+    def test_exercises_one_through_nine_and_twelve_are_published_in_order(self):
+        # WP49/WP52 published Exercises 1-9. This release
+        # (WPs/reports/WP57_RELEASE_REPORT.md) adds Exercise 12 after
+        # Exercises 10-11's titled placeholder stubs (see the two tests
+        # below) -- all in toctree order.
         sections = self.toc["chapters"][0]["sections"]
         files = [s["file"] for s in sections]
-        self.assertEqual(
-            files,
-            [f"chapters/chapter_{n:02d}/exercise_{n:02d}" for n in range(1, 10)],
-        )
+        expected = [f"chapters/chapter_{n:02d}/exercise_{n:02d}" for n in range(1, 10)]
+        expected += [
+            "chapters/chapter_10/placeholder",
+            "chapters/chapter_11/exercise_11",
+            "chapters/chapter_12/exercise_12",
+        ]
+        self.assertEqual(files, expected)
         for n in range(1, 10):
             self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb").exists())
+        self.assertTrue((BOOK / "chapters" / "chapter_12" / "exercise_12.ipynb").exists())
 
-    def test_exercises_ten_through_twelve_source_preserved_but_not_published(self):
-        # WP49: unpublished, not deleted -- their source stays on disk (and
-        # in git history) for later inspection/redesign, but must not appear
-        # in the public toctree alongside Exercises 1-9.
+    def test_exercise_10_legacy_notebook_preserved_but_not_published(self):
+        # WP49: unpublished, not deleted -- the real legacy Exercise 10
+        # notebook's source stays on disk (and in git history) for later
+        # redesign, but must never appear in the public toctree. Exercise
+        # 10's own slot in the toctree is a titled placeholder stub
+        # instead (see the test below).
         sections = self.toc["chapters"][0]["sections"]
         files = [s["file"] for s in sections]
-        for n in (10, 11, 12):
-            self.assertNotIn(f"chapters/chapter_{n:02d}/exercise_{n:02d}", files)
+        self.assertNotIn("chapters/chapter_10/exercise_10", files)
         self.assertTrue((BOOK / "chapters" / "chapter_10" / "exercise_10.ipynb").exists())
-        for n in (11, 12):
-            self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.md").exists())
+
+    def test_exercise_10_and_11_placeholders_are_titled_and_not_misleading(self):
+        # This release titles Exercises 10-11's placeholder stubs (no
+        # longer a generic "Coming Later") while keeping them clearly
+        # marked as not-yet-available: no runnable notebook, no
+        # launch/download button (see launch-buttons.spec.ts).
+        placeholder_10 = (BOOK / "chapters" / "chapter_10" / "placeholder.md").read_text(encoding="utf-8")
+        self.assertTrue(placeholder_10.startswith("# Exercise 10: Deep Learning"))
+        self.assertIn("will be added", placeholder_10)
+        self.assertNotIn(".ipynb", placeholder_10)
+
+        placeholder_11 = (BOOK / "chapters" / "chapter_11" / "exercise_11.md").read_text(encoding="utf-8")
+        self.assertTrue(placeholder_11.startswith("# Exercise 11: Embeddings and RSA"))
+        self.assertIn("will be added", placeholder_11)
+        self.assertNotIn(".ipynb", placeholder_11)
 
     def test_no_exercise_13_in_toc(self):
         sections = self.toc["chapters"][0]["sections"]
         files = [s["file"] for s in sections]
         self.assertNotIn("chapters/chapter_13/exercise_13", files)
-        self.assertEqual(len(files), 9)
+        self.assertEqual(len(files), 12)
 
 
 class Pages(unittest.TestCase):

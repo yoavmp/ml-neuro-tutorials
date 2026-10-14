@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. WP49 deploys Exercises 1-8's JupyterLite migrations to production (see feature/wp44-colab-portability-exercise-3, WPs/reports/WP44_REPORT.md; feature/wp45-active-exercises-4-and-5, WPs/reports/WP45_REPORT.md; feature/wp46-active-exercises-6-and-7, WPs/reports/WP46_REPORT.md; feature/wp47-active-exercise-8-unsupervised-learning, WPs/reports/WP47_REPORT.md; WPs/reports/WP49_REPORT.md) with the author's explicit authorization while real-Colab acceptance of the revised notebooks remains separately pending -- migrationState=migrated here reflects what is actually published, not a claim that the Colab gate (WP41_MAINTAINER_GUIDE.md section 11) has passed. WP52 adds Exercise 9 to the published, migrated set on the same basis (WPs/reports/WP52_REPORT.md). Exercises 10-12 are intentionally excluded from book/_toc.yml for this release (their source and git history are preserved for local inspection/redesign) and keep migrationState=legacy here unchanged.",
+  "$comment": "WP41 section 4.3: one machine-readable manifest for Exercises 1-12. Generators and tests validate book links and JupyterLite deployment against this file instead of duplicating route strings. WP49 deploys Exercises 1-8's JupyterLite migrations to production (see feature/wp44-colab-portability-exercise-3, WPs/reports/WP44_REPORT.md; feature/wp45-active-exercises-4-and-5, WPs/reports/WP45_REPORT.md; feature/wp46-active-exercises-6-and-7, WPs/reports/WP46_REPORT.md; feature/wp47-active-exercise-8-unsupervised-learning, WPs/reports/WP47_REPORT.md; WPs/reports/WP49_REPORT.md) with the author's explicit authorization while real-Colab acceptance of the revised notebooks remains separately pending -- migrationState=migrated here reflects what is actually published, not a claim that the Colab gate (WP41_MAINTAINER_GUIDE.md section 11) has passed. WP52 adds Exercise 9 to the published, migrated set on the same basis (WPs/reports/WP52_REPORT.md). WP57/WP57R built Exercise 12 ('Common Mistakes and Pitfalls') locally; this release (WPs/reports/WP57_RELEASE_REPORT.md) publishes it to the same migrated set, again with real-Colab acceptance separately pending. Exercises 10-11 stay migrationState=legacy -- not migrated, no lite wiring -- but their book pages are now titled placeholder stubs ('Exercise 10: Deep Learning', 'Exercise 11: Embeddings and RSA'), clearly marked 'coming later', with no runnable notebook or launch/download button; legacyStaticPagePath for exercise 10 continues to point at the real preserved historical notebook (book/chapters/chapter_10/exercise_10.ipynb), kept for later redesign and never published, while the placeholder stub that is actually published lives at book/chapters/chapter_10/placeholder.md.",
   "commonPackages": ["numpy", "pandas", "scikit-learn", "matplotlib", "ipywidgets"],
   "exercises": [
     {
@@ -156,7 +156,7 @@
     },
     {
       "number": 10,
-      "title": "Examples and Common Mistakes",
+      "title": "Deep Learning",
       "migrationState": "legacy",
       "legacyStaticPagePath": "chapters/chapter_10/exercise_10.ipynb",
       "templateNotebookPath": null,
@@ -169,7 +169,7 @@
     },
     {
       "number": 11,
-      "title": "Placeholder",
+      "title": "Embeddings and RSA",
       "migrationState": "legacy",
       "legacyStaticPagePath": "chapters/chapter_11/exercise_11.md",
       "templateNotebookPath": null,
@@ -182,16 +182,19 @@
     },
     {
       "number": 12,
-      "title": "Placeholder",
-      "migrationState": "legacy",
-      "legacyStaticPagePath": "chapters/chapter_12/exercise_12.md",
-      "templateNotebookPath": null,
-      "browserWorkingCopyName": null,
-      "liteUrl": null,
-      "templateVersion": null,
-      "dataAssets": [],
+      "title": "Common Mistakes and Pitfalls",
+      "migrationState": "migrated",
+      "legacyStaticPagePath": "chapters/chapter_12/exercise_12.ipynb",
+      "templateNotebookPath": "book/lite/files/exercise_12.ipynb",
+      "browserWorkingCopyName": "exercise_12.ipynb",
+      "liteUrl": "lite/notebooks/index.html?path=exercise_12.ipynb",
+      "templateVersion": 1,
+      "dataAssets": [
+        "book/lite/files/data/abide_age_brain.csv",
+        "book/lite/files/data/abide_age_brain.manifest.json"
+      ],
       "extraPackages": [],
-      "fallbackDownloadablePath": null
+      "fallbackDownloadablePath": "downloads/chapter_12/exercise_12_portable.ipynb"
     }
   ]
 }

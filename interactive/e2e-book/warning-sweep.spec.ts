@@ -22,7 +22,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 test.setTimeout(240_000);
 
-const EXERCISES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const EXERCISES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12];
 
 async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
   await page.waitForFunction(
