@@ -40,23 +40,47 @@ Every number below was computed directly against the real data/generators
 before writing a single generator line (see WPs/reports/WP57_REPORT.md for
 the full verification transcript):
 
-  Case 1 (ABIDE StandardScaler leakage). One three-way split of the
-    1,004-participant, 360-predictor ABIDE-II age table -- X_train (602),
-    X_val (201), X_test (201), stratified by group, random_state=42 both
-    stages -- shared with Case 3. StandardScaler fit on the FULL table vs.
-    fit on X_train only: feature fsCT_L_1_ROI's learned mean differs by
-    0.001713 (2.373286 vs 2.371573); the largest such difference across all
-    360 features is 0.024550. Small, real, and directly observable -- not
-    promised to be large.
-  Case 2 (synthetic PCA-with-y leakage). n=200, x1/x2 ~ N(0,1) independent,
-    y = 1.5*x1 - 0.5*x2 + N(0,1) noise, seed=0; train/val split
-    test_size=0.25, random_state=42. Contaminated: PCA(n_components=1) fit
-    on [x1, x2, 3*y] for ALL 200 rows (train+held-out, y included and
-    scaled up 3x so it dominates the first component), then a linear
-    regression of y on that one component, fit on train rows only ->
-    held-out R2 = 0.9997. Honest: PCA(n_components=1) fit on [x1, x2] using
-    TRAIN ROWS ONLY, transformed onto held-out rows, same regression ->
-    held-out R2 = 0.4489.
+  Case 1 (ABIDE StandardScaler leakage; WP57R revision). One three-way
+    split of the 1,004-participant, 360-predictor ABIDE-II age table --
+    X_train (602), X_val (201), X_test (201), stratified by group,
+    random_state=42 both stages -- shared with Case 3. The contaminated
+    scaler is fit on X_train+X_val together (803 rows) -- NEVER X_test,
+    which stays genuinely untouched for Case 3, unlike the WP57 original
+    (which fit it on all 1,004 rows, including X_test). Feature
+    fsCT_L_1_ROI's learned mean: contaminated (803 rows) = 2.371498,
+    honest (X_train, 602 rows) = 2.371573 -- a difference of 0.000075; the
+    largest such difference across all 360 features is 0.020635. The
+    check cell no longer compares one feature to a loosely-toleranced
+    constant (the WP57 original's TOLERANCE=0.01 was looser than the real
+    diff and would have passed a leaky scaler by mistake) -- it compares
+    scaler_honest.mean_ against X_train.mean(axis=0) directly, computed
+    live, with TOLERANCE=1e-6; verified directly that a scaler fit on
+    X_train passes (max diff ~1e-15, floating-point noise) and the
+    supplied scaler_leaky fails (max diff 0.020635 >> 1e-6) -- see
+    tests/test_exercise_12_reference_execution.py's
+    test_case1_check_cell_passes_for_honest_and_fails_for_leaky.
+    A second, score-level demonstration (KNeighborsRegressor, n_neighbors=5
+    fixed before inspecting any result) compares leaky vs. honest scaling
+    at three predetermined sizes, all drawn from the train+validation pool
+    only (never X_test): full split (602/201) val MSE 32.715 (leaky) vs.
+    32.390 (honest), leaky worse by 0.324; n=100 (fixed seed 0, 75/25
+    train/val) 60.014 vs. 60.911, leaky *better* by 0.897; n=60 (same
+    seed, 45/15) 10.334 vs. 10.630, leaky better by 0.296. Reported
+    honestly as a small, direction-inconsistent effect -- not searched
+    across seeds or sizes for a favorable result.
+  Case 2 (synthetic PCA-with-y leakage; WP57R revision). n=200, x1/x2 ~
+    N(0,1) independent, y = 1.5*x1 - 0.5*x2 + N(0,1) noise, seed=0;
+    train/val split test_size=0.25, random_state=42. The WP57 original
+    conflated two mistakes (PCA fit on ALL rows including held-out, AND y
+    included as a column, with y additionally scaled 3x to force PC1
+    dominance); this revision isolates ONE deliberate mistake: both paths
+    now standardize their own input columns and fit PCA on TRAINING ROWS
+    ONLY (no train/held-out leakage in the fitting scope for either path).
+    The contaminated path's own three columns are [x1, x2, y] -- so
+    transforming any row, including a held-out one, structurally requires
+    that row's own y. Held-out R2: contaminated = 0.8973 (needs the
+    held-out y as an input to produce), honest (columns [x1, x2] only,
+    never needs y to transform a row) = 0.1209.
   Case 3 (ABIDE tree depth selection, same three-way split as Case 1).
     DecisionTreeRegressor(max_depth=d, random_state=0) for d in
     [1, 2, 3, 5, 10, None]: train/val/test MSE = 55.089/72.596/88.993,
@@ -132,10 +156,23 @@ ABIDE_SPLIT_2_TEST_SIZE = 0.5  # second cut: rest -> 20% val / 20% test
 ABIDE_SPLIT_RANDOM_STATE = 42
 
 CASE1_WATCH_FEATURE_INDEX = 0
-CASE1_EXPECTED_MEAN_FULL = 2.373286
+# scaler_leaky is fit on train+validation rows only (never X_test, which
+# Case 3 later uses as a genuinely untouched partition) -- see the
+# generator's own module docstring for the full reasoning.
+CASE1_EXPECTED_MEAN_TRAIN_AND_VAL = 2.371498
 CASE1_EXPECTED_MEAN_TRAIN = 2.371573
-CASE1_EXPECTED_MAX_ABS_DIFF = 0.024550
-CASE1_MEAN_TOLERANCE = 0.01
+CASE1_EXPECTED_MAX_ABS_DIFF = 0.020635
+CASE1_CHECK_TOLERANCE = 1e-6  # tight: scaler_honest.mean_ must equal X_train.mean(axis=0)
+
+CASE1_KNN_K = 5  # fixed before inspecting any result below
+CASE1_KNN_SMALL_SIZES = [100, 60]
+CASE1_KNN_SMALL_SEED = 0
+CASE1_KNN_SMALL_SPLIT_TEST_SIZE = 0.25
+EXPECTED_CASE1_KNN_RESULTS = {
+    "full": {"leaky_val_mse": 32.7146, "honest_val_mse": 32.3903},
+    100: {"leaky_val_mse": 60.0136, "honest_val_mse": 60.9107},
+    60: {"leaky_val_mse": 10.3340, "honest_val_mse": 10.6304},
+}
 
 TREE_DEPTH_GRID = [1, 2, 3, 5, 10, None]
 EXPECTED_TREE_RESULTS = {
@@ -151,12 +188,11 @@ TREE_MSE_TOLERANCE = 3.0
 # -- Case 2 synthetic constants --------------------------------------------
 CASE2_SEED = 0
 CASE2_N = 200
-CASE2_Y_SCALE = 3.0
 CASE2_SPLIT_TEST_SIZE = 0.25
 CASE2_SPLIT_RANDOM_STATE = 42
-CASE2_EXPECTED_CONTAMINATED_R2 = 0.9997
-CASE2_EXPECTED_HONEST_R2 = 0.4489
-CASE2_R2_TOLERANCE = 0.1
+CASE2_EXPECTED_CONTAMINATED_R2 = 0.8973
+CASE2_EXPECTED_HONEST_R2 = 0.1209
+CASE2_R2_TOLERANCE = 0.05
 
 # -- Case 4 synthetic constants ---------------------------------------------
 CASE4_SEED = 7
@@ -603,25 +639,12 @@ def _title_and_overview() -> list[dict]:
         md("# Exercise 12: Common Mistakes and Pitfalls", "wp57-001-title"),
         md(
             """
-## What this notebook covers
+## How This Notebook Works
 
 This is Exercise 12 of *Machine Learning for Neuroscience*. Every method
 you have used so far can also be used incorrectly in a way that still runs
-without error -- that is the real danger. This notebook is a short tour of
-six such cases.
-
-In this notebook you will:
-
-1. prepare predictors for a model without letting information cross the
-   train/validation boundary;
-2. build components from predictors alone, not from the outcome you are
-   trying to predict;
-3. choose a model setting using a score that actually reflects deployment,
-   not just training performance;
-4. judge a classifier with more than a single summary number;
-5. keep observations from the same participant together when splitting
-   data;
-6. recognize when a "final" evaluation has quietly stopped being final.
+without error -- **that is the real danger**. This notebook is a short tour
+of six such cases.
 
 Each case below contains code that runs without any error and produces a
 plausible-looking result -- but in most cases, that result is either
@@ -682,8 +705,8 @@ group = df["group"].to_numpy()
 X_train, X_rest, y_train, y_rest, group_train, group_rest = train_test_split(
     X, y, group, test_size=%(split1)r, random_state=%(seed)r, stratify=group
 )
-X_val, X_test, y_val, y_test = train_test_split(
-    X_rest, y_rest, test_size=%(split2)r, random_state=%(seed)r, stratify=group_rest
+X_val, X_test, y_val, y_test, group_val, group_test = train_test_split(
+    X_rest, y_rest, group_rest, test_size=%(split2)r, random_state=%(seed)r, stratify=group_rest
 )
 print(f"data table: {df.shape[0]} participants x {len(FEATURES)} cortical-thickness predictors")
 print(f"X_train: {X_train.shape}   X_val: {X_val.shape}   X_test: {X_test.shape}")
@@ -695,9 +718,10 @@ print(f"X_train: {X_train.shape}   X_val: {X_val.shape}   X_test: {X_test.shape}
             """
 ### First, the Code
 
-Below, `StandardScaler` is fit once, on the full predictor table `X` --
-train, validation, and test rows together -- before anything is split off.
-It then rescales `X_train` for a simple linear model.
+Below, `StandardScaler` is fit once, on the training and validation rows
+together -- before anything is split further -- never on `X_test`, which
+stays reserved, genuinely untouched, for Case 3. It then rescales
+`X_train` for a simple linear model.
 """,
             "wp57-104-run-it-intro",
         ),
@@ -708,7 +732,8 @@ from sklearn.linear_model import LinearRegression
 
 WATCH_FEATURE = FEATURES[%(idx)r]
 
-scaler_leaky = StandardScaler().fit(X)  # fit on ALL rows: train + validation + test
+X_train_and_val = np.concatenate([X_train, X_val])
+scaler_leaky = StandardScaler().fit(X_train_and_val)  # fit on train + validation rows -- never X_test
 X_train_scaled_leaky = scaler_leaky.transform(X_train)
 
 leaky_model = LinearRegression().fit(X_train_scaled_leaky, y_train)
@@ -720,7 +745,7 @@ print("The model trains and predicts without any error.")
         ),
         md(
             """
-### Diagnose
+### Think first
 
 > **What information crossed the train/validation boundary here, and did
 > it include the target (`age`)?**
@@ -751,9 +776,10 @@ fit on `X_train` only.
 scaler_honest = None
 
 # YOUR CODE HERE
-# Hint: fit a fresh StandardScaler using X_train only -- never X, X_rest,
-# X_val, or X_test. Consider wrapping StandardScaler and the linear model
-# together using scikit-learn's Pipeline class.
+# Hint: fit a fresh StandardScaler using X_train only -- never
+# X_train_and_val, X_rest, X_val, or X_test. Consider wrapping
+# StandardScaler and the linear model together using scikit-learn's
+# Pipeline class.
 """,
             """
 from sklearn.pipeline import Pipeline
@@ -770,42 +796,143 @@ honest_pipeline = Pipeline([
         code(
             """
 # Run this to check your repair.
-EXPECTED_MEAN_TRAIN = %(expected_train)r
-TOLERANCE = %(tol)r
+TOLERANCE = %(tol)r  # tight: scaler_honest.mean_ must equal X_train's own feature means
 
 if "scaler_honest" in globals() and scaler_honest is not None:
-    learned_mean = scaler_honest.mean_[%(idx)r]
-    diff = abs(learned_mean - EXPECTED_MEAN_TRAIN)
-    if diff <= TOLERANCE:
-        print(f"Looks good: scaler_honest's learned mean for {WATCH_FEATURE} is {learned_mean:.6f} (train-only fit).")
-        print(f"Contaminated (fit on everything) mean was {scaler_leaky.mean_[%(idx)r]:.6f} -- a real, if small, difference.")
+    expected_mean_vector = X_train.mean(axis=0)
+    max_diff = float(np.max(np.abs(scaler_honest.mean_ - expected_mean_vector)))
+    if max_diff <= TOLERANCE:
+        print(f"Looks good: scaler_honest's learned mean matches X_train's own feature means (largest difference {max_diff:.2e}).")
+        leaky_max_diff = float(np.max(np.abs(scaler_leaky.mean_ - expected_mean_vector)))
+        print(f"For comparison, the contaminated scaler's mean differs from X_train's own means by up to {leaky_max_diff:.6f} across features -- small here, but real.")
         print(
-            "This check compares one learned number to a directly verified value; it cannot by "
-            "itself prove your code has no leakage -- that still comes from fitting on X_train alone."
+            "This check compares your scaler's learned mean vector to X_train's own feature means; it "
+            "cannot by itself prove every possible solution is leakage-free -- that still comes from "
+            "fitting on X_train alone."
         )
     else:
         print(
-            "Not quite: scaler_honest's learned mean differs from the expected train-only value by "
-            "more than a generous tolerance. Check that it was fit on X_train only."
+            f"Not quite: scaler_honest's learned mean differs from X_train's own feature means by up to "
+            f"{max_diff:.6f}, more than this tight tolerance allows. Check that it was fit on X_train only "
+            f"(not X_train_and_val, X_rest, X_val, or X_test)."
         )
 else:
     print("Not complete yet: define scaler_honest above first.")
 """
-            % {"expected_train": CASE1_EXPECTED_MEAN_TRAIN, "tol": CASE1_MEAN_TOLERANCE, "idx": CASE1_WATCH_FEATURE_INDEX},
+            % {"tol": CASE1_CHECK_TOLERANCE},
             "wp57-110-case1-check",
         ),
         md(
             """
 ### Consequence
 
-The difference above is small -- a few thousandths -- because this
-particular feature happens to be fairly stable across participants. The
-lesson is not "this always changes the score by a lot"; it is that
-information from validation/test rows entered a step that is supposed to
-know nothing about them, and the size of the resulting distortion depends
-entirely on the data, not on whether the mistake happened.
+The difference above is small -- a few thousandths, for the feature shown
+-- in this 602-participant training partition. That does not mean the
+mistake is harmless in general: in a smaller study, for example one with
+only 60 participants, the same kind of leak could shift the learned
+statistics by considerably more, since each participant then carries a
+much larger share of the total. Whether the effect ends up small or large
+depends on the data and the sample size -- not on whether the mistake
+happened at all.
 """,
             "wp57-111-consequence",
+        ),
+        md(
+            """
+### Does It Change a Prediction Score?
+
+The mean-vector difference above is small. Does it actually change what a
+model predicts? Ordinary `LinearRegression` with an intercept is
+mathematically unaffected by a *consistent* rescaling of every feature, so
+it cannot show this either way -- a scale-**sensitive** model is needed
+instead. Below, a `KNeighborsRegressor` (`n_neighbors` fixed before looking
+at any result) is fit twice -- once using each scaler -- and scored on the
+same held-out rows: first at the existing split's full size, then (since a
+602-participant difference may be too small to show much) at two smaller,
+fixed-seed sample sizes. All three draws come only from the train/validation
+rows already in use above -- never from `X_test`, which stays reserved for
+Case 3.
+""",
+            "wp57-112-knn-intro",
+        ),
+        code(
+            """
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.metrics import mean_squared_error
+
+
+def _case1_compare_knn(X_tr, y_tr, X_va, y_va):
+    train_and_val = np.concatenate([X_tr, X_va])
+    leaky_scaler = StandardScaler().fit(train_and_val)
+    honest_scaler = StandardScaler().fit(X_tr)
+    leaky_pred = (
+        KNeighborsRegressor(n_neighbors=CASE1_KNN_K)
+        .fit(leaky_scaler.transform(X_tr), y_tr)
+        .predict(leaky_scaler.transform(X_va))
+    )
+    honest_pred = (
+        KNeighborsRegressor(n_neighbors=CASE1_KNN_K)
+        .fit(honest_scaler.transform(X_tr), y_tr)
+        .predict(honest_scaler.transform(X_va))
+    )
+    return {
+        "n_train": len(X_tr),
+        "n_val": len(X_va),
+        "leaky_val_mse": float(mean_squared_error(y_va, leaky_pred)),
+        "honest_val_mse": float(mean_squared_error(y_va, honest_pred)),
+    }
+
+
+CASE1_KNN_K = %(k)r  # fixed before inspecting any result below
+
+case1_knn_results = {}
+case1_knn_results["full"] = _case1_compare_knn(X_train, y_train, X_val, y_val)
+
+# Smaller, fixed-seed sample sizes -- drawn only from the train/validation
+# pool already in use, never from X_test.
+_case1_pool_X = np.concatenate([X_train, X_val])
+_case1_pool_y = np.concatenate([y_train, y_val])
+_case1_pool_group = np.concatenate([group_train, group_val])
+
+for n_total in %(sizes)s:
+    sub_idx, _ = train_test_split(
+        np.arange(len(_case1_pool_X)), train_size=n_total, random_state=%(small_seed)r, stratify=_case1_pool_group
+    )
+    sub_X, sub_y, sub_group = _case1_pool_X[sub_idx], _case1_pool_y[sub_idx], _case1_pool_group[sub_idx]
+    tr_idx, va_idx = train_test_split(
+        np.arange(n_total), test_size=%(small_test_size)r, random_state=%(small_seed)r, stratify=sub_group
+    )
+    case1_knn_results[n_total] = _case1_compare_knn(sub_X[tr_idx], sub_y[tr_idx], sub_X[va_idx], sub_y[va_idx])
+
+for size_label, r in case1_knn_results.items():
+    diff = r["leaky_val_mse"] - r["honest_val_mse"]
+    direction = "worse" if diff > 0 else ("better" if diff < 0 else "identical")
+    label = "full split" if size_label == "full" else f"n={size_label}"
+    print(
+        f"{label} (n_train={r['n_train']}, n_val={r['n_val']}): "
+        f"leaky val MSE={r['leaky_val_mse']:.3f}  honest val MSE={r['honest_val_mse']:.3f}  "
+        f"(leaky {direction} by {abs(diff):.3f})"
+    )
+"""
+            % {
+                "k": CASE1_KNN_K,
+                "sizes": repr(CASE1_KNN_SMALL_SIZES),
+                "small_seed": CASE1_KNN_SMALL_SEED,
+                "small_test_size": CASE1_KNN_SMALL_SPLIT_TEST_SIZE,
+            },
+            "wp57-113-knn-compare",
+        ),
+        md(
+            """
+At every size tried here, the difference is small, and at the two smaller
+sizes the contaminated scaler actually scores *better*, not worse -- a
+legitimate possible outcome, since a small leak's effect is not guaranteed
+to go in any particular direction. What stays true regardless of the
+score: the contaminated scaler used information from rows it will later be
+evaluated on, and a genuinely new participant would not be available to
+fit it that way.
+""",
+            "wp57-114-knn-wrapup",
         ),
     ]
 
@@ -828,16 +955,20 @@ them plus noise, so the true relationship is known and controllable.
             """
 ### First, the Code
 
-Below, a single matrix is built for PCA -- but it includes `y` itself as
-one of its three columns (scaled up so it dominates the first component),
-and PCA is fit on every row, training and held-out alike. The resulting
-single component is then used to predict `y`, including on held-out rows.
+Below, each path applies the same recipe: standardize its own input
+columns (fit on training rows only), then fit a 1-component PCA on those
+scaled training rows. The contaminated path's input columns are `x1`,
+`x2`, and `y` itself -- so transforming *any* row through this fitted
+pipeline, including a held-out one, requires that row's own `y`. The
+resulting component is then used to predict `y`, including on held-out
+rows whose own `y` it already needed.
 """,
             "wp57-203-run-it-intro",
         ),
         code(
             """
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
@@ -853,16 +984,27 @@ case2_train_idx, case2_val_idx = train_test_split(
     np.arange(n), test_size=%(test_size)r, random_state=%(split_seed)r
 )
 
-# The matrix PCA decomposes includes y itself (scaled up) as a column, and
-# PCA is fit on every row -- training and held-out together.
-contaminated_matrix = np.column_stack([x1, x2, %(y_scale)r * case2_y])
-pca_contaminated = PCA(n_components=1, random_state=0).fit(contaminated_matrix)
-contaminated_scores = pca_contaminated.transform(contaminated_matrix).ravel()
+# The matrix PCA decomposes includes y itself as a column. The scaler and
+# PCA below are both fit on TRAINING ROWS ONLY -- but because y is one of
+# the columns, transforming ANY row (including a held-out one) still
+# requires that row's own y.
+contaminated_cols = np.column_stack([x1, x2, case2_y])
+contaminated_scaler = StandardScaler().fit(contaminated_cols[case2_train_idx])
+pca_contaminated = PCA(n_components=1, random_state=0).fit(
+    contaminated_scaler.transform(contaminated_cols[case2_train_idx])
+)
+
+contaminated_scores_train = pca_contaminated.transform(
+    contaminated_scaler.transform(contaminated_cols[case2_train_idx])
+).ravel()
+contaminated_scores_val = pca_contaminated.transform(
+    contaminated_scaler.transform(contaminated_cols[case2_val_idx])  # needs the held-out y!
+).ravel()
 
 contaminated_model = LinearRegression().fit(
-    contaminated_scores[case2_train_idx].reshape(-1, 1), case2_y[case2_train_idx]
+    contaminated_scores_train.reshape(-1, 1), case2_y[case2_train_idx]
 )
-contaminated_pred_val = contaminated_model.predict(contaminated_scores[case2_val_idx].reshape(-1, 1))
+contaminated_pred_val = contaminated_model.predict(contaminated_scores_val.reshape(-1, 1))
 contaminated_r2 = r2_score(case2_y[case2_val_idx], contaminated_pred_val)
 print(f"Contaminated pipeline, held-out R2: {contaminated_r2:.4f}")
 """
@@ -871,13 +1013,12 @@ print(f"Contaminated pipeline, held-out R2: {contaminated_r2:.4f}")
                 "n": CASE2_N,
                 "test_size": CASE2_SPLIT_TEST_SIZE,
                 "split_seed": CASE2_SPLIT_RANDOM_STATE,
-                "y_scale": CASE2_Y_SCALE,
             },
             "wp57-204-run-it",
         ),
         md(
             """
-### Diagnose
+### Think first
 
 > **To run a genuinely new participant through this exact pipeline, what
 > would you need that you would not actually have?**
@@ -894,10 +1035,11 @@ show_question("q-pca-deployment")
             """
 ### Repair
 
-Build a **predictor-only** matrix (`x1`, `x2` -- never `y`), fit PCA on
-`case2_train_idx` rows only, and transform the held-out rows with that same
-fitted PCA. Fit the linear regression on the training rows' component, and
-score it on the held-out rows.
+Build a **predictor-only** matrix (`x1`, `x2` -- never `y`). Standardize
+it (fit on `case2_train_idx` rows only), fit a 1-component PCA on those
+same scaled training rows, then transform the held-out rows with that
+same fitted scaler and PCA. Fit the linear regression on the training
+rows' component, and score it on the held-out rows.
 
 Required output name: `honest_pca_r2` -- the held-out R2 of this
 predictor-only pipeline.
@@ -910,15 +1052,23 @@ honest_pca_r2 = None
 
 # YOUR CODE HERE
 # Hint: build a predictor-only matrix from x1 and x2 alone -- never
-# including case2_y. Fit a 1-component PCA using the training rows of
-# that matrix only, then apply that same fitted PCA object to the
-# validation rows to get their component scores.
+# including case2_y. Standardize it, fit on the training rows only, then
+# fit a 1-component PCA on those same scaled training rows. Apply that
+# same fitted scaler and PCA to the validation rows to get their
+# component scores -- no y needed anywhere in this path.
 """,
             """
-predictor_only_matrix = np.column_stack([x1, x2])
-pca_honest = PCA(n_components=1, random_state=0).fit(predictor_only_matrix[case2_train_idx])
-honest_scores_train = pca_honest.transform(predictor_only_matrix[case2_train_idx]).ravel()
-honest_scores_val = pca_honest.transform(predictor_only_matrix[case2_val_idx]).ravel()
+predictor_only_cols = np.column_stack([x1, x2])
+honest_scaler = StandardScaler().fit(predictor_only_cols[case2_train_idx])
+pca_honest = PCA(n_components=1, random_state=0).fit(
+    honest_scaler.transform(predictor_only_cols[case2_train_idx])
+)
+honest_scores_train = pca_honest.transform(
+    honest_scaler.transform(predictor_only_cols[case2_train_idx])
+).ravel()
+honest_scores_val = pca_honest.transform(
+    honest_scaler.transform(predictor_only_cols[case2_val_idx])
+).ravel()
 
 honest_model = LinearRegression().fit(honest_scores_train.reshape(-1, 1), case2_y[case2_train_idx])
 honest_pred_val = honest_model.predict(honest_scores_val.reshape(-1, 1))
@@ -935,8 +1085,8 @@ TOLERANCE = %(tol)r
 
 if "honest_pca_r2" in globals() and honest_pca_r2 is not None:
     diff = abs(honest_pca_r2 - EXPECTED_HONEST_R2)
-    print(f"Contaminated pipeline (y leaked into PCA): held-out R2 = {contaminated_r2:.4f}  -- INVALID, do not use")
-    print(f"Honest pipeline (predictor-only PCA):       held-out R2 = {honest_pca_r2:.4f}")
+    print(f"Contaminated pipeline (needs the held-out y as input): held-out R2 = {contaminated_r2:.4f}  -- INVALID, do not use")
+    print(f"Honest pipeline (predictor-only):                      held-out R2 = {honest_pca_r2:.4f}")
     if diff <= TOLERANCE:
         print("Looks good: your honest R2 is close to the directly verified value.")
     else:
@@ -955,11 +1105,12 @@ else:
             """
 ### Consequence
 
-The contaminated pipeline's held-out R2 looks almost perfect -- and it is
-meaningless: it only "predicts" `y` because `y` itself was handed to PCA
-for every row, held-out rows included. The honest pipeline's R2 is far
-lower, and it is the only one of the two that could ever be applied to a
-real new participant.
+The contaminated pipeline's held-out R2 looks strong -- and it is
+meaningless: computing it required already knowing every held-out
+participant's own age, since age was one of the three columns the
+component was built from. The honest pipeline's R2 is far lower, but it
+is the only one of the two that could ever be applied to a real new
+participant, since it never needs that participant's own age to run.
 """,
             "wp57-210-consequence",
         ),
@@ -984,7 +1135,9 @@ from sklearn.linear_model import LinearRegression as _LinearRegression
 from sklearn.model_selection import train_test_split as _train_test_split
 from sklearn.metrics import r2_score as _r2_score
 
-_W_SEED, _W_N, _W_Y_SCALE = %(seed)r, %(n)r, %(y_scale)r
+from sklearn.preprocessing import StandardScaler as _StandardScaler
+
+_W_SEED, _W_N = %(seed)r, %(n)r
 _w_rng = np.random.RandomState(_W_SEED)
 _w_x1 = _w_rng.normal(0, 1, _W_N)
 _w_x2 = _w_rng.normal(0, 1, _W_N)
@@ -994,16 +1147,14 @@ _w_train_idx, _w_val_idx = _train_test_split(np.arange(_W_N), test_size=%(test_s
 
 
 def _widget2_fit(path):
-    if path == "contaminated":
-        matrix = np.column_stack([_w_x1, _w_x2, _W_Y_SCALE * _w_y])
-        pca = _PCA(n_components=1, random_state=0).fit(matrix)  # fit on ALL rows
-        scores = pca.transform(matrix).ravel()
-        scores_train, scores_val = scores[_w_train_idx], scores[_w_val_idx]
-    else:
-        predictors = np.column_stack([_w_x1, _w_x2])
-        pca = _PCA(n_components=1, random_state=0).fit(predictors[_w_train_idx])  # TRAIN ONLY
-        scores_train = pca.transform(predictors[_w_train_idx]).ravel()
-        scores_val = pca.transform(predictors[_w_val_idx]).ravel()
+    cols = np.column_stack([_w_x1, _w_x2, _w_y]) if path == "contaminated" else np.column_stack([_w_x1, _w_x2])
+    # Both paths: standardize, then fit PCA -- using TRAINING rows only.
+    # The contaminated path's own columns include y, so transforming any
+    # row (train or held-out) still requires that row's own y.
+    scaler = _StandardScaler().fit(cols[_w_train_idx])
+    pca = _PCA(n_components=1, random_state=0).fit(scaler.transform(cols[_w_train_idx]))
+    scores_train = pca.transform(scaler.transform(cols[_w_train_idx])).ravel()
+    scores_val = pca.transform(scaler.transform(cols[_w_val_idx])).ravel()
     model = _LinearRegression().fit(scores_train.reshape(-1, 1), _w_y[_w_train_idx])
     pred_val = model.predict(scores_val.reshape(-1, 1))
     r2 = _r2_score(_w_y[_w_val_idx], pred_val)
@@ -1019,7 +1170,7 @@ _w_all_vals = np.concatenate([_w_true_val, _w_pred_contaminated, _w_pred_honest]
 _w_lo, _w_hi = _w_all_vals.min() - 0.5, _w_all_vals.max() + 0.5
 
 _widget2_toggle = widgets.Dropdown(
-    options=[("Contaminated pipeline (y leaked into PCA)", "contaminated"), ("Honest pipeline (predictor-only PCA)", "honest")],
+    options=[("Contaminated pipeline (y is an input column)", "contaminated"), ("Honest pipeline (predictor-only)", "honest")],
     value="contaminated",
     description="Pipeline:",
     style={"description_width": "initial"},
@@ -1031,7 +1182,7 @@ def _widget2_render(_change=None):
     path = _widget2_toggle.value
     pred_val = _w_pred_contaminated if path == "contaminated" else _w_pred_honest
     r2 = _w_r2_contaminated if path == "contaminated" else _w_r2_honest
-    label = "Contaminated (y leaked into PCA)" if path == "contaminated" else "Honest (predictor-only PCA)"
+    label = "Contaminated (y is an input column)" if path == "contaminated" else "Honest (predictor-only)"
     color = "crimson" if path == "contaminated" else "tab:green"
 
     with _widget2_output:
@@ -1051,7 +1202,6 @@ _widget2_render()
             % {
                 "seed": CASE2_SEED,
                 "n": CASE2_N,
-                "y_scale": CASE2_Y_SCALE,
                 "test_size": CASE2_SPLIT_TEST_SIZE,
                 "split_seed": CASE2_SPLIT_RANDOM_STATE,
             },
@@ -1115,7 +1265,7 @@ print(f"Depth chosen by lowest TRAINING MSE: {depth_by_train_mse!r}  (training M
         ),
         md(
             """
-### Diagnose
+### Think first
 
 > **Why is the lowest-training-MSE depth a poor basis for choosing which
 > model to use, and what score should guide the choice instead?**
@@ -1197,8 +1347,7 @@ else:
             """
 ### Plot training and validation MSE across depths
 
-Supplied: a ready-to-run plot, handled gracefully if the repair above is
-not complete yet.
+Supplied: a ready-to-run plot.
 """,
             "wp57-310-plot-intro",
         ),
@@ -1379,7 +1528,7 @@ print(f"Accuracy: {case4_accuracy:.2f}")
         ),
         md(
             """
-### Diagnose
+### Think first
 
 95% accuracy sounds like a strong result -- on its own, it hides what the
 classifier actually did. Below, a fuller picture: the confusion matrix and
@@ -1493,7 +1642,7 @@ print(f"Validation R2 (random row split): {row_val_r2:.4f}")
         ),
         md(
             """
-### Diagnose and repair
+### Think first and repair
 
 The overlap count above already answers the diagnosis: most participants
 appear on both sides of the random row split. Repair the split using
@@ -1636,7 +1785,7 @@ print(f"\\nBest alpha found: {best_alpha}  --  reported as the untouched test MS
         ),
         md(
             """
-### Diagnose
+### Think first
 
 > **At which point did the test set stop being an untouched, one-time
 > evaluation?**

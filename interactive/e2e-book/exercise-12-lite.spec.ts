@@ -232,19 +232,21 @@ test.describe("Exercise 12 — JupyterLite notebook, teacher-completed path", ()
         "print(scaler_honest.mean_[0])",
     );
     await page.waitForTimeout(3_000);
-    await runCell(page, "EXPECTED_MEAN_TRAIN = ");
+    await runCell(page, "X_train.mean(axis=0)");
     let check = await scrollToVisible(page, "Looks good: scaler_honest's learned mean");
     await expect(check.locator(".jp-OutputArea-output").last()).toContainText("Looks good");
 
-    // Case 2: honest predictor-only PCA.
+    // Case 2: honest predictor-only PCA (standardize, fit PCA, both on
+    // training rows only -- no y anywhere in this path).
     await fillBlank(
       page,
       "honest_pca_r2 = None",
       "honest_pca_r2 = None\n" +
-        "predictor_only_matrix = np.column_stack([x1, x2])\n" +
-        "pca_honest = PCA(n_components=1, random_state=0).fit(predictor_only_matrix[case2_train_idx])\n" +
-        "honest_scores_train = pca_honest.transform(predictor_only_matrix[case2_train_idx]).ravel()\n" +
-        "honest_scores_val = pca_honest.transform(predictor_only_matrix[case2_val_idx]).ravel()\n" +
+        "predictor_only_cols = np.column_stack([x1, x2])\n" +
+        "honest_scaler = StandardScaler().fit(predictor_only_cols[case2_train_idx])\n" +
+        "pca_honest = PCA(n_components=1, random_state=0).fit(honest_scaler.transform(predictor_only_cols[case2_train_idx]))\n" +
+        "honest_scores_train = pca_honest.transform(honest_scaler.transform(predictor_only_cols[case2_train_idx])).ravel()\n" +
+        "honest_scores_val = pca_honest.transform(honest_scaler.transform(predictor_only_cols[case2_val_idx])).ravel()\n" +
         "honest_model = LinearRegression().fit(honest_scores_train.reshape(-1, 1), case2_y[case2_train_idx])\n" +
         "honest_pred_val = honest_model.predict(honest_scores_val.reshape(-1, 1))\n" +
         "honest_pca_r2 = r2_score(case2_y[case2_val_idx], honest_pred_val)\n" +

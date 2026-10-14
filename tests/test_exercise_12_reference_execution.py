@@ -89,22 +89,79 @@ class ReferenceExecution(unittest.TestCase):
         self.assertEqual(self.ns["X_val"].shape, (201, 360))
         self.assertEqual(self.ns["X_test"].shape, (201, 360))
 
-    def test_scaler_honest_matches_directly_verified_mean(self):
+    def test_scaler_leaky_is_fit_on_train_and_val_never_test(self):
+        # WP57R: the contaminated scaler now excludes X_test entirely
+        # (803 rows = X_train + X_val), unlike the WP57 original (1,004
+        # rows, including X_test) -- preserving X_test as genuinely
+        # untouched for Case 3.
+        self.assertEqual(len(self.ns["X_train_and_val"]), 803)
+        self.assertAlmostEqual(self.ns["scaler_leaky"].mean_[0], 2.371498, delta=0.001)
         self.assertAlmostEqual(self.ns["scaler_honest"].mean_[0], 2.371573, delta=0.001)
-        self.assertAlmostEqual(self.ns["scaler_leaky"].mean_[0], 2.373286, delta=0.001)
 
     def test_leaky_and_honest_scaler_means_differ_but_only_slightly(self):
         diff = abs(self.ns["scaler_leaky"].mean_[0] - self.ns["scaler_honest"].mean_[0])
         self.assertGreater(diff, 0.0)
         self.assertLess(diff, 0.05)
 
+    def test_case1_check_cell_passes_for_honest_and_fails_for_leaky(self):
+        # WP57R: directly demonstrates the fixed check cell's own
+        # discriminating power -- a scaler fit on X_train passes a tight
+        # tolerance; the supplied leaky scaler (fit on X_train_and_val)
+        # fails it. The original check (TOLERANCE=0.01 against one
+        # hardcoded feature mean) would have let the leaky scaler pass.
+        import io
+        from contextlib import redirect_stdout
+
+        nb = nbformat.read(REFERENCE_PATH, as_version=4)
+        check_cell = next(c for c in nb.cells if c.get("id") == "wp57-110-case1-check")
+
+        ns_honest = dict(self.ns)
+        ns_honest["scaler_honest"] = self.ns["scaler_honest"]
+        out_honest = io.StringIO()
+        with redirect_stdout(out_honest):
+            exec(compile(check_cell["source"], "wp57-110-case1-check", "exec"), ns_honest)
+        self.assertIn("Looks good", out_honest.getvalue())
+
+        ns_leaky = dict(self.ns)
+        ns_leaky["scaler_honest"] = self.ns["scaler_leaky"]  # submit the WRONG (leaky) scaler
+        out_leaky = io.StringIO()
+        with redirect_stdout(out_leaky):
+            exec(compile(check_cell["source"], "wp57-110-case1-check", "exec"), ns_leaky)
+        self.assertIn("Not quite", out_leaky.getvalue())
+        self.assertNotIn("Looks good", out_leaky.getvalue())
+
+    def test_case1_knn_comparison_matches_directly_verified_numbers(self):
+        results = self.ns["case1_knn_results"]
+        expected = {
+            "full": {"leaky_val_mse": 32.7146, "honest_val_mse": 32.3903},
+            100: {"leaky_val_mse": 60.0136, "honest_val_mse": 60.9107},
+            60: {"leaky_val_mse": 10.3340, "honest_val_mse": 10.6304},
+        }
+        for size_label, exp in expected.items():
+            self.assertAlmostEqual(results[size_label]["leaky_val_mse"], exp["leaky_val_mse"], delta=0.01)
+            self.assertAlmostEqual(results[size_label]["honest_val_mse"], exp["honest_val_mse"], delta=0.01)
+        # Direction is not guaranteed and is reported honestly either way.
+        self.assertGreater(results["full"]["leaky_val_mse"], results["full"]["honest_val_mse"])
+        self.assertLess(results[100]["leaky_val_mse"], results[100]["honest_val_mse"])
+        self.assertLess(results[60]["leaky_val_mse"], results[60]["honest_val_mse"])
+
+    def test_case1_knn_comparison_never_reads_x_test(self):
+        self.assertEqual(len(self.ns["_case1_pool_X"]), len(self.ns["X_train"]) + len(self.ns["X_val"]))
+
     # -- Case 2 --------------------------------------------------------
 
-    def test_case2_contaminated_r2_is_near_perfect(self):
-        self.assertAlmostEqual(self.ns["contaminated_r2"], 0.9997, delta=0.001)
+    def test_case2_contaminated_r2_matches_directly_verified_value(self):
+        self.assertAlmostEqual(self.ns["contaminated_r2"], 0.8973, delta=0.001)
 
     def test_case2_honest_r2_matches_directly_verified_value(self):
-        self.assertAlmostEqual(self.ns["honest_pca_r2"], 0.4489, delta=0.01)
+        self.assertAlmostEqual(self.ns["honest_pca_r2"], 0.1209, delta=0.01)
+
+    def test_case2_contaminated_path_cannot_run_without_the_held_out_y(self):
+        # The contaminated path's own fitted scaler/PCA expect 3 columns
+        # (x1, x2, y) -- confirms the structural requirement is real, not
+        # just a label.
+        self.assertEqual(self.ns["contaminated_scaler"].mean_.shape, (3,))
+        self.assertEqual(self.ns["honest_scaler"].mean_.shape, (2,))
 
     def test_case2_honest_r2_is_far_below_contaminated(self):
         self.assertLess(self.ns["honest_pca_r2"], self.ns["contaminated_r2"] - 0.3)
@@ -263,8 +320,8 @@ class ReferenceExecution(unittest.TestCase):
     def test_widget1_recomputes_both_paths_independently(self):
         self.assertIn("_w_r2_contaminated", self.ns)
         self.assertIn("_w_r2_honest", self.ns)
-        self.assertAlmostEqual(self.ns["_w_r2_contaminated"], 0.9997, delta=0.001)
-        self.assertAlmostEqual(self.ns["_w_r2_honest"], 0.4489, delta=0.01)
+        self.assertAlmostEqual(self.ns["_w_r2_contaminated"], 0.8973, delta=0.001)
+        self.assertAlmostEqual(self.ns["_w_r2_honest"], 0.1209, delta=0.01)
 
     def test_widget2_precomputed_fits_cover_the_full_depth_grid(self):
         self.assertEqual(set(self.ns["_w3_fits"].keys()), {1, 2, 3, 5, 10, None})
@@ -300,12 +357,13 @@ class StudentTemplateNoCascade(unittest.TestCase):
             self.assertIn("Not complete yet", out.getvalue(), check_id)
 
     def test_supplied_widgets_and_demos_run_independently_of_every_blank(self):
-        # Both native widgets and Case 4/6's supplied demos work even
-        # though every required blank above them was left untouched.
-        self.assertAlmostEqual(self.ns["_w_r2_contaminated"], 0.9997, delta=0.001)
+        # Both native widgets and Case 1/4/6's supplied demos work even
+        # though every required blank above/around them was left untouched.
+        self.assertAlmostEqual(self.ns["_w_r2_contaminated"], 0.8973, delta=0.001)
         self.assertEqual(set(self.ns["_w3_fits"].keys()), {1, 2, 3, 5, 10, None})
         self.assertAlmostEqual(self.ns["case4_accuracy"], 0.95, delta=0.001)
         self.assertEqual(self.ns["best_alpha"], 10)
+        self.assertIn("full", self.ns["case1_knn_results"])
 
     def test_consequence_cells_report_missing_without_raising(self):
         self.assertIsNone(self.ns.get("scaler_honest"))

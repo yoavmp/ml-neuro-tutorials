@@ -154,10 +154,27 @@ class StudentTemplateStructure(unittest.TestCase):
                            "## 6. One Last Setting to Try"):
                 self.assertNotIn(low_needle, header.lower())
 
-    def test_overview_list_has_six_items_matching_section_count(self):
+    def test_overview_heading_renamed_and_no_case_preview_list(self):
+        # WP57R: the six-item "In this notebook you will" list gave away
+        # each case's diagnosis before the student reached it -- removed
+        # entirely. "What this notebook covers" no longer fits (there is
+        # no longer a list of what is covered), so the heading was renamed.
         overview = _src(next(c for c in self.cells if c.get("id") == "wp57-002-overview"))
+        self.assertIn("## How This Notebook Works", overview)
+        self.assertNotIn("## What this notebook covers", overview)
+        self.assertNotIn("In this notebook you will", overview)
         numbered = re.findall(r"^\d+\. ", overview, re.MULTILINE)
-        self.assertEqual(len(numbered), 6)
+        self.assertEqual(len(numbered), 0)
+
+    def test_overview_keeps_the_run_diagnose_repair_inspect_paragraph(self):
+        overview = _src(next(c for c in self.cells if c.get("id") == "wp57-002-overview"))
+        self.assertIn("**run**", overview)
+        self.assertIn("**repair**", overview)
+        self.assertIn("**inspect the consequence**", overview)
+
+    def test_real_danger_is_bolded(self):
+        overview = _src(next(c for c in self.cells if c.get("id") == "wp57-002-overview"))
+        self.assertIn("**that is the real danger**", overview)
 
     # -- YOUR CODE HERE tasks (4 required blanks: Cases 1, 2, 3, 5) -------
 
@@ -185,8 +202,8 @@ class StudentTemplateStructure(unittest.TestCase):
 
     def test_blanks_contain_no_executable_solution_even_commented(self):
         forbidden = (
-            ".fit(", "Pipeline([", ".predict(", "mean_squared_error(y_val", "r2_score(y_val",
-            "PCA(n_components", "GroupShuffleSplit(",
+            ".fit(", "Pipeline([", ".predict(", ".transform(", "mean_squared_error(y_val", "r2_score(y_val",
+            "PCA(n_components", "GroupShuffleSplit(", "StandardScaler().fit(",
         )
         for tag in BLANK_TAGS:
             cell = next(c for c in self.cells if tag in c.get("metadata", {}).get("tags", []))
@@ -209,6 +226,64 @@ class StudentTemplateStructure(unittest.TestCase):
         case5_instructions = next(c for c in self.cells if c.get("id") == "wp57-505-instructions")
         for name in ("group_overlap", "group_val_r2"):
             self.assertIn(name, _src(case5_instructions))
+
+    # -- Case 1: tight live check, and the KNN score-level comparison -----
+
+    def test_case1_scaler_leaky_never_touches_x_test(self):
+        run_it = _src(next(c for c in self.cells if c.get("id") == "wp57-105-run-it"))
+        self.assertIn("X_train_and_val", run_it)
+        self.assertIn("StandardScaler().fit(X_train_and_val)", run_it)
+        self.assertNotIn("StandardScaler().fit(X)", run_it)
+        # X_test is only ever mentioned in a comment explaining it is NOT
+        # used -- never actually read as data anywhere in this cell.
+        self.assertNotIn("X_train, X_val, X_test", run_it)
+        self.assertNotIn(".fit(X_test", run_it)
+
+    def test_case1_check_uses_a_tight_live_tolerance_not_a_loose_constant(self):
+        # WP57R: the original check compared one feature's mean to a
+        # hardcoded constant with TOLERANCE=0.01 -- looser than the real
+        # diff, so it would have accepted a leaky scaler by mistake. The
+        # fixed check compares the full mean vector to X_train's own,
+        # live-computed means, with a tight tolerance.
+        check = _src(next(c for c in self.cells if c.get("id") == "wp57-110-case1-check"))
+        self.assertIn("X_train.mean(axis=0)", check)
+        self.assertIn("TOLERANCE = 1e-06", check)
+        self.assertNotIn("EXPECTED_MEAN_TRAIN", check)
+        self.assertIn(
+            "cannot by itself prove every possible solution is leakage-free", check
+        )
+
+    def test_case1_consequence_does_not_promise_a_guaranteed_large_effect(self):
+        consequence = _src(next(c for c in self.cells if c.get("id") == "wp57-111-consequence"))
+        self.assertIn("60 participants", consequence)
+        self.assertIn("could shift", consequence)
+        self.assertNotIn("always changes the score", consequence)
+
+    def test_case1_knn_comparison_is_supplied_not_a_blank(self):
+        knn_cell = next(c for c in self.cells if c.get("id") == "wp57-113-knn-compare")
+        src = _src(knn_cell)
+        self.assertNotIn("YOUR CODE HERE", src)
+        self.assertIn("KNeighborsRegressor", src)
+        self.assertIn("CASE1_KNN_K = 5", src)
+
+    def test_case1_knn_comparison_never_touches_x_test(self):
+        knn_cell = _src(next(c for c in self.cells if c.get("id") == "wp57-113-knn-compare"))
+        # X_test is only ever mentioned in a comment explaining it is NOT
+        # used -- never actually read as data anywhere in this cell.
+        self.assertNotIn("X_train, X_val, X_test", knn_cell)
+        for needle in (".fit(X_test", "[X_test]", ", X_test)", ", X_test,"):
+            self.assertNotIn(needle, knn_cell)
+        self.assertIn("_case1_pool_X = np.concatenate([X_train, X_val])", knn_cell)
+
+    def test_case1_knn_comparison_reports_every_attempted_size(self):
+        knn_cell = _src(next(c for c in self.cells if c.get("id") == "wp57-113-knn-compare"))
+        self.assertIn('case1_knn_results["full"]', knn_cell)
+        self.assertIn("for n_total in", knn_cell)
+
+    def test_case1_knn_wrapup_accepts_a_small_or_opposite_direction_result(self):
+        wrapup = _src(next(c for c in self.cells if c.get("id") == "wp57-114-knn-wrapup"))
+        self.assertIn("better", wrapup)
+        self.assertIn("not guaranteed", wrapup)
 
     # -- checked questions: visibility, count, and shuffle -----------------
 
@@ -301,6 +376,27 @@ class StudentTemplateStructure(unittest.TestCase):
     def test_abide_cases_credit_the_real_data(self):
         case1_intro = _src(next(c for c in self.cells if c.get("id") == "wp57-102-intro"))
         self.assertIn("ABIDE", case1_intro)
+
+    # -- Case 2: y-as-input is the one deliberate mistake -------------------
+
+    def test_case2_contaminated_path_requires_the_held_out_y(self):
+        run_it = _src(next(c for c in self.cells if c.get("id") == "wp57-204-run-it"))
+        self.assertIn("contaminated_cols = np.column_stack([x1, x2, case2_y])", run_it)
+        self.assertIn("needs the held-out y", run_it)
+        # PCA/scaler are fit on TRAINING rows only -- the only remaining
+        # mistake is that y is one of the columns being transformed.
+        self.assertIn("contaminated_scaler.transform(contaminated_cols[case2_train_idx])", run_it)
+
+    def test_case2_honest_path_never_uses_y_as_a_column(self):
+        blank_cell = next(c for c in self.cells if "wp57-activity-pca" in c.get("metadata", {}).get("tags", []))
+        starter = _src(blank_cell)
+        self.assertNotIn("case2_y]", starter)  # never column_stack([..., case2_y])
+
+    def test_case2_widget_mirrors_the_train_only_fit_for_both_paths(self):
+        widget = _src(next(c for c in self.cells if c.get("id") == "wp57-212-widget"))
+        self.assertIn("cols[_w_train_idx]", widget)
+        self.assertNotIn("_W_Y_SCALE", widget)
+        self.assertNotIn("fit on ALL rows", widget)
 
     # -- no disguised/early answer reveal -----------------------------------
 
