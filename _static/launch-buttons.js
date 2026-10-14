@@ -20,23 +20,23 @@
  *
  * This is a static, explicit page -> portable-notebook mapping (checked by
  * interactive/e2e-book/launch-buttons.spec.ts against the *built* HTML), not a
- * guess from the current URL pattern: unmapped pages (Introduction, Syllabus,
- * Contents, and the placeholder Exercises 11-12, which have no portable
- * notebook yet) get no button.
+ * guess from the current URL pattern: unmapped pages (Introduction, Contents,
+ * and the titled placeholder Exercises 10-11, which have no portable
+ * notebook) get no button.
  *
- * WP41R/WP42/WP44/WP45/WP46/WP47/WP52: chapter_01/exercise_01.html,
+ * WP41R/WP42/WP44/WP45/WP46/WP47/WP52/WP57: chapter_01/exercise_01.html,
  * chapter_02/exercise_02.html, chapter_03/exercise_03.html,
  * chapter_04/exercise_04.html, chapter_05/exercise_05.html,
  * chapter_06/exercise_06.html, chapter_07/exercise_07.html,
- * chapter_08/exercise_08.html, and chapter_09/exercise_09.html are
- * deliberately NOT in this map. Every URL this button can build is
- * "github.com/<repo>/blob/main/<path>" -- fetched live from the PUBLIC
- * "main" branch, never from this local/feature branch. The JupyterLite
- * migrations live only on feature branches (unmerged, unpushed), so that
- * button would open the OLD, pre-migration notebook -- and once the
- * repository goes private (see WPs' course-privacy constraint), the same
- * URL pattern stops working for every chapter. Each migrated exercise's
- * transition page (see
+ * chapter_08/exercise_08.html, chapter_09/exercise_09.html, and
+ * chapter_12/exercise_12.html are deliberately NOT in this map. Every URL
+ * this button can build is "github.com/<repo>/blob/main/<path>" -- fetched
+ * live from the PUBLIC "main" branch, never from this local/feature
+ * branch. The JupyterLite migrations live only on feature branches
+ * (unmerged, unpushed), so that button would open the OLD, pre-migration
+ * notebook -- and once the repository goes private (see WPs'
+ * course-privacy constraint), the same URL pattern stops working for every
+ * chapter. Each migrated exercise's transition page (see
  * scripts/generate_exercise_01_transition_page.py,
  * scripts/generate_exercise_02_transition_page.py,
  * scripts/generate_exercise_03_transition_page.py,
@@ -45,7 +45,8 @@
  * scripts/generate_exercise_06_transition_page.py,
  * scripts/generate_exercise_07_transition_page.py,
  * scripts/generate_exercise_08_transition_page.py,
- * scripts/generate_exercise_09_transition_page.py) instead links the
+ * scripts/generate_exercise_09_transition_page.py,
+ * scripts/generate_exercise_12_transition_page.py) instead links the
  * student straight to a same-origin download, with plain "open it in Colab"
  * instructions, so it does not depend on this repository's visibility or
  * branch state at all.
@@ -58,12 +59,13 @@
 
   // path (as it appears in the page URL, without a leading slash) -> portable
   // notebook path relative to the repository root.
-  var PAGE_TO_PORTABLE = {
-    // chapter_01 through chapter_09 intentionally omitted -- see the file
-    // header comment.
-    "chapters/chapter_10/exercise_10.html":
-      "book/downloads/chapter_10/exercise_10_portable.ipynb",
-  };
+  //
+  // chapter_01 through chapter_09, and chapter_12 (this release's Exercise
+  // 12), are intentionally omitted -- see the file header comment. The
+  // titled placeholder stubs at chapter_10/placeholder.html and
+  // chapter_11/exercise_11.html have no portable notebook and are also
+  // intentionally omitted, by the same unmapped-page rule.
+  var PAGE_TO_PORTABLE = {};
 
   function portableFor(pathname) {
     for (var page in PAGE_TO_PORTABLE) {
