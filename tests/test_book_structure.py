@@ -120,13 +120,14 @@ class Pages(unittest.TestCase):
             self.assertIn(f"| {week} |", text)
         self.assertNotIn("| 14 |", text)
 
-    def test_syllabus_marks_tentative_topics_as_provisional_not_confirmed(self):
+    def test_syllabus_schedule_states_topics_without_tentative_qualifiers(self):
+        # A later wording pass dropped the "(tentative)" qualifiers on
+        # bootstrap, the nested-CV tuning note, and LLMs -- those topics are
+        # confirmed now, so the schedule no longer hedges them.
         text = (BOOK / "syllabus.md").read_text(encoding="utf-8")
-        self.assertIn("tentative", text.lower())
-        # Neither provisional topic is asserted as a flatly confirmed fact.
-        self.assertNotIn("Bootstrap |", text)  # would read as a confirmed Lecture cell
-        self.assertIn("bootstrap *(tentative)*", text.lower())
-        self.assertIn("llms *(tentative)*", text.lower())
+        self.assertNotIn("tentative", text.lower())
+        self.assertIn("Cross-validation; bootstrap |", text)
+        self.assertIn("Introduction to LLMs |", text)
 
     def test_syllabus_states_the_real_room_and_does_not_invent_due_dates(self):
         # WP55: the author supplied the room after WP54 shipped this page
