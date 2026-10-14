@@ -865,16 +865,33 @@ def _case1_compare_knn(X_tr, y_tr, X_va, y_va):
     train_and_val = np.concatenate([X_tr, X_va])
     leaky_scaler = StandardScaler().fit(train_and_val)
     honest_scaler = StandardScaler().fit(X_tr)
-    leaky_pred = (
-        KNeighborsRegressor(n_neighbors=CASE1_KNN_K)
-        .fit(leaky_scaler.transform(X_tr), y_tr)
-        .predict(leaky_scaler.transform(X_va))
-    )
-    honest_pred = (
-        KNeighborsRegressor(n_neighbors=CASE1_KNN_K)
-        .fit(honest_scaler.transform(X_tr), y_tr)
-        .predict(honest_scaler.transform(X_va))
-    )
+    # KNeighborsRegressor's first fit/predict call in this notebook makes
+    # scikit-learn's pairwise-distance backend probe loaded BLAS/OpenMP
+    # libraries via threadpoolctl -- which, only inside Pyodide's browser
+    # sandbox, walks a JS object through a deprecated bridge method
+    # (threadpoolctl itself calling JsProxy.as_object_map() instead of the
+    # newer as_py_json()) and emits a RuntimeWarning with that exact
+    # message. It is upstream (threadpoolctl's own Pyodide-detection code,
+    # not this notebook's), harmless, and fires at most once per kernel
+    # session -- suppressed here by its exact message, scoped to only
+    # these two calls, so no other RuntimeWarning anywhere else in this
+    # notebook is affected.
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*JsProxy\\.as_object_map\\(\\) is deprecated.*",
+            category=RuntimeWarning,
+        )
+        leaky_pred = (
+            KNeighborsRegressor(n_neighbors=CASE1_KNN_K)
+            .fit(leaky_scaler.transform(X_tr), y_tr)
+            .predict(leaky_scaler.transform(X_va))
+        )
+        honest_pred = (
+            KNeighborsRegressor(n_neighbors=CASE1_KNN_K)
+            .fit(honest_scaler.transform(X_tr), y_tr)
+            .predict(honest_scaler.transform(X_va))
+        )
     return {
         "n_train": len(X_tr),
         "n_val": len(X_va),
