@@ -2,10 +2,13 @@
 
 WP41 section 4.3/12: one machine-readable manifest for Exercises 1-12, with
 unique routes/paths across entries. WP49 deploys Exercises 1-8 (migrated)
-to production; WP52 adds Exercise 9 to that migrated/published set.
-Exercises 10-12 stay legacy and are excluded from book/_toc.yml for this
-release -- see book/config/exercise_manifest.json's own $comment and
-WPs/reports/WP49_REPORT.md / WPs/reports/WP52_REPORT.md.
+to production; WP52 adds Exercise 9 to that migrated/published set; this
+release (WPs/reports/WP57_RELEASE_REPORT.md) adds Exercise 12. Exercises
+10-11 stay legacy (no lite wiring) -- their book pages are titled
+placeholder stubs, clearly marked "coming later" -- see
+book/config/exercise_manifest.json's own $comment and
+WPs/reports/WP49_REPORT.md / WPs/reports/WP52_REPORT.md /
+WPs/reports/WP57_RELEASE_REPORT.md.
 
 Run:
     .venv/bin/python -m unittest discover -s tests -p 'test_exercise_manifest.py'
@@ -52,12 +55,13 @@ class ExerciseManifest(unittest.TestCase):
         for e in self.exercises:
             self.assertEqual(set(e.keys()), REQUIRED_FIELDS, e)
 
-    def test_only_exercises_1_through_9_are_migrated(self):
-        # WP49/WP52: Exercises 1-9 are deployed to production; Exercises
-        # 10-12 stay legacy (and excluded from book/_toc.yml for this
-        # release) -- see book/config/exercise_manifest.json's own $comment.
+    def test_only_exercises_1_through_9_and_12_are_migrated(self):
+        # WP49/WP52: Exercises 1-9 are deployed to production. This
+        # release (WPs/reports/WP57_RELEASE_REPORT.md) adds Exercise 12.
+        # Exercises 10-11 stay legacy -- their book pages are titled
+        # placeholder stubs ("coming later"), not migrated/active content.
         migrated = [e["number"] for e in self.exercises if e["migrationState"] == "migrated"]
-        self.assertEqual(migrated, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertEqual(migrated, [1, 2, 3, 4, 5, 6, 7, 8, 9, 12])
         for e in self.exercises:
             self.assertIn(e["migrationState"], {"migrated", "legacy"})
 

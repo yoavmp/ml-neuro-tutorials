@@ -51,27 +51,17 @@ exclude_patterns:
   - downloads/*
   # WP49/WP52 excluded Exercises 10-12 from the Sphinx source set entirely
   # (not just book/_toc.yml's nav), scoping the released public hub to
-  # Exercises 1-9. WP57 (LOCAL-ONLY, feature branch
-  # feature/wp57-active-exercise-12-common-mistakes, not merged/pushed/
-  # deployed -- see WPs/reports/WP57_REPORT.md) re-includes chapter_10/
-  # chapter_11/chapter_12 here, on this branch only, for the author's own
-  # local combined-book preview of the new Exercise 12. chapter_10's real
-  # legacy notebook stays untouched and is NOT referenced by book/_toc.yml
-  # (a separate local-only placeholder page is); chapter_11 keeps its
-  # existing placeholder stub; chapter_12 becomes a short transition page
-  # (see scripts/generate_exercise_12_transition_page.py) pointing at the
-  # real lesson in book/lite/files/exercise_12.ipynb. Reverting this change
-  # (restoring the three chapters/chapter_1{0,1,2}/* lines, in place of the
-  # single line immediately below) returns this file to its released,
-  # production state.
+  # Exercises 1-9. This release (WP57/WP57R,
+  # WPs/reports/WP57_RELEASE_REPORT.md) publishes Exercise 12 (a short
+  # transition page, scripts/generate_exercise_12_transition_page.py,
+  # pointing at the real lesson in book/lite/files/exercise_12.ipynb) and
+  # titled "coming later" placeholder stubs for Exercises 10-11
+  # (chapters/chapter_10/placeholder.md, chapters/chapter_11/exercise_11.md).
   - chapters/chapter_10/exercise_10.ipynb
-  # Only the real legacy notebook is excluded -- it is preserved untouched
-  # (WP57 must not overwrite or migrate it) and is not re-executed by this
-  # local build: it is the OLD iframe-embedded lesson, never audited for
-  # Sphinx's own "execute_notebooks: cache" build step, and excluding it
-  # keeps this local preview's build time/behavior independent of content
-  # this WP does not touch. chapter_10's new local-only placeholder page
-  # (chapters/chapter_10/placeholder.md) still builds normally.
+  # Only the real, preserved legacy Exercise 10 notebook is excluded (kept
+  # for later redesign, never published, not re-executed by this build's
+  # "execute_notebooks: cache" step). chapter_10's own titled placeholder
+  # page (chapters/chapter_10/placeholder.md) still builds normally.
   # book/lite/ is JupyterLite source material (config, notebooks copied
   # verbatim into the browser app, and a labextension with its own
   # node_modules/build tree) -- not Jupyter Book content. jupyter-lite

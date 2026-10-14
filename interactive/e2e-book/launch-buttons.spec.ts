@@ -16,12 +16,14 @@ import { expect, test } from "@playwright/test";
 // Colab button" tests below) rather than pointed at a URL that would stop
 // working once the repository goes private.
 //
-// WP49/WP52: the former Chapter 10 admonition-link case, and the Exercise
-// 11 placeholder case, are removed here (not just skipped): Exercises
-// 10-12 are intentionally excluded from book/_toc.yml for this release, so
-// chapters/chapter_{10,11,12}/*.html no longer exist in the built book at
-// all. Their source is untouched for a future redesign; see
-// WPs/reports/WP49_REPORT.md and WPs/reports/WP52_REPORT.md.
+// WP49/WP52 excluded Exercises 10-12 from book/_toc.yml entirely, so the
+// former Chapter 10 admonition-link case and the Exercise 11 placeholder
+// case were removed here (not just skipped). This release
+// (WPs/reports/WP57_RELEASE_REPORT.md) re-adds chapters/chapter_{10,11,12}
+// to the built book -- chapter_10/placeholder.html and
+// chapter_11/exercise_11.html as titled placeholder stubs with no
+// portable notebook, chapter_12/exercise_12.html as a migrated exercise's
+// transition page -- see the three tests at the end of this file.
 
 test("a page with no portable-notebook mapping (Introduction) gets no Colab button", async ({
   page,
@@ -100,5 +102,26 @@ test("Chapter 8 (migrated to JupyterLite) gets no top-bar Colab button", async (
 // so this is a deliberate suppression, not an unmapped-page omission.
 test("Chapter 9 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
   await page.goto("/ml-neuro-tutorials/chapters/chapter_09/exercise_09.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+// WP57 release: Chapter 12 also has a portable notebook (it is the
+// migrated JupyterLite student notebook now), so this is a deliberate
+// suppression, same treatment as Chapters 1-9 above.
+test("Chapter 12 (migrated to JupyterLite) gets no top-bar Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_12/exercise_12.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+// WP57 release: Exercises 10-11 are titled placeholder stubs with no
+// portable notebook at all -- an unmapped-page omission, not a
+// suppression, same as Introduction.
+test("Chapter 10 placeholder (titled 'coming later' stub) gets no Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_10/placeholder.html");
+  await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
+});
+
+test("Chapter 11 placeholder (titled 'coming later' stub) gets no Colab button", async ({ page }) => {
+  await page.goto("/ml-neuro-tutorials/chapters/chapter_11/exercise_11.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });
