@@ -118,13 +118,37 @@ class ExerciseTenDeepLearningStudentNotebook(unittest.TestCase):
         self.assertEqual(positions, sorted(positions))
 
     def test_colab_local_only_and_no_jupyterlite_claim(self):
-        self.assertIn("Google Colab or ordinary local Jupyter", self.joined)
-        self.assertIn("not available through this course's in-browser\nJupyterLite launcher", self.joined)
+        normalized = " ".join(self.joined.split())
+        self.assertIn(
+            "**This notebook runs in Google Colab or ordinary local Jupyter "
+            "(Python 3.11 or later) only.** It is not available through "
+            "this course's in-browser JupyterLite launcher. Open this "
+            "notebook directly in Colab or in a local Jupyter installation.",
+            normalized,
+        )
 
-    def test_pyodide_version_and_evidence_named(self):
-        self.assertIn("jupyterlite-pyodide-kernel 0.8.5", self.joined)
-        self.assertIn("Pyodide v314.0.5", self.joined)
-        self.assertIn("verified directly, not assumed", self.joined)
+    def test_gate_a_evidence_kept_in_the_wp_report_not_the_notebook(self):
+        # WP59: the "Note on the JupyterLite limitation (Gate A)" block was
+        # removed from the notebook -- that technical verification lives in
+        # WPs/reports/WP58_REPORT.md only, not student-facing content.
+        self.assertNotIn("Gate A", self.joined)
+        self.assertNotIn("jupyterlite-pyodide-kernel 0.8.5", self.joined)
+        self.assertNotIn("Pyodide v314.0.5", self.joined)
+        self.assertNotIn("verified directly, not assumed", self.joined)
+        # The "zero missing values" teaching point survives the removal.
+        self.assertIn("zero missing values", self.joined)
+
+    def test_shape_explanation_names_bcewithlogitsloss_as_our_loss_function(self):
+        normalized = " ".join(self.joined.split())
+        self.assertIn(
+            "since `BCEWithLogitsLoss` (our loss function) expects "
+            "predictions and targets to have matching shapes",
+            normalized,
+        )
+
+    def test_architecture_parenthesis_is_short(self):
+        self.assertIn("(128 units, then 32 units)", self.joined)
+        self.assertNotIn("chosen, along with the learning", self.joined)
 
     def test_conditional_torch_install_cell_present_once(self):
         self.assertEqual(self.joined.count("%pip install torch"), 1)
@@ -280,8 +304,12 @@ class ExerciseTenGeneratorStaleness(unittest.TestCase):
 
 
 class LegacyExerciseTenUntouched(unittest.TestCase):
-    """WP58 must not touch the preserved legacy Exercise 10 notebook, its
-    portable copy, or the live published placeholder stub."""
+    """WP58/WP59 must not touch the preserved legacy Exercise 10 notebook
+    or its portable copy. WP59 deliberately replaces the live placeholder
+    stub's *content* with a Colab/local-download page for this WP's own
+    notebook -- see test_live_page_links_to_this_wp_notebook_not_the_legacy_one
+    below, which checks that replacement is correct rather than that the
+    page is untouched."""
 
     def test_legacy_notebook_still_titled_examples_and_common_mistakes(self):
         nb = nbformat.read(LEGACY_NB_PATH, as_version=4)
@@ -291,10 +319,17 @@ class LegacyExerciseTenUntouched(unittest.TestCase):
     def test_legacy_portable_notebook_exists(self):
         self.assertTrue(LEGACY_PORTABLE_PATH.exists())
 
-    def test_placeholder_page_still_says_coming_later(self):
+    def test_live_page_links_to_this_wp_notebook_not_the_legacy_one(self):
+        # WP59 replaced the "coming later" stub with a Colab/local-download
+        # page for *this* notebook -- it must still never embed an iframe
+        # (no JupyterLite wiring) or link at the legacy notebook's own path.
         text = PLACEHOLDER_PATH.read_text()
         self.assertIn("Deep Learning", text)
         self.assertNotIn("<iframe", text)
+        self.assertNotIn("Materials for this exercise will be added", text)
+        self.assertIn("exercise_10_deep_learning_portable.ipynb", text)
+        self.assertNotIn("/exercise_10_portable.ipynb", text)
+        self.assertNotIn("lite/notebooks", text)
 
 
 if __name__ == "__main__":

@@ -88,20 +88,31 @@ class Toc(unittest.TestCase):
         self.assertNotIn("chapters/chapter_10/exercise_10", files)
         self.assertTrue((BOOK / "chapters" / "chapter_10" / "exercise_10.ipynb").exists())
 
-    def test_exercise_10_and_11_placeholders_are_titled_and_not_misleading(self):
-        # This release titles Exercises 10-11's placeholder stubs (no
-        # longer a generic "Coming Later") while keeping them clearly
-        # marked as not-yet-available: no runnable notebook, no
-        # launch/download button (see launch-buttons.spec.ts).
-        placeholder_10 = (BOOK / "chapters" / "chapter_10" / "placeholder.md").read_text(encoding="utf-8")
-        self.assertTrue(placeholder_10.startswith("# Exercise 10: Deep Learning"))
-        self.assertIn("will be added", placeholder_10)
-        self.assertNotIn(".ipynb", placeholder_10)
-
+    def test_exercise_11_placeholder_is_titled_and_not_misleading(self):
+        # This release titles Exercise 11's placeholder stub (no longer a
+        # generic "Coming Later") while keeping it clearly marked as
+        # not-yet-available: no runnable notebook, no launch/download
+        # button (see launch-buttons.spec.ts).
         placeholder_11 = (BOOK / "chapters" / "chapter_11" / "exercise_11.md").read_text(encoding="utf-8")
         self.assertTrue(placeholder_11.startswith("# Exercise 11: Embeddings and RSA"))
         self.assertIn("will be added", placeholder_11)
         self.assertNotIn(".ipynb", placeholder_11)
+
+    def test_exercise_10_is_published_as_a_colab_local_download_page(self):
+        # WP59: Exercise 10's slot is no longer a "coming later" stub --
+        # it offers this WP's own from-scratch Deep Learning notebook as a
+        # Colab/local-Jupyter-only download, never implying it runs in
+        # this site's in-browser JupyterLite kernel.
+        text = (BOOK / "chapters" / "chapter_10" / "placeholder.md").read_text(encoding="utf-8")
+        self.assertTrue(text.startswith("# Exercise 10: Deep Learning"))
+        self.assertNotIn("will be added", text)
+        self.assertIn("Colab or ordinary local Jupyter", text)
+        self.assertIn("not available through this course's", text)
+        self.assertIn("in-browser JupyterLite launcher", text)
+        self.assertIn("exercise_10_deep_learning_portable.ipynb", text)
+        self.assertIn("colab.research.google.com/github/yoavmp/ml-neuro-tutorials", text)
+        self.assertNotIn("lite/notebooks", text)
+        self.assertNotIn("Open Exercise 10", text)
 
     def test_no_exercise_13_in_toc(self):
         sections = self.toc["chapters"][0]["sections"]

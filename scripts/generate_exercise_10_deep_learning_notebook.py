@@ -323,13 +323,9 @@ def _title_and_overview() -> list[dict]:
         md(
             """
 **This notebook runs in Google Colab or ordinary local Jupyter (Python
-3.11 or later) only.** It is not available through this course's in-browser
-JupyterLite launcher: PyTorch has no official build for the WebAssembly
-environment JupyterLite runs in, and this course's own pinned browser
-kernel does not have it available either (verified directly, not assumed
--- see the note at the end of Section 1). Open this notebook directly in
-Colab (upload it or open it from Google Drive/GitHub) or in a local
-Jupyter installation.
+3.11 or later) only.** It is not available through this course's
+in-browser JupyterLite launcher. Open this notebook directly in Colab or
+in a local Jupyter installation.
 
 ## What this notebook covers
 
@@ -425,18 +421,8 @@ This table has **zero missing values** in these structural columns. Real
 neuroimaging tables are not always this complete, so Section 2 still fits
 a missing-value step as part of the standard recipe -- it simply will have
 nothing to do here.
-
-> **Note on the JupyterLite limitation (Gate A).** This course's browser
-> notebook platform (JupyterLite) runs Python inside the browser via
-> Pyodide. The exact Pyodide build this course currently pins
-> (jupyterlite-pyodide-kernel 0.8.5, Pyodide v314.0.5) does not include
-> PyTorch in its package set, and PyPI has no PyTorch wheel for that
-> WebAssembly platform either -- so `pip install torch` cannot succeed
-> there. This was verified directly against that build, not assumed. The
-> course author will decide separately whether and how to offer this
-> exercise on the live site; for now, use Colab or local Jupyter.
 """,
-            "wp58-106-jupyterlite-note",
+            "wp58-106-missing-values-note",
         ),
     ]
 
@@ -519,9 +505,9 @@ training loop in Section 4 will iterate over.
 
 **Your task:** convert `X_train_s`/`X_val_s`/`X_test_s` and
 `y_train`/`y_val`/`y_test` into `float32` tensors (labels as column
-vectors, shape `(n, 1)`, since `BCEWithLogitsLoss` expects predictions and
-targets to have matching shapes), then build a `TensorDataset` and
-`DataLoader` for the training and validation sets.
+vectors, shape `(n, 1)`, since `BCEWithLogitsLoss` (our loss function)
+expects predictions and targets to have matching shapes), then build a
+`TensorDataset` and `DataLoader` for the training and validation sets.
 """,
             "wp58-206-tensor-intro",
         ),
@@ -609,11 +595,10 @@ def _section_3() -> list[dict]:
         md(
             f"""
 Now define the network: an `nn.Module` with two modest hidden layers
-({HIDDEN_1} units, then {HIDDEN_2} units -- chosen, along with the learning
-rate below, by comparing a handful of configurations on the *validation*
-set only, never the test set) and a nonlinear activation (`ReLU`) between
-layers. The final layer outputs **one raw logit per participant** -- not a
-probability. We pass that logit directly to `nn.BCEWithLogitsLoss`, which
+({HIDDEN_1} units, then {HIDDEN_2} units) and a nonlinear activation
+(`ReLU`) between layers. The final layer outputs **one raw logit per
+participant** -- not a probability. We pass that logit directly to
+`nn.BCEWithLogitsLoss`, which
 combines a sigmoid and binary cross-entropy in one numerically stable step;
 applying `sigmoid` ourselves before this loss would double up that step and
 is a common mistake to avoid.

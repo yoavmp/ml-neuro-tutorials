@@ -113,10 +113,20 @@ test("Chapter 12 (migrated to JupyterLite) gets no top-bar Colab button", async 
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });
 
-// WP57 release: Exercises 10-11 are titled placeholder stubs with no
-// portable notebook at all -- an unmapped-page omission, not a
-// suppression, same as Introduction.
-test("Chapter 10 placeholder (titled 'coming later' stub) gets no Colab button", async ({ page }) => {
+// WP57 release: Exercise 11 is a titled placeholder stub with no portable
+// notebook at all -- an unmapped-page omission, not a suppression, same
+// as Introduction.
+//
+// WP59: Exercise 10's page at this same path is no longer that kind of
+// stub -- it now links to a real, downloadable Colab/local-only notebook
+// (see tests/test_book_structure.py and
+// tests/test_exercise_10_deep_learning_notebook.py for its content) -- but
+// it still gets no top-bar Colab button, because book/_static/
+// launch-buttons.js's PAGE_TO_PORTABLE map deliberately omits chapter_10:
+// the page's own body already carries an explicit download + Colab link,
+// and this button's URL pattern would otherwise silently depend on the
+// repository staying public (see that file's header comment).
+test("Chapter 10 (Colab/local-only download page) gets no top-bar Colab button", async ({ page }) => {
   await page.goto("/ml-neuro-tutorials/chapters/chapter_10/placeholder.html");
   await expect(page.locator('[data-testid="colab-launch-button"]')).toHaveCount(0);
 });
