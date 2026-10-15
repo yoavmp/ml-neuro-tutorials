@@ -7,15 +7,16 @@ const PORT = 4174;
 
 export default defineConfig({
   testDir: "./e2e-book",
-  // WP49/WP52: Exercises 10-12 are intentionally excluded from
-  // book/_toc.yml for this release (their JupyterLite-native migration
-  // hasn't started and their legacy iframe-embedded notebook experience
-  // should not be published alongside the Exercises 1-9 Lite hub) --
-  // chapter 10 no longer exists in the built book, so chapter10.spec.ts,
-  // which exists only to exercise that now-unpublished page, would fail on
-  // a 404, not on a genuine regression. It is excluded here, not deleted:
-  // its source stays for whenever Exercises 10-12 are migrated and
-  // republished. WP52 migrated Exercise 9 (see chapter09.spec.ts and
+  // WP49/WP52: chapter10.spec.ts exercises the OLD legacy iframe-embedded
+  // "Examples and Common Mistakes" Chapter 10 page, which WP49 unpublished
+  // (replaced by a titled placeholder stub) and which WP58/WP59 then
+  // permanently superseded with a from-scratch "Deep Learning" notebook --
+  // a Colab/local-only download page with no embedded iframes at all (see
+  // tests/test_book_structure.py). That legacy page's content is never
+  // coming back, so this spec can never pass again as written; it stays
+  // excluded (not deleted) purely as a historical record of what the old
+  // page's activities looked like, in case any of their config/data
+  // fixtures get reused elsewhere. WP52 migrated Exercise 9 (see chapter09.spec.ts and
   // exercise-09-lite.spec.ts, both now part of this run) -- its own former
   // iframe-based page, and chapter09-dark-mode.spec.ts's Plotly-color
   // regression guard for that page's iframes, no longer exist at all

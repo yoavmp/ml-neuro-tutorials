@@ -63,3 +63,19 @@ connection. This site's own in-browser notebooks run their own bundled
 Python (Pyodide), not a locally installed one, and Google Colab's runtime
 Python version is set by Colab itself -- neither is guaranteed to be exactly
 3.11.
+
+### PyTorch for Exercise 10 (optional)
+
+Exercise 10 (Deep Learning) additionally uses PyTorch, which is not one of
+the packages above and is not available in this site's in-browser
+notebooks -- that exercise runs in Colab or local Jupyter only (see its own
+page in [Contents](contents.md)). The notebook installs PyTorch itself the
+first time it runs, so no setup is required; if you would rather install it
+ahead of time in a local environment, follow
+[PyTorch's own installation instructions](https://pytorch.org/get-started/locally/),
+which pick the right command for your operating system and hardware, for
+example a CPU-only install:
+
+```bash
+pip install torch
+```

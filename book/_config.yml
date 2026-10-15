@@ -55,8 +55,13 @@ exclude_patterns:
   # WPs/reports/WP57_RELEASE_REPORT.md) publishes Exercise 12 (a short
   # transition page, scripts/generate_exercise_12_transition_page.py,
   # pointing at the real lesson in book/lite/files/exercise_12.ipynb) and
-  # titled "coming later" placeholder stubs for Exercises 10-11
-  # (chapters/chapter_10/placeholder.md, chapters/chapter_11/exercise_11.md).
+  # a titled "coming later" placeholder stub for Exercise 11
+  # (chapters/chapter_11/exercise_11.md). WP58/WP59
+  # (WPs/reports/WP58_REPORT.md, WPs/reports/WP59_REPORT.md) publish
+  # Exercise 10's own from-scratch "Deep Learning" notebook as a
+  # Colab/local-Jupyter-only download; its book page keeps the
+  # chapters/chapter_10/placeholder.md filename (minimal diff) but its
+  # content is no longer the "coming later" stub -- see that file.
   - chapters/chapter_10/exercise_10.ipynb
   # Only the real, preserved legacy Exercise 10 notebook is excluded (kept
   # for later redesign, never published, not re-executed by this build's

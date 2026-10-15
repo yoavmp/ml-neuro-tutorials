@@ -38,3 +38,6 @@ For citable works, see [References](references.md).
   in-browser notebook platform this site's exercises run on.
 - [Google Colab](https://colab.research.google.com/) -- an alternative way
   to run a downloaded exercise notebook outside the browser platform above.
+- [PyTorch documentation](https://pytorch.org/docs/stable/) -- the deep
+  learning library used in Exercise 10, which runs in Colab or local
+  Jupyter only (see [Introduction](intro.md) for installation).
