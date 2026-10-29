@@ -1,14 +1,17 @@
 """Executes the completed Exercise 3 reference notebook and checks its
 numbers against the approved established results
-(scripts/classification_model_audit_result.json), modeled on
-tests/test_exercise_02_reference_execution.py.
+(scripts/wp27_validation_audit_result.json for the nested cross-validation
+activity; verified directly against book/lite/files/data/abide_age_brain.csv
+for the one-split and Section 3 cross-validation numbers -- see the
+generator's module docstring and the WP45 report), modeled on
+tests/test_exercise_04_reference_execution.py.
 
 Runs every cell's source in one shared namespace, in order -- the same
 semantics a notebook kernel uses, including top-level ``await`` support for
 the setup cell's Pyodide-only branch (never taken here, since
 sys.platform != "emscripten" outside a browser). Avoids `jupyter
-execute`/nbclient for the same reason WP41 documented for Exercise 2: this
-notebook's Sections 5-6 use an ipywidgets ``Output()`` widget as a context
+execute`/nbclient for the same reason WP41/WP44 documented: this notebook's
+Section 4 widget uses an ipywidgets ``Output()`` widget as a context
 manager, which hangs nbclient's real ZMQ kernel with no frontend attached to
 acknowledge the widget comm handshake.
 
@@ -33,7 +36,7 @@ import nbformat
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_03_reference.ipynb"
-AUDIT_RESULT = json.loads((REPO_ROOT / "scripts" / "classification_model_audit_result.json").read_text())
+AUDIT_RESULT = json.loads((REPO_ROOT / "scripts" / "wp27_validation_audit_result.json").read_text())
 
 _TOP_LEVEL_AWAIT = ast.PyCF_ALLOW_TOP_LEVEL_AWAIT
 
@@ -72,87 +75,73 @@ class ReferenceExecution(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.ns = _execute_reference_notebook()
-        cls.ev = AUDIT_RESULT["locked_test_eval"]
 
     def test_participant_and_predictor_counts(self):
-        self.assertEqual(len(self.ns["df"]), AUDIT_RESULT["cohort"]["n_total"])
-        self.assertEqual(len(self.ns["FEATURES"]), AUDIT_RESULT["feature_recipe"]["feature_count"])
-
-    def test_class_counts_match_the_audit(self):
-        self.assertEqual(int(self.ns["y"].sum()), AUDIT_RESULT["cohort"]["n_positive_total"])
-        self.assertEqual(int((self.ns["y"] == 0).sum()), AUDIT_RESULT["cohort"]["n_negative_total"])
+        self.assertEqual(len(self.ns["df"]), AUDIT_RESULT["part_a_sample_size_stability"]["n_eligible"])
+        self.assertEqual(len(self.ns["FEATURES"]), 360)
 
     def test_established_split_sizes(self):
-        self.assertEqual(len(self.ns["y_train"]), AUDIT_RESULT["cohort"]["n_train"])
-        self.assertEqual(len(self.ns["y_test"]), AUDIT_RESULT["cohort"]["n_test"])
+        self.assertEqual(len(self.ns["y_train"]), 753)
+        self.assertEqual(len(self.ns["y_test"]), 251)
 
-    def test_logistic_regression_matches_established_result(self):
-        self.assertAlmostEqual(self.ns["accuracy"], self.ev["accuracy"], places=6)
-        self.assertAlmostEqual(self.ns["sensitivity"], self.ev["sensitivity"], places=6)
-        self.assertAlmostEqual(self.ns["specificity"], self.ev["specificity"], places=6)
-        self.assertAlmostEqual(self.ns["auc"], self.ev["auc"], places=6)
+    def test_one_split_matches_established_result(self):
+        self.assertAlmostEqual(self.ns["one_split_mse"], 31.3768, places=3)
+        self.assertAlmostEqual(self.ns["one_split_r2"], 0.663879, places=5)
 
-    def test_confusion_matrix_matches_established_result(self):
-        cm = self.ev["confusion_matrix"]
-        self.assertEqual(int(self.ns["tn"]), cm["tn"])
-        self.assertEqual(int(self.ns["fp"]), cm["fp"])
-        self.assertEqual(int(self.ns["fn"]), cm["fn"])
-        self.assertEqual(int(self.ns["tp"]), cm["tp"])
+    def test_section_3_cross_validation_matches_established_result(self):
+        self.assertAlmostEqual(self.ns["cv_mean_mse"], 33.8121, places=3)
+        self.assertAlmostEqual(self.ns["cv_mean_r2"], 0.615255, places=5)
+        self.assertEqual(len(self.ns["cv_fold_mse"]), 5)
 
-    def test_c_example_matches_established_protocol(self):
-        self.assertEqual(self.ns["C_EXAMPLE"], 1.0)
-        self.assertIn("C=1.0", AUDIT_RESULT["protocol"]["model"])
+    def test_k_example_matches_established_protocol(self):
+        self.assertEqual(self.ns["K_EXAMPLE"], 20)
 
-    def test_imbalance_cohort_matches_established_result(self):
-        # The imbalance widget's own default ratio ("90:10") is refit as a
-        # side effect of executing the reference notebook top to bottom;
-        # re-derive the same fixed cohort draw directly to confirm the
-        # notebook's own resampling matches the pre-migration notebook's
-        # committed "360 control, 40 autism" result at that ratio.
+    def test_nested_cv_matches_wp27_audit(self):
+        c = AUDIT_RESULT["part_c_nested_cv"]
+        nested = self.ns["nested"]
+        self.assertEqual(len(nested), c["n_outer"])
+        self.assertAlmostEqual(nested["outer_test_mse"].mean(), c["mean_outer_test_mse"], places=2)
+        self.assertAlmostEqual(nested["outer_test_r2"].mean(), c["mean_outer_test_r2"], places=4)
+        self.assertEqual(list(nested["selected_k"]), c["selected_k_per_fold"])
+
+    def test_stability_widget_default_matches_wp27_audit(self):
+        # WP53 item: the Section 4 widget's sample-size choices now begin at
+        # 150, 250 (not 30, 50) -- its default (sample size = 150, seed = 0)
+        # is computed live by the same algorithm
+        # scripts/wp27_validation_audit.py used for its own Part A audit;
+        # re-derive it directly here (rather than reading the widget's
+        # printed Output, which this direct cell-execution technique does
+        # not capture) and compare against the committed audit JSON (which
+        # already covers every size, including 150, from before this WP).
         import numpy as np
+        from sklearn.metrics import mean_squared_error, r2_score
+        from sklearn.model_selection import KFold, cross_validate, train_test_split
+        from sklearn.neighbors import KNeighborsRegressor
+        from sklearn.pipeline import make_pipeline
+        from sklearn.preprocessing import StandardScaler
 
         X, y = self.ns["X"], self.ns["y"]
-        majority_pct, minority_pct = self.ns["_RATIO_TABLE"]["90:10"]
-        n_majority = round(400 * majority_pct)
-        n_minority = 400 - n_majority
-        self.assertEqual(n_majority, 360)
-        self.assertEqual(n_minority, 40)
-        rng = np.random.default_rng(20000)
-        majority_idx = np.flatnonzero(y == 0)
-        minority_idx = np.flatnonzero(y == 1)
-        chosen = np.concatenate([
-            rng.choice(majority_idx, size=n_majority, replace=False),
-            rng.choice(minority_idx, size=n_minority, replace=False),
-        ])
-        self.assertEqual(len(chosen), 400)
+        pools = self.ns["_stability_pools_cache"]
+        idx = pools[150]
+        Xp, yp = X[idx], y[idx]
 
-    def test_data_setup_cell_emits_no_performance_warning(self):
-        # WP53 item: SEX/SITE used to be appended to the already-wide
-        # (~360-column) predictor table one column at a time, which pandas
-        # flags as PerformanceWarning ("DataFrame is highly fragmented ...
-        # Consider using pd.concat instead"), reproduced live in
-        # JupyterLite. Re-executes just the data/setup cell in isolation,
-        # under warnings.catch_warnings(record=True), and asserts zero
-        # PerformanceWarnings -- the exact cell the WP names.
-        import warnings
+        Xtr, Xte, ytr, yte = train_test_split(Xp, yp, test_size=0.25, random_state=0)
+        pipe = make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=20)).fit(Xtr, ytr)
+        pred = pipe.predict(Xte)
+        single_mse = mean_squared_error(yte, pred)
 
-        nb_cells = nbformat.read(REFERENCE_PATH, as_version=4).cells
-        setup_cell = next(c for c in nb_cells if c.get("id") == "wp44-000-setup")
-        load_cell = next(c for c in nb_cells if c.get("id") == "wp44-102-load")
-        old_cwd = os.getcwd()
-        os.chdir(REPO_ROOT / "book" / "lite" / "files")
-        try:
-            ns: dict = {}
-            asyncio.run(_run_cell(setup_cell["source"], ns, "wp44-000-setup"))
-            with warnings.catch_warnings(record=True) as caught:
-                warnings.simplefilter("always")
-                asyncio.run(_run_cell(load_cell["source"], ns, "wp44-102-load"))
-        finally:
-            os.chdir(old_cwd)
-        perf_warnings = [w for w in caught if "PerformanceWarning" in type(w.message).__name__]
-        self.assertEqual(perf_warnings, [])
-        self.assertEqual(ns["df"].shape[1], len(ns["_ABIDE_LITE_FEATURES"]) + 3)  # + group, SEX, SITE
-        self.assertEqual(list(ns["df"].columns[-2:]), ["SEX", "SITE"])
+        kf = KFold(n_splits=5, shuffle=True, random_state=0)
+        scores = cross_validate(
+            make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=20)),
+            Xp, yp, cv=kf, scoring=("neg_mean_squared_error", "r2"),
+        )
+        cv_mse = (-scores["test_neg_mean_squared_error"]).mean()
+
+        size_entry = next(s for s in AUDIT_RESULT["part_a_sample_size_stability"]["sizes"] if s["sample_size"] == 150)
+        audited_single = next(s for s in size_entry["single_split"] if s["seed"] == 0)
+        audited_cv = next(c for c in size_entry["cv_by_folds"]["5"] if c["seed"] == 0)
+        self.assertAlmostEqual(single_mse, audited_single["test_mse"], places=2)
+        self.assertAlmostEqual(cv_mse, audited_cv["mean_mse"], places=2)
 
     def test_shuffle_is_reproducible_and_varies_positions_across_questions(self):
         # WP53 course-wide review item 2: correct answers must not all land
@@ -163,7 +152,7 @@ class ReferenceExecution(unittest.TestCase):
         import random
 
         questions = self.ns["_QUESTIONS"]
-        self.assertEqual(len(questions), 5)
+        self.assertEqual(len(questions), 3)
         positions = []
         for qid, q in questions.items():
             seed = q["shuffle_seed"]
@@ -190,17 +179,15 @@ def _check_cell_source(cell_id: str) -> str:
     return cell["source"]
 
 
-class XYCheckCellBehavior(unittest.TestCase):
-    """The Section 3 X/y sanity check (wp44-324-check) must behave correctly
-    whether a student builds X/y as NumPy arrays or as a pandas
-    DataFrame/Series, and must give one helpful message -- never an
-    ambiguous-Series-truth-value crash -- for incomplete, nonnumeric, or
-    invalid-label attempts. Exercised directly (fast, no browser) against
-    the exact check-cell source every rendered notebook shares (WP48)."""
+class CvCheckCellBehavior(unittest.TestCase):
+    """The Section 3 cross-validation check cell must behave correctly for a
+    correct, an incorrect-but-complete, and an unfinished student attempt --
+    exercised directly (fast, no browser) against the exact check-cell
+    source every rendered notebook shares."""
 
     @classmethod
     def setUpClass(cls):
-        cls.source = _check_cell_source("wp44-324-check")
+        cls.source = _check_cell_source("wp45-304-check")
         cls.base_ns = _execute_reference_notebook()
 
     def _run(self, ns: dict) -> str:
@@ -209,55 +196,42 @@ class XYCheckCellBehavior(unittest.TestCase):
 
         out = io.StringIO()
         with redirect_stdout(out):
-            exec(compile(self.source, "xy_check", "exec"), dict(ns))
+            exec(compile(self.source, "cv_check", "exec"), dict(ns))
         return out.getvalue()
 
-    def test_numpy_attempt_prints_looks_good(self):
+    def test_correct_attempt_prints_looks_good(self):
         output = self._run(self.base_ns)
         self.assertIn("Looks good", output)
 
-    def test_dataframe_and_series_attempt_prints_looks_good(self):
-        # The exact ambiguous-truth-value regression this check must avoid:
-        # np.isfinite(X).all() on a DataFrame returns a per-column Series,
-        # which raises in a bare `if`/`elif` instead of printing a message.
+    def test_incorrect_but_complete_attempt_is_not_falsely_called_a_failure(self):
+        import numpy as np
+
         ns = dict(self.base_ns)
-        ns["X"] = ns["df"][ns["FEATURES"]]
-        ns["y"] = ns["df"]["group"]
+        ns["cv_fold_mse"] = np.array([500.0, 510.0, 495.0, 505.0, 498.0])
+        ns["cv_mean_mse"] = float(ns["cv_fold_mse"].mean())
         output = self._run(ns)
-        self.assertIn("Looks good", output)
+        self.assertNotIn("Looks good", output)
+        self.assertIn("differs from", output)
+        self.assertNotIn("fail", output.lower())
+
+    def test_wrong_fold_count_is_flagged(self):
+        import numpy as np
+
+        ns = dict(self.base_ns)
+        ns["cv_fold_mse"] = np.array([33.0, 34.0, 35.0])
+        ns["cv_mean_mse"] = 34.0
+        output = self._run(ns)
+        self.assertIn("Not quite", output)
 
     def test_unfinished_attempt_gives_a_helpful_message_not_an_error(self):
         output = self._run({})
         self.assertIn("Not complete yet", output)
 
-    def test_nonnumeric_x_gives_a_helpful_message_not_a_crash(self):
-        ns = dict(self.base_ns)
-        bad_x = ns["X"].astype(object).copy()
-        bad_x[0, 0] = "not a number"
-        ns["X"] = bad_x
-        output = self._run(ns)
-        self.assertIn("Not quite", output)
-        self.assertIn("numeric", output)
 
-    def test_incomplete_row_count_gives_a_helpful_message(self):
-        ns = dict(self.base_ns)
-        ns["X"] = ns["X"][:-1]
-        output = self._run(ns)
-        self.assertIn("Not quite", output)
-        self.assertIn("rows", output)
-
-    def test_raw_1_2_labels_are_rejected_before_downstream_use(self):
-        ns = dict(self.base_ns)
-        ns["y"] = ns["y"] + 1  # simulate an un-recoded {1, 2} label
-        output = self._run(ns)
-        self.assertIn("Not quite", output)
-        self.assertIn("only 0 and 1", output)
-
-
-class AucCheckCellBehavior(unittest.TestCase):
+class NestedCvCheckCellBehavior(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.source = _check_cell_source("wp44-424-check")
+        cls.source = _check_cell_source("wp45-506-check")
         cls.base_ns = _execute_reference_notebook()
 
     def _run(self, ns: dict) -> str:
@@ -266,7 +240,7 @@ class AucCheckCellBehavior(unittest.TestCase):
 
         out = io.StringIO()
         with redirect_stdout(out):
-            exec(compile(self.source, "auc_check", "exec"), dict(ns))
+            exec(compile(self.source, "nested_check", "exec"), dict(ns))
         return out.getvalue()
 
     def test_correct_attempt_prints_looks_good(self):
@@ -274,7 +248,11 @@ class AucCheckCellBehavior(unittest.TestCase):
         self.assertIn("Looks good", output)
 
     def test_unfinished_attempt_gives_a_helpful_message(self):
-        output = self._run({})
+        import pandas as pd
+
+        ns = dict(self.base_ns)
+        ns["nested"] = pd.DataFrame([])
+        output = self._run(ns)
         self.assertIn("Not complete yet", output)
 
 

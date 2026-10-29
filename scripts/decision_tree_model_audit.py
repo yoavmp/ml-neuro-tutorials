@@ -198,7 +198,7 @@ def _complexity_curve(frame: Any) -> dict[str, Any]:
 
 def _classification_eligible_cohort(frame: Any) -> dict[str, Any]:
     """The full eligible classification cohort (group present, coded exactly
-    as Exercise 3's classification_model_audit.py), plus stable per-row
+    as Exercise 4's classification_model_audit.py), plus stable per-row
     subject identifiers -- shared by the outer-split reconstruction and the
     development-only feature matrix below so both index into identical row
     order."""
@@ -207,7 +207,7 @@ def _classification_eligible_cohort(frame: Any) -> dict[str, Any]:
     CLS = MANIFEST["classification"]
     present = frame["group"].notna().to_numpy()
     if not present.all():
-        raise RuntimeError("group has missing values; Exercise 3 expects diagnosis for every row")
+        raise RuntimeError("group has missing values; Exercise 4 expects diagnosis for every row")
     groups_raw = frame.loc[present, "group"].to_numpy(dtype="float64")
     positive_code = float(CLS["positive_class"]["code"])
     negative_code = float(CLS["negative_class"]["code"])
@@ -220,7 +220,7 @@ def _classification_eligible_cohort(frame: Any) -> dict[str, Any]:
 
 
 def _classification_dev_test_positions(y_eligible: Any, subjects_eligible: Any) -> dict[str, Any]:
-    """Reconstruct Exercise 3's exact outer split (``classification.holdout_split``:
+    """Reconstruct Exercise 4's exact outer split (``classification.holdout_split``:
     ``train_test_split(test_size=0.25, random_state=42, stratify=y)``) over the
     full eligible cohort, and PROVE the reconstruction by participant-set
     membership -- not by the earlier, misleading claim that never reading a
@@ -260,9 +260,9 @@ def _classification_dev_test_positions(y_eligible: Any, subjects_eligible: Any) 
 def _classification_complexity_curve(frame: Any) -> dict[str, Any]:
     # WP30R: bounded, conditional audit of whether an autism classification
     # tree usefully contrasts with the age-regression complexity curve
-    # above. Cohort, target coding, and feature recipe match Exercise 3's
+    # above. Cohort, target coding, and feature recipe match Exercise 4's
     # classification_model_audit.py exactly. Cross-validation is restricted
-    # to Exercise 3's own development partition (classification.holdout_split,
+    # to Exercise 4's own development partition (classification.holdout_split,
     # reconstructed above) -- the locked outer-test participants are excluded
     # by row-level participant-set membership before any fold is formed, and
     # no tree here is ever fit or scored on them. All settings
@@ -362,7 +362,7 @@ def _classification_complexity_curve(frame: Any) -> dict[str, Any]:
         "outer_holdout_reconstruction": {
             "test_size": MANIFEST["classification"]["holdout_split"]["test_size"],
             "random_state": MANIFEST["classification"]["holdout_split"]["random_state"],
-            "stratify": "y (autism/control label, identical to Exercise 3)",
+            "stratify": "y (autism/control label, identical to Exercise 4)",
         },
         "min_samples_leaf": min_samples_leaf,
         "cv": f"StratifiedKFold(n_splits=5, shuffle=True, random_state={random_state}) -- development rows only",

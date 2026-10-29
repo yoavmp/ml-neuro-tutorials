@@ -32,14 +32,18 @@ EX2_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_po
 # repoints Exercise 3's own checks below.
 EX5 = REPO_ROOT / "book" / "lite" / "files" / "exercise_05.ipynb"
 # WP25 moved this content wholesale from chapter_04 to chapter_03 (the
-# classification lesson is now Exercise 3; chapter_04 is a placeholder).
-# WP44 migrated Exercise 3 to a JupyterLite notebook: EX4 now points at the
+# classification lesson was Exercise 3; chapter_04 was a placeholder).
+# WP44 migrated Exercise 3 to a JupyterLite notebook: EX4 pointed at the
 # real lesson (book/lite/files/exercise_03.ipynb), not the canonical page
-# (now a 2-cell transition page with none of this content -- see
+# (a 2-cell transition page with none of this content -- see
 # tests/test_exercise_03_transition_page.py), mirroring how EX2_LITE already
-# repoints Exercise 2's own checks below.
-EX4 = REPO_ROOT / "book" / "lite" / "files" / "exercise_03.ipynb"
-EX4_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb"
+# repoints Exercise 2's own checks below. WP60 swapped Exercise 3 and
+# Exercise 4's subjects again: this same classification lesson now lives at
+# Exercise 4 (book/lite/files/exercise_04_v2.ipynb) -- EX4 (this file's own,
+# WP24-era variable name for "the classification lesson", not a literal
+# exercise-number pointer) follows the content to its new location.
+EX4 = REPO_ROOT / "book" / "lite" / "files" / "exercise_04_v2.ipynb"
+EX4_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
 
 EDA_CORRELATION_JSON = REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "eda_correlation.json"
 REGRESSION_COMPARE_JSON = REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "regression_compare.json"

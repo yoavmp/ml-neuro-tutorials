@@ -1,11 +1,12 @@
 """Offline structural tests for the migrated Exercise 4 JupyterLite notebook.
 
-WP45, modeled on tests/test_exercise_03_lite_notebook.py: required YOUR CODE
-HERE tasks exist, no raise NotImplementedError, required editable answer
-cells exist, checked questions have keyed answers, no install cell, and the
-student template, its portable copy, and the completed reference notebook
-stay structurally synchronized by construction
-(scripts/generate_exercise_04_notebook.py).
+WP44 Gate B, modeled on tests/test_exercise_02_lite_notebook.py: required
+YOUR CODE HERE tasks exist, no raise NotImplementedError, no diagnosis-label
+leakage before the student builds y, required editable answer cells exist,
+checked questions have keyed answers, no install cell, and the student
+template, its portable copy, and the completed reference notebook stay
+structurally synchronized by construction
+(scripts/generate_exercise_03_notebook.py).
 
 Standard-library ``unittest``; no network, no kernel execution (see
 tests/test_exercise_04_reference_execution.py for the executed-output /
@@ -25,15 +26,18 @@ from pathlib import Path
 import nbformat
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-LITE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_04.ipynb"
+LITE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_04_v2.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_04_reference.ipynb"
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 BLANK_TAGS = {
-    "wp45-activity-cv",
-    "wp45-activity-nested-cv",
+    "wp44-activity-features",
+    "wp44-activity-xy",
+    "wp44-activity-split",
+    "wp44-activity-metrics",
+    "wp44-activity-roc",
 }
 
 
@@ -77,7 +81,7 @@ class StudentTemplateStructure(unittest.TestCase):
     def test_title(self):
         self.assertEqual(
             _src(self.cells[2]).splitlines()[0],
-            "# Exercise 4: Validation and Cross-Validation",
+            "# Exercise 4: Classification and Metrics",
         )
 
     def test_run_first_notice_precedes_the_collapsed_setup_cell(self):
@@ -92,26 +96,33 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertTrue(setup.get("metadata", {}).get("jupyter", {}).get("source_hidden"))
 
     def test_data_load_gives_an_actionable_error_if_setup_was_skipped(self):
-        load_cell = next(c for c in self.cells if c.get("id") == "wp45-103-load")
+        load_cell = next(c for c in self.cells if c.get("id") == "wp44-102-load")
         source = _src(load_cell)
         self.assertIn("except NameError", source)
         self.assertIn("raise RuntimeError", source)
         self.assertIn("notebook's first code cell", source)
 
-    # -- terminology: regression MSE, never a classification metric --------
-
-    def test_target_is_continuous_age_not_a_classification_label(self):
-        self.assertIn("continuous measurement", self.md)
-        self.assertIn("mean squared error", self.md.lower())
-        self.assertNotIn("LogisticRegression", self.code)
-        self.assertNotIn("confusion matrix", self.md.lower())
-        self.assertNotIn("accuracy_score", self.code)
+    def test_model_fit_cell_is_guarded_against_unfinished_prerequisites(self):
+        # WP53: an unfinished student activity above (X_train/X_test/
+        # y_train/y_test not yet defined) used to surface as a raised
+        # RuntimeError -- a red traceback for entirely expected incomplete
+        # work. Replaced with the same graceful "Not complete yet" guard
+        # pattern already used by the check cell just above this one; a
+        # genuine programming error inside the try body (if there were one)
+        # would still propagate normally, since nothing here is caught.
+        fit_cell = next(c for c in self.cells if c.get("id") == "wp44-342-fit")
+        source = _src(fit_cell)
+        self.assertNotIn("except NameError", source)
+        self.assertNotIn("raise RuntimeError", source)
+        self.assertIn("Not complete yet", source)
+        self.assertIn('if all(name in globals() for name in ("X_train", "X_test", "y_train", "y_test")):', source)
 
     # -- YOUR CODE HERE tasks -------------------------------------------
 
     def test_your_code_here_tasks_exist(self):
         tagged = [c for c in self.cells if "YOUR CODE HERE" in _src(c)]
-        self.assertEqual(len(tagged), 2)
+        self.assertGreaterEqual(len(tagged), 4)
+        self.assertLessEqual(len(tagged), 6)
         seen_tags = {t for c in self.cells for t in c.get("metadata", {}).get("tags", [])}
         self.assertEqual(BLANK_TAGS, BLANK_TAGS & seen_tags)
 
@@ -122,34 +133,57 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertNotIn("!pip install", self.code)
         self.assertNotIn("%pip install", self.code)
 
-    def test_cv_blank_is_not_pre_populated_with_the_solution(self):
-        cv_cell = next(c for c in self.cells if "wp45-activity-cv" in c.get("metadata", {}).get("tags", []))
-        source = _src(cv_cell)
-        self.assertIn("YOUR CODE HERE", source)
-        self.assertNotIn("cross_validate(", source)
+    # -- diagnosis-label mapping is explicit, not inferred ----------------
 
-    def test_nested_cv_blank_does_not_give_the_full_solution(self):
-        nested_cell = next(c for c in self.cells if "wp45-activity-nested-cv" in c.get("metadata", {}).get("tags", []))
-        source = _src(nested_cell)
-        self.assertIn("YOUR CODE HERE", source)
-        self.assertNotIn("GridSearchCV(", source)
-        self.assertNotIn("grid.fit(X_tr, y_tr)", source)
+    def test_group_codes_are_verified_before_mapping(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp44-104-labels")
+        source = _src(cell)
+        self.assertIn("observed_codes = sorted(df[\"group\"].unique())", source)
+        self.assertIn("assert observed_codes == [1, 2]", source)
+        self.assertIn("0 = control, 1 = autism", self.md + source)
+
+    def test_y_is_not_defined_before_the_students_own_xy_activity(self):
+        # Section 1 only verifies/displays labels; it must not pre-build the
+        # `y` variable Section 3's own "YOUR CODE HERE" activity defines.
+        xy_idx = next(i for i, c in enumerate(self.cells) if "wp44-activity-xy" in c.get("metadata", {}).get("tags", []))
+        before_code = "\n\n".join(_src(c) for c in self.cells[:xy_idx] if c["cell_type"] == "code")
+        self.assertNotIn('y = (df["group"]', before_code)
+
+    # -- editable answer cells -------------------------------------------
+
+    def test_editable_answer_cells_exist(self):
+        answer_cells = [c for c in self.cells if c["cell_type"] == "markdown" and re.match(r"^>\s*\*\*.+\*\*\s*$", _src(c).strip())]
+        self.assertGreaterEqual(len(answer_cells), 3)
+        self.assertLessEqual(len(answer_cells), 5)
+
+    def test_no_your_answer_here_placeholder(self):
+        self.assertNotIn("YOUR ANSWER HERE", self.md)
+
+    def test_no_duplicated_answer_prompts(self):
+        answer_prompts = [
+            _src(c).strip()
+            for c in self.cells
+            if c["cell_type"] == "markdown" and re.match(r"^>\s*\*\*.+\*\*\s*$", _src(c).strip())
+        ]
+        self.assertEqual(len(answer_prompts), len(set(answer_prompts)))
 
     # -- checked questions: visibility (WP48's own new requirement) -------
 
     QUESTION_IDS = {
-        "q-single-split-vs-cv-stability",
-        "q-inner-loop-data",
-        "q-outer-test-mse-meaning",
+        "q-probability-near-threshold",
+        "q-threshold-tradeoff",
+        "q-roc-needs-proba",
+        "q-threshold-false-negatives",
+        "q-accuracy-under-imbalance",
     }
 
     def test_checked_questions_use_show_question_with_no_visible_answer_key(self):
         checked = [
             c
             for c in self.cells
-            if c.get("id") != "wp45-000-setup" and 'show_question("' in _src(c)
+            if c.get("id") != "wp44-000-setup" and 'show_question("' in _src(c)
         ]
-        self.assertEqual(len(checked), 3)
+        self.assertEqual(len(checked), 5)
         for c in checked:
             src = _src(c)
             self.assertNotIn("correct_index", src)
@@ -176,20 +210,12 @@ class StudentTemplateStructure(unittest.TestCase):
             self.assertIsNotNone(block_match, qid)
             self.assertIn("shuffle_seed=", block_match.group(1), qid)
 
-    def test_threadpoolctl_warning_narrowly_filtered(self):
-        # WP48 E.1: same upstream threadpoolctl/Pyodide RuntimeWarning
-        # reproduced live for Exercise 2 (see
-        # tests/test_exercise_02_lite_notebook.py), filtered consistently
-        # here by exact message AND category=RuntimeWarning, never a
-        # blanket RuntimeWarning filter.
-        self.assertIn("JsProxy\\.as_object_map", self.code)
-        self.assertIn("category=RuntimeWarning", self.code)
-        self.assertNotIn('warnings.filterwarnings("ignore", category=RuntimeWarning)', self.code)
-
     def test_question_radio_labels_do_not_clip_wrapped_rows(self):
-        # WP48 E.3: a long option that wraps to two lines must not overlap
-        # the option below it -- the ipywidgets default fixes each radio
-        # label's row height to one line unless explicitly overridden.
+        # WP49: applying WP48 E.3's fix (originally Exercise-4-only) to the
+        # identical duplicated CSS block here too -- a long option that wraps
+        # to two lines must not overlap the option below it, since the
+        # ipywidgets default fixes each radio label's row height to one line
+        # unless explicitly overridden.
         self.assertIn(".widget-radio-box label", self.code)
         self.assertIn("height: auto !important", self.code)
 
@@ -201,79 +227,73 @@ class StudentTemplateStructure(unittest.TestCase):
 
     def test_no_iframe_or_legacy_widget_config_reference(self):
         self.assertNotIn("<iframe", self.code + self.md)
-        self.assertNotIn("configs/validation_stability.json", self.code + self.md)
-        self.assertNotIn("configs/validation_lock_test.json", self.code + self.md)
-        self.assertNotIn("configs/nested_cv_explorer.json", self.code + self.md)
+        self.assertNotIn("configs/classification_threshold.json", self.code + self.md)
+        self.assertNotIn("configs/classification_imbalance.json", self.code + self.md)
 
-    def test_stability_widget_is_notebook_native(self):
-        cell = next(c for c in self.cells if c.get("id") == "wp45-403-widget")
+    def test_threshold_widget_is_notebook_native(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp44-503-widget")
+        source = _src(cell)
+        self.assertIn("widgets.FloatSlider", source)
+        self.assertIn("widgets.BoundedFloatText", source)
+        self.assertIn("threshold = 0.50", source)
+
+    def test_imbalance_widget_is_notebook_native(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp44-603-widget")
         source = _src(cell)
         self.assertIn("widgets.Dropdown", source)
-        self.assertIn("sample size:", source)
-        self.assertIn("seed:", source)
-
-    def test_sample_sizes_begin_at_150_250_not_30_50(self):
-        # WP53: low sample-size choices (30, 50, 75, 100) replaced with a
-        # progression beginning at 150, 250, then larger sizes; the checked
-        # question's own worked example updated to match.
-        cell = next(c for c in self.cells if c.get("id") == "wp45-403-widget")
-        source = _src(cell)
-        self.assertIn('_STABILITY_SAMPLE_SIZES = [150, 250, 500, "all"]', source)
-        self.assertNotIn("30", source)
-        self.assertNotIn(" 50,", source)
-        setup_source = _src(self.cells[1])
-        self.assertIn("150 or 250 participants", setup_source)
-        self.assertNotIn("30 or 50 participants", setup_source)
-
-    def test_nested_cv_diagram_is_a_reasonably_sized_committed_asset(self):
-        # WP53: the course author's own replacement image (no overlapping
-        # labels), not the old matplotlib rendering -- a sanity size check
-        # that it is a real, non-trivial, but not bloated PNG.
-        diagram = next(c for c in self.cells if c.get("id") == "wp45-503-diagram")
-        encoded = diagram["attachments"]["exercise_04_nested_cv_diagram.png"]["image/png"]
-        import base64
-        raw = base64.b64decode(encoded)
-        self.assertEqual(raw[:8], b"\x89PNG\r\n\x1a\n")
-        self.assertGreater(len(raw), 50_000)
-        self.assertLess(len(raw), 1_000_000)
-
-    def test_nested_cv_conceptual_diagram_present(self):
-        # WP48 E.4: the old raw-HTML/inline-CSS diagram is replaced by a
-        # rendered image, embedded as a notebook attachment (never a
-        # separate linked file, which would break for a downloaded/Colab
-        # copy) with descriptive alt text -- the same nbformat mechanism
-        # Exercise 2's Activity 3B reference image already uses.
-        diagram = next(c for c in self.cells if c.get("id") == "wp45-503-diagram")
-        source = _src(diagram)
-        self.assertNotIn("ml-ncv-diagram", source)
-        self.assertNotIn("<div", source)
-        self.assertIn("attachment:exercise_04_nested_cv_diagram.png", source)
-        self.assertIn("![", source)
-        self.assertGreater(len(source.strip()), 40)  # real alt text, not a bare image tag
-        self.assertIn("attachments", diagram)
-        self.assertIn("exercise_04_nested_cv_diagram.png", diagram["attachments"])
-        self.assertIn("image/png", diagram["attachments"]["exercise_04_nested_cv_diagram.png"])
-
-    # -- editable answer cells -------------------------------------------
-
-    def test_editable_answer_cells_exist(self):
-        answer_cells = [c for c in self.cells if c["cell_type"] == "markdown" and re.match(r"^>\s*\*\*.+\*\*\s*$", _src(c).strip())]
-        self.assertGreaterEqual(len(answer_cells), 1)
-
-    def test_no_your_answer_here_placeholder(self):
-        self.assertNotIn("YOUR ANSWER HERE", self.md)
+        self.assertIn('class_ratio = "90:10"', source)
+        self.assertIn("cohort: {len(y_cohort)} participants", source)
 
     # -- preserved recipe/values ----------------------------------------
 
-    def test_k_example_fixed_not_tuned_in_sections_2_and_3(self):
-        self.assertIn("K_EXAMPLE = 20", self.code)
+    def test_c_example_fixed_not_tuned(self):
+        self.assertIn("C_EXAMPLE = 1.0", self.code)
+        self.assertNotIn("GridSearchCV", self.code)
+        self.assertNotIn("StratifiedKFold", self.code)
+        self.assertNotIn("cross_val", self.code.lower())
 
     def test_established_split_arguments_present(self):
-        self.assertIn("test_size=0.25, random_state=42, stratify=groups", self.code)
+        self.assertIn("test_size=0.25, random_state=42, stratify=y", self.code)
+
+    def test_established_auc_referenced_in_its_check(self):
+        # The accuracy/sensitivity/specificity numeric autocheck cell was
+        # replaced by a qualitative reflection (WP48, D.3); the AUC check
+        # (untouched) still embeds its own established value.
+        self.assertIn("0.569221", self.code)
+
+    # -- SEX/SITE metadata distractors and the explicit group recode ------
+
+    def test_sex_and_site_loaded_as_metadata_distractors(self):
+        load_cell = next(c for c in self.cells if c.get("id") == "wp44-102-load")
+        intro_cell = next(c for c in self.cells if c.get("id") == "wp44-103-labels-intro")
+        self.assertIn("SEX", _src(load_cell) + _src(intro_cell))
+        self.assertIn("SITE", _src(load_cell) + _src(intro_cell))
+        self.assertIn("distractor", _src(intro_cell).lower())
+
+    def test_group_is_explicitly_recoded_to_binary_before_xy_activity(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp44-104-labels")
+        source = _src(cell)
+        self.assertIn('df["group"] = df["group"].map(', source)
+        self.assertIn("assert set(df[\"group\"].unique()) == {0, 1}", source)
+        xy_idx = next(i for i, c in enumerate(self.cells) if "wp44-activity-xy" in c.get("metadata", {}).get("tags", []))
+        labels_idx = next(i for i, c in enumerate(self.cells) if c.get("id") == "wp44-104-labels")
+        self.assertLess(labels_idx, xy_idx)
+
+    def test_confusion_matrix_reflection_replaces_the_numeric_autocheck(self):
+        cell = next(c for c in self.cells if c.get("id") == "wp44-414-reflection")
+        self.assertEqual(cell["cell_type"], "markdown")
+        source = _src(cell).lower()
+        self.assertIn("plausible", source)
+        self.assertNotIn("linear regression", source)
+        self.assertIn("not", source)
+        self.assertIn("necessarily generalize better", source)
+        self.assertIn('y = df["sex"]', source)
+        self.assertIn("unsafe", source)
+        self.assertNotIn("wp44-414-check", self.code)
 
     def test_no_wp_or_script_references_in_student_text(self):
         low_md = self.md.lower()
-        for needle in ("wp45", "wp-", "scripts/generate", "audit script", "audit_result"):
+        for needle in ("wp44", "wp-", "scripts/generate", "audit script", "audit_result"):
             self.assertNotIn(needle, low_md)
 
 

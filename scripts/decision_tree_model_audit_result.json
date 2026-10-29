@@ -37,7 +37,7 @@
     "n_outer_test_positive": 116,
     "outer_holdout_reconstruction": {
       "random_state": 42,
-      "stratify": "y (autism/control label, identical to Exercise 3)",
+      "stratify": "y (autism/control label, identical to Exercise 4)",
       "test_size": 0.25
     },
     "p": 360,

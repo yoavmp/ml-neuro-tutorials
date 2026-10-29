@@ -1,5 +1,5 @@
 """Offline tests for scripts/wp27_validation_audit.py and its committed
-result (WP27: validation and cross-validation for Exercise 4).
+result (WP27: validation and cross-validation for Exercise 3).
 
 Standard-library ``unittest``; no network. Re-validates the committed audit
 JSON for self-consistency and checks the specific numeric facts the Exercise

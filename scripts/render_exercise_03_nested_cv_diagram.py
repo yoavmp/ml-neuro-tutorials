@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""Render Exercise 4's nested-cross-validation diagram as a static PNG.
+"""Render the nested-cross-validation diagram as a static PNG.
+
+WP60: this diagram -- and the Validation-and-Cross-Validation lesson that
+embeds it -- moved from Exercise 4 to Exercise 3 (swapping with the former
+Exercise 3, Classification and Metrics); this script and the committed PNG
+were renamed to match (see WPs/reports/WP60_REPORT.md). Still superseded,
+per WP53 below, regardless of exercise number.
 
 WP53: SUPERSEDED. The matplotlib rendering below still had overlapping
 labels in some panels when reviewed live; the committed
-book/lite/files/data/exercise_04_nested_cv_diagram.png is now the course
+book/lite/files/data/exercise_03_nested_cv_diagram.png is now the course
 author's own replacement image (same layout/legend/captions, laid out with
 no overlap), placed there directly -- not produced by this script. Do not
 run this script to "refresh" that file; it would silently overwrite the
@@ -11,7 +17,7 @@ replacement with the old, flawed rendering. Kept only as a historical
 record of the diagram's original construction.
 
 WP48: replaces a raw-HTML/inline-CSS markdown diagram
-(``_NCV_DIAGRAM_HTML`` in scripts/generate_exercise_04_notebook.py) whose
+(``_NCV_DIAGRAM_HTML`` in scripts/generate_exercise_03_notebook.py) whose
 fold-color bars rendered as invisible/ineffective in a real JupyterLite
 notebook -- live screenshot evidence showed only the loose headings,
 fold numbers, and arrows, with no visible colored blocks. Root cause:
@@ -30,11 +36,11 @@ through, in JupyterLite, local Jupyter, and Colab alike.
 No student data or recipe numbers are read here -- this is a fixed
 conceptual illustration, like the bias-variance figure, so N_OUTER/N_INNER
 below are deliberately hard-coded to match
-scripts/generate_exercise_04_notebook.py's own nested-CV blank
+scripts/generate_exercise_03_notebook.py's own nested-CV blank
 (``N_OUTER, N_INNER = 5, 5``) rather than imported from it.
 
 Run:
-    .venv/bin/python scripts/render_exercise_04_nested_cv_diagram.py
+    .venv/bin/python scripts/render_exercise_03_nested_cv_diagram.py
 """
 
 from __future__ import annotations
@@ -48,7 +54,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, Rectangle
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-OUT_PATH = REPO_ROOT / "book" / "lite" / "files" / "data" / "exercise_04_nested_cv_diagram.png"
+OUT_PATH = REPO_ROOT / "book" / "lite" / "files" / "data" / "exercise_03_nested_cv_diagram.png"
 
 N_OUTER = 5
 N_INNER = 5

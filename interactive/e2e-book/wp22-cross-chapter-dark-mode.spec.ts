@@ -232,36 +232,33 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     expect(figureVisible).toBeGreaterThan(0);
   });
 
-  // WP44 migrated Exercise 3 to a JupyterLite-native notebook: its built
-  // page (chapters/chapter_03/exercise_03.html) is now a 2-cell transition
-  // page with no embedded iframe or Plotly figure at all (confirmed:
+  // WP60 moved the Validation-and-Cross-Validation lesson to Exercise 3
+  // (formerly Exercise 4, built by WP45; swapped with the former Exercise 3
+  // Classification lesson, now Exercise 4 below -- see
+  // WPs/reports/WP60_REPORT.md). Its built page
+  // (chapters/chapter_03/exercise_03.html) is now a 2-cell transition page
+  // with no embedded iframe or Plotly figure at all (confirmed:
   // chapter03.spec.ts asserts iframe count is 0 there), so this file's
   // Plotly `_fullData`/`_fullLayout` color-snapshot technique has no
   // surface left to check on that page -- the same reasoning already
   // applied to Exercise 2 above. This replacement checks the JupyterLite
-  // app's own theme instead: switching to dark must not error, and a
-  // rendered Matplotlib figure (a static, white-card PNG, legible
-  // regardless of surrounding app theme, unlike the dark-palette-remapped
-  // Plotly figures other exercises still use) must still be present.
-  test("Exercise 3 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
+  // app's own theme instead, and additionally confirms the nested-
+  // cross-validation diagram still renders after switching themes. WP48
+  // replaced the original raw-HTML diagram (whose `--ml-ncv-*` custom
+  // properties this test used to check) with a rendered PNG embedded as a
+  // notebook attachment (see scripts/render_exercise_03_nested_cv_diagram.py)
+  // -- a plain raster image with its own opaque white background, legible
+  // in both themes by construction, with nothing left to toggle.
+  test("Exercise 3 — JupyterLite notebook: a rendered figure and the nested-CV diagram survive switching to the app's own dark theme", async ({
     page,
   }) => {
-    // WP49: unlike every other exercise in this file, this notebook's
-    // untouched template deliberately halts "Run All Cells" partway
-    // through via a guarded RuntimeError (WP44, by design -- see
-    // exercise-03-lite.spec.ts) -- confirmed live that this leaves
-    // `.jp-Notebook-ExecutionIndicator` stuck at "busy" indefinitely
-    // (it never reaches "idle"), so `waitForKernelIdle` (used elsewhere
-    // in this file) hangs here specifically. Kept this one case's
-    // original fixed wait rather than force the idle-poll mechanism onto
-    // a notebook it does not fit.
-    test.setTimeout(180_000);
-    await page.goto("/lite/notebooks/index.html?path=exercise_03.ipynb", { waitUntil: "load" });
+    test.setTimeout(300_000);
+    await page.goto("/lite/notebooks/index.html?path=exercise_03_v2.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
     await page.locator(".lm-Menu-itemLabel", { hasText: "Run All Cells" }).first().click();
-    await page.waitForTimeout(140_000);
+    await waitForKernelIdle(page);
 
     await page.click("text=Settings");
     await page.waitForTimeout(300);
@@ -270,41 +267,55 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     await page.locator(".lm-Menu-itemLabel", { hasText: "JupyterLab Dark" }).first().click();
     await page.waitForTimeout(1000);
 
-    // The untouched template's own guarded model-fit RuntimeError (Section
-    // 3, by design -- see exercise-03-lite.spec.ts) is the one expected
-    // error cell here; anything beyond that would be a real regression.
-    expect(await page.locator(".jp-mod-error").count()).toBeLessThanOrEqual(1);
+    // Every blank in this notebook degrades gracefully to its own
+    // "Not complete yet" message (see exercise-03-lite.spec.ts) -- zero
+    // error cells is the correct expectation on an untouched template.
+    expect(await page.locator(".jp-mod-error").count()).toBe(0);
 
     const el = await page.evaluate(() => {
       const panel = document.querySelector(".jp-WindowedPanel-outer");
-      if (panel) panel.scrollTop = panel.scrollHeight * 0.1;
+      if (panel) panel.scrollTop = panel.scrollHeight * 0.4;
       return true;
     });
     expect(el).toBe(true);
     await page.waitForTimeout(600);
-    const figureVisible = await page.locator(".jp-OutputArea-output img, .jp-OutputArea-output canvas").count();
-    expect(figureVisible).toBeGreaterThan(0);
+
+    // Unlike every other exercise in this file, this notebook has no
+    // code-cell-rendered figure at all (no matplotlib/Plotly output) --
+    // its only visual content is the nested-CV diagram, a plain <img>
+    // (markdown attachment), not HTML/CSS that could fail to adapt to
+    // JupyterLab's dark theme the way the old version did. What this test
+    // confirms is that the image still renders, visibly, with no error,
+    // after switching themes.
+    const diagram = page.locator('img[alt^="Nested cross-validation diagram"]');
+    await expect(diagram).toBeVisible();
   });
 
-  // WP45 migrated Exercise 4 to a JupyterLite-native notebook: its built
-  // page (chapters/chapter_04/exercise_04.html) is now a 2-cell transition
-  // page with no embedded iframe or Plotly figure at all (confirmed:
+  // WP60 moved the Classification-and-Metrics lesson to Exercise 4
+  // (formerly Exercise 3, built by WP44; swapped with the former Exercise 4
+  // Validation lesson, now Exercise 3 above -- see
+  // WPs/reports/WP60_REPORT.md). Its built page
+  // (chapters/chapter_04/exercise_04.html) is now a 2-cell transition page
+  // with no embedded iframe or Plotly figure at all (confirmed:
   // chapter04.spec.ts asserts iframe count is 0 there), so this file's
   // Plotly `_fullData`/`_fullLayout` color-snapshot technique has no
-  // surface left to check on that page -- the same reasoning WP44 already
-  // applied to Exercise 3 below. This replacement checks the JupyterLite
-  // app's own theme instead, and additionally confirms the nested-
-  // cross-validation diagram still renders after switching themes. WP48
-  // replaced the original raw-HTML diagram (whose `--ml-ncv-*` custom
-  // properties this test used to check) with a rendered PNG embedded as a
-  // notebook attachment (see scripts/render_exercise_04_nested_cv_diagram.py)
-  // -- a plain raster image with its own opaque white background, legible
-  // in both themes by construction, with nothing left to toggle.
-  test("Exercise 4 — JupyterLite notebook: a rendered figure and the nested-CV diagram survive switching to the app's own dark theme", async ({
+  // surface left to check on that page -- the same reasoning already
+  // applied to Exercise 2 above. This replacement checks the JupyterLite
+  // app's own theme instead: switching to dark must not error, and a
+  // rendered Matplotlib figure (a static, white-card PNG, legible
+  // regardless of surrounding app theme, unlike the dark-palette-remapped
+  // Plotly figures other exercises still use) must still be present. This
+  // notebook's model-fit cell used to raise an actionable RuntimeError when
+  // its blanks were unfilled (WP44's original design); a later fix (see
+  // exercise-04-lite.spec.ts) replaced that with the same graceful
+  // "Not complete yet" guard every other check cell uses, so "Run All
+  // Cells" now reaches "idle" cleanly, with zero error cells, like every
+  // other exercise in this file.
+  test("Exercise 4 — JupyterLite notebook: a rendered figure survives switching to the app's own dark theme", async ({
     page,
   }) => {
     test.setTimeout(300_000);
-    await page.goto("/lite/notebooks/index.html?path=exercise_04.ipynb", { waitUntil: "load" });
+    await page.goto("/lite/notebooks/index.html?path=exercise_04_v2.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
@@ -326,17 +337,12 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
 
     const el = await page.evaluate(() => {
       const panel = document.querySelector(".jp-WindowedPanel-outer");
-      if (panel) panel.scrollTop = panel.scrollHeight * 0.4;
+      if (panel) panel.scrollTop = panel.scrollHeight * 0.1;
       return true;
     });
     expect(el).toBe(true);
     await page.waitForTimeout(600);
-
-    // The diagram is a plain <img> (markdown attachment), not HTML/CSS that
-    // could fail to adapt to JupyterLab's dark theme the way the old
-    // version did -- what this test confirms is that the image still
-    // renders, visibly, with no error, after switching themes.
-    const diagram = page.locator('img[alt^="Nested cross-validation diagram"]');
-    await expect(diagram).toBeVisible();
+    const figureVisible = await page.locator(".jp-OutputArea-output img, .jp-OutputArea-output canvas").count();
+    expect(figureVisible).toBeGreaterThan(0);
   });
 });

@@ -6,6 +6,14 @@ established: the old Exercise 4 canonical page becomes a short transition
 page pointing at the JupyterLite notebook; the real lesson lives in
 scripts/generate_exercise_04_notebook.py's generated output.
 
+WP60: Exercise 4's subject swapped with Exercise 3's (title below now reads
+"Classification and Metrics"; see WPs/reports/WP60_REPORT.md). The
+JupyterLite link below also moved to "exercise_04_v2.ipynb", a fresh
+browser-storage path distinct from the old "exercise_04.ipynb" -- so that a
+returning student's browser-local edits to the *previous* Exercise 4
+(Validation and Cross-Validation) cannot resurface, silently mislabeled, as
+this new lesson.
+
 Modes:
   --write   regenerate book/chapters/chapter_04/exercise_04.ipynb.
   --check   fail if the committed file is stale.
@@ -22,7 +30,7 @@ from nbformat.v4 import new_markdown_cell, new_notebook
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_PATH = REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb"
 
-LITE_URL = "../../lite/notebooks/index.html?path=exercise_04.ipynb"
+LITE_URL = "../../lite/notebooks/index.html?path=exercise_04_v2.ipynb"
 DOWNLOAD_URL = "../../lite/files/exercise_04_portable.ipynb"
 
 
@@ -32,7 +40,7 @@ def build_notebook() -> nbformat.NotebookNode:
         "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
         "language_info": {"name": "python"},
     }
-    title = new_markdown_cell("# Exercise 4: Validation and Cross-Validation\n")
+    title = new_markdown_cell("# Exercise 4: Classification and Metrics\n")
     title["id"] = "wp45-transition-title"
 
     body = new_markdown_cell(

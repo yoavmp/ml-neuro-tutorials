@@ -513,7 +513,7 @@
     "nested_cv_pipeline": {
       "outer_cv": "KFold(n_splits=5, shuffle=True, random_state=100)",
       "inner_cv": "KFold(n_splits=5, shuffle=True, random_state=101)",
-      "note": "Identical outer/inner folds to Exercise 4 section 6's nested cross-validation, applied here to compare Linear Regression, Ridge, and Lasso (alpha tuned by inner GridSearchCV) on the full eligible cohort (n=1004) rather than a single train/validation/test split."
+      "note": "Identical outer/inner folds to Exercise 3 section 6's nested cross-validation, applied here to compare Linear Regression, Ridge, and Lasso (alpha tuned by inner GridSearchCV) on the full eligible cohort (n=1004) rather than a single train/validation/test split."
     },
     "audit_script": "scripts/regularization_model_audit.py",
     "audit_result": "scripts/regularization_model_audit_result.json",
@@ -537,13 +537,13 @@
       "measures": [
         "CT"
       ],
-      "note": "Identical to protocol.canonical_recipe (p=360) and knn.canonical_recipe: the same 360 bilateral cortical-thickness parcels used throughout Exercise 2, so Exercise 3 needs no new feature-selection discussion."
+      "note": "Identical to protocol.canonical_recipe (p=360) and knn.canonical_recipe: the same 360 bilateral cortical-thickness parcels used throughout Exercise 2, so Exercise 4 needs no new feature-selection discussion."
     },
     "holdout_split": {
       "test_size": 0.25,
       "random_state": 42,
       "stratify": "y",
-      "note": "Same test_size/random_state as protocol.holdout_split, but stratify is the diagnosis label y itself (group recoded to autism=1/control=0), not a covariate -- Exercise 3 is the first place `group` is the target rather than a stratification variable for a different outcome. This does NOT reproduce Exercise 2's 753/251 row split: the split target changed, so the partition is different even though test_size and random_state match."
+      "note": "Same test_size/random_state as protocol.holdout_split, but stratify is the diagnosis label y itself (group recoded to autism=1/control=0), not a covariate -- Exercise 4 is the first place `group` is the target rather than a stratification variable for a different outcome. This does NOT reproduce Exercise 2's 753/251 row split: the split target changed, so the partition is different even though test_size and random_state match."
     },
     "model": "sklearn Pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000)); the scaler is fitted on training rows only. C is fixed by course design (WP19) before the held-out result is computed, not selected by cross-validation.",
     "worked_example_C": 1.0,
@@ -732,7 +732,7 @@
         10
       ],
       "cv": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42) -- development rows only",
-      "note": "WP30 sec 4, corrected by WP30R: a bounded, conditional audit of whether an autism classification tree usefully contrasts with the age-regression complexity curve above. Cohort, target coding, and feature recipe are identical to classification.canonical_recipe / classification.positive_class / classification.negative_class (Exercise 3): autism=1/control=0, all-eligible x CT (p=360). min_samples_leaf=5 is fixed by course design before viewing the curve, matching decision_tree.complexity_curve's own regression setting for consistency (not scanned for a favorable picture). WP30R correction: mean training/validation ROC AUC are computed by 5-fold stratified cross-validation restricted to classification.holdout_split's development partition only -- that exact outer train_test_split(test_size=0.25, random_state=42, stratify=y) is reconstructed over the full eligible cohort, and the locked outer-test participants are excluded by row-level participant-set membership (asserted disjoint from, and complementary to, the development set) before any cross-validation fold is formed. WP30's original framing -- that the full-cohort version was fine because the script 'never read' a stored test-index object -- was incorrect: the full eligible cohort necessarily contained the outer-test participants, so their outcomes influenced every fold's AUC. Whether a second, classification-tree figure is added to the notebook is decided by a fixed rule (WP30 sec 4.2, unchanged), evaluated exactly once against this corrected configuration's result and not adjusted afterward -- see scripts/decision_tree_model_audit_result.json.classification_complexity_curve.inclusion_rule and WPs/reports/WP30R_REPORT.md for the actual outcome."
+      "note": "WP30 sec 4, corrected by WP30R: a bounded, conditional audit of whether an autism classification tree usefully contrasts with the age-regression complexity curve above. Cohort, target coding, and feature recipe are identical to classification.canonical_recipe / classification.positive_class / classification.negative_class (Exercise 4): autism=1/control=0, all-eligible x CT (p=360). min_samples_leaf=5 is fixed by course design before viewing the curve, matching decision_tree.complexity_curve's own regression setting for consistency (not scanned for a favorable picture). WP30R correction: mean training/validation ROC AUC are computed by 5-fold stratified cross-validation restricted to classification.holdout_split's development partition only -- that exact outer train_test_split(test_size=0.25, random_state=42, stratify=y) is reconstructed over the full eligible cohort, and the locked outer-test participants are excluded by row-level participant-set membership (asserted disjoint from, and complementary to, the development set) before any cross-validation fold is formed. WP30's original framing -- that the full-cohort version was fine because the script 'never read' a stored test-index object -- was incorrect: the full eligible cohort necessarily contained the outer-test participants, so their outcomes influenced every fold's AUC. Whether a second, classification-tree figure is added to the notebook is decided by a fixed rule (WP30 sec 4.2, unchanged), evaluated exactly once against this corrected configuration's result and not adjusted afterward -- see scripts/decision_tree_model_audit_result.json.classification_complexity_curve.inclusion_rule and WPs/reports/WP30R_REPORT.md for the actual outcome."
     },
     "audit_script": "scripts/decision_tree_model_audit.py",
     "audit_result": "scripts/decision_tree_model_audit_result.json",
@@ -1026,7 +1026,7 @@
       "note": "Two entirely synthetic, deterministic, fixed-split 2-D binary classification datasets (never ABIDE observations). Every (dataset, kernel, C, gamma) combination in the declared bounded grid is precomputed with scikit-learn's SVC; gamma is ignored (and its control disabled) for the linear kernel. Support vectors are always training-set indices; the stored decision grid is a fixed decision_grid_resolution x decision_grid_resolution mesh over a fixed, padded bounding box, sufficient for a smooth but compact Plotly contour."
     },
     "abide_comparison": {
-      "outer_cv": {"n_splits": 5, "shuffle": true, "random_state": 100, "note": "Identical outer folds for every compared model; same (n_splits, random_state) convention as knn.nested cross-validation in Exercise 4."},
+      "outer_cv": {"n_splits": 5, "shuffle": true, "random_state": 100, "note": "Identical outer folds for every compared model; same (n_splits, random_state) convention as knn.nested cross-validation in Exercise 3."},
       "inner_cv": {"n_splits": 5, "shuffle": true, "random_state": 101, "note": "Identical inner-fold assignments reused across every candidate of every model within a given outer fold, wherever a model has a hyperparameter to select; the standardized-OLS reference has none, so no inner loop applies to it."},
       "models": {
         "ols": {"label": "Standardized OLS (reference)", "pipeline": "StandardScaler() -> LinearRegression()", "tuned": false},

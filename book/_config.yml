@@ -79,7 +79,7 @@ parse:
     - dollarmath
     - amsmath
 
-# WP32: the Exercise 4 nested-cross-validation diagram is hand-built
+# WP32: the Exercise 3 nested-cross-validation diagram is hand-built
 # HTML/CSS, not a ```mermaid fenced code block -- it never used this
 # extension. `sphinxcontrib.mermaid` and `myst_fence_as_directive` are kept
 # enabled here for future or other Mermaid content elsewhere in the book,

@@ -2,7 +2,7 @@
 
 Prevents the CI-environment gap exposed by workflow run 35469646309 from
 recurring: `book/_config.yml` enables the `sphinxcontrib.mermaid` Sphinx
-extension (WP27, for the Exercise 4 nested-cross-validation diagram), but the
+extension (WP27, for the Exercise 3 nested-cross-validation diagram), but the
 distribution providing it was never pinned in the requirements file CI
 actually installs from, so "Build Jupyter Book" failed with
 `ModuleNotFoundError: No module named 'sphinxcontrib.mermaid'` even though it
@@ -76,7 +76,7 @@ class MermaidDependencyContract(unittest.TestCase):
             "book/_config.yml no longer lists sphinxcontrib.mermaid under "
             "sphinx.extra_extensions -- update this test if Mermaid support "
             "was intentionally removed (it must stay available for the "
-            "Exercise 4 nested-CV diagram).",
+            "Exercise 3 nested-CV diagram).",
         )
         self.assertIn("sphinxcontrib.mermaid", EXTENSION_DISTRIBUTIONS)
 

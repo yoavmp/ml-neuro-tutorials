@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Reproducible validation / cross-validation audit for Exercise 4 (WP27).
+"""Reproducible validation / cross-validation audit for Exercise 3 (WP27).
 
-Exercise 4 reuses Exercise 2's ABIDE age-prediction task and its canonical
+Exercise 3 reuses Exercise 2's ABIDE age-prediction task and its canonical
 KNN recipe (``all-eligible`` bilateral cortical thickness, p=360, fixed
 worked-example ``k=20``; see ``book/config/abide_modeling.json`` and
 ``scripts/knn_model_audit.py``). This script produces every number the
-Exercise 4 notebook and its three interactive activities show, so that
+Exercise 3 notebook and its three interactive activities show, so that
 nothing in the lesson is invented or hand-typed:
 
 * Part A -- single-split vs. cross-validation stability across a predeclared
