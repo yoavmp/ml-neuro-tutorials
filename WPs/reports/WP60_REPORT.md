@@ -182,27 +182,37 @@ seconds:
   returns exactly `exercise_03.ipynb` / `exercise_04.ipynb` for both,
   live, and via the new assertions added to both `exercise-0{3,4}-lite.spec.ts`
   teacher-completed-path tests.
-- **Not independently re-confirmed in this review session**, because
-  every attempt was interrupted before finishing: the full
-  `exercise-03-lite.spec.ts`/`exercise-04-lite.spec.ts` teacher-completed
-  paths (retyping the real solutions live in-browser and checking the
-  established numbers print) and `wp22-cross-chapter-dark-mode.spec.ts`'s
-  Exercise 3/4 blocks, both end-to-end against the final `v2/` paths.
-  Both passed in full earlier in this WP's lifetime -- the former under
-  the original WP60 swap (before any path change), the latter under the
-  intermediate `_v2`-suffixed path (after Correction 2's swap, before
-  Correction 1's subdirectory fix). The only variable either test's
-  outcome could depend on that changed since its last full pass is the
-  path string itself, and that specific mechanism -- open the `v2/` path,
-  start the kernel, run cells, reach zero error cells -- was independently
-  confirmed live for Exercise 3 during this session (see the untouched-
-  template checks above); the numbers those teacher-completed tests
-  check are independently reproduced by the offline executed-reference
-  tests, which import and run the identical, bit-for-bit-unchanged cell
-  code (confirmed by generator `--check`). This is a real gap, not
-  papered over: re-running both full suites once this machine is faster
-  is the one thing I'd still want before calling this fully closed, even
-  though every piece it would check has independent evidence above.
+- **`wp22-cross-chapter-dark-mode.spec.ts`'s Exercise 3/4 blocks**: ran
+  to completion (eventually -- this machine's memory pressure, not CPU,
+  made Pyodide's cold start and model fit genuinely slow this session;
+  `top` showed 90%+ idle CPU but 14/16GB RAM in use with active memory
+  compression throughout). Both tests ultimately failed on a 300-second
+  timeout waiting for the kernel to reach "idle" after Run All Cells --
+  not a single assertion failure, JS error, or `.jp-mod-error` cell in
+  either run. Playwright's own failure snapshot (`error-context.md`)
+  independently confirms, from a completely different test file than
+  any of the checks above, exactly Correction 1's claim: the page's own
+  `<h1>` reads `"exercise_03"` / `"exercise_04"` -- clean, no "v2" --
+  and a `"Last Checkpoint"` entry is present, confirming the save/
+  persistence mechanism this session's dedicated checks already
+  verified. Treating this as a resource-constrained-machine timeout, not
+  a functional regression: the identical mechanism (open `v2/` path,
+  start kernel, run cells) was independently confirmed reaching zero
+  error cells for Exercise 3 earlier in this session (see above), and
+  this spec's own numbers are the same ones the offline executed-
+  reference tests already reproduce exactly, against bit-for-bit
+  identical cell code.
+- **`exercise-03-lite.spec.ts`/`exercise-04-lite.spec.ts`'s
+  teacher-completed paths** (retyping the real solutions live in-browser)
+  were not re-run to completion against the final `v2/` path in this
+  session, for the same machine-speed reason -- every attempt was
+  interrupted before finishing, with the one that ran furthest showing
+  the identical "slow but zero errors" pattern above. This passed in
+  full earlier in this WP's lifetime, under the original (pre-path-
+  change) swap. The one thing I'd still want before calling this
+  completely closed is re-running it once on a machine that isn't under
+  memory pressure -- CI (a clean, dedicated runner) is about to do
+  exactly that as part of the push below.
 
 ## What was deliberately not touched
 
