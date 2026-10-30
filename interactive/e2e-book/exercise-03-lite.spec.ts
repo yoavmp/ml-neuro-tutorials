@@ -29,7 +29,7 @@ import path from "node:path";
 // serialized with nothing else contending).
 test.setTimeout(300_000);
 
-const NOTEBOOK_URL = "/lite/notebooks/index.html?path=exercise_03_v2.ipynb";
+const NOTEBOOK_URL = "/lite/notebooks/index.html?path=v2/exercise_03.ipynb";
 
 async function scrollWindowed(page: Page, fraction: number) {
   await page.evaluate((f) => {
@@ -97,6 +97,23 @@ async function fillBlank(page: Page, anchorText: string, solution: string) {
 }
 
 test.describe("Exercise 3 — JupyterLite notebook, untouched template", () => {
+  // WP60 review correction: the live path moved to "v2/exercise_03.ipynb"
+  // (a fresh browser-storage identity) specifically so a returning
+  // student's saved edits under the old plain "exercise_03.ipynb" can't
+  // resurface as this lesson -- but nothing visible should say "v2"
+  // anywhere. JupyterLite derives every one of these labels from the
+  // path's basename only, never its directory.
+  test("the app's own title/header show the clean basename, never the v2/ storage directory", async ({
+    page,
+  }) => {
+    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
+    await page.waitForTimeout(3000);
+    expect(await page.title()).not.toContain("v2");
+    const bodyText = await page.locator("body").innerText();
+    expect(bodyText).not.toContain("v2");
+    expect(bodyText.toLowerCase()).toContain("exercise_03");
+  });
+
   test("Section 1 loads the established data and Section 2's one-split result prints", async ({
     page,
   }) => {
@@ -293,7 +310,14 @@ test.describe("Exercise 3 — JupyterLite notebook, teacher-completed path", () 
       page.waitForEvent("download"),
       page.click("text=Download my notebook"),
     ]);
-    const savePath = path.join(downloadDir, "exercise_03_v2.ipynb");
+    // WP60 review correction: the live path is "v2/exercise_03.ipynb" (a
+    // fresh browser-storage identity, never reusing the old plain
+    // "exercise_03.ipynb"), but the course-toolbar extension's own download
+    // filename is `context.path.split('/').pop()` -- the basename only --
+    // so what the browser actually offers to save must read clean, with no
+    // "v2" anywhere.
+    expect(download.suggestedFilename()).toBe("exercise_03.ipynb");
+    const savePath = path.join(downloadDir, "exercise_03.ipynb");
     await download.saveAs(savePath);
     const downloaded = fs.readFileSync(savePath, "utf8");
     expect(downloaded).not.toContain('"# YOUR CODE HERE\\n# 1. create the model/pipeline');

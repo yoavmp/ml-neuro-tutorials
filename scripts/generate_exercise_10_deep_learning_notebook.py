@@ -111,8 +111,8 @@ TORCH_SEED = 42
 # C=0.003 gave the best validation balanced accuracy (0.598).
 LOGREG_C = 0.003
 
-EARLIER_EXERCISE_3_ACCURACY = 0.5458  # fsCT-only, 360 features, same group target (scripts/classification_model_audit_result.json)
-EARLIER_EXERCISE_3_AUC = 0.5692
+EARLIER_EXERCISE_4_ACCURACY = 0.5458  # fsCT-only, 360 features, same group target (scripts/classification_model_audit_result.json)
+EARLIER_EXERCISE_4_AUC = 0.5692
 
 
 def md(source: str, cell_id: str) -> dict:
@@ -358,7 +358,7 @@ def _section_1() -> list[dict]:
 **The task.** Classify each participant in the ABIDE-II dataset as autism
 or control, using several structural MRI measures derived from each
 participant's cortical surface. This is the same kind of classification
-task as Exercise 3, but with more feature families available to the model.
+task as Exercise 4, but with more feature families available to the model.
 """,
             "wp58-102-task",
         ),
@@ -975,9 +975,9 @@ earlier cortical-thickness-only models had, but not more participants, and
 autism spectrum disorder's structural MRI signature is subtle and
 heterogeneous across sites and individuals. For context only -- **not** as
 a directly controlled comparison, since the feature set, split, and model
-all differ -- Exercise 3's cortical-thickness-only logistic regression on
-this same `group` target reached {EARLIER_EXERCISE_3_ACCURACY:.1%} test
-accuracy (AUC {EARLIER_EXERCISE_3_AUC:.3f}).
+all differ -- Exercise 4's cortical-thickness-only logistic regression on
+this same `group` target reached {EARLIER_EXERCISE_4_ACCURACY:.1%} test
+accuracy (AUC {EARLIER_EXERCISE_4_AUC:.3f}).
 
 > **Note on exact numbers.** Every number in this section is computed live
 > by the cells above and may differ slightly from one PyTorch version or

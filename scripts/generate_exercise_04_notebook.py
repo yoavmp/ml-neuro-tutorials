@@ -30,11 +30,18 @@ notebook's recipe/split/C_EXAMPLE preserve unchanged from the pre-migration
 book/chapters/chapter_03/exercise_03.ipynb.
 
 Outputs:
-  book/lite/files/exercise_04_v2.ipynb                 (--student, JupyterLite;
-                                                          "_v2" is a fresh,
+  book/lite/files/v2/exercise_04.ipynb                 (--student, JupyterLite;
+                                                          the "v2/" directory
+                                                          is a fresh,
                                                           never-before-used
-                                                          browser-storage path --
-                                                          see WPs/reports/
+                                                          browser-storage path
+                                                          that still displays
+                                                          as the clean
+                                                          "exercise_04"
+                                                          basename everywhere
+                                                          JupyterLite shows a
+                                                          filename -- see
+                                                          WPs/reports/
                                                           WP60_REPORT.md)
   book/downloads/chapter_04/exercise_04_portable.ipynb (--student, Colab/local)
   book/lite/files/exercise_04_portable.ipynb           (--student, same file,
@@ -60,7 +67,7 @@ from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_SIDECAR = REPO_ROOT / "book" / "lite" / "files" / "data" / "abide_age_brain.manifest.json"
 
-LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_04_v2.ipynb"
+LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "v2" / "exercise_04.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
 LITE_FILES_PORTABLE_COPY_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_04_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_04_reference.ipynb"

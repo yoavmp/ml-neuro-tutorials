@@ -253,7 +253,7 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     page,
   }) => {
     test.setTimeout(300_000);
-    await page.goto("/lite/notebooks/index.html?path=exercise_03_v2.ipynb", { waitUntil: "load" });
+    await page.goto("/lite/notebooks/index.html?path=v2/exercise_03.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);
@@ -315,7 +315,7 @@ test.describe("Cross-chapter dark-mode Plotly verification (WP22 addendum)", () 
     page,
   }) => {
     test.setTimeout(300_000);
-    await page.goto("/lite/notebooks/index.html?path=exercise_04_v2.ipynb", { waitUntil: "load" });
+    await page.goto("/lite/notebooks/index.html?path=v2/exercise_04.ipynb", { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await page.click("text=Run");
     await page.waitForTimeout(200);

@@ -42,11 +42,18 @@ single generator line (WP45 report has the verification script/output):
     fold [15, 12, 10, 18, 15])
 
 Outputs:
-  book/lite/files/exercise_03_v2.ipynb                 (--student, JupyterLite;
-                                                          "_v2" is a fresh,
+  book/lite/files/v2/exercise_03.ipynb                 (--student, JupyterLite;
+                                                          the "v2/" directory
+                                                          is a fresh,
                                                           never-before-used
-                                                          browser-storage path --
-                                                          see WPs/reports/
+                                                          browser-storage path
+                                                          that still displays
+                                                          as the clean
+                                                          "exercise_03"
+                                                          basename everywhere
+                                                          JupyterLite shows a
+                                                          filename -- see
+                                                          WPs/reports/
                                                           WP60_REPORT.md)
   book/downloads/chapter_03/exercise_03_portable.ipynb (--student, Colab/local)
   book/lite/files/exercise_03_portable.ipynb           (--student, same file,
@@ -74,7 +81,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_SIDECAR = REPO_ROOT / "book" / "lite" / "files" / "data" / "abide_age_brain.manifest.json"
 NCV_DIAGRAM_IMAGE_PATH = REPO_ROOT / "book" / "lite" / "files" / "data" / "exercise_03_nested_cv_diagram.png"
 
-LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_03_v2.ipynb"
+LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "v2" / "exercise_03.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb"
 LITE_FILES_PORTABLE_COPY_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_03_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_03_reference.ipynb"

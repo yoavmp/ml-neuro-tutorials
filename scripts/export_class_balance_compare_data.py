@@ -11,9 +11,9 @@ control:autism samples, at a FIXED decision threshold of 0.5, so the lesson
 is about how prevalence itself changes accuracy/baseline/recall rather than
 about threshold tuning.
 
-Reuses the exact same fixed-cohort mechanism as Exercise 3's class-imbalance
+Reuses the exact same fixed-cohort mechanism as Exercise 4's class-imbalance
 activity (``book/config/abide_modeling.json``
-``classification.imbalance_activity``) and Exercise 3's own fixed
+``classification.imbalance_activity``) and Exercise 4's own fixed
 logistic-regression recipe (``classification_model_audit.C_EXAMPLE``,
 ``classification_model_audit.MAX_ITER``) -- no new sampling rule, no new
 model family, no parameter search:
@@ -25,7 +25,7 @@ model family, no parameter search:
 * each ratio's fixed cohort is drawn with
   ``cohort_seed = cohort_resample_seed_base + ratio_index`` where
   ``ratio_index`` is the ratio's own position (0-4) in the manifest's
-  ``ratios`` list -- identical to Exercise 3's own cohort draws for the
+  ``ratios`` list -- identical to Exercise 4's own cohort draws for the
   ratios they share;
 * exactly ONE split per ratio, ``split_seed = split_seeds[0]`` (seed 0) --
   the same precedent the old ``export_imbalance_threshold_data.py`` set;

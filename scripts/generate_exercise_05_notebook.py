@@ -440,7 +440,7 @@ def _title_and_overview() -> list[dict]:
 ## What this notebook covers
 
 This is Exercise 5 of *Machine Learning for Neuroscience*. It reuses
-Exercise 2 and Exercise 4's exact ABIDE-II age-prediction data, target, and
+Exercise 2 and Exercise 3's exact ABIDE-II age-prediction data, target, and
 fixed 75/25 train/test split, and asks a question those notebooks set
 aside: how do we decide which predictors to include?
 
@@ -457,7 +457,7 @@ double-click one to edit it, type your answer, then press Shift+Enter to
 render it back. Your answer is saved with the rest of this notebook,
 including in **Download my notebook**.
 
-**Prerequisites:** Exercise 2's regression material and Exercise 4's
+**Prerequisites:** Exercise 2's regression material and Exercise 3's
 validation and cross-validation material; comfort with `pandas`, `numpy`,
 and the scikit-learn `fit` / `predict` / `Pipeline` pattern.
 """,
@@ -471,7 +471,7 @@ def _section_1_data() -> list[dict]:
         md("## 1. Data and Setup", "wp45-101-header"),
         md(
             """
-This notebook reuses Exercise 2 and Exercise 4's exact ABIDE-II data table,
+This notebook reuses Exercise 2 and Exercise 3's exact ABIDE-II data table,
 target (age), fixed 360-column cortical-thickness feature recipe, and fixed
 train/test split -- nothing about the data or the split changes here.
 """,
@@ -934,7 +934,7 @@ def _section_5_lasso_cv() -> list[dict]:
         md("## 5. Tune Lasso Alpha with Cross-Validation", "wp45-501-header"),
         md(
             """
-Section 4 asked you to guess a single Lasso `alpha`. As in Exercise 4,
+Section 4 asked you to guess a single Lasso `alpha`. As in Exercise 3,
 tuning should use training data only, and the test set should be read once,
 after the tuning decision is locked in.
 
@@ -1084,7 +1084,7 @@ participants.
   that penalty is fair.
 - Tuning alpha with cross-validation on the training set, then evaluating
   once on the test set, keeps tuning separate from the final performance
-  estimate -- exactly as Exercise 4 established.
+  estimate -- exactly as Exercise 3 established.
 
 Next practice: decision trees.
 """,

@@ -26,7 +26,7 @@ from pathlib import Path
 import nbformat
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-LITE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_04_v2.ipynb"
+LITE_PATH = REPO_ROOT / "book" / "lite" / "files" / "v2" / "exercise_04.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_04_reference.ipynb"
 

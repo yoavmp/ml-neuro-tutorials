@@ -659,8 +659,8 @@ Markdown: double-click one to edit it, type your answer, then press
 Shift+Enter to render it back. Your answer is saved with the rest of this
 notebook, including in **Download my notebook**.
 
-**Prerequisites:** Exercise 2 (regression), Exercise 3 (classification and
-metrics), Exercise 4 (validation and cross-validation), Exercise 6
+**Prerequisites:** Exercise 2 (regression), Exercise 3 (validation and
+cross-validation), Exercise 4 (classification and metrics), Exercise 6
 (decision trees), and Exercise 8 (PCA).
 """,
             "wp57-002-overview",

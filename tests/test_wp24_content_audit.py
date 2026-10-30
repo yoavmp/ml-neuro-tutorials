@@ -39,10 +39,10 @@ EX5 = REPO_ROOT / "book" / "lite" / "files" / "exercise_05.ipynb"
 # tests/test_exercise_03_transition_page.py), mirroring how EX2_LITE already
 # repoints Exercise 2's own checks below. WP60 swapped Exercise 3 and
 # Exercise 4's subjects again: this same classification lesson now lives at
-# Exercise 4 (book/lite/files/exercise_04_v2.ipynb) -- EX4 (this file's own,
+# Exercise 4 (book/lite/files/v2/exercise_04.ipynb) -- EX4 (this file's own,
 # WP24-era variable name for "the classification lesson", not a literal
 # exercise-number pointer) follows the content to its new location.
-EX4 = REPO_ROOT / "book" / "lite" / "files" / "exercise_04_v2.ipynb"
+EX4 = REPO_ROOT / "book" / "lite" / "files" / "v2" / "exercise_04.ipynb"
 EX4_PORTABLE = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
 
 EDA_CORRELATION_JSON = REPO_ROOT / "book" / "_static" / "widgets" / "configs" / "eda_correlation.json"

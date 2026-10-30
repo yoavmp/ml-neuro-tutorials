@@ -47,7 +47,7 @@ class TransitionPage(unittest.TestCase):
 
     def test_links_to_the_jupyterlite_notebook(self):
         self.assertIn(
-            '<a href="../../lite/notebooks/index.html?path=exercise_04_v2.ipynb">',
+            '<a href="../../lite/notebooks/index.html?path=v2/exercise_04.ipynb">',
             self.text,
         )
 

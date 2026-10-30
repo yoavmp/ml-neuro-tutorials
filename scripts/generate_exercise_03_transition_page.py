@@ -12,10 +12,14 @@ Markdown link is mis-resolved by MyST/Sphinx as an internal cross-reference).
 
 WP60: Exercise 3's subject swapped with Exercise 4's (title below now reads
 "Validation and Cross-Validation"; see WPs/reports/WP60_REPORT.md). The
-JupyterLite link below also moved to "exercise_03_v2.ipynb", a fresh
-browser-storage path distinct from the old "exercise_03.ipynb" -- so that a
-returning student's browser-local edits to the *previous* Exercise 3
-(Classification) cannot resurface, silently mislabeled, as this new lesson.
+JupyterLite link below also moved to "v2/exercise_03.ipynb" -- a fresh
+browser-storage path (the directory, never the filename itself) distinct
+from the old "exercise_03.ipynb" -- so that a returning student's
+browser-local edits to the *previous* Exercise 3 (Classification) cannot
+resurface, silently mislabeled, as this new lesson. JupyterLite displays a
+document only by its basename (confirmed live), so this still shows the
+clean "exercise_03" everywhere JupyterLite shows a filename -- never
+"v2" or any other path segment.
 
 Modes:
   --write   regenerate book/chapters/chapter_03/exercise_03.ipynb.
@@ -33,7 +37,7 @@ from nbformat.v4 import new_markdown_cell, new_notebook
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_PATH = REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb"
 
-LITE_URL = "../../lite/notebooks/index.html?path=exercise_03_v2.ipynb"
+LITE_URL = "../../lite/notebooks/index.html?path=v2/exercise_03.ipynb"
 DOWNLOAD_URL = "../../lite/files/exercise_03_portable.ipynb"
 
 

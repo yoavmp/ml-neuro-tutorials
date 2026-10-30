@@ -8,11 +8,14 @@ scripts/generate_exercise_04_notebook.py's generated output.
 
 WP60: Exercise 4's subject swapped with Exercise 3's (title below now reads
 "Classification and Metrics"; see WPs/reports/WP60_REPORT.md). The
-JupyterLite link below also moved to "exercise_04_v2.ipynb", a fresh
-browser-storage path distinct from the old "exercise_04.ipynb" -- so that a
-returning student's browser-local edits to the *previous* Exercise 4
-(Validation and Cross-Validation) cannot resurface, silently mislabeled, as
-this new lesson.
+JupyterLite link below also moved to "v2/exercise_04.ipynb" -- a fresh
+browser-storage path (the directory, never the filename itself) distinct
+from the old "exercise_04.ipynb" -- so that a returning student's
+browser-local edits to the *previous* Exercise 4 (Validation and
+Cross-Validation) cannot resurface, silently mislabeled, as this new
+lesson. JupyterLite displays a document only by its basename (confirmed
+live), so this still shows the clean "exercise_04" everywhere JupyterLite
+shows a filename -- never "v2" or any other path segment.
 
 Modes:
   --write   regenerate book/chapters/chapter_04/exercise_04.ipynb.
@@ -30,7 +33,7 @@ from nbformat.v4 import new_markdown_cell, new_notebook
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_PATH = REPO_ROOT / "book" / "chapters" / "chapter_04" / "exercise_04.ipynb"
 
-LITE_URL = "../../lite/notebooks/index.html?path=exercise_04_v2.ipynb"
+LITE_URL = "../../lite/notebooks/index.html?path=v2/exercise_04.ipynb"
 DOWNLOAD_URL = "../../lite/files/exercise_04_portable.ipynb"
 
 

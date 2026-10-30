@@ -223,7 +223,7 @@ class ExerciseTenDeepLearningStudentNotebook(unittest.TestCase):
 
     def test_earlier_exercise_context_not_a_controlled_comparison(self):
         normalized = " ".join(self.joined.split())
-        self.assertIn("Exercise 3", normalized)
+        self.assertIn("Exercise 4", normalized)
         self.assertIn("not** as a directly controlled comparison", normalized)
 
     def test_citation_present_with_exact_qualifications(self):
