@@ -60,7 +60,13 @@ def _execute_reference_notebook() -> dict:
 
     matplotlib.use("Agg")  # headless: no display, no GUI event loop
     old_cwd = os.getcwd()
-    os.chdir(REPO_ROOT / "book" / "lite" / "files")
+    # WP60 correction: the live JupyterLite copy opens from "v2/" (see
+    # LITE_TEMPLATE_PATH), and JupyterLite sets the kernel's cwd to the
+    # notebook's own directory -- this chdir mirrors that exactly, so the
+    # loader's "../data/..." resolves and this test actually stays
+    # offline (reads the committed local CSV) instead of silently falling
+    # back to a live network fetch.
+    os.chdir(REPO_ROOT / "book" / "lite" / "files" / "v2")
     try:
         nb = nbformat.read(REFERENCE_PATH, as_version=4)
         return asyncio.run(_execute_notebook(nb))
@@ -140,7 +146,7 @@ class ReferenceExecution(unittest.TestCase):
         setup_cell = next(c for c in nb_cells if c.get("id") == "wp44-000-setup")
         load_cell = next(c for c in nb_cells if c.get("id") == "wp44-102-load")
         old_cwd = os.getcwd()
-        os.chdir(REPO_ROOT / "book" / "lite" / "files")
+        os.chdir(REPO_ROOT / "book" / "lite" / "files" / "v2")
         try:
             ns: dict = {}
             asyncio.run(_run_cell(setup_cell["source"], ns, "wp44-000-setup"))

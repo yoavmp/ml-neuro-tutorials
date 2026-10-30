@@ -77,12 +77,21 @@ async function collectAllOutputText(page: Page): Promise<string> {
 // this sweep is checking for.
 const BENIGN_NON_WARNING_NOISE = /THEBE_JS_URL|invalid theme mode/i;
 
-for (const n of EXERCISES) {
+// WP60: Exercises 3 and 4's live templates moved into a "v2/" subdirectory
+// (see exercise-03-lite.spec.ts/exercise-04-lite.spec.ts) -- a fresh,
+// never-before-used JupyterLite contents-path chosen so a returning
+// student's saved edits under the old flat path can't resurface as the
+// other (swapped) lesson. Every other exercise stays at the flat path.
+function notebookPathFor(n: number): string {
   const id = String(n).padStart(2, "0");
+  return n === 3 || n === 4 ? `v2/exercise_${id}.ipynb` : `exercise_${id}.ipynb`;
+}
+
+for (const n of EXERCISES) {
   test(`Exercise ${n}: no Python warning text reaches the untouched template's rendered output`, async ({
     page,
   }) => {
-    await page.goto(`/lite/notebooks/index.html?path=exercise_${id}.ipynb`, { waitUntil: "load" });
+    await page.goto(`/lite/notebooks/index.html?path=${notebookPathFor(n)}`, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
 

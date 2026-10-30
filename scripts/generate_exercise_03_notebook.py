@@ -220,7 +220,21 @@ def load_abide_age_brain_table():
     """
     from pathlib import Path
 
-    local_path = Path("data/abide_age_brain.csv")
+    # WP60 correction: this notebook's live JupyterLite copy now lives at
+    # "v2/exercise_03.ipynb" (see LITE_TEMPLATE_PATH), not flat at the
+    # files root like every other exercise -- JupyterLite sets the
+    # kernel's cwd to the open notebook's own directory (confirmed live:
+    # os.getcwd() == "/drive/v2" there), so "data/..." no longer reaches
+    # the sibling data/ directory and silently fails over to the network
+    # URL below, which then hard-fails in Pyodide with "RuntimeError: TLS
+    # not supported in this environment" -- confirmed live, not assumed.
+    # "../data/..." is correct from both v2/ (one level up reaches the
+    # files root's data/ directory, confirmed live) and from this same
+    # cell's other two output copies (the portable notebooks), which were
+    # never able to find a local file here anyway (no data/ or ../data/
+    # ships alongside a bare download) and always use the network branch
+    # regardless of which relative path is tried first.
+    local_path = Path("../data/abide_age_brain.csv")
     if local_path.exists():
         table = pd.read_csv(local_path)
     else:
