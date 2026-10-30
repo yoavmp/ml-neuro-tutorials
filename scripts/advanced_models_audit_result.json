@@ -20,7 +20,7 @@
   ],
   "outer_cv": {
     "n_splits": 5,
-    "note": "Identical outer folds for every compared model; same (n_splits, random_state) convention as knn.nested cross-validation in Exercise 4.",
+    "note": "Identical outer folds for every compared model; same (n_splits, random_state) convention as knn.nested cross-validation in Exercise 3.",
     "random_state": 100,
     "shuffle": true
   },

@@ -40,7 +40,7 @@ summary is demoted to one clearly labeled, collapsed, non-graded
 ``<details>`` historical reference (its own dataset/split/procedure named
 explicitly) -- its numbers are never copied into this notebook's own
 conclusions, and nested cross-validation itself is not re-taught or re-run
-here (Exercise 4's job).
+here (Exercise 3's job).
 
 Data: reuses the exact same same-origin export Exercises 2, 4, 5, 6, 7, and
 8 already ship, book/lite/files/data/abide_age_brain.csv (360 fsCT_
@@ -599,7 +599,7 @@ double-click one to edit it, type your answer, then press Shift+Enter to
 render it back. Your answer is saved with the rest of this notebook,
 including in **Download my notebook**.
 
-**Prerequisites:** Exercise 2 (regression), Exercise 4 (validation and
+**Prerequisites:** Exercise 2 (regression), Exercise 3 (validation and
 leakage), and Exercise 8 (PCA).
 """,
             "wp51-002-overview",
@@ -1590,7 +1590,7 @@ One more caution: comparing validation scores across several models and
 settings, the way the table below does, is a useful **exploratory** signal
 -- it is not the same as an unbiased estimate of final performance on
 genuinely new data. Trying many settings and reporting the best one
-inflates how good that best score looks, exactly the way Exercise 4's own
+inflates how good that best score looks, exactly the way Exercise 3's own
 leakage lesson warned against for a single model's hyperparameters.
 """,
             "wp51-602-compare-intro",

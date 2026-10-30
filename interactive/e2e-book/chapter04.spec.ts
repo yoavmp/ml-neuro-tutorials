@@ -10,7 +10,7 @@ import { expect, test } from "@playwright/test";
 // Exercise 3.
 
 const CHAPTER_URL = "/ml-neuro-tutorials/chapters/chapter_04/exercise_04.html";
-const LITE_HREF = "../../lite/notebooks/index.html?path=exercise_04.ipynb";
+const LITE_HREF = "../../lite/notebooks/index.html?path=v2/exercise_04.ipynb";
 const DOWNLOAD_HREF = "../../lite/files/exercise_04_portable.ipynb";
 
 test.describe("Chapter 4 built page — JupyterLite transition page", () => {
@@ -25,10 +25,10 @@ test.describe("Chapter 4 built page — JupyterLite transition page", () => {
   test("clicking Open Exercise 4 actually opens the JupyterLite notebook", async ({ page }) => {
     await page.goto(CHAPTER_URL);
     await page.click(`a[href="${LITE_HREF}"]`);
-    await page.waitForURL(/lite\/notebooks\/index\.html\?path=exercise_04\.ipynb/, {
+    await page.waitForURL(/lite\/notebooks\/index\.html\?path=v2\/exercise_04\.ipynb/, {
       timeout: 10_000,
     });
-    expect(page.url()).toContain("lite/notebooks/index.html?path=exercise_04.ipynb");
+    expect(page.url()).toContain("lite/notebooks/index.html?path=v2/exercise_04.ipynb");
   });
 
   test("links to the downloadable portable notebook with a real, working href", async ({

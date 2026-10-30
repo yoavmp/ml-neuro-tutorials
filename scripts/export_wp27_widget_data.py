@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export the three Exercise 4 (WP27) interactive-activity data artifacts.
+"""Export the three Exercise 3 (WP27) interactive-activity data artifacts.
 
 Reshapes the single committed audit result
 (``scripts/wp27_validation_audit_result.json``, produced by

@@ -14,7 +14,7 @@ both quote audited numbers rather than ad hoc in-notebook computation:
   4-5's worked examples. The outer test set (251 rows) is never touched here;
 * **nested cross-validation** -- Linear Regression, Ridge, and Lasso (alpha
   tuned by an inner ``GridSearchCV``) compared with identical outer/inner
-  folds to Exercise 4 section 6, on the full eligible cohort (n=1004). This
+  folds to Exercise 3 section 6, on the full eligible cohort (n=1004). This
   is Exercise 5 section 6's complete regularized pipeline;
 * **SelectKBest curve** -- ``SelectKBest(score_func=f_regression)`` inside a
   5-fold cross-validated pipeline, over candidate retained-feature counts

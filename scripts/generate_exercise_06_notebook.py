@@ -1005,7 +1005,7 @@ def _section_2_how_large() -> list[dict]:
 | `min_samples_leaf` | Forces larger, more stable leaves; less flexible |
 | `ccp_alpha` | Prunes weak splits after fitting; larger values give smaller trees |
 
-As in Exercise 4, the right amount of flexibility is chosen by comparing
+As in Exercise 3, the right amount of flexibility is chosen by comparing
 **training** and **validation** error across a range of settings, using the
 validation partition -- never the locked test set.
 """,
@@ -1124,7 +1124,7 @@ scored by MSE, lower is better). The cell below asks the same
 "how much depth helps" question for a *different* task on the same brain
 measurements -- classifying autism versus control (a category, scored by
 ROC AUC, higher is better) -- using only the 753 development participants
-Exercise 3 trained on; the 251 locked outer-test participants are excluded
+Exercise 4 trained on; the 251 locked outer-test participants are excluded
 and proven so below.
 """,
             "wp46-309-classification-intro",
@@ -1363,7 +1363,7 @@ def _section_4_comparison() -> list[dict]:
 A fair comparison across model families uses **identical cross-validation
 folds** for every model, and fixes each model's complexity settings in
 advance (no tuning on these same folds). None of the three models below
-needs feature scaling, unlike Exercise 4's `KNeighborsRegressor` example.
+needs feature scaling, unlike Exercise 3's `KNeighborsRegressor` example.
 
 Using `KFold(n_splits=5, shuffle=True, random_state={FAIR_CV_RANDOM_STATE})`
 on the full cohort (`X`, `y`, all 1004 participants), fit

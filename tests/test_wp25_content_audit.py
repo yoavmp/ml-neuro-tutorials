@@ -45,8 +45,11 @@ PRE_SYLLABUS_ARCHIVE_COMMIT = "914841c4c6033f232d96ce33b6dbcc23eda1c766"
 EXERCISE_TITLES = {
     1: "Exercise 1: Exploratory Data Analysis",
     2: "Exercise 2: Regression and Bias-Variance Trade-Off",
-    3: "Exercise 3: Classification and Metrics",
-    4: "Exercise 4: Validation and Cross-Validation",
+    # WP60 swapped Exercises 3 and 4's subjects (see WPs/reports/
+    # WP60_REPORT.md) -- the titles below reflect the post-swap wording,
+    # not WP25's own original assignment.
+    3: "Exercise 3: Validation and Cross-Validation",
+    4: "Exercise 4: Classification and Metrics",
     5: "Exercise 5: Regularization and Feature Selection",
     6: "Exercise 6: Decision Trees",
     7: "Exercise 7: Boosting and Gradient Boosting",

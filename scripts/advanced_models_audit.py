@@ -5,7 +5,7 @@ RBF SVR, on the identical 1004-participant, 360-cortical-thickness-feature
 cohort every other exercise uses.
 
 Every model shares the identical OUTER ``KFold(n_splits=5, shuffle=True,
-random_state=100)`` (Exercise 4's own nested-cross-validation convention,
+random_state=100)`` (Exercise 3's own nested-cross-validation convention,
 ``knn.nested`` in spirit) and, for every model with a hyperparameter to
 select, the identical INNER ``KFold(n_splits=5, shuffle=True,
 random_state=101)`` computed once per outer fold and reused across every

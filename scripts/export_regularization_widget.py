@@ -19,7 +19,7 @@ the identical dev split (``regularization.dev_split``, same as
 (n_val=189). ``StandardScaler`` is fit on the fitting subset only. The outer
 TEST partition (251 rows) never appears in this artifact at all -- the
 activity only ever shows training/validation numbers, matching this course's
-"no test results in the tuning playground" rule (Exercise 4 section 5, reused
+"no test results in the tuning playground" rule (Exercise 3 section 5, reused
 here).
 
 Alpha grids (``regularization.ridge_alpha_grid`` / ``lasso_alpha_grid`` in the

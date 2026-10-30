@@ -1,11 +1,16 @@
 """Repository-wide content audit for WP19: confirms that early-course
 cross-validation / formal-parameter-selection material -- neither taught nor
 implemented -- is absent from the rendered student-facing sources of
-Exercises 1-3 (WP25 renumbered the active book to Exercises 1-3 plus
+Exercises 1-2 (WP25 renumbered the active book to Exercises 1-3 plus
 placeholder Exercises 4-12; the discarded old Exercise 3 sections and the
 old Exercise 4 numbering live only on archive/pre-syllabus-notebook-structure).
+WP60 swapped Exercise 3 and Exercise 4's subjects (see WPs/reports/
+WP60_REPORT.md): Exercise 3 is now the deliberate "Validation and
+Cross-Validation" lesson, so it moved out of this scope the same way the old
+Exercise 4 (which held that subject before the swap) was never in it --
+this file's "early, pre-cross-validation zone" is now Exercises 1-2, not 1-3.
 
-Scope (WP19 §8.1, corrected; paths updated by WP25): the three active
+Scope (WP19 §8.1, corrected; paths updated by WP25 and WP60): the two active
 canonical notebooks, their generated portable notebooks, and the four
 activity-widget config JSON files whose text is rendered directly in the
 book pages (knn_explore, classification_threshold, classification_imbalance,
@@ -35,15 +40,17 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# Indices: 0=ch1 canonical, 1=ch2 canonical, 2=ch3 canonical,
-# 3=ch1 portable, 4=ch2 portable, 5=ch3 portable.
+# Indices: 0=ch1 canonical, 1=ch2 canonical, 2=ch1 portable, 3=ch2 portable.
+# ch3 (canonical + portable) was removed from this list by WP60: Exercise 3
+# is now deliberately the "Validation and Cross-Validation" lesson, so it no
+# longer belongs in the "no early cross-validation mention" zone -- the same
+# reason the old Exercise 4 (which held that subject before the swap) was
+# never in this list either.
 NOTEBOOK_PATHS = [
     REPO_ROOT / "book" / "chapters" / "chapter_01" / "exercise_01.ipynb",
     REPO_ROOT / "book" / "chapters" / "chapter_02" / "exercise_02.ipynb",
-    REPO_ROOT / "book" / "chapters" / "chapter_03" / "exercise_03.ipynb",
     REPO_ROOT / "book" / "downloads" / "chapter_01" / "exercise_01_portable.ipynb",
     REPO_ROOT / "book" / "downloads" / "chapter_02" / "exercise_02_portable.ipynb",
-    REPO_ROOT / "book" / "downloads" / "chapter_03" / "exercise_03_portable.ipynb",
 ]
 
 WIDGET_CONFIG_PATHS = [
@@ -134,17 +141,21 @@ class NotebookContentAudit(unittest.TestCase):
         text = _notebook_text(reference)
         self.assertIn("KNeighborsRegressor(n_neighbors=20)", text, reference)
 
-    def test_exercise_3_uses_fixed_c1_language(self):
-        # WP44 migrated Exercise 3 to a JupyterLite notebook: NOTEBOOK_PATHS[2]
-        # (the canonical page) is now a 2-cell transition page with no
-        # analysis code of its own (see
-        # tests/test_exercise_03_transition_page.py), so only the portable
-        # notebook (NOTEBOOK_PATHS[5]) still carries this text. The real
-        # lesson's own copy is checked directly in
-        # tests/test_exercise_03_lite_notebook.py's
+    def test_classification_uses_fixed_c1_language(self):
+        # WP44 migrated the classification lesson (then Exercise 3) to a
+        # JupyterLite notebook: its canonical page became a 2-cell
+        # transition page with no analysis code of its own (see
+        # tests/test_exercise_03_transition_page.py at the time), so only
+        # the portable notebook still carries this text. WP60 later moved
+        # the whole lesson to Exercise 4 (see WPs/reports/WP60_REPORT.md) --
+        # this check follows the content there, directly, rather than
+        # through NOTEBOOK_PATHS (which no longer includes it; see that
+        # list's own comment). The real lesson's own copy is checked
+        # directly in tests/test_exercise_04_lite_notebook.py's
         # test_c_example_fixed_not_tuned.
-        text = _notebook_text(NOTEBOOK_PATHS[5])
-        self.assertIn("C_EXAMPLE = 1.0", text, NOTEBOOK_PATHS[5])
+        portable = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
+        text = _notebook_text(portable)
+        self.assertIn("C_EXAMPLE = 1.0", text, portable)
 
 
 class WidgetConfigContentAudit(unittest.TestCase):

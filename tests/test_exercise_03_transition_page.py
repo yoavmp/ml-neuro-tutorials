@@ -39,7 +39,7 @@ class TransitionPage(unittest.TestCase):
     def test_h1_title_unchanged(self):
         self.assertEqual(
             _src(self.cells[0]).splitlines()[0],
-            "# Exercise 3: Classification and Metrics",
+            "# Exercise 3: Validation and Cross-Validation",
         )
 
     def test_is_short(self):
@@ -47,7 +47,7 @@ class TransitionPage(unittest.TestCase):
 
     def test_links_to_the_jupyterlite_notebook(self):
         self.assertIn(
-            '<a href="../../lite/notebooks/index.html?path=exercise_03.ipynb">',
+            '<a href="../../lite/notebooks/index.html?path=v2/exercise_03.ipynb">',
             self.text,
         )
 
@@ -61,16 +61,16 @@ class TransitionPage(unittest.TestCase):
 
     def test_no_analysis_content_duplicated_here(self):
         for needle in (
-            "LogisticRegression",
+            "KNeighborsRegressor",
             "train_test_split",
-            "confusion matrix",
+            "GridSearchCV",
             "YOUR CODE HERE",
         ):
             self.assertNotIn(needle, self.text)
 
     def test_no_wp_or_script_references_in_student_text(self):
         low = self.text.lower()
-        for needle in ("wp44", "scripts/", "generate_exercise_03"):
+        for needle in ("wp45", "scripts/", "generate_exercise_03"):
             self.assertNotIn(needle, low)
 
 

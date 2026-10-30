@@ -5,29 +5,31 @@ import path from "node:path";
 
 // End-to-end proof that the migrated Exercise 4 JupyterLite notebook works
 // in a real browser against the actual combined jupyter-book + jupyter-lite
-// build (WP45), modeled directly on exercise-03-lite.spec.ts. Requires
-// `jupyter lite build --config book/lite/jupyter_lite_config.json --lite-dir
-// book/lite --output-dir book/_build/html/lite` to have already run.
+// build (originally WP44, as Exercise 3; WP60 moved this lesson to Exercise
+// 4 -- see WPs/reports/WP60_REPORT.md), modeled directly on
+// exercise-02-lite.spec.ts. Requires `jupyter lite build --config
+// book/lite/jupyter_lite_config.json --lite-dir book/lite --output-dir
+// book/_build/html/lite` to have already run.
 //
-// Unlike Exercise 3, none of this notebook's two "YOUR CODE HERE" blanks
-// (Section 3's cross-validation, Section 5's nested cross-validation) are
-// guarded by a raise-on-missing-prerequisite cell: each one's own check
-// cell degrades gracefully to "Not complete yet" instead, so "Run All
-// Cells" on the UNTOUCHED template produces zero error cells at all. This
-// file tests both: the untouched template's graceful no-cascade behavior,
-// and a teacher-only completed path (typed in live, exactly like a student
-// filling in the blanks) that reproduces the established mean
-// cross-validation MSE and nested-CV result and exercises every native
-// widget and checked question.
+// This notebook's model-fit cell depends on three student "YOUR CODE HERE"
+// blanks (FEATURES, X/y, the train/test split) rather than fully supplied
+// code. It used to raise an actionable RuntimeError when those blanks were
+// unfilled, which halted "Run All Cells" partway through (WP44's original
+// design). A later fix replaced that raise with the same graceful
+// "Not complete yet" guard pattern every other check cell in this notebook
+// already uses, so "Run All Cells" on the UNTOUCHED template now runs to
+// genuine completion with zero error cells, exactly like every other
+// migrated exercise -- every downstream activity that depends on the
+// unfilled blanks degrades to its own "Not complete yet"/"Complete Section
+// N first" message instead of cascading into a crash. This file tests both:
+// the untouched template's graceful, no-cascade behavior, and a
+// teacher-only completed path (typed in live, exactly like a student
+// filling in the blanks) that reproduces the established accuracy/AUC and
+// exercises every native widget and checked question.
 
-// WP49: bumped from 180_000 -- waitForKernelIdle's own up-to-600_000ms
-// budget needs headroom beyond the old fixed-wait assumption this default
-// was sized for (found live on CI: this file's teacher-completed test
-// failed with the old fixed 140_000ms wait, even running completely
-// serialized with nothing else contending).
-test.setTimeout(300_000);
+test.setTimeout(180_000);
 
-const NOTEBOOK_URL = "/lite/notebooks/index.html?path=exercise_04.ipynb";
+const NOTEBOOK_URL = "/lite/notebooks/index.html?path=v2/exercise_04.ipynb";
 
 async function scrollWindowed(page: Page, fraction: number) {
   await page.evaluate((f) => {
@@ -52,13 +54,12 @@ async function scrollToVisible(
   throw new Error(`cell containing "${text}" never became visible while scrolling`);
 }
 
-// WP49: found live on CI -- this file's teacher-completed test failed
-// with the old fixed 140_000ms wait, even running completely isolated
-// (nothing else contending). `.jp-Notebook-ExecutionIndicator[data-status]`
-// is JupyterLab's own semantic kernel-status attribute (unknown -> busy ->
-// idle), confirmed live by watching it transition across a real Run All
-// Cells -- polling for "idle" is environment-independent, unlike any
-// fixed duration (see exercise-07-lite.spec.ts for the full writeup).
+// Polls JupyterLab's own semantic kernel-status attribute (unknown -> busy
+// -> idle) rather than a fixed wait -- environment-independent, and now
+// safe to use here too: the untouched template's guarded model-fit cell no
+// longer raises (see this file's own header comment), so "Run All Cells"
+// genuinely reaches "idle" instead of hanging partway through busy, the
+// same pattern every other exercise-0N-lite.spec.ts already uses.
 async function waitForKernelIdle(page: Page, timeoutMs = 600_000) {
   await page.waitForFunction(
     () => document.querySelector(".jp-Notebook-ExecutionIndicator")?.getAttribute("data-status") === "idle",
@@ -74,6 +75,12 @@ async function runAllCells(page: Page) {
   await waitForKernelIdle(page);
 }
 
+
+// Fills a blank "# YOUR CODE HERE" cell with real solution code, the way a
+// student (or, for this test, a teacher building a completed copy) would:
+// click into the CodeMirror editor, select all existing text, and type the
+// replacement. Runs the cell with Shift+Enter afterward so its output (and
+// any variables it defines) are available to later cells.
 async function fillBlank(page: Page, anchorText: string, solution: string) {
   const target = await scrollToVisible(page, anchorText);
   const editor = target.locator(".cm-content").first();
@@ -82,20 +89,30 @@ async function fillBlank(page: Page, anchorText: string, solution: string) {
   const isMac = process.platform === "darwin";
   await page.keyboard.press(`${isMac ? "Meta" : "Control"}+A`);
   await page.keyboard.press("Backspace");
-  // Playwright's keyboard.type() sends real per-key keydown events, which
-  // CodeMirror 6 (JupyterLab's editor) reacts to with its own smart-indent
-  // on Enter -- stacking on top of this solution's own explicit leading
-  // whitespace and corrupting indented blocks (confirmed live: an
-  // IndentationError on a for-loop body typed this way). insertText uses a
-  // single CDP Input.insertText call instead, which CodeMirror treats as a
-  // plain paste and does not re-indent.
-  await page.keyboard.insertText(solution);
+  await page.keyboard.type(solution, { delay: 2 });
   await page.keyboard.press("Shift+Enter");
   await page.waitForTimeout(600);
 }
 
 test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
-  test("Section 1 loads the established data and Section 2's one-split result prints", async ({
+  // WP60 review correction: the live path moved to "v2/exercise_04.ipynb"
+  // (a fresh browser-storage identity) specifically so a returning
+  // student's saved edits under the old plain "exercise_04.ipynb" can't
+  // resurface as this lesson -- but nothing visible should say "v2"
+  // anywhere. JupyterLite derives every one of these labels from the
+  // path's basename only, never its directory.
+  test("the app's own title/header show the clean basename, never the v2/ storage directory", async ({
+    page,
+  }) => {
+    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
+    await page.waitForTimeout(3000);
+    expect(await page.title()).not.toContain("v2");
+    const bodyText = await page.locator("body").innerText();
+    expect(bodyText).not.toContain("v2");
+    expect(bodyText.toLowerCase()).toContain("exercise_04");
+  });
+
+  test("Section 1 loads the established data and Section 2's checked question grades correctly", async ({
     page,
   }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
@@ -103,19 +120,48 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     await runAllCells(page);
 
     await scrollWindowed(page, 0.05);
-    await expect(page.locator("body")).toContainText("1004 participants, 360 brain predictors, target = age", {
+    await expect(page.locator("body")).toContainText("463 autism (group=1 -> 1), 541 control (group=2 -> 0)", {
       timeout: 5_000,
     });
 
-    const oneSplit = await scrollToVisible(page, "one_split_model = make_pipeline");
-    // This cell's output area also carries a benign stderr warning output
-    // ahead of the actual print (same two-outputs-per-cell shape WP44
-    // documented for a matplotlib-figure-then-print cell); .last() reaches
-    // the real printed text.
-    await expect(oneSplit.locator(".jp-OutputArea-output").last()).toContainText("test R^2 = 0.664");
+    const question = await scrollToVisible(
+      page,
+      "Two participants receive autism probabilities",
+      ".jp-OutputArea-output",
+    );
+    // ipywidgets renders an empty, hidden "description" <label> for every
+    // widget even when description="" (confirmed live: a plain "label"
+    // locator's first match is this hidden element, not a real option) --
+    // the actual clickable per-option labels live specifically inside
+    // ".widget-radio-box" (the same scoping the setup cell's own CSS fix
+    // already targets for text-wrapping, see SETUP_SOURCE_TEMPLATE).
+    // This question shuffles its displayed option order with a fixed
+    // per-question seed (course-wide review item 2) -- select by the
+    // option's own TEXT, never by position.
+    const labels = question.locator(".widget-radio-box label");
+    await expect(labels.first()).toBeVisible({ timeout: 5_000 });
+    await question.locator(".widget-radio-box label", { hasText: "barely changing the model's actual evidence" }).click();
+    await question.locator("button", { hasText: "Check answer" }).click();
+    await page.waitForTimeout(500);
+    // This question's own feedback_correct text starts "Correct:" (a colon,
+    // not the shared helper's default "Correct." period) -- match the
+    // actual text rather than assuming the default.
+    await expect(question.locator("text=/^Correct:/")).toBeVisible();
   });
 
-  test("no error cells anywhere on an untouched Run All Cells; both blanks degrade to their own guidance", async ({
+  // The model-fit cell's guard used to raise an actionable RuntimeError,
+  // which halted "Run All Cells" there by construction -- nothing after it
+  // could ever run, so "no cascade" held trivially. Now that the guard
+  // degrades gracefully instead (see this file's header comment), this test
+  // verifies the stronger claim live: EVERY activity that depends on the
+  // unfilled blanks, all the way through the end of the notebook, shows its
+  // own helpful "Not complete yet"/"Complete Section N first" message, zero
+  // cells end up in JupyterLab's own error state, and the kernel genuinely
+  // reaches "idle" (not stuck "busy" behind a silent hang). (Offline,
+  // tests/test_exercise_03_reference_execution.py's direct cell-by-cell
+  // executor already confirms the untouched template raises nowhere, top
+  // to bottom.)
+  test("every activity depending on the unfilled blanks degrades gracefully, with zero error cells end to end", async ({
     page,
   }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
@@ -124,25 +170,38 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
 
     expect(await page.locator(".jp-mod-error").count()).toBe(0);
 
-    const cvCheck = await scrollToVisible(page, "define cv_fold_mse and cv_mean_mse above first");
-    await expect(cvCheck.locator(".jp-OutputArea-output").last()).toContainText("Not complete yet");
+    const featuresCheck = await scrollToVisible(page, "define FEATURES above first");
+    await expect(featuresCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
 
-    const nestedCheck = await scrollToVisible(page, "complete the nested cross-validation pipeline above first");
-    await expect(nestedCheck.locator(".jp-OutputArea-output").last()).toContainText("Not complete yet");
-  });
+    const xyCheck = await scrollToVisible(page, "define X and y above first");
+    await expect(xyCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
 
-  test("the One Split or Several Folds widget changes its printed summary when the controls change", async ({
-    page,
-  }) => {
-    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
-    await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
-    await runAllCells(page);
+    const splitCheck = await scrollToVisible(page, "define X_train, X_test, y_train, and y_test above first");
+    await expect(splitCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
 
-    const widget = await scrollToVisible(page, "sample size:", ".jp-CodeCell");
-    await expect(page.locator("body")).toContainText("sample size = 150   seed = 0", { timeout: 5_000 });
+    // The former guard cell: no RuntimeError, no red traceback -- a plain,
+    // friendly printed instruction instead, and the fit/predict code never
+    // ran (so the cell has no real output beyond that one line).
+    const fitCell = await scrollToVisible(page, "complete the FEATURES, X/y, and train/test split activities above first");
+    const fitOutput = fitCell.locator(".jp-OutputArea-output");
+    await expect(fitOutput).toContainText("Not complete yet");
+    await expect(fitOutput).not.toContainText("RuntimeError");
 
-    await widget.locator("select").first().selectOption("250");
-    await expect(page.locator("body")).toContainText("sample size = 250   seed = 0", { timeout: 10_000 });
+    // Downstream of the fit cell: Section 4's confusion-matrix and ROC/AUC
+    // blanks' own checks, Section 5's threshold widget, and Section 6's
+    // imbalance dropdown all degrade too, rather than cascading into a
+    // NameError.
+    const cmCheck = await scrollToVisible(page, "complete Section 3's activities above first");
+    await expect(cmCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
+
+    const aucCheck = await scrollToVisible(page, "define auc above first");
+    await expect(aucCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
+
+    await scrollToVisible(page, "y_test and y_proba are not defined yet", ".jp-CodeCell");
+    await expect(page.locator("body")).toContainText("Complete Section 3 first: y_test and y_proba are not defined yet");
+
+    const imbalanceGuard = await scrollToVisible(page, "Section 3's X/y activity first", ".jp-CodeCell");
+    await expect(imbalanceGuard).toBeVisible();
   });
 
   test("stays usable at a 390px viewport", async ({ page }) => {
@@ -150,44 +209,6 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await page.waitForTimeout(4000);
     const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(2);
-  });
-
-  test("the nested-CV diagram renders without clipping at desktop and 390px", async ({
-    page,
-  }) => {
-    // WP53: the course author's own replacement image (no overlapping
-    // labels) must display at a readable size, fully inside the notebook
-    // content area, with no horizontal page overflow, at both desktop and
-    // a 390px viewport.
-    await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
-    await page.waitForTimeout(3000);
-    // The image's own alt text (its real DOM-text proxy, since the diagram
-    // itself is a PNG with no extractable text) is the only content of this
-    // markdown cell -- scrollToVisible's hasText matching does not see
-    // `alt=`, so locate the <img> directly by that attribute instead and
-    // scroll it into view by hand.
-    const img = page.locator('img[alt*="Nested cross-validation diagram"]').first();
-    for (let f = 0; f <= 1.001; f += 0.05) {
-      await scrollWindowed(page, f);
-      if ((await img.count()) > 0 && (await img.boundingBox())) break;
-    }
-    await expect(img).toBeVisible({ timeout: 10_000 });
-    const naturalWidth = await img.evaluate((el: HTMLImageElement) => el.naturalWidth);
-    expect(naturalWidth).toBeGreaterThan(400); // a real, non-trivial image, not a broken/blank one
-    let overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(2);
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.waitForTimeout(500);
-    const box = await img.boundingBox();
-    expect(box).not.toBeNull();
-    expect(box!.width).toBeLessThanOrEqual(390);
-    overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(2);
@@ -210,91 +231,126 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
 });
 
 test.describe("Exercise 4 — JupyterLite notebook, teacher-completed path", () => {
-  test("filling in both blanks reproduces the established results and drives the checked questions", async ({
+  test("filling in every blank reproduces the established result and drives both native widgets", async ({
     page,
   }) => {
+    // This test's own budget: one cold start (~140s) plus three typed
+    // blanks, two re-runs with their own settle waits, and widget
+    // interactions -- comfortably exceeds the file-wide 180s default.
     test.setTimeout(480_000);
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
     await expect(page.locator("text=Python (Pyodide)")).toBeVisible({ timeout: 20_000 });
     await runAllCells(page);
 
-    // WP49: found live -- WP45's original "# cv_fold_mse = ..." starter
-    // comment was rewritten by WP48 (section E.2) into a multi-step
-    // guidance block that never contains that literal text any more;
-    // this anchor had gone stale and this test had not actually been run
-    // since (WP48's own report used ad-hoc scripts, not this file).
-    // "Required names: cv_fold_mse" is still unique and present.
+    await fillBlank(page, "# FEATURES = ...", 'FEATURES = [c for c in df.columns if c.startswith("fsCT_")]');
     await fillBlank(
       page,
-      "Required names: cv_fold_mse",
-      "cv_pipe = make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=K_EXAMPLE))\n" +
-        "cv_folds = KFold(n_splits=5, shuffle=True, random_state=0)\n" +
-        "cv_scores = cross_validate(cv_pipe, X, y, cv=cv_folds, scoring=('neg_mean_squared_error', 'r2'))\n" +
-        "cv_fold_mse = -cv_scores['test_neg_mean_squared_error']\n" +
-        "cv_mean_mse = cv_fold_mse.mean()\n" +
-        "print(cv_mean_mse)",
+      "# X = ...",
+      'X = df[FEATURES].to_numpy(float)\ny = df["group"].to_numpy()',
+    );
+    await fillBlank(
+      page,
+      "# X_train, X_test, y_train, y_test = ...",
+      "X_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.25, random_state=42, stratify=y\n)",
     );
 
+    // Re-run from the (now guarded-but-passing) model-fit cell onward so
+    // every later cell sees the newly defined variables.
     await runAllCells(page);
-    await page.waitForTimeout(20_000);
+    await page.waitForTimeout(30_000);
 
-    const cvCheck = await scrollToVisible(page, "Looks good: 5 fold MSEs");
-    await expect(cvCheck.locator(".jp-OutputArea-output").last()).toContainText("mean MSE = 33.8");
-
-    // Section 4's checked question.
-    const q1 = await scrollToVisible(
-      page,
-      "why can changing only the random seed swing the single-split test R",
-      ".jp-OutputArea-output",
-    );
-    // Every question now shuffles its displayed option order with a fixed
-    // per-question seed (course-wide review item 2) -- select by the
-    // option's own TEXT, never by position.
-    const q1Labels = q1.locator(".widget-radio-box label");
-    await expect(q1Labels.first()).toBeVisible({ timeout: 5_000 });
-    await q1.locator(".widget-radio-box label", { hasText: "unusually easy or hard subsets tend to cancel out" }).click();
-    await q1.locator("button", { hasText: "Check answer" }).click();
-    await page.waitForTimeout(500);
-    await expect(q1.locator("text=/^Correct:/")).toBeVisible();
+    await scrollWindowed(page, 0.35);
+    await expect(page.locator("body")).toContainText("n_train = 753   n_test = 251   n_features = 360", {
+      timeout: 5_000,
+    });
 
     await fillBlank(
       page,
-      "# 1. build a Pipeline(StandardScaler(), KNeighborsRegressor())",
-      "NESTED_CANDIDATE_KS = [8, 10, 12, 15, 18, 20, 22, 25, 28, 30, 40, 50]\n" +
-        "N_OUTER, N_INNER = 5, 5\n" +
-        "OUTER_SEED, INNER_SEED = 100, 101\n" +
-        "outer_cv = KFold(n_splits=N_OUTER, shuffle=True, random_state=OUTER_SEED)\n" +
-        "inner_cv = KFold(n_splits=N_INNER, shuffle=True, random_state=INNER_SEED)\n" +
-        "nested_rows = []\n" +
-        "for fold_i, (train_idx, test_idx) in enumerate(outer_cv.split(X)):\n" +
-        "    X_tr, X_te = X[train_idx], X[test_idx]\n" +
-        "    y_tr, y_te = y[train_idx], y[test_idx]\n" +
-        "    pipe = Pipeline([('scaler', StandardScaler()), ('knn', KNeighborsRegressor())])\n" +
-        "    grid = GridSearchCV(pipe, param_grid={'knn__n_neighbors': NESTED_CANDIDATE_KS}, scoring='neg_mean_squared_error', cv=inner_cv)\n" +
-        "    grid.fit(X_tr, y_tr)\n" +
-        "    selected_k = grid.best_params_['knn__n_neighbors']\n" +
-        "    pred = grid.predict(X_te)\n" +
-        "    nested_rows.append({'outer_fold': fold_i + 1, 'selected_k': selected_k, 'outer_test_mse': mean_squared_error(y_te, pred), 'outer_test_r2': r2_score(y_te, pred)})\n" +
-        "nested = pd.DataFrame(nested_rows)\n" +
-        "nested.round(3)",
+      "# cm = confusion_matrix(...)",
+      "cm = confusion_matrix(y_test, y_pred, labels=[0, 1])\n" +
+        "tn, fp, fn, tp = cm[0, 0], cm[0, 1], cm[1, 0], cm[1, 1]\n" +
+        "accuracy = accuracy_score(y_test, y_pred)\n" +
+        "sensitivity = tp / (tp + fn)\n" +
+        "specificity = tn / (tn + fp)\n" +
+        "print(f'accuracy = {accuracy:.3f}')",
+    );
+    await fillBlank(
+      page,
+      "# fpr, tpr, _ = roc_curve(...)",
+      "fpr, tpr, _ = roc_curve(y_test, y_proba)\nauc = roc_auc_score(y_test, y_proba)\nprint('placeholder plot')",
     );
 
     await runAllCells(page);
     await page.waitForTimeout(30_000);
 
-    const nestedCheck = await scrollToVisible(page, "Looks good: mean outer-test MSE");
-    await expect(nestedCheck.locator(".jp-OutputArea-output").last()).toContainText("[15, 12, 10, 18, 15]");
+    // WP48 D.3 replaced the confusion-matrix numeric autocheck cell with a
+    // qualitative Markdown reflection (no "Looks good: accuracy=..." print
+    // left to assert on) -- the activity's own typed print above is this
+    // test's replacement signal that the established accuracy reproduced.
+    await scrollWindowed(page, 0.55);
+    await expect(page.locator("body")).toContainText("accuracy = 0.546", { timeout: 5_000 });
+    await expect(page.locator("body")).toContainText(
+      "plausible outcome for this specific, difficult problem",
+      { timeout: 5_000 },
+    );
+    await scrollWindowed(page, 0.65);
+    await expect(page.locator("body")).toContainText("Looks good: AUC=0.569", { timeout: 5_000 });
+
+    // Section 5's threshold slider now has real y_test/y_proba to work with.
+    const handle = page.locator(".widget-slider .noUi-handle").first();
+    for (let f = 0.55; f <= 1.001; f += 0.05) {
+      await scrollWindowed(page, f);
+      if ((await handle.count()) > 0 && (await handle.boundingBox())) break;
+    }
+    await expect(handle).toBeVisible({ timeout: 5_000 });
+    const beforeThreshold = await scrollToVisible(page, "predicted autism =");
+    const before = await beforeThreshold.locator(".jp-OutputArea-output").first().innerText();
+    await handle.click();
+    for (let i = 0; i < 10; i++) await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(1000);
+    const after = await beforeThreshold.locator(".jp-OutputArea-output").first().innerText();
+    expect(after).not.toEqual(before);
+
+    // Section 6's imbalance dropdown. Re-find the cell by its OWN printed
+    // output text before and after the interaction, rather than reusing one
+    // locator handle across the mutation: selecting a new ratio replaces
+    // the cell's figure and text output (a new matplotlib figure + a
+    // changed "cohort: ..." line), and the windowed cell list can remount
+    // the cell's DOM node during that change -- the same lesson
+    // scrollToVisible already exists for.
+    // The default ratio (90:10 of 400) prints "40 autism"; selecting 95:5
+    // must recompute and print "20 autism" -- a specific, unambiguous
+    // signal that the widget actually refit at the new ratio, not just that
+    // the <select> element's own value changed.
+    await expect(page.locator("body")).toContainText("40 autism", { timeout: 5_000 });
+    const dropdown = await scrollToVisible(page, "ratio:", ".jp-CodeCell");
+    await dropdown.locator("select").selectOption("95:5");
+    await expect(page.locator("body")).toContainText("20 autism", { timeout: 10_000 });
 
     // Download contains the completed work.
-    const downloadDir = fs.mkdtempSync(path.join(os.tmpdir(), "wp45-e2e-"));
+    const downloadDir = fs.mkdtempSync(path.join(os.tmpdir(), "wp44-e2e-"));
     const [download] = await Promise.all([
       page.waitForEvent("download"),
       page.click("text=Download my notebook"),
     ]);
+    // WP60 review correction: the live path is "v2/exercise_04.ipynb" (a
+    // fresh browser-storage identity, never reusing the old plain
+    // "exercise_04.ipynb"), but the course-toolbar extension's own download
+    // filename is `context.path.split('/').pop()` -- the basename only --
+    // so what the browser actually offers to save must read clean, with no
+    // "v2" anywhere.
+    expect(download.suggestedFilename()).toBe("exercise_04.ipynb");
     const savePath = path.join(downloadDir, "exercise_04.ipynb");
     await download.saveAs(savePath);
     const downloaded = fs.readFileSync(savePath, "utf8");
-    expect(downloaded).not.toContain('"# YOUR CODE HERE\\n# 1. create the model/pipeline');
-    expect(downloaded).toContain("cv_pipe = make_pipeline");
+    // Not an exact string match: CodeMirror's auto-closing brackets can
+    // alter typed punctuation in ways that still execute correctly (already
+    // proven above by the reproduced accuracy/AUC) without matching a
+    // hand-typed literal byte-for-byte. What must be true is that the
+    // blank's placeholder is gone and real solution code replaced it --
+    // "df.columns" appears only in the completed FEATURES answer, nowhere
+    // in the untouched template.
+    expect(downloaded).not.toContain('"# YOUR CODE HERE\\n# FEATURES = ...\\n"');
+    expect(downloaded).toContain("df.columns");
   });
 });

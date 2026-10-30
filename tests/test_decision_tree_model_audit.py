@@ -80,7 +80,7 @@ class CommittedResult(unittest.TestCase):
 
     def test_classification_complexity_curve_cv_pool_is_development_only_not_the_full_cohort(self):
         # WP30R correction: the pool fed to StratifiedKFold must be exactly
-        # Exercise 3's development partition, not the full eligible cohort
+        # Exercise 4's development partition, not the full eligible cohort
         # -- the bug this WP fixes.
         ccc = self.result["classification_complexity_curve"]
         expected_test_size = dta.MANIFEST["classification"]["holdout_split"]["test_size"]
@@ -88,7 +88,7 @@ class CommittedResult(unittest.TestCase):
         self.assertEqual(ccc["n_outer_test"], expected_n_test)
         self.assertEqual(ccc["n_development"], ccc["n_eligible"] - ccc["n_outer_test"])
         self.assertLess(ccc["n_development"], ccc["n_eligible"])
-        # Must match Exercise 3's own committed outer split sizes exactly.
+        # Must match Exercise 4's own committed outer split sizes exactly.
         cls_result_path = dta.REPO_ROOT / "scripts" / "classification_model_audit_result.json"
         cls_result = json.loads(cls_result_path.read_text(encoding="utf-8"))
         self.assertEqual(ccc["n_development"], cls_result["cohort"]["n_train"])
@@ -115,7 +115,7 @@ class CommittedResult(unittest.TestCase):
 
     def test_classification_complexity_curve_reconstruction_is_deterministic_offline(self):
         # The full network reconstruction (identical participant membership
-        # to Exercise 3's own train_test_split, not just matching sizes) is
+        # to Exercise 4's own train_test_split, not just matching sizes) is
         # proved once, offline-independently of a live frame, by replaying
         # the same train_test_split call with the same eligible-cohort
         # sizes/labels/seed this committed result itself records -- a
