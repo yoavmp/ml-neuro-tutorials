@@ -41,7 +41,7 @@ export const binaryManifestBaseSchema = z
         sha256: z.string().regex(/^[0-9a-f]{64}$/i, "sha256 must be a 64-character hex digest"),
       })
       .passthrough(),
-    sections: z.record(binarySectionSchema),
+    sections: z.record(z.string(), binarySectionSchema),
   })
   .passthrough();
 

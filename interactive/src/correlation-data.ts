@@ -26,7 +26,7 @@ export const abideCorrelationDataSchema = z
   .object({
     schemaVersion: z.literal(1),
     rowCount: z.number().int().positive(),
-    columns: z.record(z.array(cellValue)),
+    columns: z.record(z.string(), z.array(cellValue)),
   })
   .passthrough()
   .superRefine((data, ctx) => {

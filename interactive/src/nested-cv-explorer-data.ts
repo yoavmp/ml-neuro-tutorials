@@ -23,7 +23,7 @@ const foldRowSchema = z
     outerFold: z.number().int().nonnegative(),
     nTrain: z.number().int().positive(),
     nTest: z.number().int().positive(),
-    innerMseByK: z.record(z.number().finite().nonnegative()),
+    innerMseByK: z.record(z.string(), z.number().finite().nonnegative()),
     selectedK: z.number().int().positive(),
     bestInnerMse: z.number().finite().nonnegative(),
     outerTestMse: z.number().finite().nonnegative(),

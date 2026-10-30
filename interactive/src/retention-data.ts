@@ -55,7 +55,7 @@ export const abideRetentionDataSchema = z
           .passthrough(),
       )
       .min(1),
-    columns: z.record(z.array(cellValue)),
+    columns: z.record(z.string(), z.array(cellValue)),
   })
   .passthrough()
   .superRefine((data, ctx) => {

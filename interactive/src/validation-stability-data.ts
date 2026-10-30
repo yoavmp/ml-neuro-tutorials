@@ -71,7 +71,7 @@ const sizeEntry = z
     label: z.string().min(1),
     nActual: z.number().int().positive(),
     singleSplit: z.array(singleSplitEntry).min(1),
-    cvByFolds: z.record(z.array(cvEntry).min(1)),
+    cvByFolds: z.record(z.string(), z.array(cvEntry).min(1)),
     instabilityMeaningful: z.boolean(),
     anyNegativeSingleSplitR2: z.boolean(),
     anyNegativeCv5MeanR2: z.boolean(),

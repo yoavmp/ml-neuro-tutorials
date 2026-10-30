@@ -71,11 +71,13 @@ export const regressionCatalogSchema = z
     preprocessing: z.string().min(1),
     observedTest: z.array(z.number().finite()).min(1),
     bundles: z.record(
+      z.string(),
       z
         .object({ label: z.string().min(1), rois: z.array(z.string().min(1)).min(1) })
         .passthrough(),
     ),
     measures: z.record(
+      z.string(),
       z.object({ label: z.string().min(1), unit: z.string().min(1) }).passthrough(),
     ),
     measurementSubsets: z.array(z.array(z.string().min(1)).min(1)).min(1),

@@ -29,7 +29,7 @@ export const abideHistogramDataSchema = z
           .passthrough(),
       )
       .min(1),
-    columns: z.record(z.array(numberOrNull)),
+    columns: z.record(z.string(), z.array(numberOrNull)),
   })
   .passthrough()
   .superRefine((data, ctx) => {

@@ -68,7 +68,7 @@ const schema = z
   .object({
     schemaVersion: z.literal(1),
     activity: z.literal("har-fold-compare"),
-    activityLabels: z.record(z.string().min(1)),
+    activityLabels: z.record(z.string(), z.string().min(1)),
     kValues: z.array(z.number().int().positive()).min(1),
     nSplits: z.number().int().positive(),
     nRows: z.number().int().positive(),
