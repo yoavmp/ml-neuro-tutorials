@@ -1,0 +1,87 @@
+{
+  "dataset": {
+    "archiveFile": "subj2-2010.01.14.tar.gz",
+    "citation": "Haxby, J. V., Gobbini, M. I., Furey, M. L., Ishai, A., Schouten, J. L., & Pietrini, P. (2001). Distributed and overlapping representations of faces and objects in ventral temporal cortex. Science, 293(5539), 2425-2430. https://doi.org/10.1126/science.1063736",
+    "license": "nilearn's own dataset description (nilearn.datasets.description.haxby2001) lists this dataset's license as \"unknown\" -- there is no explicit license grant from the original distributor. The data has been openly distributed for research and teaching since 2010 via the PyMVPA project's data repository (the URL above), with Haxby et al. (2001) as the expected attribution; this derived course export is shared on that same open-reuse basis and carries the same citation requirement, not a stronger license than the source data itself carries.",
+    "nilearnFetcher": "nilearn.datasets.fetch_haxby(subjects=[2])",
+    "sourceUrl": "http://data.pymvpa.org/datasets/haxby2001/",
+    "subject": 2,
+    "title": "Haxby et al. (2001) visual object category representation (ventral temporal cortex)",
+    "trSeconds": 2.5
+  },
+  "derivedFile": {
+    "columns": "run, category, then one voxel_#### column per retained ventral-temporal voxel",
+    "nRows": 96,
+    "nVoxelColumns": 464,
+    "path": "book/lite/files/data/haxby_rsa_patterns.csv",
+    "sha256": "371e5b44e416b090cf487d89103b7f8f69444fc9f9385112aa61a7035ebb1f95"
+  },
+  "extraction": {
+    "blockDetection": "contiguous spans of identical per-TR condition label (labels.txt's labels column, grouped by its chunks run column)",
+    "blockLengthsObservedTrs": [
+      9
+    ],
+    "categories": [
+      "bottle",
+      "cat",
+      "chair",
+      "face",
+      "house",
+      "scissors",
+      "scrambledpix",
+      "shoe"
+    ],
+    "categoryPatternDefinition": "mean of the z-scored voxel values over a block's retained (post-onset-drop) TRs -- one pattern per (run, category)",
+    "exclusions": [
+      "none: every retained run contained exactly one contiguous block per category"
+    ],
+    "hrfOnsetRationale": "the BOLD hemodynamic response lags neural/stimulus onset by several seconds; at this dataset's TR, a block's first TRs still partly reflect the preceding condition and are excluded from the category pattern rather than averaged in",
+    "hrfOnsetTrsDropped": 2,
+    "note": "patterns are category-level, run-level averages; neither the original picture-by-picture presentation order nor a separate response per individual image survives this extraction.",
+    "oddEvenCheck": {
+      "eachSubsetCoversAllCategories": true,
+      "evenRuns": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "oddRuns": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11
+      ]
+    },
+    "perRunVoxelZScore": "each retained voxel's BOLD time series is z-scored (mean 0, sd 1) within each run separately, using every TR of that run, before any block averaging",
+    "runsRetained": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "script": "scripts/export_haxby_rsa_data.py",
+    "trsDroppedObserved": [
+      2
+    ]
+  },
+  "maskUsed": {
+    "description": "Broad ventral-temporal cortex mask -- not face- or house-selective. Deliberately NOT mask8_face_vt.nii.gz / mask8_house_vt.nii.gz / mask8b_*_vt.nii.gz, which are voxel-selective for the exact face/house contrast this exercise evaluates and would make that comparison circular if used to choose voxels.",
+    "file": "mask4_vt.nii.gz",
+    "nVoxels": 464,
+    "nilearnAttribute": "mask_vt"
+  },
+  "schemaVersion": 1
+}
