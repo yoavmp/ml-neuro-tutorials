@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Exercise 4: Validation and Cross-Validation &#8212; Machine Learning for Neuroscience</title>
+    <title>Exercise 4: Classification and Metrics &#8212; Machine Learning for Neuroscience</title>
   
   
   
@@ -67,11 +67,11 @@
     <script src="../../_static/sidebar-toggle-fix.js?v=6a6248a4"></script>
     <script src="../../_static/launch-buttons.js?v=3a728395"></script>
     <script src="../../_static/activity-resize.js?v=0d9766a4"></script>
-    <script src="../../_static/widgets/app/assets/index-BBv7OQYS.js?v=f69c674c"></script>
+    <script src="../../_static/widgets/app/assets/index-zzt_djDK.js?v=04a1c55b"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Exercise 5: Regularization and Feature Selection" href="../chapter_05/exercise_05.html" />
-    <link rel="prev" title="Exercise 3: Classification and Metrics" href="../chapter_03/exercise_03.html" />
+    <link rel="prev" title="Exercise 3: Validation and Cross-Validation" href="../chapter_03/exercise_03.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -219,8 +219,8 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../contents.html">Contents</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../chapter_01/exercise_01.html">Exercise 1: Exploratory Data Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_02/exercise_02.html">Exercise 2: Regression and Bias-Variance Trade-Off</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../chapter_03/exercise_03.html">Exercise 3: Classification and Metrics</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 4: Validation and Cross-Validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chapter_03/exercise_03.html">Exercise 3: Validation and Cross-Validation</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Exercise 4: Classification and Metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_05/exercise_05.html">Exercise 5: Regularization and Feature Selection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_06/exercise_06.html">Exercise 6: Decision Trees</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../chapter_07/exercise_07.html">Exercise 7: Boosting and Gradient Boosting</a></li>
@@ -413,7 +413,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Exercise 4: Validation and Cross-Validation</h1>
+    <h1>Exercise 4: Classification and Metrics</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -427,12 +427,12 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="exercise-4-validation-and-cross-validation">
-<h1>Exercise 4: Validation and Cross-Validation<a class="headerlink" href="#exercise-4-validation-and-cross-validation" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-4-classification-and-metrics">
+<h1>Exercise 4: Classification and Metrics<a class="headerlink" href="#exercise-4-classification-and-metrics" title="Link to this heading">#</a></h1>
 <p>This exercise now runs as a single interactive notebook, directly in your
 browser – supplied code, your own code, written answers, checked questions,
 and figures all live together in one place.</p>
-<p><strong><a href="../../lite/notebooks/index.html?path=exercise_04.ipynb">Open Exercise 4</a></strong></p>
+<p><strong><a href="../../lite/notebooks/index.html?path=v2/exercise_04.ipynb">Open Exercise 4</a></strong></p>
 <p>The notebook opens with a <strong>Back to course contents</strong> button, and a
 <strong>Download my notebook</strong> button that saves your current work (including your
 edits) at any time. Your edits are stored only in this browser; use download
@@ -480,7 +480,7 @@ notebook</strong>.</p>
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Exercise 3: Classification and Metrics</p>
+        <p class="prev-next-title">Exercise 3: Validation and Cross-Validation</p>
       </div>
     </a>
     <a class="right-next"
