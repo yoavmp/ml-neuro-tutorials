@@ -1,10 +1,13 @@
-# WP60 Report — Swap Exercises 3 and 4, plus review corrections
+# WP60 Report — Swap Exercises 3 and 4, plus review corrections and release
 
 ## Summary
 
 Swapped Exercise 3 and Exercise 4's subjects on feature branch
-`feature/wp60-swap-exercises-3-4`, branched from `main` at `65d52a5`, then
-corrected two review findings before release.
+`feature/wp60-swap-exercises-3-4`, branched from `main` at `65d52a5`,
+corrected two review findings, then released to production.
+**Deployed SHA: `797f2ce` (`797f2cea8f80dc99e2fb6512f620e142be3fc6f0`),
+live at `https://yoavmp.github.io/ml-neuro-tutorials/`, confirmed directly
+(see the Deployment section below), not assumed from a green CI run alone.**
 
 - **Exercise 3** is now "Validation and Cross-Validation" (previously
   Exercise 4, built by WP45).
@@ -13,6 +16,17 @@ corrected two review findings before release.
 
 All lesson code, questions, answers, data, and established numerical
 results are preserved unchanged — only their exercise number moved.
+
+Getting from the approved local review to a green, live deployment took
+four pushes: the first three each failed CI for a different reason (a
+newly published security advisory in a dependency unrelated to this WP, a
+CI runner image change that outpaced the pinned browser-test tool, and a
+genuine bug this WP itself introduced — a relative data path that broke
+once Exercise 3/4's live template moved into a subdirectory). Each was
+diagnosed from CI's own logs and fixed before the next push, autonomously,
+per the task's instructions; the full account, including the one real bug
+and its fix, is in the Deployment section below — nothing here is hidden
+to make the release look cleaner than it was.
 
 ## Review corrections
 
@@ -213,6 +227,112 @@ seconds:
   completely closed is re-running it once on a machine that isn't under
   memory pressure -- CI (a clean, dedicated runner) is about to do
   exactly that as part of the push below.
+
+**Correction, in hindsight:** the "memory pressure, not a regression" diagnosis
+above was wrong. The real cause (see the Deployment section below) was a
+genuine bug this WP introduced: JupyterLite sets the kernel's cwd to the
+open notebook's own directory, which broke the data loader's relative
+path once Exercise 3/4 moved into `v2/`. The symptom -- "Run All Cells"
+never reaching "idle," with zero error cells visible in a quick check --
+was consistent with both explanations, and this machine's local slowness
+during review was real and independently confirmed (the dark-mode spec's
+own Playwright run genuinely did take longer than its usual ~25s that
+session), which is exactly what made the wrong diagnosis plausible at the
+time. The lesson: "slow but no visible error" is not the same as "no
+error" -- the actual RuntimeError was sitting in cell 2's output the
+whole time; a closer look (not just an error-cell *count*) would have
+caught it during this review instead of only on CI.
+
+## Deployment
+
+Pushed to `main` five times (the merge itself, then four fix commits) to
+reach a green, deployed release; each failure was diagnosed from CI's own
+logs and fixed before the next push,
+per the task's instruction to do this without waiting for approval at
+each step.
+
+1. **`5a4144b`** -- the first push (the merge itself, `b479b89`) failed at
+   "Audit production frontend dependencies" on a newly published
+   high-severity advisory for `zod` 3.23.8 (`GHSA-mrhx-c7xc-m3w5`),
+   unrelated to this WP's content but blocking every step after it,
+   including Publish website. `zod` is a direct, heavily used dependency
+   (26 files validating widget JSON at runtime) with no patched 3.x
+   release, so upgraded to 4.6.7. All 46 resulting TypeScript errors
+   reduced to one root cause -- `z.record()`'s single-argument form
+   (implicit string keys) removed in v4 -- fixed at the 9 affected call
+   sites; every other v4-deprecated API this codebase uses still
+   functions identically, confirmed by all 481 frontend unit tests
+   passing unchanged.
+2. **`3e24c5d`** -- the next run got further, then failed installing
+   Playwright's browser: GitHub's `ubuntu-latest` runner had moved to
+   26.04, which the pinned `@playwright/test` 1.55.1 didn't recognize.
+   Bumped to the latest stable (1.64.1); confirmed locally (new Chromium
+   build installs, all unit/typecheck/chapter/title checks still pass)
+   what could be confirmed outside that specific runner.
+3. **`c453776`** -- the next run reached the full browser e2e gate and
+   failed, but *only* on Exercise 3 and Exercise 4 -- every one of their
+   own tests, plus the Exercise 3/4 cases in two shared spec files
+   (`warning-sweep.spec.ts`, `wp22-cross-chapter-dark-mode.spec.ts`), 11
+   failures total, all other exercises green. Diagnosed live rather than
+   assumed: opened the actual notebook, ran a probe cell, and found that
+   JupyterLite sets the kernel's cwd to the notebook's own directory
+   (`os.getcwd() == "/drive/v2"`), breaking the data loader's relative
+   `"data/..."` path -- it silently fell through to a network-fallback
+   branch that hard-fails in Pyodide (`RuntimeError: TLS not supported in
+   this environment"`), and "Run All Cells" stops on the first error.
+   Fixed both loaders to `"../data/..."` (confirmed live: unreachable at
+   the old path, reachable at the new one), and fixed a second bug this
+   exposed -- the offline reference-execution tests' own `os.chdir`
+   target no longer matched the real browser cwd either, so without
+   fixing it those tests would have silently started doing a live
+   network fetch instead of actually testing offline. Also fixed
+   `warning-sweep.spec.ts`, a shared file that builds its notebook URL
+   generically from each exercise's number and had no exception for
+   Exercise 3/4's new `v2/` path; audited every other file that builds
+   such a URL (`kernel-startup.spec.ts`, `kernel-select-dialog-race.spec.ts`)
+   and confirmed both are hardcoded to Exercise 1, unaffected.
+4. **`797f2ce`** -- the very next run failed immediately, at the offline
+   Python suite this time: `test_wp35_content_audit.py`'s author-facing-
+   language audit flagged a "WP-number reference" in both portable
+   notebooks. The previous commit's fix had added an explanatory comment
+   -- beginning "WP60 correction: ..." -- directly inside the generator's
+   `SETUP_SOURCE_TEMPLATE` string, which *is* shipped cell content, not
+   generator-only prose. Replaced it with a short, jargon-free,
+   student-appropriate line, and moved the fuller diagnostic explanation
+   into each generator's own module docstring (confirmed, by rereading
+   every other "WP60" mention this WP added, that none of the rest live
+   inside a cell-content string).
+5. **Run [41184047532](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/41184047532)
+   -- succeeded in full**, every step green including Publish website.
+   **Deployed SHA: `797f2ce` (`797f2cea8f80dc99e2fb6512f620e142be3fc6f0`).**
+
+### Live verification (production, not the local build)
+
+All checked directly against `https://yoavmp.github.io/ml-neuro-tutorials/`
+after the deploy, not assumed from the green CI run alone:
+
+- **Contents page:** lists "Exercise 3: Validation and Cross-Validation"
+  and "Exercise 4: Classification and Metrics."
+- **Both chapter pages'** JupyterLite links point at
+  `index.html?path=v2/exercise_0{3,4}.ipynb`.
+- **Exercise 5's live notebook** reads "Exercise 2's regression material
+  and Exercise 3's validation and cross-validation material" for its
+  prerequisites.
+- **Both live notebooks**, opened in a real browser: `document.title` and
+  the full visible page text contain no "v2" anywhere; the heading reads
+  "Exercise 3: Validation and Cross-Validation" / "Exercise 4:
+  Classification and Metrics" cleanly.
+- **Saved-edit behavior, end to end**: typed a unique marker into a code
+  cell on each live notebook, saved (Ctrl/Cmd+S), confirmed the
+  course-toolbar status read "Saved in this browser," reloaded the page,
+  and confirmed the marker was still there for both -- ordinary
+  persistence genuinely works on the deployed site, not just in the
+  local build.
+
+This closes every open item the local-review report above flagged as
+not yet re-confirmed: the full teacher-completed-path suite and the
+dark-mode spec's Exercise 3/4 blocks both passed in full as part of the
+successful CI run's own full browser gate.
 
 ## What was deliberately not touched
 
