@@ -105,8 +105,29 @@ class ReferenceExecution(unittest.TestCase):
         self.assertAlmostEqual(rdm[iu].min(), 0.4255, delta=0.01)
         self.assertAlmostEqual(rdm[iu].max(), 1.1236, delta=0.01)
 
-    def test_split_half_reliability_matches_direct_verification(self):
-        self.assertAlmostEqual(self.ns["split_half_r"], 0.4854, delta=0.01)
+    def test_split_half_section_removed_no_leftover_names(self):
+        # WP61R item 12.
+        for name in ("split_half_r", "odd_rdm", "even_rdm", "ODD_CATEGORY_PATTERNS", "EVEN_CATEGORY_PATTERNS"):
+            self.assertNotIn(name, self.ns)
+
+    def test_no_mds_future_warning_anywhere(self):
+        # WP61R item 9: n_init=4 fixes the specific warning the author saw.
+        import warnings
+
+        import matplotlib
+
+        matplotlib.use("Agg")
+        nb = nbformat.read(REFERENCE_PATH, as_version=4)
+        old_cwd = os.getcwd()
+        os.chdir(REPO_ROOT / "book" / "lite" / "files")
+        try:
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                asyncio.run(_execute_notebook(nb))
+        finally:
+            os.chdir(old_cwd)
+        n_init_warnings = [w for w in caught if "n_init" in str(w.message)]
+        self.assertEqual(n_init_warnings, [], [str(w.message) for w in n_init_warnings])
 
     def test_face_hypothesis_match_matches_direct_verification(self):
         self.assertAlmostEqual(self.ns["face_match_r"], 0.2467, delta=0.01)
@@ -124,9 +145,7 @@ class ReferenceExecution(unittest.TestCase):
         for qid in (
             "q-row-voxel",
             "q-rdm-cell",
-            "q-condition-order",
             "q-mds-distortion",
-            "q-split-half",
             "q-face-match-implications",
         ):
             show_question(qid)  # must not raise

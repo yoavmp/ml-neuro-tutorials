@@ -12,6 +12,14 @@ import path from "node:path";
 // therefore navigates straight to the lite URL rather than clicking a
 // launch button from a chapter page (there is none yet).
 //
+// WP61R removed the Split-Half Reliability section entirely (and the
+// separate condition-order question) per the author's review -- this spec
+// now covers 2 blanks (neural RDM, animacy) and 3 single-choice + 1
+// multi-choice checked question, and adds an explicit check that neither
+// MDS cell (the given Section 3 scatter, nor the Section 5 distance-metric
+// activity) prints any FutureWarning -- the author's item 9 fix
+// (n_init=4 on every MDS(...) call, no global warnings suppression).
+//
 // Every checked question's displayed option order is reproducibly
 // shuffled per question (never "correct option first") -- every "click
 // the correct option" step below selects by the option's own TEXT, never
@@ -132,16 +140,26 @@ async function answerSingleChoice(page: Page, promptAnchor: string, optionText: 
   return q;
 }
 
+// None of these substrings should ever appear in a cell's rendered output --
+// any of them would mean an MDS FutureWarning slipped through uncaught.
+const MDS_WARNING_NEEDLES = ["FutureWarning", "n_init", "dissimilarity", "classical_mds"];
+
+async function assertCellOutputHasNoMdsWarning(page: Page, anchorText: string) {
+  const cell = await scrollToVisible(page, anchorText);
+  const text = await cell.locator(".jp-OutputArea-output").allInnerTexts();
+  const joined = text.join("\n");
+  for (const needle of MDS_WARNING_NEEDLES) {
+    expect(joined, `cell "${anchorText}" output unexpectedly contains "${needle}"`).not.toContain(needle);
+  }
+}
+
 const ROW_VOXEL_PROMPT = "What does one row of the loaded table represent";
 const ROW_VOXEL_CORRECT = "One row is a single category's averaged BOLD response pattern from one scanning run";
 const RDM_CELL_PROMPT = "actually represent?";
 const RDM_CELL_CORRECT = "How dissimilar those two categories' averaged response patterns are";
-const CONDITION_ORDER_PROMPT = "what must be true about their category order?";
-const CONDITION_ORDER_CORRECT = "Both RDMs must list categories in the exact same order";
 const MDS_PROMPT = "What does the distance between two points on that plot represent?";
 const MDS_CORRECT = "An approximation of the RDM's real dissimilarity between those two categories";
-const SPLIT_HALF_PROMPT = "instead of only reporting the whole-dataset RDM?";
-const SPLIT_HALF_CORRECT = "To check whether a similar representational structure appears independently";
+const MDS_WRONG = "The exact dissimilarity value from the RDM, preserved without any distortion.";
 const MULTISELECT_PROMPT = "Which statements about what that does and does not establish are true?";
 const MULTISELECT_CORRECT = [
   "It is consistent with face-related information being present somewhere in this region of interest",
@@ -160,17 +178,6 @@ const RDM_SOLUTION =
   "        neural_rdm[i, j] = 1 - r\n" +
   "print(neural_rdm.shape)";
 
-const SPLIT_HALF_SOLUTION =
-  "n = len(CATEGORIES)\n" +
-  "odd_rdm = np.zeros((n, n))\n" +
-  "even_rdm = np.zeros((n, n))\n" +
-  "for i in range(n):\n" +
-  "    for j in range(n):\n" +
-  "        odd_rdm[i, j] = 1 - np.corrcoef(ODD_CATEGORY_PATTERNS[i], ODD_CATEGORY_PATTERNS[j])[0, 1]\n" +
-  "        even_rdm[i, j] = 1 - np.corrcoef(EVEN_CATEGORY_PATTERNS[i], EVEN_CATEGORY_PATTERNS[j])[0, 1]\n" +
-  "split_half_r = np.corrcoef(upper_triangle(odd_rdm), upper_triangle(even_rdm))[0, 1]\n" +
-  "print(split_half_r)";
-
 const ANIMACY_SOLUTION =
   'ANIMATE = {"face", "cat"}\n' +
   'nonscrambled_categories = [c for c in CATEGORIES if c != "scrambledpix"]\n' +
@@ -186,7 +193,7 @@ const ANIMACY_SOLUTION =
   "print(animacy_match_r)";
 
 test.describe("Exercise 11 — JupyterLite notebook, untouched template", () => {
-  test("Run All Cells: no error cells, data loads, both widgets render, and every blank's check cell shows guidance", async ({
+  test("Run All Cells: no error cells, data loads, both widgets render, every blank's check cell shows guidance, and no MDS warning appears", async ({
     page,
   }) => {
     await page.goto(NOTEBOOK_URL, { waitUntil: "load" });
@@ -200,7 +207,6 @@ test.describe("Exercise 11 — JupyterLite notebook, untouched template", () => 
 
     for (const anchor of [
       "define neural_rdm above first",
-      "define odd_rdm, even_rdm, and split_half_r above first",
       "define nonscrambled_categories, animacy_hypothesis_rdm, and animacy_match_r above first",
     ]) {
       const cell = await scrollToVisible(page, anchor);
@@ -222,6 +228,13 @@ test.describe("Exercise 11 — JupyterLite notebook, untouched template", () => 
     await expect(faceExampleCell.locator(".jp-OutputArea-output").last()).toContainText(
       "Not complete yet: finish Section 2's neural_rdm task first.",
     );
+
+    // WP61R item 9/15: neither MDS cell prints a FutureWarning, even on
+    // the untouched template (the given Section 3 scatter stays on its
+    // "Not complete yet" branch, and the distance-metric activity's own
+    // precompute still runs unconditionally).
+    await assertCellOutputHasNoMdsWarning(page, "mds = MDS(n_components=2");
+    await assertCellOutputHasNoMdsWarning(page, "_distance_dd = widgets.Dropdown");
   });
 
   test("stays usable at a 390px viewport, and both widgets' control labels stay fully readable", async ({ page }) => {
@@ -264,7 +277,7 @@ test.describe("Exercise 11 — JupyterLite notebook, untouched template", () => 
 });
 
 test.describe("Exercise 11 — JupyterLite notebook, teacher-completed path", () => {
-  test("filling in all three blanks reproduces the established results, both widgets respond live, every checked question grades correctly after shuffling, and download contains the edits", async ({
+  test("filling in both blanks reproduces the established results, both widgets respond live with no MDS warning, every checked question grades correctly after shuffling, and download contains the edits", async ({
     page,
   }) => {
     test.setTimeout(600_000);
@@ -278,20 +291,15 @@ test.describe("Exercise 11 — JupyterLite notebook, teacher-completed path", ()
     await expect(check.locator(".jp-OutputArea-output").last()).toContainText("Looks good");
 
     // Re-run the MDS cell (Section 3) and the given face-hypothesis example
-    // (Section 5) now that neural_rdm exists -- both deferred gracefully
+    // (Section 4) now that neural_rdm exists -- both deferred gracefully
     // during the initial Run All Cells (before this blank was filled) and
     // must now recover the documented real result, not stay stuck on their
-    // "not complete yet" message.
+    // "not complete yet" message, and must still print no MDS warning.
     await runCell(page, "mds = MDS(n_components=2");
-    await page.waitForTimeout(1_000);
+    await assertCellOutputHasNoMdsWarning(page, "mds = MDS(n_components=2");
     await runCell(page, "face_hypothesis_rdm = np.array(");
     const faceExampleRerun = await scrollToVisible(page, "face_hypothesis_rdm = np.array(");
     await expect(faceExampleRerun.locator(".jp-OutputArea-output").last()).toContainText("face_match_r = 0.247");
-
-    await fillBlank(page, "odd_rdm = np.zeros((n, n))", SPLIT_HALF_SOLUTION);
-    await runCell(page, 'for name, m in (("odd_rdm", odd_rdm)');
-    check = await scrollToVisible(page, "Looks good: split_half_r");
-    await expect(check.locator(".jp-OutputArea-output").last()).toContainText("Looks good: split_half_r = 0.485");
 
     await fillBlank(page, 'ANIMATE = {"face", "cat"}', ANIMACY_SOLUTION);
     await runCell(page, 'if "scrambledpix" in nonscrambled_categories:');
@@ -312,12 +320,18 @@ test.describe("Exercise 11 — JupyterLite notebook, teacher-completed path", ()
     await page.waitForTimeout(1_000);
     await expect(page.locator("body")).toContainText("Group A = ['house']", { timeout: 5_000 });
 
-    // The distance-metric activity: toggling the dropdown redraws
-    // instantly from precomputed variants (no refit visible to the user).
+    // The distance-metric activity: toggling the dropdown redraws both
+    // plots instantly from precomputed variants (no refit visible to the
+    // user), and neither option prints an MDS warning.
     const DISTANCE_ANCHOR = "_distance_dd = widgets.Dropdown";
     let distanceWidget = await scrollToVisible(page, DISTANCE_ANCHOR);
     await expect(distanceWidget.locator("img").last()).toBeVisible({ timeout: 5_000 });
     await distanceWidget.locator("select").selectOption({ label: "Euclidean distance" });
+    await page.waitForTimeout(1_000);
+    distanceWidget = await scrollToVisible(page, DISTANCE_ANCHOR);
+    await expect(distanceWidget.locator("img").last()).toBeVisible({ timeout: 5_000 });
+    await assertCellOutputHasNoMdsWarning(page, DISTANCE_ANCHOR);
+    await distanceWidget.locator("select").selectOption({ label: "Correlation distance (1 - r)" });
     await page.waitForTimeout(1_000);
     distanceWidget = await scrollToVisible(page, DISTANCE_ANCHOR);
     await expect(distanceWidget.locator("img").last()).toBeVisible({ timeout: 5_000 });
@@ -327,9 +341,7 @@ test.describe("Exercise 11 — JupyterLite notebook, teacher-completed path", ()
     for (const [prompt, correct] of [
       [ROW_VOXEL_PROMPT, ROW_VOXEL_CORRECT],
       [RDM_CELL_PROMPT, RDM_CELL_CORRECT],
-      [CONDITION_ORDER_PROMPT, CONDITION_ORDER_CORRECT],
       [MDS_PROMPT, MDS_CORRECT],
-      [SPLIT_HALF_PROMPT, SPLIT_HALF_CORRECT],
     ] as const) {
       const q = await answerSingleChoice(page, prompt, correct);
       await expect(q.locator("text=/^Correct/")).toBeVisible();
@@ -348,7 +360,7 @@ test.describe("Exercise 11 — JupyterLite notebook, teacher-completed path", ()
 
     // One question, deliberately answered wrong: incorrect feedback, no
     // visible answer key.
-    const wrongQ = await answerSingleChoice(page, CONDITION_ORDER_PROMPT, "Nothing in particular");
+    const wrongQ = await answerSingleChoice(page, MDS_PROMPT, MDS_WRONG);
     await expect(wrongQ.locator("text=/^Not quite/")).toBeVisible();
 
     // One multiselect question, deliberately partially wrong: sensible
@@ -361,7 +373,7 @@ test.describe("Exercise 11 — JupyterLite notebook, teacher-completed path", ()
     expect(await partialQ.innerText()).not.toContain("correct_indices");
 
     // Download contains the completed work.
-    const downloadDir = fs.mkdtempSync(path.join(os.tmpdir(), "wp61-e2e-"));
+    const downloadDir = fs.mkdtempSync(path.join(os.tmpdir(), "wp61r-e2e-"));
     const [download] = await Promise.all([
       page.waitForEvent("download"),
       page.click("text=Download my notebook"),

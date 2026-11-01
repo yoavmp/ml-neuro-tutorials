@@ -139,6 +139,9 @@ class Pages(unittest.TestCase):
             "abideii_data_legend.pdf",  # phenotypic legend
             "github.com/neurohackademy/nh2020-curriculum",  # WP55: student-facing credit link (the pinned raw.githubusercontent.com URL is now only inside the notebooks' own loaders, not this page)
             "lite/files/data/abide_age_brain.csv",  # same-origin course export
+            "pymvpa.org/datadb/haxby2001.html",  # WP61R: Haxby et al. (2001) distribution page
+            "lite/files/data/haxby_rsa_patterns.manifest.json",  # same-origin course export's manifest
+            "cc by-sa 3.0",  # WP61R: Haxby dataset's actual license (corrected from "unknown")
         ):
             self.assertIn(needle, low, f"Resources is missing: {needle!r}")
         # No encouragement to install the repository itself.
@@ -166,6 +169,8 @@ class Pages(unittest.TestCase):
             "10.1038/s41586-022-04554-y",
             "storsve",
             "10.1523/jneurosci.0391-14.2014",
+            "haxby",
+            "10.1126/science.1063736",
         ):
             self.assertIn(needle, low, f"References is missing: {needle!r}")
 

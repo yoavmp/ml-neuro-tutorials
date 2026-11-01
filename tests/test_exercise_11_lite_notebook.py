@@ -39,16 +39,13 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 BLANK_TAGS = {
     "wp61-activity-rdm",
-    "wp61-activity-split-half",
     "wp61-activity-animacy",
 }
 
 SINGLE_CHOICE_QUESTION_IDS = {
     "q-row-voxel",
     "q-rdm-cell",
-    "q-condition-order",
     "q-mds-distortion",
-    "q-split-half",
 }
 MULTI_CHOICE_QUESTION_IDS = {"q-face-match-implications"}
 QUESTION_IDS = SINGLE_CHOICE_QUESTION_IDS | MULTI_CHOICE_QUESTION_IDS
@@ -130,9 +127,14 @@ class StudentTemplateStructure(unittest.TestCase):
 
     def test_your_code_here_tasks_exist(self):
         tagged = [c for c in self.cells if "YOUR CODE HERE" in _src(c)]
-        self.assertEqual(len(tagged), 3)
+        self.assertEqual(len(tagged), 2)
         seen_tags = {t for c in self.cells for t in c.get("metadata", {}).get("tags", [])}
         self.assertEqual(BLANK_TAGS, BLANK_TAGS & seen_tags)
+
+    def test_example_format_wording_not_example_shape(self):
+        # WP61R item 7.
+        self.assertIn("# Example format (not a real result):", self.code)
+        self.assertNotIn("Example shape only", self.code)
 
     def test_fill_code_here_marker_is_itself_a_comment(self):
         for c in self.cells:
@@ -156,10 +158,6 @@ class StudentTemplateStructure(unittest.TestCase):
         # phrase that could legitimately appear in a directional hint.
         forbidden_by_tag = {
             "wp61-activity-rdm": ("neural_rdm[i, j] = 1 - r",),
-            "wp61-activity-split-half": (
-                "odd_rdm[i, j] = 1 - np.corrcoef(ODD_CATEGORY_PATTERNS",
-                "split_half_r = np.corrcoef(upper_triangle(odd_rdm)",
-            ),
             "wp61-activity-animacy": (
                 "nonscrambled_categories = [c for c in CATEGORIES if c != \"scrambledpix\"]",
                 "animacy_hypothesis_rdm = np.array([",
@@ -176,13 +174,22 @@ class StudentTemplateStructure(unittest.TestCase):
         rdm_instructions = next(c for c in self.cells if c.get("id") == "wp61-204-instructions")
         self.assertIn("neural_rdm", _src(rdm_instructions))
 
-        split_instructions = next(c for c in self.cells if c.get("id") == "wp61-404-instructions")
-        for name in ("odd_rdm", "even_rdm", "split_half_r"):
-            self.assertIn(name, _src(split_instructions))
-
-        animacy_instructions = next(c for c in self.cells if c.get("id") == "wp61-504-instructions")
+        animacy_instructions = next(c for c in self.cells if c.get("id") == "wp61-404-instructions")
         for name in ("nonscrambled_categories", "animacy_hypothesis_rdm", "animacy_match_r"):
             self.assertIn(name, _src(animacy_instructions))
+
+    def test_split_half_section_is_fully_removed(self):
+        # WP61R item 12.
+        for needle in ("split_half_r", "odd_rdm", "even_rdm", "ODD_CATEGORY_PATTERNS", "EVEN_CATEGORY_PATTERNS", "Split-Half"):
+            self.assertNotIn(needle, self.code + self.md, needle)
+        self.assertNotIn("q-split-half", self.code)
+        self.assertNotIn("q-condition-order", self.code)
+
+    def test_q_row_voxel_moved_before_category_patterns(self):
+        # WP61R item 8.
+        ids = [c.get("id") for c in self.cells]
+        self.assertLess(ids.index("wp61-106-q-row-voxel"), ids.index("wp61-203-category-patterns"))
+        self.assertLess(ids.index("wp61-105-heatmap"), ids.index("wp61-106-q-row-voxel"))
 
     # -- checked questions: visibility and shuffle --------------------------
 
@@ -190,7 +197,7 @@ class StudentTemplateStructure(unittest.TestCase):
         checked = [
             c for c in self.cells if c.get("id") != "wp61-000-setup" and 'show_question("' in _src(c)
         ]
-        self.assertEqual(len(checked), 6)
+        self.assertEqual(len(checked), 4)
         for c in checked:
             src = _src(c)
             self.assertNotIn("correct_index", src)
@@ -231,7 +238,7 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertNotIn("configs/", self.code + self.md)
 
     def test_distance_metric_activity_is_notebook_native_and_precomputed(self):
-        cell = next(c for c in self.cells if c.get("id") == "wp61-606-widget")
+        cell = next(c for c in self.cells if c.get("id") == "wp61-506-widget")
         source = _src(cell)
         self.assertIn("widgets.Dropdown", source)
         self.assertIn("_DISTANCE_VARIANTS", source)
@@ -241,16 +248,81 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertLess(source.index("_DISTANCE_EMBEDDINGS = {"), source.index("def _distance_render"))
 
     def test_grouping_activity_is_notebook_native_and_labeled_exploratory(self):
-        cell = next(c for c in self.cells if c.get("id") == "wp61-508-widget")
+        cell = next(c for c in self.cells if c.get("id") == "wp61-408-widget")
         source = _src(cell)
         self.assertIn("widgets.SelectMultiple", source)
-        intro = next(c for c in self.cells if c.get("id") == "wp61-507-widget-intro")
+        intro = next(c for c in self.cells if c.get("id") == "wp61-407-widget-intro")
         self.assertIn("exploration, not an independent test", _src(intro))
 
     def test_grouping_activity_excludes_scrambled_category(self):
-        cell = next(c for c in self.cells if c.get("id") == "wp61-508-widget")
+        cell = next(c for c in self.cells if c.get("id") == "wp61-408-widget")
         source = _src(cell)
         self.assertIn('!= "scrambledpix"', source)
+
+    # -- WP61R author corrections --------------------------------------------
+
+    def test_mds_warnings_fixed_via_explicit_parameters_not_suppression(self):
+        # WP61R item 9: every MDS(...) call sets n_init, init, and the
+        # modern metric= spelling explicitly (root-cause fixes for the
+        # three distinct FutureWarnings sklearn's MDS can emit), and no
+        # warnings.filterwarnings call targets any of them.
+        self.assertEqual(self.code.count("n_init=4"), 2)
+        self.assertEqual(self.code.count('init="random"'), 2)
+        self.assertEqual(self.code.count('metric="precomputed"'), 2)
+        self.assertNotIn('dissimilarity="precomputed"', self.code)
+        self.assertNotIn("dissimilarity.*deprecated", self.code)
+        self.assertNotIn("default value of `init`", self.code)
+
+    def test_mds_scatter_cell_guards_against_unfilled_neural_rdm(self):
+        # WP61R item 10.
+        cell = next(c for c in self.cells if c.get("id") == "wp61-303-mds")
+        source = _src(cell)
+        self.assertIn("not np.allclose(neural_rdm, 0.0)", source)
+
+    def test_rdm_plot_cell_also_guards_against_unfilled_neural_rdm(self):
+        # Consistency fix alongside item 10: the Section 2 heatmap-plot cell
+        # had the identical latent bug.
+        cell = next(c for c in self.cells if c.get("id") == "wp61-208-plot")
+        source = _src(cell)
+        self.assertIn("not np.allclose(neural_rdm, 0.0)", source)
+
+    def test_mds_reflection_no_longer_mentions_the_written_answer_prompt(self):
+        # WP61R item 11.
+        reflection = next(c for c in self.cells if c.get("id") == "wp61-304-reflection")
+        self.assertNotIn("prompt for the written-answer cell below", _src(reflection))
+
+    def test_overview_wording_and_no_ventral_temporal_voxel_phrase(self):
+        # WP61R items 1 and 2.
+        overview = next(c for c in self.cells if c.get("id") == "wp61-002-overview")
+        self.assertIn("run x category x voxel response patterns", _src(overview))
+        self.assertNotIn("ventral-temporal-voxel", self.md)
+        intro = next(c for c in self.cells if c.get("id") == "wp61-102-intro")
+        self.assertNotIn("so that comparison is not circular", _src(intro))
+
+    def test_manifest_is_linked_directly_from_section_1(self):
+        # WP61R items 3 and 4 (correction): a direct clickable link, not a
+        # "find it in JupyterLite's data folder" explanation.
+        intro = next(c for c in self.cells if c.get("id") == "wp61-102-intro")
+        source = _src(intro)
+        self.assertIn("[haxby_rsa_patterns.manifest.json](data/haxby_rsa_patterns.manifest.json)", source)
+        self.assertNotIn("data folder", source.lower())
+
+    def test_heatmap_intro_wording(self):
+        # WP61R item 5.
+        intro = next(c for c in self.cells if c.get("id") == "wp61-104-heatmap-intro")
+        self.assertIn("Here we can see", _src(intro))
+        self.assertNotIn("Supplied:", _src(intro))
+
+    def test_heatmap_has_row_boundary_lines(self):
+        # WP61R item 6.
+        cell = next(c for c in self.cells if c.get("id") == "wp61-105-heatmap")
+        source = _src(cell)
+        self.assertIn("ax.axhline(i - 0.5", source)
+
+    def test_no_secure_answer_protection_paragraph(self):
+        # WP61R item 14.
+        self.assertNotIn("secure answer protection", self.md)
+        self.assertNotIn("technically curious student can always recover", self.md)
 
     def test_widget_controls_use_the_label_overflow_fix(self):
         self.assertIn('style={"description_width": "initial"}', self.code)

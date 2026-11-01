@@ -30,16 +30,27 @@ categories x 464 voxels, book/lite/files/data/haxby_rsa_patterns.csv. This
 notebook teaches representational similarity analysis (RSA) on that small,
 already-prepared export: a neural representational dissimilarity matrix
 (RDM) from pairwise correlation distances between category patterns, a 2-D
-MDS embedding of that RDM, a split-half (odd run vs. even run) reliability
-check, and a comparison against two predeclared category hypotheses (face
-vs. other; animate vs. inanimate, with scrambled pictures excluded from the
-animacy comparison since they carry no animacy at all). Two native
-ipywidgets/Matplotlib activities: (A) toggle between correlation and
-Euclidean distance and see the resulting RDM/embedding change; (B) assign
-the 7 non-scrambled categories into two groups and see the resulting
-hypothesis RDM's descriptive match to the real neural RDM -- explicitly
-labeled exploration, since optimizing a grouping against the same data it
-is then scored against is not an independent test.
+MDS embedding of that RDM, and a comparison against two predeclared
+category hypotheses (face vs. other; animate vs. inanimate, with scrambled
+pictures excluded from the animacy comparison since they carry no animacy
+at all). Two native ipywidgets/Matplotlib activities: (A) toggle between
+correlation and Euclidean distance and see the resulting RDM/embedding
+change; (B) assign the 7 non-scrambled categories into two groups and see
+the resulting hypothesis RDM's descriptive match to the real neural RDM --
+explicitly labeled exploration, since optimizing a grouping against the
+same data it is then scored against is not an independent test.
+
+WP61R (author review of the WP61 build) removed the split-half (odd run
+vs. even run) reliability section entirely -- its code, blank, check,
+question, and every dependent reference/section number -- along with the
+separate condition-order checked question; a short note on matching
+category order before comparing two RDMs stays in Section 2 without a quiz
+attached. WP61R also fixed two latent bugs matching WP61's own "an
+untouched blank shouldn't silently look complete" pattern: the Section 2
+heatmap-plot cell and the Section 3 MDS cell now both guard against an
+all-zero (unfilled) `neural_rdm`, not just the check cell and the
+face-hypothesis example WP61 already guarded. See WP61R_REPORT.md for the
+full list of author-requested wording/structure changes.
 
 Numbers verified directly against book/lite/files/data/haxby_rsa_patterns.csv
 (built by scripts/export_haxby_rsa_data.py --refresh; see its own docstring
@@ -47,14 +58,12 @@ and book/lite/files/data/haxby_rsa_patterns.manifest.json for the full
 extraction method, provenance, and checksum) before writing a single
 generator line -- see the WP61 report for every verification command.
 Headline results (correlation-distance RDM, category patterns averaged
-across all 12 runs unless noted):
+across all 12 runs unless noted; unchanged by WP61R, which touched wording
+and structure only, never the extraction or any measured value):
   Neural RDM distances range from 0.426 (bottle-shoe, the most similar pair)
     to 1.124 (cat-scrambledpix, the least similar pair); diagonal is exactly
     0, matrix is exactly symmetric (both guaranteed by construction, not
     independently "discovered").
-  Split-half reliability (odd-run RDM vs. even-run RDM, correlation of
-    their matching upper triangles): r = 0.485 -- a real, moderate, far
-    from perfect reproducibility; reported as-is, not adjusted.
   Face-vs-other-categories model RDM match: r = 0.247 -- weak-positive, not
     the strongest result in this notebook; reported honestly rather than
     omitted or re-derived to look stronger.
@@ -182,12 +191,6 @@ import random
 import warnings
 
 warnings.filterwarnings("ignore", message=r"The (width|height|x|y) parameter as float was deprecated")
-# sklearn.manifold.MDS's dissimilarity/init parameters are mid-deprecation
-# in some recent scikit-learn releases (still fully functional, just noisy)
-# -- this notebook pins the long-supported call shape rather than chasing a
-# moving default across the many scikit-learn versions it may run under.
-warnings.filterwarnings("ignore", message=r".*dissimilarity.*deprecated.*")
-warnings.filterwarnings("ignore", message=r".*default value of `init`.*")
 
 if sys.platform == "emscripten":
     # Running in the browser (JupyterLite). ipywidgets has no prebuilt
@@ -412,21 +415,6 @@ _QUESTIONS = {
         correct_index=0,
         feedback_correct="Correct: an RDM cell is a dissimilarity between two patterns, under one chosen distance measure -- it says nothing by itself about mechanism or which voxels drive it.",
     ),
-    "q-condition-order": dict(
-        type="single",
-        shuffle_seed=14,
-        prompt=(
-            "Before comparing two RDMs -- odd-run vs. even-run, or neural vs. "
-            "a hypothesis RDM -- what must be true about their category order?"
-        ),
-        options=[
-            "Both RDMs must list categories in the exact same order, or a cell-by-cell/upper-triangle comparison will silently compare different category pairs against each other.",
-            "Nothing in particular -- RDM comparisons are order-invariant by definition.",
-            "The categories must be in alphabetical order specifically, or the comparison is invalid.",
-        ],
-        correct_index=0,
-        feedback_correct="Correct: matching order (not any particular order) is what makes a cell-by-cell comparison meaningful -- this notebook's own check cell verifies that explicitly.",
-    ),
     "q-mds-distortion": dict(
         type="single",
         shuffle_seed=7,
@@ -441,22 +429,6 @@ _QUESTIONS = {
         ],
         correct_index=0,
         feedback_correct="Correct: MDS finds the best available 2-D approximation to the RDM's distances -- not an exact, distortion-free embedding -- and the axes themselves carry no fixed meaning.",
-    ),
-    "q-split-half": dict(
-        type="single",
-        shuffle_seed=11,
-        prompt=(
-            "Why does this notebook build separate RDMs from odd-numbered "
-            "and even-numbered runs instead of only reporting the "
-            "whole-dataset RDM?"
-        ),
-        options=[
-            "To check whether a similar representational structure appears independently in two non-overlapping halves of the data -- a basic reliability check the whole-dataset RDM alone cannot provide.",
-            "Because odd and even runs were scanned with different stimulus categories, so they cannot be combined.",
-            "Because a whole-dataset RDM is not mathematically valid until split-half agreement is confirmed first.",
-        ],
-        correct_index=0,
-        feedback_correct="Correct: split-half reliability is a check on reproducibility, not a requirement for the whole-dataset RDM to exist or be usable.",
     ),
     "q-face-match-implications": dict(
         type="multi",
@@ -545,15 +517,13 @@ question **representational similarity analysis (RSA)** answers.
 
 In this notebook you will:
 
-1. load the prepared run x category x ventral-temporal-voxel response
-   patterns and see what one response pattern looks like;
+1. load the prepared run x category x voxel response patterns and see
+   what one response pattern looks like;
 2. build a neural representational dissimilarity matrix (RDM) from
    pairwise correlation distances between category patterns;
 3. project that RDM into a 2-D embedding and label each category;
-4. check the RDM's stability by comparing an odd-run RDM to an even-run
-   RDM;
-5. compare the neural RDM against two predeclared category hypotheses;
-6. interpret what these results do, and do not, establish.
+4. compare the neural RDM against two predeclared category hypotheses;
+5. interpret what these results do, and do not, establish.
 
 Written-answer cells (bold questions in a blockquote) are ordinary Markdown:
 double-click one to edit it, type your answer, then press Shift+Enter to
@@ -578,17 +548,14 @@ a participant viewed photographs from 8 categories (faces, cats, houses,
 chairs, bottles, scissors, shoes, and scrambled control images), activity
 was recorded across the brain. This notebook uses only a **ventral-temporal
 (VT) cortex** mask -- a region broadly involved in visual object
-recognition, chosen without reference to the face/house comparison made
-later in this notebook, so that comparison is not circular.
+recognition.
 
-The raw functional scan is large (roughly 300 MB) and not something this
-notebook downloads or processes directly. Instead, it loads a small,
-already-prepared export: for each of 12 scanning runs and each of the 8
-categories, one **response pattern** -- the averaged, block-timed,
-hemodynamic-lag-corrected activity across every retained VT voxel. Full
-preprocessing details, exclusions, and source information are documented
-in this file's own sidecar (`haxby_rsa_patterns.manifest.json`) if you want
-to inspect them.
+We load a small, already-prepared part of the dataset: for each of 12
+scanning runs and each of 8 categories, one **response pattern** across the
+retained VT voxels -- that category's recorded activity, averaged across
+its retained time points within the run. Preprocessing details, exclusions,
+and source information are documented in
+[haxby_rsa_patterns.manifest.json](data/haxby_rsa_patterns.manifest.json).
 
 Each loaded row is one (run, category) pattern; each `voxel_####` column is
 one VT voxel. These are **category-level** patterns -- the original
@@ -619,11 +586,10 @@ haxby_df.head()
             """
 ### What does one response pattern look like?
 
-Supplied: a heatmap of all 8 categories' patterns from a single run (run 0),
-one row per category, one column per voxel. There is no obvious visual
-structure here by eye -- that is expected. Finding structure is exactly
-what the rest of this notebook does systematically, instead of by
-inspection.
+Here we can see a heatmap of all 8 categories' patterns from a single run
+(run 0), one row per category, one column per voxel. No obvious structure
+is visible by eye -- the rest of this notebook finds it systematically
+instead.
 """,
             "wp61-104-heatmap-intro",
         ),
@@ -633,6 +599,8 @@ run0 = haxby_df[haxby_df["run"] == 0].set_index("category").loc[CATEGORIES, VOXE
 
 fig, ax = plt.subplots(figsize=(8, 3.2))
 im = ax.imshow(run0.to_numpy(), aspect="auto", cmap="RdBu_r", vmin=-2, vmax=2)
+for i in range(1, len(CATEGORIES)):
+    ax.axhline(i - 0.5, color="black", linewidth=0.6)
 ax.set_yticks(range(len(CATEGORIES)))
 ax.set_yticklabels(CATEGORIES)
 ax.set_xlabel(f"ventral-temporal voxel (1 of {len(VOXEL_COLUMNS)})")
@@ -642,6 +610,12 @@ plt.tight_layout()
 plt.show()
 """,
             "wp61-105-heatmap",
+        ),
+        code(
+            """
+show_question("q-row-voxel")
+""",
+            "wp61-106-q-row-voxel",
         ),
     ]
 
@@ -694,7 +668,7 @@ neural_rdm = np.zeros((n, n))
 # Hint: loop over every pair (i, j) of row indices into CATEGORY_PATTERNS;
 # np.corrcoef(a, b) returns a 2x2 matrix whose off-diagonal entry [0, 1] is
 # the Pearson correlation between vectors a and b.
-# Example shape only (not a real result):
+# Example format (not a real result):
 # neural_rdm[0, 1] = 0.0
 """,
             """
@@ -751,7 +725,7 @@ the check above has not passed yet.
         ),
         code(
             """
-if "neural_rdm" in globals() and neural_rdm.shape == (len(CATEGORIES), len(CATEGORIES)) and np.all(np.isfinite(neural_rdm)):
+if "neural_rdm" in globals() and not np.allclose(neural_rdm, 0.0) and neural_rdm.shape == (len(CATEGORIES), len(CATEGORIES)) and np.all(np.isfinite(neural_rdm)):
     fig, ax = plt.subplots(figsize=(5.2, 4.4))
     im = ax.imshow(neural_rdm, cmap="viridis")
     ax.set_xticks(range(len(CATEGORIES)))
@@ -769,15 +743,9 @@ else:
         ),
         code(
             """
-show_question("q-row-voxel")
-""",
-            "wp61-209-q-row-voxel",
-        ),
-        code(
-            """
 show_question("q-rdm-cell")
 """,
-            "wp61-210-q-rdm-cell",
+            "wp61-209-q-rdm-cell",
         ),
         md(
             """
@@ -787,13 +755,7 @@ never reordered). That matters for every later comparison in this
 notebook: two RDMs can only be compared cell-by-cell if both list
 categories in the same order.
 """,
-            "wp61-211-order-note",
-        ),
-        code(
-            """
-show_question("q-condition-order")
-""",
-            "wp61-212-q-condition-order",
+            "wp61-210-order-note",
         ),
     ]
 
@@ -819,8 +781,8 @@ Given, ready-to-run:
             """
 from sklearn.manifold import MDS
 
-if "neural_rdm" in globals() and neural_rdm.shape == (len(CATEGORIES), len(CATEGORIES)) and np.all(np.isfinite(neural_rdm)):
-    mds = MDS(n_components=2, dissimilarity="precomputed", random_state=0)
+if "neural_rdm" in globals() and not np.allclose(neural_rdm, 0.0) and neural_rdm.shape == (len(CATEGORIES), len(CATEGORIES)) and np.all(np.isfinite(neural_rdm)):
+    mds = MDS(n_components=2, metric="precomputed", random_state=0, n_init=4, init="random")
     coords = mds.fit_transform(neural_rdm)
 
     fig, ax = plt.subplots(figsize=(5.5, 5))
@@ -842,8 +804,7 @@ else:
             """
 Look at which categories land near each other, and which land far apart.
 Does anything about the layout match your intuition about these
-categories -- and does anything surprise you? (There is no single correct
-answer to predict here; this is a prompt for the written-answer cell below.)
+categories -- and does anything surprise you?
 
 > **In one or two sentences, describe one thing about this layout you find
 > intuitive and one thing you find surprising.**
@@ -859,121 +820,16 @@ show_question("q-mds-distortion")
     ]
 
 
-def _section_4_split_half() -> list[dict]:
+def _section_4_model_comparison() -> list[dict]:
     return [
-        md("## 4. Split-Half Reliability", "wp61-401-header"),
+        md("## 4. Comparing the Neural RDM with Category Hypotheses", "wp61-401-header"),
         md(
             """
-Any RDM built from noisy brain data could, in principle, be mostly noise.
-One basic check: build the same RDM from two **independent** halves of the
-data -- here, odd-numbered runs and even-numbered runs -- and see whether
-they agree. If the same broad structure shows up in both halves, that is
-evidence the RDM reflects something real and reproducible, not just noise
-in this particular dataset.
-
-Given code: average each category's pattern separately within the odd
-runs and within the even runs (reusing Section 2's `category_patterns_from`
-helper):
-""",
-            "wp61-402-intro",
-        ),
-        code(
-            """
-ODD_CATEGORY_PATTERNS = category_patterns_from(haxby_df[haxby_df["run"] % 2 == 1], VOXEL_COLUMNS)
-EVEN_CATEGORY_PATTERNS = category_patterns_from(haxby_df[haxby_df["run"] % 2 == 0], VOXEL_COLUMNS)
-print(f"odd-run patterns: {ODD_CATEGORY_PATTERNS.shape}   even-run patterns: {EVEN_CATEGORY_PATTERNS.shape}")
-""",
-            "wp61-403-odd-even-patterns",
-        ),
-        md(
-            """
-### Your task: build both half RDMs and compare them
-
-Using the same correlation-distance approach as Section 2, build
-`odd_rdm` and `even_rdm` from `ODD_CATEGORY_PATTERNS` and
-`EVEN_CATEGORY_PATTERNS`. Then compute `split_half_r`: the Pearson
-correlation between `odd_rdm`'s upper triangle and `even_rdm`'s upper
-triangle (use the given `upper_triangle(...)` helper -- comparing only the
-upper triangle avoids double-counting each pair and skipping the
-always-0 diagonal).
-""",
-            "wp61-404-instructions",
-        ),
-        blank(
-            """
-n = len(CATEGORIES)
-odd_rdm = np.zeros((n, n))
-even_rdm = np.zeros((n, n))
-
-# YOUR CODE HERE
-# Hint: this closely mirrors Section 2's neural_rdm task, just applied
-# twice, once per pattern array. Once both RDMs are built, get
-# split_half_r with:
-#   np.corrcoef(upper_triangle(odd_rdm), upper_triangle(even_rdm))[0, 1]
-# Example shape only (not a real result):
-# split_half_r = 0.0
-""",
-            """
-n = len(CATEGORIES)
-odd_rdm = np.zeros((n, n))
-even_rdm = np.zeros((n, n))
-
-for i in range(n):
-    for j in range(n):
-        odd_rdm[i, j] = 1 - np.corrcoef(ODD_CATEGORY_PATTERNS[i], ODD_CATEGORY_PATTERNS[j])[0, 1]
-        even_rdm[i, j] = 1 - np.corrcoef(EVEN_CATEGORY_PATTERNS[i], EVEN_CATEGORY_PATTERNS[j])[0, 1]
-
-split_half_r = np.corrcoef(upper_triangle(odd_rdm), upper_triangle(even_rdm))[0, 1]
-""",
-            "wp61-405-split-half-blank",
-            tags=["wp61-activity-split-half"],
-        ),
-        code(
-            """
-# Run this to check your split-half result.
-if all(name in globals() for name in ("odd_rdm", "even_rdm", "split_half_r")):
-    problems = []
-    for name, m in (("odd_rdm", odd_rdm), ("even_rdm", even_rdm)):
-        if m.shape != (len(CATEGORIES), len(CATEGORIES)):
-            problems.append(f"{name} has shape {m.shape}, expected {(len(CATEGORIES), len(CATEGORIES))}")
-        elif not np.all(np.isfinite(m)):
-            problems.append(f"{name} contains a non-finite value")
-    if not np.isfinite(split_half_r) or not (-1.0 <= split_half_r <= 1.0):
-        problems.append(f"split_half_r should be a correlation in [-1, 1]; got {split_half_r!r}")
-    if problems:
-        print("Not quite yet:")
-        for p in problems:
-            print(f"  - {p}")
-    else:
-        print(f"Looks good: split_half_r = {split_half_r:.3f}")
-        print("A positive, moderate value here means the two independent halves of the data")
-        print("broadly agree on which categories are similar to which -- not that either half")
-        print("is noise-free, and not that every individual RDM cell is reliable on its own.")
-else:
-    print("Not complete yet: define odd_rdm, even_rdm, and split_half_r above first.")
-""",
-            "wp61-406-split-half-check",
-        ),
-        code(
-            """
-show_question("q-split-half")
-""",
-            "wp61-407-q-split-half",
-        ),
-    ]
-
-
-def _section_5_model_comparison() -> list[dict]:
-    return [
-        md("## 5. Comparing the Neural RDM with Category Hypotheses", "wp61-501-header"),
-        md(
-            """
-A **model RDM** encodes one specific hypothesis about category structure as
-a matrix of 0s and 1s: 0 for a pair of categories the hypothesis treats as
-the same, 1 for a pair it treats as different. Comparing a model RDM to the
-neural RDM (again, upper triangle to upper triangle) gives a **descriptive
-correlation** -- how well that one hypothesis matches the measured
-structure, nothing more.
+A **model RDM** encodes one hypothesis about category structure as 0s and
+1s: 0 where the hypothesis treats two categories as the same, 1 where it
+treats them as different. Comparing it to the neural RDM (again, upper
+triangle to upper triangle) gives a **descriptive correlation** -- how well
+that hypothesis matches the measured structure, nothing more.
 
 ### Given example: faces vs. every other category
 
@@ -981,7 +837,7 @@ This model RDM says: `face` differs from every other category (distance 1),
 and every non-`face` pair is treated as the same (distance 0) under this
 hypothesis.
 """,
-            "wp61-502-face-example-intro",
+            "wp61-402-face-example-intro",
         ),
         code(
             """
@@ -1007,7 +863,7 @@ if "neural_rdm" in globals() and not np.allclose(neural_rdm, 0.0):
 else:
     print("Not complete yet: finish Section 2's neural_rdm task first.")
 """,
-            "wp61-503-face-example",
+            "wp61-403-face-example",
         ),
         md(
             """
@@ -1030,7 +886,7 @@ Required outputs:
   **matching sub-matrix** of `neural_rdm` (the rows/columns for
   `nonscrambled_categories` only, in the same order).
 """,
-            "wp61-504-instructions",
+            "wp61-404-instructions",
         ),
         blank(
             """
@@ -1042,7 +898,7 @@ ANIMATE = {"face", "cat"}
 # of neural_rdm (neural_rdm[np.ix_(positions, positions)] selects exactly
 # those rows and columns). Build animacy_hypothesis_rdm the same way the
 # face example built face_hypothesis_rdm, just with the ANIMATE set instead.
-# Example shape only (not a real result):
+# Example format (not a real result):
 # animacy_match_r = 0.0
 """,
             """
@@ -1060,7 +916,7 @@ animacy_match_r = np.corrcoef(
     upper_triangle(neural_rdm_nonscrambled), upper_triangle(animacy_hypothesis_rdm)
 )[0, 1]
 """,
-            "wp61-505-animacy-blank",
+            "wp61-405-animacy-blank",
             tags=["wp61-activity-animacy"],
         ),
         code(
@@ -1088,7 +944,7 @@ if all(name in globals() for name in ("nonscrambled_categories", "animacy_hypoth
 else:
     print("Not complete yet: define nonscrambled_categories, animacy_hypothesis_rdm, and animacy_match_r above first.")
 """,
-            "wp61-506-animacy-check",
+            "wp61-406-animacy-check",
         ),
         md(
             """
@@ -1103,10 +959,10 @@ live as you change the selection.
 groupings against the same neural RDM this notebook already computed, and
 reporting whichever grouping happens to score highest, would be searching
 for a match rather than testing a hypothesis decided in advance -- exactly
-the distinction Section 5's two predeclared hypotheses (face-vs-other,
+the distinction Section 4's two predeclared hypotheses (face-vs-other,
 animate-vs-inanimate) were built to avoid.
 """,
-            "wp61-507-widget-intro",
+            "wp61-407-widget-intro",
         ),
         code(
             """
@@ -1163,14 +1019,14 @@ _grouping_select.observe(_grouping_render, names="value")
 display(widgets.VBox([controls_row(_grouping_select), _grouping_output]))
 _grouping_render()
 """,
-            "wp61-508-widget",
+            "wp61-408-widget",
         ),
     ]
 
 
-def _section_6_interpret() -> list[dict]:
+def _section_5_interpret() -> list[dict]:
     return [
-        md("## 6. Interpretation and Limits", "wp61-601-header"),
+        md("## 5. Interpretation and Limits", "wp61-501-header"),
         md(
             """
 A quick summary of what this notebook actually measured:
@@ -1178,9 +1034,6 @@ A quick summary of what this notebook actually measured:
 - The neural RDM's distances ranged from about 0.43 (the most similar pair
   of categories measured) to about 1.12 (the least similar) -- a real
   spread, not a flat, undifferentiated matrix.
-- Split-half reliability was moderate (not perfect, not zero) -- the same
-  broad structure showed up independently in both halves of the data, which
-  is evidence of real signal, but the two halves did not agree exactly.
 - The animate-vs-inanimate hypothesis matched the neural RDM more closely
   than the face-vs-other-categories hypothesis did, in this data. Neither
   result should be read as "proven" -- both are single descriptive
@@ -1189,13 +1042,12 @@ A quick summary of what this notebook actually measured:
 **Why no p-value is reported here.** A correlation between two RDMs'
 upper triangles is computed from `C x (C-1) / 2` pairs built out of only
 `C` underlying category patterns (8 here, or 7 once scrambled images are
-excluded) -- those pairs all share the same handful of underlying patterns,
-so they are not independent observations in the sense an ordinary p-value
-calculation assumes. Reporting a naive p-value on this correlation would
-overstate how much independent evidence it represents. This notebook
-reports the correlation itself, descriptively, and leaves it there.
+excluded) -- those pairs share the same handful of underlying patterns, so
+they are not independent observations in the sense a p-value calculation
+assumes. This notebook reports the correlation itself, descriptively, and
+leaves it there.
 """,
-            "wp61-602-summary",
+            "wp61-502-summary",
         ),
         md(
             """
@@ -1204,13 +1056,13 @@ reports the correlation itself, descriptively, and leaves it there.
 > face-hypothesis result actually support, and what would it take to say
 > more than that?**
 """,
-            "wp61-603-reflection",
+            "wp61-503-reflection",
         ),
         code(
             """
 show_question("q-face-match-implications")
 """,
-            "wp61-604-q-face-implications",
+            "wp61-504-q-face-implications",
         ),
         md(
             """
@@ -1222,7 +1074,7 @@ between two voxel-pattern vectors) and see how the RDM heatmap and the 2-D
 embedding both change. Both variants are computed once, in advance, so
 switching the control redraws instantly rather than refitting anything.
 """,
-            "wp61-605-widget-intro",
+            "wp61-505-widget-intro",
         ),
         code(
             """
@@ -1245,7 +1097,7 @@ _DISTANCE_VARIANTS = {
 # Precomputed once up front -- the dropdown below only looks up an
 # already-fitted embedding, never refits MDS on the fly.
 _DISTANCE_EMBEDDINGS = {
-    name: _MDS(n_components=2, dissimilarity="precomputed", random_state=0).fit_transform(rdm)
+    name: _MDS(n_components=2, metric="precomputed", random_state=0, n_init=4, init="random").fit_transform(rdm)
     for name, rdm in _DISTANCE_VARIANTS.items()
 }
 
@@ -1288,7 +1140,7 @@ _distance_dd.observe(_distance_render, names="value")
 display(widgets.VBox([controls_row(_distance_dd), _distance_output]))
 _distance_render()
 """,
-            "wp61-606-widget",
+            "wp61-506-widget",
         ),
         md(
             """
@@ -1305,19 +1157,11 @@ distance does not.
   measure-free fact about the brain.
 - A 2-D MDS plot approximates an RDM; it does not reproduce it exactly, and
   its axes are not independently meaningful.
-- Split-half reliability is a check on reproducibility, not a guarantee
-  that any single RDM cell is exactly right.
 - A model-RDM correlation is descriptive evidence for one predeclared
   hypothesis, not a causal or mechanistic claim, and not something a naive
   p-value should be attached to here.
-
-Collapsing this notebook's question-checking setup into one hidden cell
-makes the question cells themselves easier to read; it is **not** secure
-answer protection. This is still a fully downloadable, offline, editable
-notebook, and a technically curious student can always recover an answer
-key by expanding that cell or inspecting the running kernel.
 """,
-            "wp61-607-closing",
+            "wp61-507-closing",
         ),
     ]
 
@@ -1332,9 +1176,8 @@ def _build_cells(mode: str) -> list[dict]:
 
     cells += render_section(_section_2_rdm())
     cells += _section_3_mds()
-    cells += render_section(_section_4_split_half())
-    cells += render_section(_section_5_model_comparison())
-    cells += _section_6_interpret()
+    cells += render_section(_section_4_model_comparison())
+    cells += _section_5_interpret()
     return cells
 
 

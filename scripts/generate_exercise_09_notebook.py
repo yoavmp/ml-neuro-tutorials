@@ -1695,12 +1695,6 @@ else:
   exploratory signal, not an unbiased estimate of performance on new data.
 - One split, one dataset, and one feature set can never crown a universal
   winner among the models compared here.
-
-Collapsing this notebook's question-checking setup into one hidden cell
-makes the question cells themselves easier to read; it is **not** secure
-answer protection. This is still a fully downloadable, offline, editable
-notebook, and a technically curious student can always recover an answer
-key by expanding that cell or inspecting the running kernel.
 """,
             "wp51-605-summary",
         ),
