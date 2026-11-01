@@ -29,3 +29,12 @@ non-bibliographic resources), see [Resources](resources.md).
    Neuroscience*, 34(25), 8488-8498.
    [DOI: 10.1523/JNEUROSCI.0391-14.2014](https://doi.org/10.1523/JNEUROSCI.0391-14.2014).
    Cited in Exercise 5 (Regularization and feature selection).
+
+5. J. V. Haxby, M. I. Gobbini, M. L. Furey, A. Ishai, J. L. Schouten, and
+   P. Pietrini (2001). "Distributed and overlapping representations of
+   faces and objects in ventral temporal cortex." *Science*, 293(5539),
+   2425-2430.
+   [DOI: 10.1126/science.1063736](https://doi.org/10.1126/science.1063736).
+   Cited in Exercise 11 (Embeddings and Representational Similarity
+   Analysis); see [Resources](resources.md) for the dataset's own
+   distribution page and the course's curated export.

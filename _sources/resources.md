@@ -24,6 +24,13 @@ For citable works, see [References](references.md).
   and <a href="lite/files/data/abide_phenotypes.csv"><code>abide_phenotypes.csv</code></a> --
   subsets built from the ABIDE II source above, using the columns each
   exercise requires.
+- [Haxby et al. (2001) dataset](https://www.pymvpa.org/datadb/haxby2001.html) --
+  the PyMVPA project's distribution page (data, documentation, and license).
+  Licensed CC BY-SA 3.0 (Creative Commons Attribution-ShareAlike 3.0);
+  Exercise 11 uses subject 2's data.
+- This course's own <a href="lite/files/data/haxby_rsa_patterns.manifest.json"><code>haxby_rsa_patterns.manifest.json</code></a> --
+  the extraction method, provenance, and license for the small, derived
+  run x category x voxel export Exercise 11 loads.
 
 ## Python and Jupyter documentation
 
