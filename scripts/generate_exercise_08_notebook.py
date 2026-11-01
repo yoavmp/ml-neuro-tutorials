@@ -1411,12 +1411,6 @@ def _section_6_conclusion() -> list[dict]:
   cross-validation loop, never once before it, and the locked test set is
   read exactly once.
 
-Collapsing this notebook's question-checking setup into one hidden cell
-makes the question cells themselves easier to read; it is **not** secure
-answer protection. This is still a fully downloadable, offline, editable
-notebook, and a technically curious student can always recover an answer key
-by expanding that cell or inspecting the running kernel.
-
 ### Questions to take away
 
 1. What is the difference between feature extraction and feature selection?

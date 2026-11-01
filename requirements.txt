@@ -8,3 +8,10 @@ pandas
 matplotlib
 seaborn
 scikit-learn
+# Maintainer-only, offline-extraction-script dependencies (WP61 Gate A,
+# scripts/export_haxby_rsa_data.py --refresh). Never added to
+# requirements-lite.txt or book/lite/overrides.json: neither has a
+# prebuilt Pyodide wheel, and no student notebook imports either package --
+# the browser kernel only ever loads the small, already-derived CSV export.
+nilearn
+nibabel

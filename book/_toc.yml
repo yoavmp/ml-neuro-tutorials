@@ -13,12 +13,15 @@ chapters:
       - file: chapters/chapter_07/exercise_07
       - file: chapters/chapter_08/exercise_08
       - file: chapters/chapter_09/exercise_09
-      # WP49/WP52 released Exercises 1-9. This release (WP57/WP57R,
-      # WPs/reports/WP57_RELEASE_REPORT.md) adds Exercise 12 -- a
-      # transition page (scripts/generate_exercise_12_transition_page.py)
-      # linking to the active JupyterLite notebook built by
-      # scripts/generate_exercise_12_notebook.py -- with Exercises 10-11
-      # as titled placeholder stubs the reader navigates past to reach it.
+      # WP49/WP52 released Exercises 1-9. WP57/WP57R added Exercise 12 (see
+      # WPs/reports/WP57_RELEASE_REPORT.md), with Exercise 10 as a titled
+      # Colab/local-only download page (WP58/WP59) and Exercise 11 as a
+      # titled placeholder stub the reader navigated past to reach it. This
+      # release (WP61/WP61R, WP61D, see WPs/reports/WP61D_REPORT.md) migrates
+      # Exercise 11 too -- a transition page
+      # (scripts/generate_exercise_11_transition_page.py) linking to the
+      # active JupyterLite notebook built by
+      # scripts/generate_exercise_11_notebook.py.
       - file: chapters/chapter_10/placeholder
         # "Exercise 10: Deep Learning" -- a titled "coming later"
         # placeholder, NOT the real legacy Exercise 10 notebook
@@ -26,10 +29,10 @@ chapters:
         # for later redesign, excluded from this build by
         # book/_config.yml's exclude_patterns, and not migrated).
       - file: chapters/chapter_11/exercise_11
-        # "Exercise 11: Embeddings and RSA" -- a titled "coming later"
-        # placeholder stub ("Materials for this exercise will be added
-        # before the practice session.") -- no runnable notebook, no
-        # launch/download button.
+        # "Exercise 11: Embeddings and RSA" -- a transition page
+        # (scripts/generate_exercise_11_transition_page.py) linking to the
+        # active JupyterLite notebook built by
+        # scripts/generate_exercise_11_notebook.py.
       - file: chapters/chapter_12/exercise_12
 
   - file: resources

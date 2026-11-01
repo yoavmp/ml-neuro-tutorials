@@ -59,11 +59,12 @@ class Toc(unittest.TestCase):
         files = [c["file"] for c in self.toc["chapters"]]
         self.assertNotIn("syllabus", files)
 
-    def test_exercises_one_through_nine_and_twelve_are_published_in_order(self):
-        # WP49/WP52 published Exercises 1-9. This release
-        # (WPs/reports/WP57_RELEASE_REPORT.md) adds Exercise 12 after
-        # Exercises 10-11's titled placeholder stubs (see the two tests
-        # below) -- all in toctree order.
+    def test_exercises_one_through_nine_eleven_and_twelve_are_published_in_order(self):
+        # WP49/WP52 published Exercises 1-9. WP57/WP57R added Exercise 12
+        # (WPs/reports/WP57_RELEASE_REPORT.md). This release (WP61/WP61R,
+        # WP61D, see WPs/reports/WP61D_REPORT.md) adds Exercise 11, after
+        # Exercise 10's own titled placeholder/download stub (see the
+        # tests below) -- all in toctree order.
         sections = self.toc["chapters"][0]["sections"]
         files = [s["file"] for s in sections]
         expected = [f"chapters/chapter_{n:02d}/exercise_{n:02d}" for n in range(1, 10)]
@@ -73,9 +74,8 @@ class Toc(unittest.TestCase):
             "chapters/chapter_12/exercise_12",
         ]
         self.assertEqual(files, expected)
-        for n in range(1, 10):
+        for n in list(range(1, 10)) + [11, 12]:
             self.assertTrue((BOOK / "chapters" / f"chapter_{n:02d}" / f"exercise_{n:02d}.ipynb").exists())
-        self.assertTrue((BOOK / "chapters" / "chapter_12" / "exercise_12.ipynb").exists())
 
     def test_exercise_10_legacy_notebook_preserved_but_not_published(self):
         # WP49: unpublished, not deleted -- the real legacy Exercise 10
@@ -88,15 +88,18 @@ class Toc(unittest.TestCase):
         self.assertNotIn("chapters/chapter_10/exercise_10", files)
         self.assertTrue((BOOK / "chapters" / "chapter_10" / "exercise_10.ipynb").exists())
 
-    def test_exercise_11_placeholder_is_titled_and_not_misleading(self):
-        # This release titles Exercise 11's placeholder stub (no longer a
-        # generic "Coming Later") while keeping it clearly marked as
-        # not-yet-available: no runnable notebook, no launch/download
-        # button (see launch-buttons.spec.ts).
-        placeholder_11 = (BOOK / "chapters" / "chapter_11" / "exercise_11.md").read_text(encoding="utf-8")
-        self.assertTrue(placeholder_11.startswith("# Exercise 11: Embeddings and RSA"))
-        self.assertIn("will be added", placeholder_11)
-        self.assertNotIn(".ipynb", placeholder_11)
+    def test_exercise_11_is_published_as_an_active_jupyterlite_notebook(self):
+        # This release (WP61/WP61R, WP61D) replaces Exercise 11's titled
+        # "coming later" placeholder stub with a short transition page
+        # (mirroring Exercises 1-9/12's own treatment): the real lesson
+        # lives in book/lite/files/exercise_11.ipynb; this book page just
+        # links to it and to its downloadable copy.
+        text = (BOOK / "chapters" / "chapter_11" / "exercise_11.ipynb").read_text(encoding="utf-8")
+        self.assertIn("# Exercise 11: Embeddings and RSA", text)
+        self.assertNotIn("will be added", text)
+        self.assertIn("lite/notebooks/index.html?path=exercise_11.ipynb", text)
+        self.assertIn("lite/files/exercise_11_portable.ipynb", text)
+        self.assertFalse((BOOK / "chapters" / "chapter_11" / "exercise_11.md").exists())
 
     def test_exercise_10_is_published_as_a_colab_local_download_page(self):
         # WP59: Exercise 10's slot is no longer a "coming later" stub --
@@ -139,6 +142,9 @@ class Pages(unittest.TestCase):
             "abideii_data_legend.pdf",  # phenotypic legend
             "github.com/neurohackademy/nh2020-curriculum",  # WP55: student-facing credit link (the pinned raw.githubusercontent.com URL is now only inside the notebooks' own loaders, not this page)
             "lite/files/data/abide_age_brain.csv",  # same-origin course export
+            "pymvpa.org/datadb/haxby2001.html",  # WP61R: Haxby et al. (2001) distribution page
+            "lite/files/data/haxby_rsa_patterns.manifest.json",  # same-origin course export's manifest
+            "cc by-sa 3.0",  # WP61R: Haxby dataset's actual license (corrected from "unknown")
         ):
             self.assertIn(needle, low, f"Resources is missing: {needle!r}")
         # No encouragement to install the repository itself.
@@ -166,6 +172,8 @@ class Pages(unittest.TestCase):
             "10.1038/s41586-022-04554-y",
             "storsve",
             "10.1523/jneurosci.0391-14.2014",
+            "haxby",
+            "10.1126/science.1063736",
         ):
             self.assertIn(needle, low, f"References is missing: {needle!r}")
 
