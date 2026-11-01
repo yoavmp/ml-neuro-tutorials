@@ -7,19 +7,14 @@ following scripts/generate_exercise_09_notebook.py's exact shape (hidden
 setup cell, show_question() answer-key hiding, Blank-tagged student tasks,
 native ipywidgets/Matplotlib activities, generous sanity-check tolerances).
 
-**Local-only scope (WP61):** this generator's outputs are NOT wired into
-book/_toc.yml, book/_config.yml's exclude_patterns, book/config/
-exercise_manifest.json, or any launch button -- Exercise 11 stays excluded
-from the published Sphinx build and the release gate exactly as before
-(book/config/exercise_manifest.json's own $comment, and
-book/chapters/chapter_11/exercise_11.md, the titled placeholder stub, are
-both left untouched). Wiring this generator's outputs into the live site is
-deliberately deferred to a later, explicitly authorized release WP (the
-WP51->WP52, WP57->WP57 release, WP58->WP59 pattern this repo already uses).
-The JupyterLite route is still built and tested locally this WP, by placing
-the template directly under book/lite/files/ and navigating to it by URL
-during local verification, exactly as WP51/WP57/WP58 did before their own
-release WPs.
+**WP61D releases this generator's outputs to production**, following the
+WP51->WP52, WP57->WP57 release, WP58->WP59 pattern this repo already uses:
+book/_toc.yml, book/config/exercise_manifest.json, and
+book/chapters/chapter_11/exercise_11.ipynb (a short transition page, see
+scripts/generate_exercise_11_transition_page.py, replacing the old titled
+placeholder stub exercise_11.md) now wire this notebook into the published
+site, with a real downloadable portable copy at
+book/downloads/chapter_11/exercise_11_portable.ipynb.
 
 Content: this is the first course notebook built on real fMRI data. Subject
 2 of Haxby et al. (2001)'s visual-object-category dataset (nilearn's own
@@ -74,25 +69,10 @@ and structure only, never the extraction or any measured value):
 
 Outputs:
   book/lite/files/exercise_11.ipynb                    (--student, JupyterLite)
-  book/lite/files/exercise_11_portable.ipynb            (--student, same file,
-                                                          a portable/Colab-ready
-                                                          copy, checked for a
-                                                          downloaded notebook)
+  book/downloads/chapter_11/exercise_11_portable.ipynb (--student, Colab/local)
+  book/lite/files/exercise_11_portable.ipynb           (--student, same file,
+                                                          served copy)
   scripts/reference_notebooks/exercise_11_reference.ipynb (--reference)
-
-**Deliberately NOT written this WP:**
-book/downloads/chapter_11/exercise_11_portable.ipynb. Exercise 11 is still
-the one remaining exercise guarded by tests/test_placeholder_exercises.py's
-test_no_active_portable_notebook_for_any_placeholder, which asserts no file
-exists at exactly that path while Exercise 11's book page stays the
-placeholder stub. That guard is intentional (it is what stops a "coming
-later" page from quietly gaining a real download button) and this WP does
-not lift it -- a future release WP both fills that path and removes
-Exercise 11 from that test's PLACEHOLDER_TITLES, the same way WP52/WP57R/
-WP59 did for their own exercises. The portable/Colab-ready copy this WP
-does ship (book/lite/files/exercise_11_portable.ipynb) is checked by this
-WP's own tests and reachable from the local JupyterLite build's file
-listing; only the book-page download button is deferred.
 
 Modes:
   --write   regenerate the selected output(s) on disk.
@@ -114,13 +94,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_SIDECAR = REPO_ROOT / "book" / "lite" / "files" / "data" / "haxby_rsa_patterns.manifest.json"
 
 LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_11.ipynb"
-# book/downloads/chapter_11/exercise_11_portable.ipynb is deliberately NOT
-# written this WP -- see the module docstring's "Deliberately NOT written
-# this WP" note: tests/test_placeholder_exercises.py's
-# test_no_active_portable_notebook_for_any_placeholder asserts that path
-# does not exist while Exercise 11's book page is still the placeholder
-# stub. LITE_FILES_PORTABLE_COPY_PATH below is this WP's portable, checked
-# copy instead.
+PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_11" / "exercise_11_portable.ipynb"
 LITE_FILES_PORTABLE_COPY_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_11_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_11_reference.ipynb"
 
@@ -1218,7 +1192,7 @@ def main() -> None:
     if do_student:
         nb = build_notebook("student")
         text = _serialize(nb)
-        for path in (LITE_TEMPLATE_PATH, LITE_FILES_PORTABLE_COPY_PATH):
+        for path in (LITE_TEMPLATE_PATH, PORTABLE_PATH, LITE_FILES_PORTABLE_COPY_PATH):
             if args.write:
                 if _write_if_changed(path, text):
                     changed.append(str(path.relative_to(REPO_ROOT)))

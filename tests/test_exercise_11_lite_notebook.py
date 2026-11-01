@@ -27,11 +27,7 @@ import nbformat
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LITE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_11.ipynb"
-# book/downloads/chapter_11/exercise_11_portable.ipynb is deliberately NOT
-# produced this WP -- see tests/test_placeholder_exercises.py
-# ::test_no_active_portable_notebook_for_any_placeholder, which asserts
-# that exact path does not exist while Exercise 11's book page is still
-# the placeholder stub.
+PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_11" / "exercise_11_portable.ipynb"
 LITE_PORTABLE_COPY_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_11_portable.ipynb"
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_11_reference.ipynb"
 
@@ -369,17 +365,19 @@ class StructuralSynchronization(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.lite_nb, cls.lite_cells = _load(LITE_PATH)
+        cls.portable_nb, cls.portable_cells = _load(PORTABLE_PATH)
         cls.lite_copy_nb, cls.lite_copy_cells = _load(LITE_PORTABLE_COPY_PATH)
         cls.reference_nb, cls.reference_cells = _load(REFERENCE_PATH)
 
-    def test_no_active_downloads_portable_notebook_yet(self):
-        # Mirrors tests/test_placeholder_exercises.py's own guard: this WP
-        # deliberately does not produce book/downloads/chapter_11/
-        # exercise_11_portable.ipynb while Exercise 11's book page is still
-        # the placeholder stub.
-        self.assertFalse(
-            (REPO_ROOT / "book" / "downloads" / "chapter_11" / "exercise_11_portable.ipynb").exists()
-        )
+    def test_lite_and_portable_are_identical(self):
+        # WP61D release: book/downloads/chapter_11/exercise_11_portable.ipynb
+        # is now produced (see scripts/generate_exercise_11_notebook.py's
+        # PORTABLE_PATH) -- identical content to the JupyterLite template,
+        # same as every other migrated exercise.
+        self.assertEqual(len(self.lite_cells), len(self.portable_cells))
+        for a, b in zip(self.lite_cells, self.portable_cells):
+            self.assertEqual(_src(a), _src(b))
+            self.assertEqual(a["id"], b["id"])
 
     def test_lite_and_its_served_portable_copy_are_identical(self):
         self.assertEqual(len(self.lite_cells), len(self.lite_copy_cells))

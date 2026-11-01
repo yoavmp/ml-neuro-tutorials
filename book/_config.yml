@@ -51,17 +51,20 @@ exclude_patterns:
   - downloads/*
   # WP49/WP52 excluded Exercises 10-12 from the Sphinx source set entirely
   # (not just book/_toc.yml's nav), scoping the released public hub to
-  # Exercises 1-9. This release (WP57/WP57R,
-  # WPs/reports/WP57_RELEASE_REPORT.md) publishes Exercise 12 (a short
-  # transition page, scripts/generate_exercise_12_transition_page.py,
-  # pointing at the real lesson in book/lite/files/exercise_12.ipynb) and
-  # a titled "coming later" placeholder stub for Exercise 11
-  # (chapters/chapter_11/exercise_11.md). WP58/WP59
-  # (WPs/reports/WP58_REPORT.md, WPs/reports/WP59_REPORT.md) publish
+  # Exercises 1-9. WP57/WP57R (WPs/reports/WP57_RELEASE_REPORT.md)
+  # published Exercise 12 (a short transition page,
+  # scripts/generate_exercise_12_transition_page.py, pointing at the real
+  # lesson in book/lite/files/exercise_12.ipynb). WP58/WP59
+  # (WPs/reports/WP58_REPORT.md, WPs/reports/WP59_REPORT.md) published
   # Exercise 10's own from-scratch "Deep Learning" notebook as a
   # Colab/local-Jupyter-only download; its book page keeps the
   # chapters/chapter_10/placeholder.md filename (minimal diff) but its
-  # content is no longer the "coming later" stub -- see that file.
+  # content is no longer the "coming later" stub -- see that file. This
+  # release (WP61/WP61R, WP61D, see WPs/reports/WP61D_REPORT.md) publishes
+  # Exercise 11 the same way as Exercise 12: a short transition page
+  # (scripts/generate_exercise_11_transition_page.py, replacing the old
+  # "coming later" placeholder stub chapters/chapter_11/exercise_11.md)
+  # pointing at the real lesson in book/lite/files/exercise_11.ipynb.
   - chapters/chapter_10/exercise_10.ipynb
   # Only the real, preserved legacy Exercise 10 notebook is excluded (kept
   # for later redesign, never published, not re-executed by this build's

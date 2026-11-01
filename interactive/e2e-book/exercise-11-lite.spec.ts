@@ -5,12 +5,13 @@ import path from "node:path";
 
 // End-to-end proof that Exercise 11 (Embeddings and RSA) works in a real
 // browser against the actual combined jupyter-book + jupyter-lite build,
-// modeled directly on exercise-09-lite.spec.ts's own patterns. WP61 is
-// local-only: this route exists in the local build because the generator
-// writes book/lite/files/exercise_11.ipynb directly, with NO
-// book/config/exercise_manifest.json or book/_toc.yml change -- this spec
-// therefore navigates straight to the lite URL rather than clicking a
-// launch button from a chapter page (there is none yet).
+// modeled directly on exercise-09-lite.spec.ts's own patterns. WP61D
+// publishes this route (book/config/exercise_manifest.json,
+// book/_toc.yml, and the chapter_11/exercise_11.ipynb transition page --
+// see launch-buttons.spec.ts for that page's own, separate coverage); this
+// spec still navigates straight to the lite URL rather than clicking the
+// transition page's launch link, the same way every other exercise-0N-
+// lite.spec.ts file does.
 //
 // WP61R removed the Split-Half Reliability section entirely (and the
 // separate condition-order question) per the author's review -- this spec

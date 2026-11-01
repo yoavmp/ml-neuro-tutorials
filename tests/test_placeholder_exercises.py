@@ -1,4 +1,4 @@
-"""Offline assertions for the WP25 placeholder pages, Exercises 11-12.
+"""Offline assertions for the WP25 placeholder pages (originally Exercises 11-12).
 
 WP25 restructured the book around the new course syllabus. Exercises 1-3 are
 full notebooks (covered by their own dedicated test files); Exercises 5-12
@@ -13,17 +13,17 @@ test_exercise_09_notebook.py); WP38 did the same for Exercise 10 (see
 test_exercise_10_notebook.py); WP57 did the same for Exercise 12 (a
 from-scratch "Common Mistakes and Pitfalls" notebook, not the WP38
 Exercise 10 content it was once envisioned to reuse -- see
-WPs/reports/WP57_RELEASE_REPORT.md), so none of those eight is covered
-here any more. Exercise 10's slot in the book now carries a separate,
-differently-named "coming later" stub (book/chapters/chapter_10/
+WPs/reports/WP57_RELEASE_REPORT.md); WP61/WP61D did the same for Exercise 11
+(a representational-similarity-analysis notebook on real Haxby et al. 2001
+fMRI data -- see WPs/reports/WP61D_REPORT.md), so none of those nine is
+covered here any more. Exercise 10's slot in the book now carries a
+separate, differently-named "coming later" stub (book/chapters/chapter_10/
 placeholder.md, not this file's exercise_NN.md convention) -- see
-tests/test_book_structure.py for its own title/content checks. This file
-confirms the one remaining placeholder in this file's convention
-(Exercise 11) exists, carries exactly its required title and one
-placeholder sentence, and contains none of the material the task
-explicitly excludes from a placeholder (no learning objectives, dates,
-final-project reminders, Colab/download buttons, interactive content,
-empty code cells, syllabus quotations, or section outlines).
+tests/test_book_structure.py for its own title/content checks. No
+placeholder remains in this file's own exercise_NN.md convention; this
+file is retained for its course-wide structural guards (no Exercise 13,
+no stray .ipynb at a placeholder route) in case a future exercise is
+scaffolded as a placeholder again.
 
 Standard-library ``unittest``; no network, no build.
 
@@ -38,9 +38,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-PLACEHOLDER_TITLES = {
-    11: "Exercise 11: Embeddings and RSA",
-}
+PLACEHOLDER_TITLES: dict[int, str] = {}
 
 PLACEHOLDER_SENTENCE = "Materials for this exercise will be added before the practice session."
 
