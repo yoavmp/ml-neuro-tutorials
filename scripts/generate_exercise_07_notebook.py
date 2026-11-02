@@ -409,6 +409,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -483,6 +485,8 @@ overfitting risk if too many corrective trees are added.
         ),
         md(
             """
+🟦 **RUN FIRST** · Load the ABIDE cohort and make the data splits
+
 > **Think first:** Averaging independent trees (bagging, Random Forest)
 > cannot correct an error every tree shares. Why not? What risk comes from
 > adding corrective trees indefinitely?
@@ -546,6 +550,8 @@ boosting even though each step only ever fits an ordinary regression tree.
         ),
         md(
             """
+🟪 **EXPLORE** · Step through a boosted model's stages
+
 ### Interactive Activity 1: Build a Boosted Model
 
 The activity below uses a small, **simulated** 24-observation, one-predictor
@@ -684,6 +690,7 @@ _step_render()
 """,
             "wp46-204-step-widget",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp46-204a-question-label"),
         code(
             """
 show_question("q-boosting-residuals")
@@ -698,6 +705,8 @@ def _section_3_sklearn_example() -> list[dict]:
         md("## 3. Gradient Boosting with Scikit-Learn", "wp46-301-header"),
         md(
             f"""
+🔷 **INSPECT** · Gradient boosting's validation MSE and R²
+
 `GradientBoostingRegressor` implements the same idea directly on the
 ABIDE brain-thickness features. This illustrative example uses fixed
 settings (not tuned) on the fitting/validation split; it does **not**
@@ -744,6 +753,8 @@ corrections per stage.
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Sweep validation MSE across number of trees
+
 Fixing `learning_rate = {SWEEP_LEARNING_RATE}` and `max_depth = {SWEEP_MAX_DEPTH}`,
 train one `GradientBoostingRegressor` per entry of `N_TREES_VALUES` on
 `X_fit`/`y_fit`, score each on `X_val`/`y_val`, and plot validation MSE
@@ -791,6 +802,7 @@ plt.show()
             "wp46-404-blank",
             tags=["wp46-activity-sweep"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp46-404a-check-label"),
         code(
             f"""
 # Run this to check your sweep results.
@@ -821,6 +833,8 @@ else:
         ),
         md(
             """
+🟪 **EXPLORE** · Explore learning rate, depth, and number of trees
+
 ### Interactive Activity 2: Explore the Boosting Parameters
 
 This activity uses only the fitting and validation subsets -- **the locked
@@ -904,6 +918,7 @@ _explorer_render()
 """,
             "wp46-407-explorer-widget",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp46-407a-question-label"),
         code(
             """
 show_question("q-learning-rate-trees")
@@ -915,7 +930,14 @@ show_question("q-learning-rate-trees")
 
 def _section_5_stopping() -> list[dict]:
     return [
-        md("## 5. Choosing When to Stop", "wp46-501-header"),
+        md(
+            """
+🟫 **ILLUSTRATE** · Training and validation MSE by number of trees
+
+## 5. Choosing When to Stop
+""",
+            "wp46-501-header",
+        ),
         code(
             f"""
 _stop_model = GradientBoostingRegressor(
@@ -990,6 +1012,8 @@ settings after seeing their scores.
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Build and evaluate the full gradient-boosting pipeline
+
 Complete the pipeline below using `GridSearchCV`. Build `param_grid` as a
 *list* of parameter dicts -- one dict per `(learning_rate, n_estimators)`
 pair, each offering all of `max_depth_grid` -- so `GridSearchCV` evaluates
@@ -1046,6 +1070,7 @@ print(f"locked-test MSE = {{boosting_test_mse:.1f}}   locked-test R2 = {{boostin
             "wp46-604-blank",
             tags=["wp46-activity-pipeline"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp46-604a-check-label"),
         code(
             f"""
 # Run this to check your pipeline results.
@@ -1076,6 +1101,7 @@ else:
             "wp46-605-check",
         ),
         md(
+            "🟦 **RUN FIRST** · Build the cross-validation results table\n\n"
             "The cell below builds `boosting_cv_results` -- a tidy table of "
             "every candidate's mean and spread of cross-validation MSE -- "
             "from your fitted `boosting_search`.",
@@ -1106,6 +1132,8 @@ notebook does not evaluate the full 27-candidate grid.
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Two grouped bar charts of cross-validation MSE
+
 ### Two views of the same cross-validation results
 
 Using your `boosting_cv_results` table, make two grouped bar charts of
@@ -1160,6 +1188,7 @@ plt.show()
             "wp46-610-bar-blank",
             tags=["wp46-activity-bars"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp46-610a-check-label"),
         code(
             """
 # Run this to check your two grouped bar charts.
@@ -1183,6 +1212,8 @@ def _section_7_comparison() -> list[dict]:
         md("## 7. Comparing Tree-Based Models", "wp46-701-header"),
         md(
             f"""
+🔷 **INSPECT** · Single tree vs. Random Forest vs. gradient boosting, locked test set
+
 A final, honest comparison across model families: the same fixed settings
 Exercise 6 used for its single tree and Random Forest
 (`fair_tree_settings = {FAIR_TREE_SETTINGS!r}`, `n_estimators={FAIR_N_ESTIMATORS}`,
@@ -1252,6 +1283,8 @@ def _section_8_conclusion() -> list[dict]:
         md("## 8. What Should We Remember?", "wp46-801-header"),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 - Gradient boosting trains trees **sequentially**, each one correcting the
   residuals left by the ensemble so far, unlike bagging and Random Forest's
   independent trees.

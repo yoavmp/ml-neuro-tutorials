@@ -621,6 +621,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -676,6 +678,8 @@ def _case1() -> list[dict]:
         md("## 1. Preparing the Predictors", "wp57-101-header"),
         md(
             """
+🟦 **RUN FIRST** · Load the ABIDE-II table and split it three ways
+
 This case reuses the familiar 1,004-participant, 360-predictor ABIDE-II
 age table. Here it is split **three ways**: a training partition, a
 validation partition (used for a model-setting decision in Case 3), and a
@@ -716,6 +720,8 @@ print(f"X_train: {X_train.shape}   X_val: {X_val.shape}   X_test: {X_test.shape}
         ),
         md(
             """
+🟦 **RUN FIRST** · Fit the leaky StandardScaler and baseline model
+
 ### First, the Code
 
 Below, `StandardScaler` is fit once, on the training and validation rows
@@ -745,6 +751,8 @@ print("The model trains and predicts without any error.")
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 ### Think first
 
 > **What information crossed the train/validation boundary here, and did
@@ -760,6 +768,8 @@ show_question("q-scaler-leakage")
         ),
         md(
             """
+🟧 **YOUR CODE** · Refit StandardScaler on training rows only
+
 ### Repair
 
 Refit `StandardScaler` using **only** `X_train` -- ideally inside a
@@ -793,6 +803,7 @@ honest_pipeline = Pipeline([
             "wp57-109-case1-blank",
             tags=["wp57-activity-scaler"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp57-109a-check-label"),
         code(
             """
 # Run this to check your repair.
@@ -839,6 +850,8 @@ happened at all.
         ),
         md(
             """
+🔷 **INSPECT** · Leaky vs. honest scaling at several sample sizes
+
 ### Does It Change a Prediction Score?
 
 The mean-vector difference above is small. Does it actually change what a
@@ -970,6 +983,8 @@ them plus noise, so the true relationship is known and controllable.
         ),
         md(
             """
+🟦 **RUN FIRST** · Generate the data and fit the contaminated PCA pipeline
+
 ### First, the Code
 
 Below, each path applies the same recipe: standardize its own input
@@ -1035,6 +1050,8 @@ print(f"Contaminated pipeline, held-out R2: {contaminated_r2:.4f}")
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 ### Think first
 
 > **To run a genuinely new participant through this exact pipeline, what
@@ -1050,6 +1067,8 @@ show_question("q-pca-deployment")
         ),
         md(
             """
+🟧 **YOUR CODE** · Build a predictor-only PCA pipeline
+
 ### Repair
 
 Build a **predictor-only** matrix (`x1`, `x2` -- never `y`). Standardize
@@ -1094,6 +1113,7 @@ honest_pca_r2 = r2_score(case2_y[case2_val_idx], honest_pred_val)
             "wp57-208-case2-blank",
             tags=["wp57-activity-pca"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp57-208a-check-label"),
         code(
             """
 # Run this to check your repair.
@@ -1133,6 +1153,8 @@ participant, since it never needs that participant's own age to run.
         ),
         md(
             """
+🟪 **EXPLORE** · Toggle between the contaminated and honest pipelines
+
 ### Interactive activity -- a result that knows the answer
 
 Toggle between the contaminated and honest pipelines below. Both are
@@ -1245,6 +1267,8 @@ consequence of that decision.
         ),
         md(
             f"""
+🟦 **RUN FIRST** · Fit trees at each depth and select by training MSE
+
 ### First, the Code
 
 Below, a `DecisionTreeRegressor` is fit at each depth in `{grid_literal}`
@@ -1282,6 +1306,8 @@ print(f"Depth chosen by lowest TRAINING MSE: {depth_by_train_mse!r}  (training M
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 ### Think first
 
 > **Why is the lowest-training-MSE depth a poor basis for choosing which
@@ -1297,6 +1323,8 @@ show_question("q-train-vs-val-select")
         ),
         md(
             """
+🟧 **YOUR CODE** · Score each tree on the validation set
+
 ### Repair
 
 For every depth already fit above (`tree_fits`), compute its **validation**
@@ -1333,6 +1361,7 @@ depth_by_val_mse = min(tree_val_results, key=lambda r: r["val_mse"])["depth"]
             "wp57-308-case3-blank",
             tags=["wp57-activity-tree"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp57-308a-check-label"),
         code(
             """
 # Run this to check your repair.
@@ -1362,6 +1391,8 @@ else:
         ),
         md(
             """
+🟫 **ILLUSTRATE** · Plot training vs. validation MSE across depths
+
 ### Plot training and validation MSE across depths
 
 Supplied: a ready-to-run plot.
@@ -1389,6 +1420,8 @@ else:
         ),
         md(
             """
+🔷 **INSPECT** · Test-set MSE for each depth-selection rule
+
 ### Consequence
 
 Below, both choices -- the depth picked by training MSE, and the depth
@@ -1411,6 +1444,8 @@ else:
         ),
         md(
             """
+🟪 **EXPLORE** · Toggle between the two depth-selection rules
+
 ### Interactive activity -- which tree gets deployed?
 
 Toggle between the two selection rules below. Both rules choose from the
@@ -1486,6 +1521,7 @@ _widget3_render()
             % {"grid": grid_literal},
             "wp57-315-widget",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp57-315a-question-label"),
         code(
             """
 show_question("q-tree-deploy")
@@ -1511,6 +1547,8 @@ positive, 95% are negative.
         ),
         md(
             """
+🟦 **RUN FIRST** · Generate imbalanced data and score the majority-class baseline
+
 ### First, the Code
 
 A classifier that always predicts the majority class (negative) is scored
@@ -1545,6 +1583,8 @@ print(f"Accuracy: {case4_accuracy:.2f}")
         ),
         md(
             """
+🔷 **INSPECT** · The confusion matrix and metrics behind that accuracy
+
 ### Think first
 
 95% accuracy sounds like a strong result -- on its own, it hides what the
@@ -1575,6 +1615,8 @@ print(f"Plain accuracy was {case4_accuracy:.2f} -- balanced accuracy tells a ver
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 If this classifier were screening participants for a follow-up scan,
 accuracy alone would have hidden the fact that it would miss **every
 single** participant who actually needed that follow-up (sensitivity 0.0),
@@ -1610,6 +1652,8 @@ course's table). 40 synthetic participants each contribute 8 rows.
         ),
         md(
             """
+🟦 **RUN FIRST** · Generate repeated-row data and fit the row-split model
+
 ### First, the Code
 
 Rows are split **at random**, ignoring which participant each row came
@@ -1659,6 +1703,8 @@ print(f"Validation R2 (random row split): {row_val_r2:.4f}")
         ),
         md(
             """
+🟧 **YOUR CODE** · Repair the split with GroupShuffleSplit
+
 ### Think first and repair
 
 The overlap count above already answers the diagnosis: most participants
@@ -1696,6 +1742,7 @@ group_val_r2 = r2_score(case5_y[group_val_idx], group_pred)
             "wp57-506-case5-blank",
             tags=["wp57-activity-group"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp57-506a-check-label"),
         code(
             """
 # Run this to check your repair.
@@ -1721,6 +1768,8 @@ else:
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 ### Consequence
 
 The random row split's validation score looks better -- not because the
@@ -1757,6 +1806,8 @@ with a choice of regularization strength (`alpha`) still to be made.
         ),
         md(
             """
+🔷 **INSPECT** · Test MSE for five candidate alpha values
+
 ### First, the Code
 
 Below, five candidate `alpha` values are each scored directly on the
@@ -1802,6 +1853,8 @@ print(f"\\nBest alpha found: {best_alpha}  --  reported as the untouched test MS
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 ### Think first
 
 > **At which point did the test set stop being an untouched, one-time

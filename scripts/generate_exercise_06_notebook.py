@@ -401,6 +401,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -454,6 +456,8 @@ def _section_1_one_tree() -> list[dict]:
         md("## 1. One Regression Tree", "wp46-101-header"),
         md(
             """
+🟦 **RUN FIRST** · Load data, build FEATURES/X/y, and split train/val/test
+
 A **regression tree** predicts a numeric target by asking a sequence of
 yes/no questions about the predictors. Each internal question is a **node**;
 following the answers down to an unsplit endpoint reaches a **leaf**, whose
@@ -496,6 +500,7 @@ print(f"n_fit = {len(y_fit)}   n_val = {len(y_val)}   n_test = {len(y_test)} (lo
 """,
             "wp46-103-load",
         ),
+        md("🟦 **RUN FIRST** · Fit the small two-feature demo tree", "wp46-103a-run-first"),
         code(
             f"""
 SMALL_TREE_FEATURES = {SMALL_TREE_FEATURES!r}
@@ -513,6 +518,8 @@ print(f"validation MSE = {{small_tree_val_mse:.1f}}   validation R2 = {{small_tr
         ),
         md(
             """
+🟦 **RUN FIRST** · Define display aliases and draw the tree diagram
+
 `SMALL_TREE_FEATURES` are two cortical-thickness regions chosen ahead of
 time for having the largest training-partition correlation with age within a
 small anatomical bundle -- not a search across all 360 predictors. Short
@@ -633,6 +640,8 @@ plt.show()
         ),
         md(
             """
+🟫 **ILLUSTRATE** · The tree's 2-D decision regions
+
 ### Two-dimensional partition plot
 
 Because this tree uses only two features, its predictions can be drawn as a
@@ -728,6 +737,8 @@ that minimizes this weighted MSE is chosen.
         ),
         md(
             """
+🟪 **EXPLORE** · Pick a split, lock it, then reveal the greedy optimum
+
 The activity below uses a small, **simulated** 16-observation dataset with
 two brain measures (not real ABIDE data) so every candidate split can be
 seen and compared by hand. Pick a feature and a candidate threshold, lock
@@ -985,6 +996,7 @@ _greedy_render()
             "> **Did your proposed split ever match the greedy optimum exactly, and why does a tree never reconsider a split once it moves to the next node?**",
             "wp46-205-reflection",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp46-205a-question-label"),
         code(
             """
 show_question("q-greedy-splitting")
@@ -999,6 +1011,8 @@ def _section_2_how_large() -> list[dict]:
         md("## 3. How Large Should the Tree Be?", "wp46-301-header"),
         md(
             """
+🟦 **RUN FIRST** · Set the depths to sweep
+
 | Hyperparameter | Effect of increasing it |
 | --- | --- |
 | `max_depth` | Allows more splits; more flexible, more overfitting risk |
@@ -1019,6 +1033,8 @@ MAX_DEPTHS = {MAX_DEPTHS!r}
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Sweep tree depth and plot train vs. validation MSE
+
 Fit one `DecisionTreeRegressor(max_depth=d, {', '.join(f'{k}={v!r}' for k, v in COMPLEXITY_SETTINGS.items())})`
 per depth in `MAX_DEPTHS`, on `X_fit`/`y_fit`, and record both its training
 MSE (on `X_fit`/`y_fit`) and its validation MSE (on `X_val`/`y_val`). Then
@@ -1065,6 +1081,7 @@ plt.show()
             "wp46-305-blank",
             tags=["wp46-activity-depth"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp46-305a-check-label"),
         code(
             f"""
 # Run this to check your depth-sweep results.
@@ -1097,6 +1114,7 @@ else:
 """,
             "wp46-306-check",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp46-306a-question-label"),
         code(
             """
 show_question("q-depth-selection")
@@ -1117,6 +1135,8 @@ Exercise 7's complete pipeline.
         ),
         md(
             """
+🟫 **ILLUSTRATE** · The same depth sweep, scored for a classification task
+
 ### A second look: does the same pattern hold for a different task?
 
 The curve above chooses tree depth to predict **age** (a continuous value,
@@ -1186,6 +1206,8 @@ def _section_3_ensemble() -> list[dict]:
         md("## 4. From One Tree to an Ensemble", "wp46-401-header"),
         md(
             r"""
+🔷 **INSPECT** · How a tree's root split changes across random subsamples
+
 A single tree can be sensitive to exactly which participants it was trained
 on. The cell below fits the same tree settings on three different random
 70%-without-replacement subsamples of the fitting partition and prints each
@@ -1226,6 +1248,8 @@ further.
         md("## 5. One Tree or Many?", "wp46-501-header"),
         md(
             """
+🟪 **EXPLORE** · Compare single tree, bagging, and Random Forest live
+
 > **Think:** Averaging many trees reduces *variance* (sensitivity to
 > the training sample). Does it also reduce *bias* (a tree family's
 > systematic tendency to under- or over-predict in some region)? Why might
@@ -1346,6 +1370,7 @@ _ens_render()
             "> **As you change the number of trees, does the single-tree line move, and at which point does adding more trees stop visibly helping?**",
             "wp46-504-reflection",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp46-504a-question-label"),
         code(
             """
 show_question("q-bagging-forest-variance")
@@ -1360,6 +1385,8 @@ def _section_4_comparison() -> list[dict]:
         md("## 6. Model Comparison", "wp46-601-header"),
         md(
             f"""
+🟧 **YOUR CODE** · Run the fair cross-validated model comparison
+
 A fair comparison across model families uses **identical cross-validation
 folds** for every model, and fixes each model's complexity settings in
 advance (no tuning on these same folds). None of the three models below
@@ -1420,6 +1447,7 @@ print({name: round(float(np.mean(v["mse"])), 2) for name, v in tree_cv_fold_resu
             "wp46-603-blank",
             tags=["wp46-activity-comparison"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp46-603a-check-label"),
         code(
             """
 # Run this to check your model-comparison results.
@@ -1447,6 +1475,7 @@ else:
             "wp46-604-check",
         ),
         md(
+            "🟫 **ILLUSTRATE** · The cross-validated comparison, plotted with error bars\n\n"
             "The cell below builds `tree_cv_summary` from your fold results "
             "and plots it, with error bars showing spread across folds.",
             "wp46-605-summary-intro",
@@ -1537,6 +1566,7 @@ correcting the errors left by the trees before it.
 """,
             "wp46-702-summary",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp46-702a-question-label"),
         code(
             """
 show_question("q-bagging-reduces-variance")

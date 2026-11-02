@@ -461,6 +461,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -517,6 +519,8 @@ def _section_1_load() -> list[dict]:
         md("## 1. Load the Response Patterns", "wp61-101-header"),
         md(
             """
+🟦 **RUN FIRST** · Load the Haxby RSA response-pattern table
+
 This notebook uses real functional MRI data from Haxby et al. (2001): while
 a participant viewed photographs from 8 categories (faces, cats, houses,
 chairs, bottles, scissors, shoes, and scrambled control images), activity
@@ -558,6 +562,8 @@ haxby_df.head()
         ),
         md(
             """
+🟫 **ILLUSTRATE** · One run's response pattern across categories
+
 ### What does one response pattern look like?
 
 Here we can see a heatmap of all 8 categories' patterns from a single run
@@ -585,6 +591,7 @@ plt.show()
 """,
             "wp61-105-heatmap",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp61-105a-question-label"),
         code(
             """
 show_question("q-row-voxel")
@@ -599,6 +606,8 @@ def _section_2_rdm() -> list[dict]:
         md("## 2. Build the Neural RDM", "wp61-201-header"),
         md(
             """
+🟦 **RUN FIRST** · Average each category's pattern across runs
+
 A **representational dissimilarity matrix (RDM)** summarizes how different
 every pair of categories' patterns is, under one chosen distance measure.
 This section uses **correlation distance**: `1 - r`, where `r` is the
@@ -622,6 +631,8 @@ print(f"CATEGORY_PATTERNS shape: {CATEGORY_PATTERNS.shape}  (categories x voxels
         ),
         md(
             """
+🟧 **YOUR CODE** · Build the neural RDM
+
 ### Your task: build the neural RDM
 
 Build an 8x8 array `neural_rdm` where `neural_rdm[i, j]` is the correlation
@@ -659,6 +670,7 @@ for i in range(n):
             "wp61-205-rdm-blank",
             tags=["wp61-activity-rdm"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp61-205a-check-label"),
         code(
             """
 # Run this to check your neural RDM.
@@ -689,6 +701,8 @@ else:
         ),
         md(
             """
+🟫 **ILLUSTRATE** · Heatmap of the neural RDM
+
 ### Visualize the neural RDM
 
 Supplied: a heatmap of `neural_rdm`, with both axes labeled by category, in
@@ -715,6 +729,7 @@ else:
 """,
             "wp61-208-plot",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp61-208a-question-label"),
         code(
             """
 show_question("q-rdm-cell")
@@ -739,6 +754,8 @@ def _section_3_mds() -> list[dict]:
         md("## 3. A 2-D Embedding of the RDM", "wp61-301-header"),
         md(
             """
+🟫 **ILLUSTRATE** · 2-D MDS embedding of the neural RDM
+
 An 8x8 RDM is hard to read as a table. **Multidimensional scaling (MDS)**
 finds a low-dimensional layout of points -- here, 2-D -- whose pairwise
 distances match the RDM's distances as closely as possible. This is a
@@ -776,6 +793,8 @@ else:
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 Look at which categories land near each other, and which land far apart.
 Does anything about the layout match your intuition about these
 categories -- and does anything surprise you?
@@ -799,6 +818,8 @@ def _section_4_model_comparison() -> list[dict]:
         md("## 4. Comparing the Neural RDM with Category Hypotheses", "wp61-401-header"),
         md(
             """
+🟫 **ILLUSTRATE** · Face-vs-other model RDM and its match
+
 A **model RDM** encodes one hypothesis about category structure as 0s and
 1s: 0 where the hypothesis treats two categories as the same, 1 where it
 treats them as different. Comparing it to the neural RDM (again, upper
@@ -841,6 +862,8 @@ else:
         ),
         md(
             """
+🟧 **YOUR CODE** · Build the animacy model RDM
+
 ### Your task: animate vs. inanimate
 
 Build the same kind of model RDM for an **animacy** hypothesis: `face` and
@@ -893,6 +916,7 @@ animacy_match_r = np.corrcoef(
             "wp61-405-animacy-blank",
             tags=["wp61-activity-animacy"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp61-405a-check-label"),
         code(
             """
 # Run this to check your animacy comparison.
@@ -922,6 +946,8 @@ else:
         ),
         md(
             """
+🟪 **EXPLORE** · Try your own category grouping
+
 ### Interactive activity -- try your own grouping
 
 Below, assign each of the 7 non-scrambled categories to Group A or Group B
@@ -1025,6 +1051,8 @@ leaves it there.
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 > **In a few sentences: what would you tell someone who said "this notebook
 > proves this brain region has a dedicated face-detector"? What does the
 > face-hypothesis result actually support, and what would it take to say
@@ -1040,6 +1068,8 @@ show_question("q-face-match-implications")
         ),
         md(
             """
+🟪 **EXPLORE** · Toggle correlation vs. Euclidean distance
+
 ### Interactive activity -- correlation distance vs. Euclidean distance
 
 Everything above used **correlation distance**. Below, toggle between

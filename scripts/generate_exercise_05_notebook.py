@@ -419,6 +419,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -471,6 +473,8 @@ def _section_1_data() -> list[dict]:
         md("## 1. Data and Setup", "wp45-101-header"),
         md(
             """
+🟦 **RUN FIRST** · Load the data and build the train/test split
+
 This notebook reuses Exercise 2 and Exercise 3's exact ABIDE-II data table,
 target (age), fixed 360-column cortical-thickness feature recipe, and fixed
 train/test split -- nothing about the data or the split changes here.
@@ -516,6 +520,8 @@ def _section_2_predefined() -> list[dict]:
         md("## 2. Compare Predefined Feature Sets", "wp45-201-header"),
         md(
             """
+🟪 **EXPLORE** · Compare two predefined feature-set bundles
+
 Prior knowledge can define a feature set before model fitting. Cortical
 structure changes with age across most of the brain, not in one
 circumscribed system (Bethlehem et al., 2022,
@@ -630,6 +636,8 @@ def _section_3_select() -> list[dict]:
         md("## 3. Select Features Using the Data", "wp45-301-header"),
         md(
             """
+🟫 **ILLUSTRATE** · Cross-validation curve for the retained-feature count
+
 Instead of choosing a feature set from prior knowledge, we can rank
 features by how strongly each one, on its own, relates to age, and use that
 ranking to select a subset. A **feature selector** must be fit on training
@@ -687,6 +695,8 @@ not always improve validation performance.
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Select and evaluate the K_SELECT best features
+
 ### Select the {K_SELECT} best features and evaluate them
 
 Using `K_SELECT = {K_SELECT}` (the value this course's own cross-validation
@@ -728,6 +738,7 @@ print(f"selected-feature held-out MSE = {{selected_test_mse:.1f}}")
             "wp45-306-blank",
             tags=["wp45-activity-select"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp45-306a-check-label"),
         code(
             f"""
 # Run this to check your feature-selection results.
@@ -755,6 +766,8 @@ else:
         ),
         md(
             """
+🔷 **INSPECT** · Your selected-feature result against a full-feature baseline
+
 The cell below compares your selected-feature result against a full-feature
 linear-regression baseline, trained and evaluated with the same split and
 protocol. It uses your actual `selected_test_mse` -- never a substitute.
@@ -780,6 +793,7 @@ else:
 """,
             "wp45-309-compare",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp45-309a-question-label"),
         code(
             """
 show_question("q-selectkbest-leakage")
@@ -813,6 +827,8 @@ because of its units.
         ),
         md(
             """
+🟦 **RUN FIRST** · A fully worked Ridge example
+
 ### A fully worked Ridge example
 
 `alpha = {ridge_alpha}` here is the value used in this example -- not
@@ -836,6 +852,8 @@ print(f"Ridge (alpha={{RIDGE_ALPHA_EXAMPLE}}): held-out MSE = {{ridge_mse:.1f}} 
         ),
         md(
             """
+🟧 **YOUR CODE** · Fit and evaluate your own Lasso model
+
 ### Choose a Lasso alpha
 
 Write code that fits `Lasso` on the same training participants (`X_train`,
@@ -869,6 +887,7 @@ print(f"Lasso (alpha={{LASSO_ALPHA}}): held-out MSE = {{lasso_mse:.1f}}   nonzer
             "wp45-406-blank",
             tags=["wp45-activity-lasso"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp45-406a-check-label"),
         code(
             """
 # Run this to check your Lasso result.
@@ -889,6 +908,7 @@ else:
             "wp45-407-check",
         ),
         md(
+            "🟫 **ILLUSTRATE** · Compare linear regression, Ridge, and Lasso\n\n"
             "The cell below compares full-feature linear regression, Ridge, "
             "and Lasso under the same split and MSE convention, using your "
             "actual Lasso result.",
@@ -934,6 +954,8 @@ def _section_5_lasso_cv() -> list[dict]:
         md("## 5. Tune Lasso Alpha with Cross-Validation", "wp45-501-header"),
         md(
             """
+🟧 **YOUR CODE** · Tune Lasso's alpha with cross-validation
+
 Section 4 asked you to guess a single Lasso `alpha`. As in Exercise 3,
 tuning should use training data only, and the test set should be read once,
 after the tuning decision is locked in.
@@ -982,6 +1004,7 @@ print(f"held-out MSE = {lasso_cv_test_mse:.1f}")
             "wp45-503-blank",
             tags=["wp45-activity-lasso-cv"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp45-503a-check-label"),
         code(
             f"""
 # Run this to check your tuned Lasso results.
@@ -1006,6 +1029,7 @@ else:
             "wp45-504-check",
         ),
         md(
+            "🟫 **ILLUSTRATE** · Largest-magnitude coefficients in the tuned Lasso model\n\n"
             "The cell below extracts coefficients from your fitted tuned "
             "pipeline and reports how many are exactly zero.",
             "wp45-505-coef-intro",
@@ -1032,6 +1056,7 @@ else:
 """,
             "wp45-506-coef",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp45-506a-question-label"),
         code(
             """
 show_question("q-alpha-tuning-leakage")
@@ -1090,6 +1115,7 @@ Next practice: decision trees.
 """,
             "wp45-603-summary",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp45-603a-question-label"),
         code(
             """
 show_question("q-ridge-lasso-properties")

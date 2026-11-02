@@ -353,6 +353,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -394,6 +396,7 @@ def _section_1() -> list[dict]:
     return [
         md("## Section 1 -- Load the data", "wp42-101-header"),
         md(
+            "🟦 **RUN FIRST** · Load the curated ABIDE-II phenotype table\n\n"
             "The [ABIDE-II](https://fcon_1000.projects.nitrc.org/indi/abide/abide_II.html) "
             "phenotypic table combines data from 19 research sites. This notebook uses a "
             "curated 13-column subset covering site, diagnosis, demographics, IQ, and a "
@@ -423,6 +426,7 @@ def _section_2() -> list[dict]:
     cells: list[dict] = [
         md("## Section 2 -- Inspect rows", "wp42-201-header"),
         md(
+            "🔷 **INSPECT** · The first rows of the loaded table\n\n"
             "`head()`, `tail()`, and `sample()` all pull out rows, but they answer "
             "different questions. `head()` shows the first rows:",
             "wp42-202-intro",
@@ -436,6 +440,8 @@ data.head()
         ),
         md(
             """
+🟧 **YOUR CODE** · Show tail() and a reproducible sample()
+
 Now write code that:
 - shows the **last** rows with `tail()`;
 - draws a **random** sample of rows with `sample()` (pass `random_state=0` so
@@ -468,6 +474,7 @@ def _section_3() -> list[dict]:
     return [
         md("## Section 3 -- Statistical inspection", "wp42-301-header"),
         md(
+            "🔷 **INSPECT** · Column types and non-null counts\n\n"
             "`info()` reports the shape, data types, and non-missing counts of every "
             "column in one call.",
             "wp42-302-intro",
@@ -475,6 +482,8 @@ def _section_3() -> list[dict]:
         code("data.info()", "wp42-303-info"),
         md(
             """
+🟦 **RUN FIRST** · Cast categorical columns and SUB_ID
+
 A column's **storage type** is not always its **statistical type**. Here
 `SITE_ID` is text; `DX_GROUP`, `SEX`, `HANDEDNESS_CATEGORY`, and
 `CURRENT_MED_STATUS` are stored as numbers but are really categories
@@ -491,6 +500,7 @@ data["SUB_ID"] = data["SUB_ID"].astype("string")  # a label, not a measurement
 """,
             "wp42-305-categorical-cast",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp42-305a-question-label"),
         code(
             """
 show_question("q-categorical-columns")
@@ -498,6 +508,7 @@ show_question("q-categorical-columns")
             "wp42-306-checked",
         ),
         md(
+            "🔷 **INSPECT** · Summary statistics for each numeric column\n\n"
             "`describe()` summarizes every numerical column: count, mean, standard "
             "deviation, min/max, and quartiles.",
             "wp42-307-describe-intro",
@@ -511,6 +522,8 @@ def _section_4() -> list[dict]:
         md("## Section 4 -- Quantify missingness", "wp42-401-header"),
         md(
             """
+🟧 **YOUR CODE** · Build a missingness summary table
+
 Write code that builds a table with one row per column and two columns of
 its own: `n_missing` and `percent_missing` (0-100, one decimal place), sorted
 with the most-missing column first. *Hint:* `data.isna().sum()` counts
@@ -538,6 +551,7 @@ display(missing_summary.query("n_missing > 0"))
             "wp42-403-blank",
             tags=["wp42-activity-missing-summary"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp42-403a-check-label"),
         code(
             """
 # A student-facing check: verifies your missingness table without breaking
@@ -554,7 +568,11 @@ else:
 """,
             "wp42-404-check",
         ),
-        md("Is missingness spread evenly across acquisition sites?", "wp42-405-heatmap-intro"),
+        md(
+            "🟫 **ILLUSTRATE** · Missingness by acquisition site heatmap\n\n"
+            "Is missingness spread evenly across acquisition sites?",
+            "wp42-405-heatmap-intro",
+        ),
         code(
             """
 # Computed directly from data (not from missing_summary above): a supplied
@@ -584,6 +602,7 @@ plt.show()
             "wp42-407-heatmap-answer",
         ),
         md(
+            "🟪 **EXPLORE** · Complete-case retention explorer\n\n"
             "### Complete-case retention explorer\n\nTick the variables you would "
             "require for an analysis. A participant is kept only if every ticked "
             "variable is recorded for them.",
@@ -676,6 +695,8 @@ def _section_5() -> list[dict]:
         ),
         md(
             """
+🟧 **YOUR CODE** · Drop incomplete rows into data_complete
+
 Write code that:
 1. drops every incomplete row into a **new** dataframe called `data_complete`
    (`data` itself must stay unchanged);
@@ -692,6 +713,7 @@ print(f"original rows: {len(data)}   retained rows: {len(data_complete)}")
             "wp42-504-drop-blank",
             tags=["wp42-activity-drop-incomplete"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp42-504a-check-label"),
         code(
             """
 # Run this to check your work.
@@ -707,6 +729,8 @@ else:
         ),
         md(
             """
+🟧 **YOUR CODE** · Fill missing FIQ with the median
+
 Now write code that:
 1. makes a **copy** of `data` called `data_filled`;
 2. fills `data_filled`'s `FIQ` column's missing values with **that column's own
@@ -727,6 +751,7 @@ display(pd.DataFrame({"original FIQ": data["FIQ"].describe(), "filled-in FIQ": d
             "wp42-507-fill-blank",
             tags=["wp42-activity-fill-median"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp42-507a-check-label"),
         code(
             """
 # Run this to check your work.
@@ -741,6 +766,7 @@ else:
             "wp42-508-fill-check",
         ),
         md(
+            "🔷 **INSPECT** · Medication-status counts with missing values labeled\n\n"
             "For a categorical variable, an explicit missing category can be more "
             "honest than filling in a guess:",
             "wp42-509-category-intro",
@@ -759,7 +785,11 @@ med_status_filled.value_counts(dropna=False)
 
 def _section_6() -> list[dict]:
     return [
-        md("## Section 6 -- Distributions and correlation", "wp42-601-header"),
+        md(
+            "🟫 **ILLUSTRATE** · Histogram of age at scan\n\n"
+            "## Section 6 -- Distributions and correlation",
+            "wp42-601-header",
+        ),
         code(
             """
 fig, ax = plt.subplots(figsize=(7, 4))
@@ -771,15 +801,24 @@ plt.show()
 """,
             "wp42-602-histogram",
         ),
-        md("Explore other variables and bin counts yourself:", "wp42-603-explore-intro"),
+        md(
+            "🟪 **EXPLORE** · Explore variable distributions interactively\n\n"
+            "Explore other variables and bin counts yourself:",
+            "wp42-603-explore-intro",
+        ),
         code(_histogram_widget_code(), "wp42-604-histogram-widget"),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp42-604a-question-label"),
         code(
             """
 show_question("q-histogram-bins")
 """,
             "wp42-605-checked",
         ),
-        md("Does `FIQ` differ between the two diagnostic groups?", "wp42-606-group-intro"),
+        md(
+            "🟫 **ILLUSTRATE** · FIQ by diagnostic group boxplot\n\n"
+            "Does `FIQ` differ between the two diagnostic groups?",
+            "wp42-606-group-intro",
+        ),
         code(
             """
 diagnosis_labels = data["DX_GROUP"].astype("int64").map({1: "Autism", 2: "Control"})
@@ -817,6 +856,7 @@ plt.show()
             "wp42-608-group-answer",
         ),
         md(
+            "🟫 **ILLUSTRATE** · Pearson correlation heatmap\n\n"
             "**Pearson `r`** measures the strength of a *linear* relationship "
             "between two numeric variables, from -1 to +1. It is sensitive to "
             "outliers and never establishes causation.",
@@ -846,6 +886,7 @@ plt.show()
 """,
             "wp42-610-correlation-plot",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp42-610a-question-label"),
         code(
             """
 show_question("q-fiq-correlation")
@@ -871,7 +912,8 @@ Write code that:
             "wp42-614-fiq-viq-reference-intro",
         ),
         md(
-            _fiq_viq_reference_image_markdown(),
+            "🟧 **YOUR CODE** · Scatter FIQ vs VIQ and compute Pearson r\n\n"
+            + _fiq_viq_reference_image_markdown(),
             "wp42-615-fiq-viq-reference-image",
             attachments=_fiq_viq_reference_image_attachments(),
         ),
@@ -895,6 +937,7 @@ plt.show()
             "wp42-616-fiq-viq-blank",
             tags=["wp42-activity-fiq-viq-scatter"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp42-616a-check-label"),
         code(
             """
 # Run this to check your work. It only checks fiq_viq_r (computed the same
@@ -920,6 +963,8 @@ else:
         md("### A four-variable scatter matrix (supplied)", "wp42-618-scatter-matrix-header"),
         md(
             """
+🟫 **ILLUSTRATE** · Four-variable scatter matrix
+
 This cell is supplied and runs on its own, independently of your blank
 above -- it is descriptive EDA, not a model-fitting exercise. It compares
 four numeric variables at once: scatter plots off the diagonal, a histogram

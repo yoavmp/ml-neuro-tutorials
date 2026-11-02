@@ -417,6 +417,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -471,6 +473,8 @@ def _section_1() -> list[dict]:
         md("## 1. Data and setup", "wp45-101-header"),
         md(
             """
+🟦 **RUN FIRST** · Load the ABIDE-II age-prediction table
+
 **Target:** age (a continuous measurement, in years). **Predictors:** the
 same 360 bilateral cortical-thickness (`fsCT_`) columns Exercise 2 used,
 fixed before this lesson. **Metric:** mean squared error (MSE) -- the same
@@ -502,6 +506,10 @@ df[FEATURES[:3] + ["age"]].head()
 """,
             "wp45-103-load",
         ),
+        md(
+            "🟦 **RUN FIRST** · Imports used throughout this notebook",
+            "wp45-103a-run-first-label",
+        ),
         code(
             """
 from sklearn.model_selection import train_test_split, KFold, cross_validate, GridSearchCV
@@ -514,6 +522,8 @@ from sklearn.metrics import mean_squared_error, r2_score
         ),
         md(
             """
+🟦 **RUN FIRST** · Make the train/test split
+
 The train/test split below reuses Exercise 2's exact fixed arguments, so
 the two partitions here are identical to Exercise 2's own.
 """,
@@ -547,6 +557,8 @@ def _section_2() -> list[dict]:
         md("## 2. One Train/Test Split", "wp45-201-header"),
         md(
             f"""
+🟦 **RUN FIRST** · Fit the one-split baseline and fix K_EXAMPLE
+
 The cell below fits one KNN model, with `k = {K_EXAMPLE}` (the same fixed
 value used in Exercise 2's own worked example), on the training partition
 above and evaluates it once on the held-out test partition.
@@ -584,6 +596,8 @@ def _section_3() -> list[dict]:
         md("## 3. Evaluate the Same Model with Cross-Validation", "wp45-301-header"),
         md(
             f"""
+🟧 **YOUR CODE** · 5-fold cross-validation of the fixed model
+
 **Cross-validation** partitions the data into several folds, fits the model
 on all-but-one fold, evaluates it on the held-out fold, and repeats until
 every fold has served as the held-out one once -- giving several performance
@@ -636,6 +650,7 @@ print(f"mean R^2 = {{cv_mean_r2:.3f}}")
             "wp45-303-blank",
             tags=["wp45-activity-cv"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp45-303a-check-label"),
         code(
             f"""
 # Run this to check your cross-validation results.
@@ -686,6 +701,8 @@ def _section_4() -> list[dict]:
         md("## 4. One Split or Several Folds?", "wp45-401-header"),
         md(
             """
+🟪 **EXPLORE** · Sample size and seed stability
+
 With the full eligible cohort (1004 participants), a single split and
 5-fold cross-validation usually give broadly similar answers. That is not
 true at every sample size: at small sample sizes, the single-split test
@@ -767,6 +784,7 @@ else:
 """,
             "wp45-403-widget",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp45-403a-question-label"),
         code(
             """
 show_question("q-single-split-vs-cv-stability")
@@ -840,6 +858,8 @@ inner selection included -- on data the inner loop never saw.
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Complete the nested cross-validation pipeline
+
 Complete the pipeline below: an outer `KFold` splits the full cohort; for
 each outer fold, an inner `GridSearchCV` selects `k` from `NESTED_CANDIDATE_KS`
 using only that outer fold's training data; the selected model is then
@@ -915,6 +935,7 @@ nested.round(3)
             "wp45-505-blank",
             tags=["wp45-activity-nested-cv"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp45-505a-check-label"),
         code(
             f"""
 # Run this to check your nested cross-validation results.
@@ -960,6 +981,7 @@ tuning procedure -- not of one fixed model.
             "wp45-507-note",
         ),
         md(
+            "🟨 **QUESTION** · Choose an answer and check it\n\n"
             "> **In your own words, why is it acceptable -- even expected -- for different outer folds to select different values of k, rather than being a sign that something went wrong?**",
             "wp45-507b-reflection",
         ),
@@ -969,6 +991,7 @@ show_question("q-inner-loop-data")
 """,
             "wp45-508-checked",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp45-508a-question-label"),
         code(
             """
 show_question("q-outer-test-mse-meaning")

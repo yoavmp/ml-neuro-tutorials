@@ -450,6 +450,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -494,7 +496,14 @@ held-out participants.
 
 def _section_1() -> list[dict]:
     return [
-        md("## 1. Data and setup", "wp44-101-header"),
+        md(
+            """
+🟦 **RUN FIRST** · Load the ABIDE-II classification table
+
+## 1. Data and setup
+""",
+            "wp44-101-header",
+        ),
         code(
             """
 # Load the approved ABIDE-II classification table: the same 1004-participant,
@@ -517,6 +526,8 @@ df.head()
         ),
         md(
             """
+🟦 **RUN FIRST** · Recode diagnosis to a binary target
+
 `group` is ABIDE-II's own raw diagnosis code, not yet the label this
 notebook will model with. `SEX` and `SITE` are real participant metadata,
 included here as **distractors**: a later activity asks you to build
@@ -561,6 +572,8 @@ def _section_2() -> list[dict]:
         md("## 2. From a linear score to a probability", "wp44-201-header"),
         md(
             r"""
+🟫 **ILLUSTRATE** · The sigmoid curve mapping a score to a probability
+
 Logistic regression starts like linear regression: a weighted sum of the
 standardized features plus an intercept, $z = w \cdot x + b$. That score $z$
 is passed through the **sigmoid** function to become a probability between 0
@@ -597,6 +610,7 @@ plt.show()
 """,
             "wp44-203-sigmoid",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp44-203a-question-label"),
         code(
             """
 show_question("q-probability-near-threshold")
@@ -611,6 +625,8 @@ def _section_3() -> list[dict]:
         md("## 3. One logistic-regression model", "wp44-301-header"),
         md(
             """
+🟦 **RUN FIRST** · Imports and the fixed C for this example
+
 **Target:** diagnosis (`group`, recoded autism=1 / control=0). **Positive
 class:** autism. **Negative class:** control. **Predictors:** the 360
 bilateral cortical-thickness (`fsCT_`) columns -- no diagnosis-derived
@@ -638,6 +654,8 @@ C_EXAMPLE = 1.0  # fixed by course design for this worked example, not tuned
         md("### Select the predictor columns", "wp44-311-header"),
         md(
             """
+🟧 **YOUR CODE** · Select the 360 fsCT_ predictor columns
+
 Write code that builds `FEATURES`: every column in `df` whose name starts
 with `fsCT_` (the cortical-thickness columns). There should be exactly 360.
 """,
@@ -651,6 +669,7 @@ FEATURES = [c for c in df.columns if c.startswith("fsCT_")]
             "wp44-313-blank",
             tags=["wp44-activity-features"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp44-313a-check-label"),
         code(
             f"""
 # Run this to check your FEATURES selection.
@@ -673,6 +692,8 @@ else:
         md("### Build X and y", "wp44-321-header"),
         md(
             """
+🟧 **YOUR CODE** · Build X and y
+
 Write code that builds `X` (the `FEATURES` columns of `df`) and `y` (this
 notebook's binary diagnosis target, already recoded in Section 1 onto
 `df["group"]`: 0 = control, 1 = autism). `X` can be a NumPy array or a
@@ -689,6 +710,7 @@ y = df["group"].to_numpy()
             "wp44-323-blank",
             tags=["wp44-activity-xy"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp44-323a-check-label"),
         code(
             """
 # Run this to check your X and y. Accepts X/y as a NumPy array, a pandas
@@ -722,6 +744,8 @@ else:
         md("### Make the train/test split", "wp44-331-header"),
         md(
             """
+🟧 **YOUR CODE** · Make the stratified train/test split
+
 Write code that makes this course's established train/test split: 75%
 train / 25% test, seeded for reproducibility, **stratified** so the
 autism/control balance matches in both halves. *Hints:* `train_test_split`
@@ -742,6 +766,7 @@ X_train, X_test, y_train, y_test = train_test_split(
             "wp44-333-blank",
             tags=["wp44-activity-split"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp44-333a-check-label"),
         code(
             f"""
 # Run this to check your split.
@@ -763,6 +788,8 @@ else:
         ),
         md(
             """
+🟦 **RUN FIRST** · Fit the model on your train/test split
+
 ### Fit the model
 
 Uses your `X_train`, `X_test`, `y_train`, and `y_test` from above.
@@ -784,6 +811,7 @@ else:
             "wp44-342-fit",
         ),
         md(
+            "🔷 **INSPECT** · Predicted labels and probabilities for a few test participants\n\n"
             "A small paired sample of the held-out test set -- predicted "
             "label versus predicted probability, for the same participants:",
             "wp44-351-header",
@@ -846,6 +874,8 @@ threshold (0.5 = chance-level ranking, 1.0 = perfect ranking).
         md("### Build the confusion matrix and report accuracy, sensitivity, specificity", "wp44-411-header"),
         md(
             """
+🟧 **YOUR CODE** · Confusion matrix, accuracy, sensitivity, specificity
+
 Write code that:
 - computes the confusion matrix from `y_test` and `y_pred` (`labels=[0, 1]`
   so index 0 = control, index 1 = autism on both axes);
@@ -910,6 +940,8 @@ meaningful result on its own.
         md("### Plot the ROC curve and report AUC", "wp44-421-header"),
         md(
             """
+🟧 **YOUR CODE** · ROC curve and AUC
+
 Write code that computes the ROC curve from `y_test` and `y_proba`
 (`roc_curve`), plots it against the chance-level diagonal, and prints the
 AUC (`roc_auc_score`).
@@ -937,6 +969,7 @@ print(f"AUC = {auc:.3f}  (0.5 = chance-level ranking, 1.0 = perfect ranking)")
             "wp44-423-blank",
             tags=["wp44-activity-roc"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp44-423a-check-label"),
         code(
             f"""
 # Run this to check your AUC.
@@ -967,6 +1000,8 @@ def _section_5() -> list[dict]:
         md("## 5. Choosing a decision threshold", "wp44-501-header"),
         md(
             """
+🟪 **EXPLORE** · Move the decision threshold
+
 The control below uses the **exact same fixed test-set probabilities**
 computed in Section 3 -- moving the threshold never refits the model. It
 recomputes, live, the confusion matrix, accuracy, sensitivity, and
@@ -1018,6 +1053,7 @@ _threshold_refit(threshold_slider.value)
 """,
             "wp44-503-widget",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp44-503a-question-label"),
         code(
             """
 show_question("q-threshold-tradeoff")
@@ -1032,6 +1068,8 @@ def _section_6() -> list[dict]:
         md("## 6. Class imbalance and misleading accuracy", "wp44-601-header"),
         md(
             """
+🟪 **EXPLORE** · Change the class-imbalance ratio
+
 This notebook's cohort (463 autism, 541 control) is only mildly imbalanced.
 Real diagnostic cohorts are often far more skewed. The control below
 resamples real ABIDE participants -- control always the majority class --
@@ -1149,18 +1187,21 @@ def _summary() -> list[dict]:
 """,
             "wp44-701-summary",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp44-701a-question-label"),
         code(
             """
 show_question("q-roc-needs-proba")
 """,
             "wp44-702-checked",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp44-702a-question-label"),
         code(
             """
 show_question("q-threshold-false-negatives")
 """,
             "wp44-703-checked",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp44-703a-question-label"),
         code(
             """
 show_question("q-accuracy-under-imbalance")

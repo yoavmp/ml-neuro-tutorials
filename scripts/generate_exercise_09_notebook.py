@@ -555,6 +555,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -612,6 +614,8 @@ def _section_1_load_and_split() -> list[dict]:
         md("## 1. Load the ABIDE-II Data and Make One Split", "wp51-101-header"),
         md(
             """
+🟦 **RUN FIRST** · Load the data and make the train/validation split
+
 Every method compared in this notebook -- PCR, PLS, SVR, Ridge, and
 KernelRidge -- is trained and validated on **exactly the same rows**: one
 train/validation split of the familiar 1,004-participant, 360-predictor
@@ -681,6 +685,8 @@ neither step looks at the target.
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Fit PCR across component counts
+
 ### Your task: validation MSE across a few component counts
 
 For each `n_components` in `{grid_literal}`, build the PCR pipeline above,
@@ -730,6 +736,7 @@ print(pd.DataFrame(pcr_results))
             "wp51-204-pcr-blank",
             tags=["wp51-activity-pcr"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp51-204a-check-label"),
         code(
             f"""
 # Run this to check your PCR results.
@@ -766,6 +773,8 @@ else:
         ),
         md(
             """
+🟫 **ILLUSTRATE** · PCR validation MSE vs. component count
+
 ### Plot validation MSE versus component count
 
 Supplied: a ready-to-run plot of `pcr_results`, handled gracefully if it is
@@ -789,6 +798,7 @@ else:
 """,
             "wp51-207-plot",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp51-207a-question-label"),
         code(
             """
 show_question("q-leakage")
@@ -833,6 +843,8 @@ Pipeline([
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Fit PLS across component counts
+
 ### Your task: repeat the comparison for PLS
 
 Same grid, same rows, same required-output shape as Section 2: for each
@@ -876,6 +888,7 @@ print(pd.DataFrame(pls_results))
             "wp51-304-pls-blank",
             tags=["wp51-activity-pls"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp51-304a-check-label"),
         code(
             f"""
 # Run this to check your PLS results.
@@ -912,6 +925,8 @@ else:
         ),
         md(
             """
+🟫 **ILLUSTRATE** · PCR vs. PLS validation MSE
+
 ### Plot both methods on the same axes
 
 Supplied: PCR and PLS validation MSE, plotted together, handled gracefully
@@ -946,6 +961,7 @@ else:
 """,
             "wp51-307-plot",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp51-307a-question-label"),
         code(
             """
 show_question("q-pcr-vs-pls")
@@ -954,6 +970,8 @@ show_question("q-pcr-vs-pls")
         ),
         md(
             """
+🟪 **EXPLORE** · PCR vs. PLS on synthetic data
+
 ### Interactive activity -- PCR or PLS?
 
 Below, a small synthetic 2-D dataset (two correlated, standardized
@@ -1170,6 +1188,8 @@ def _section_4_svm_and_svr() -> list[dict]:
         md("## 4. Support Vector Machines and SVR", "wp51-401-header"),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 A **support vector machine (SVM)** for classification looks for the
 separating boundary with the largest possible **margin** -- the distance
 from the boundary to the nearest training points on either side. Those
@@ -1204,6 +1224,8 @@ show_question("q-c-gamma-epsilon")
         ),
         md(
             """
+🟪 **EXPLORE** · SVM decision boundary
+
 ### Interactive activity -- explore an SVM boundary
 
 Choose a dataset, a kernel, `C`, and (for RBF/polynomial) `gamma`; the
@@ -1307,6 +1329,8 @@ _svm_render()
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 A few questions worth exploring with the controls above:
 
 - Why can the linear kernel not separate the "Nonlinear rings" dataset
@@ -1329,6 +1353,8 @@ show_question("q-train-vs-val")
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Fit SVR on the training subset
+
 ### Your task: SVR for ABIDE age prediction
 
 `SVR` on the full 753-row training partition is slow in a browser kernel
@@ -1401,6 +1427,7 @@ print(pd.DataFrame(svr_results))
             "wp51-411-svr-blank",
             tags=["wp51-activity-svr"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp51-411a-check-label"),
         code(
             f"""
 # Run this to check your SVR results.
@@ -1437,6 +1464,8 @@ def _section_5_kernels_beyond_svm() -> list[dict]:
         md("## 5. Kernels Beyond SVM", "wp51-501-header"),
         md(
             """
+🟫 **ILLUSTRATE** · RBF similarity vs. distance
+
 A **kernel** is a similarity function between two observations -- a way of
 asking "how alike are these two participants?" without necessarily
 constructing every transformed feature explicitly. The **RBF kernel** used
@@ -1468,6 +1497,8 @@ plt.show()
         ),
         md(
             """
+🟧 **YOUR CODE** · Fit Ridge and KernelRidge
+
 `Ridge` relates to this idea very directly: `KernelRidge(kernel="rbf")` is
 the **exact** RBF-kernel counterpart of ordinary, L2-regularized (`Ridge`)
 regression -- the same regularized least-squares problem, solved with a
@@ -1522,6 +1553,7 @@ print("KernelRidge: ", kernel_ridge_result)
             "wp51-505-kernelridge-blank",
             tags=["wp51-activity-kernelridge"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp51-505a-check-label"),
         code(
             f"""
 # Run this to check your Ridge / KernelRidge results.
@@ -1552,6 +1584,7 @@ else:
 """,
             "wp51-506-kernelridge-check",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp51-506a-question-label"),
         code(
             """
 show_question("q-exact-vs-approx")
@@ -1569,6 +1602,8 @@ def _section_6_compare_and_reflect(benchmark: dict) -> list[dict]:
         md("## 6. Compare and Reflect", "wp51-601-header"),
         md(
             f"""
+🟫 **ILLUSTRATE** · Compare every method's validation MSE
+
 Supplied: one table and plot assembling every method that was trained on
 **all {benchmark["n_train"]} training participants and the same full
 {benchmark["n_features"]}-feature matrix**, evaluated on the same

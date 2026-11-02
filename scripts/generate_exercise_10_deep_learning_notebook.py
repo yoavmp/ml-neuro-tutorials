@@ -300,6 +300,8 @@ def classification_report_row(name, y_true, probs):
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -355,6 +357,8 @@ def _section_1() -> list[dict]:
         md("## 1. Setup and the Task", "wp58-101-header"),
         md(
             """
+🟦 **RUN FIRST** · Install and import PyTorch
+
 **The task.** Classify each participant in the ABIDE-II dataset as autism
 or control, using several structural MRI measures derived from each
 participant's cortical surface. This is the same kind of classification
@@ -378,6 +382,8 @@ print("PyTorch version:", torch.__version__)
         ),
         md(
             """
+🟦 **RUN FIRST** · Load the ABIDE-II structural table
+
 ### Loading the data
 
 The table below comes from the same pinned ABIDE-II source
@@ -435,6 +441,8 @@ def _section_2() -> list[dict]:
         md("## 2. Hold-Out Design and Tensors", "wp58-201-header"),
         md(
             """
+🟦 **RUN FIRST** · Make the train/validation/test split
+
 We split the 1,004 participants into three groups **before** touching any
 feature scaling: a training set, a validation set (used to make decisions
 about the network and its training), and a test set that is evaluated
@@ -463,6 +471,8 @@ for name, y in [("train", y_train), ("val", y_val), ("test", y_test)]:
         ),
         md(
             """
+🟦 **RUN FIRST** · Fit the imputer and scaler on training rows
+
 ### Missing values and scaling -- fit on training rows only
 
 `SimpleImputer` and `StandardScaler` are both **fit on `X_train` only**,
@@ -495,6 +505,8 @@ print("scaled training features: mean", round(float(X_train_s.mean()), 4), "std"
         ),
         md(
             """
+🟧 **YOUR CODE** · Build tensors and DataLoaders
+
 ### Tensors and batches
 
 Now turn the scaled NumPy arrays into PyTorch tensors, and group the
@@ -556,6 +568,7 @@ val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shu
             "wp58-207-tensors-blank",
             tags=["wp58-activity-tensors"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp58-207a-check-label"),
         code(
             """
 # Run this to check your tensors and batches.
@@ -594,6 +607,8 @@ def _section_3() -> list[dict]:
         md("## 3. Build a Fully Connected Network", "wp58-301-header"),
         md(
             f"""
+🟧 **YOUR CODE** · Define the network's layers and forward pass
+
 Now define the network: an `nn.Module` with two modest hidden layers
 ({HIDDEN_1} units, then {HIDDEN_2} units) and a nonlinear activation
 (`ReLU`) between layers. The final layer outputs **one raw logit per
@@ -645,6 +660,7 @@ class AutismClassifierNet(nn.Module):
             "wp58-303-model-blank",
             tags=["wp58-activity-model"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp58-303a-check-label"),
         code(
             f"""
 # Run this to check your model definition.
@@ -675,6 +691,8 @@ def _section_4() -> list[dict]:
         md("## 4. Train and Validate", "wp58-401-header"),
         md(
             """
+🟧 **YOUR CODE** · Complete the training and evaluation loops
+
 A training epoch repeats, for every batch: a **forward pass** (compute
 predictions), compute the **loss**, reset gradients from the previous
 batch (`optimizer.zero_grad()`), **backpropagate** (`loss.backward()`,
@@ -761,6 +779,7 @@ def evaluate(model, loader, loss_fn):
             "wp58-403-loop-blank",
             tags=["wp58-activity-loop"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp58-403a-check-label"),
         code(
             """
 # Run this to check your training/evaluation functions on one epoch.
@@ -793,6 +812,8 @@ else:
         ),
         md(
             """
+🟦 **RUN FIRST** · Train the network with early stopping
+
 ### Training with early stopping
 
 The cell below trains the real model for up to `MAX_EPOCHS` epochs, using
@@ -869,6 +890,7 @@ print(f"Restored weights from epoch {{best_epoch + 1}} (lowest validation loss: 
 """,
             "wp58-406-train-run",
         ),
+        md("🟫 **ILLUSTRATE** · Training and validation loss curves", "wp58-406a-illustrate-label"),
         code(
             """
 fig, ax = plot_learning_curves(train_losses, val_losses, best_epoch + 1)
@@ -876,6 +898,7 @@ plt.show()
 """,
             "wp58-407-plot-curves",
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp58-407a-check-label"),
         code(
             """
 # A quick sanity check on the training run.
@@ -906,6 +929,8 @@ def _section_5() -> list[dict]:
         md("## 5. Final Evaluation and Comparison", "wp58-501-header"),
         md(
             """
+🟦 **RUN FIRST** · Fit the baseline models and compare on the test set
+
 Now -- for the first and only time -- evaluate the trained network on
 `X_test`/`y_test`. This happens exactly once, after every choice about the
 network (architecture, learning rate, number of epochs) was already made
@@ -944,6 +969,7 @@ comparison_table
 """,
             "wp58-503-compare",
         ),
+        md("🟫 **ILLUSTRATE** · Bar chart comparing model metrics", "wp58-503a-illustrate-label"),
         code(
             """
 fig, ax = plt.subplots(figsize=(6, 4))
@@ -1123,16 +1149,25 @@ def _show_question_call(question_id: str, cell_id: str) -> dict:
 def _section_6() -> list[dict]:
     cells = [
         md("## 6. Interpretation and Limits", "wp58-601-header"),
-        md("**Check your understanding.**", "wp58-602-check-intro"),
+        md(
+            """
+🟨 **QUESTION** · Choose an answer and check it
+
+**Check your understanding.**
+""",
+            "wp58-602-check-intro",
+        ),
     ]
-    for qid, cell_id in [
-        ("q-tensor-shape", "wp58-603-q1"),
-        ("q-logits-loss", "wp58-604-q2"),
-        ("q-gradient-update", "wp58-605-q3"),
-        ("q-train-only-scaling", "wp58-606-q4"),
-        ("q-overfitting-earlystop", "wp58-607-q5"),
-        ("q-test-set-choices", "wp58-608-q6"),
+    for qid, cell_id, label_id in [
+        ("q-tensor-shape", "wp58-603-q1", None),
+        ("q-logits-loss", "wp58-604-q2", "wp58-603a-question-label"),
+        ("q-gradient-update", "wp58-605-q3", "wp58-604a-question-label"),
+        ("q-train-only-scaling", "wp58-606-q4", "wp58-605a-question-label"),
+        ("q-overfitting-earlystop", "wp58-607-q5", "wp58-606a-question-label"),
+        ("q-test-set-choices", "wp58-608-q6", "wp58-607a-question-label"),
     ]:
+        if label_id is not None:
+            cells.append(md("🟨 **QUESTION** · Choose an answer and check it", label_id))
         cells.append(_show_question_call(qid, cell_id))
     cells.append(
         md(

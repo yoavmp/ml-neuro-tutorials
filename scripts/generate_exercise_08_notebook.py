@@ -487,6 +487,8 @@ def _setup_cell(mode: str) -> dict:
 def _run_first_notice() -> dict:
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -555,6 +557,8 @@ finding.
         ),
         md(
             """
+🟦 **RUN FIRST** · Load the ABIDE-II table and define FEATURES
+
 > **With no target column supplied, what information is actually left for an algorithm to use when it groups or summarizes participants?**
 """,
             "wp47-103-think-first",
@@ -583,12 +587,14 @@ print("they never enter PCA or K-means as inputs.")
 """,
             "wp47-104-load",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp47-104a-question-label"),
         code(
             """
 show_question("q-unsupervised-explore")
 """,
             "wp47-105-q1",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp47-105a-question-label"),
         code(
             """
 show_question("q-unsupervised-info")
@@ -618,6 +624,8 @@ is a new combination of all of them.
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Fit PCA on the standardized predictors
+
 ### Fit PCA on the brain predictors
 
 Standardize the 360-feature cortical-thickness table (every region is the
@@ -650,6 +658,7 @@ print(f"PC1 explained variance = {{pca_explore.explained_variance_ratio_[0]:.1%}
             "wp47-204-pca-blank",
             tags=["wp47-activity-pca"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp47-204a-check-label"),
         code(
             f"""
 # Run this to check your PCA fit.
@@ -684,6 +693,8 @@ else:
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Plot explained variance
+
 ### Plot explained variance
 
 Make a two-panel figure from your `pca_explore`:
@@ -740,6 +751,7 @@ plt.show()
             "wp47-207-variance-blank",
             tags=["wp47-activity-variance"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp47-207a-check-label"),
         code(
             f"""
 # Run this to check your explained-variance figure.
@@ -766,6 +778,8 @@ else:
         ),
         md(
             """
+🟧 **YOUR CODE** · Plot PC1 vs. PC2 colored by age
+
 ### Plot PC1 vs. PC2, colored by age
 
 Make a scatter plot of every participant's `X_pca[:, 0]` against
@@ -802,6 +816,7 @@ plt.show()
             "wp47-210-scatter-blank",
             tags=["wp47-activity-scatter"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp47-210a-check-label"),
         code(
             """
 # Run this to check your PC1-vs-PC2 figure.
@@ -815,6 +830,8 @@ else:
         ),
         md(
             """
+🟫 **ILLUSTRATE** · Re-color the PCA scatter by category
+
 Try re-coloring the same `X_pca[:, 0]`/`X_pca[:, 1]` scatter by diagnosis,
 sex, or acquisition site instead -- all **categorical**, so a discrete
 legend fits better than a continuous colorbar. Site has many levels; a
@@ -844,6 +861,7 @@ else:
 """,
             "wp47-212b-scatter-alt-colors",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp47-212c-question-label"),
         code(
             """
 show_question("q-pca-separation")
@@ -852,6 +870,8 @@ show_question("q-pca-separation")
         ),
         md(
             """
+🟧 **YOUR CODE** · Plot PC1/PC2 loadings
+
 ### Inspect loadings on PC1 and PC2
 
 For each of PC1 and PC2, plot the region names with the strongest (most
@@ -900,6 +920,7 @@ plt.show()
             "wp47-215-loadings-blank",
             tags=["wp47-activity-loadings"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp47-215a-check-label"),
         code(
             f"""
 # Run this to check your loadings figure.
@@ -930,6 +951,8 @@ def _section_3_kmeans() -> list[dict]:
         md("## 3. K-Means on Your PCA Result", "wp47-301-header"),
         md(
             """
+🟦 **RUN FIRST** · Retained-component and cluster-count constants
+
 **Clustering** groups observations so that members of the same group are
 more similar to each other than to members of other groups -- without using
 any target label. **K-means** repeats four steps: (1) initialize `k` cluster
@@ -959,6 +982,8 @@ K_CANDIDATES = {K_CANDIDATES!r}
         ),
         md(
             f"""
+🟧 **YOUR CODE** · Fit K-means across K_CANDIDATES
+
 Fit `KMeans` once per entry of `K_CANDIDATES`, on
 `X_pca[:, :N_CLUSTER_COMPONENTS]` (an explicit `n_init` and fixed
 `random_state`, for reproducibility -- use `n_init=10, random_state=0`).
@@ -1021,6 +1046,7 @@ plt.show()
             "wp47-305-kmeans-blank",
             tags=["wp47-activity-kmeans"],
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp47-305a-check-label"),
         code(
             f"""
 # Run this to check your K-means results.
@@ -1052,6 +1078,7 @@ else:
 """,
             "wp47-306-kmeans-check",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp47-306a-question-label"),
         code(
             """
 show_question("q-kmeans-reflection")
@@ -1070,6 +1097,8 @@ def _section_4_interactive_activity() -> list[dict]:
         md("## 4. Interactive Activity -- Explore PCA and K-Means", "wp47-401-header"),
         md(
             f"""
+🟪 **EXPLORE** · Explore PCA and K-means together
+
 Choose how many principal components to retain, a number of clusters `k`,
 and a seed; then pick an external characteristic to color the result by
 *after* clustering. Clustering always uses **every retained component you
@@ -1192,6 +1221,8 @@ _act_render()
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 Try comparing `k=2`, `k=3`, and a larger `k` at the same retained-component
 count: does a larger `k` reveal genuinely new structure, or does it mainly
 split an existing pattern into more, smaller groups? Then try coloring by
@@ -1249,6 +1280,8 @@ features themselves, which were never chosen with age in mind.
         ),
         md(
             """
+🟦 **RUN FIRST** · Build the age train/test split
+
 > **Why might PCA help KNN more directly than it helps a model that does not calculate distances between participants?**
 """,
             "wp47-503-think-first",
@@ -1274,6 +1307,8 @@ print(f"n_train (development) = {len(y_train)}   n_test = {len(y_test)} (locked;
         ),
         md(
             f"""
+🟦 **RUN FIRST** · Fit the PCA+KNN comparison pipeline
+
 Supplied: the complete, leakage-safe comparison. `StandardScaler` and `PCA`
 are fit **inside** the `Pipeline`, so they are refit independently on every
 cross-validation fold's own training rows -- never once on Section 2's full
@@ -1355,6 +1390,7 @@ results_df = pd.DataFrame([
 """,
             "wp47-506-pipeline",
         ),
+        md("🔷 **INSPECT** · Cross-validation results and the selected PCA+KNN configuration", "wp47-506a-inspect-label"),
         code(
             """
 print("cross-validation results (training-and-validation data only), best 5 of "
@@ -1371,6 +1407,8 @@ display(results_df.round(3))
         ),
         md(
             """
+🟨 **QUESTION** · Choose an answer and check it
+
 PCA before KNN is not a guarantee of better prediction on every dataset --
 this notebook reports the observed result for this cohort and split, not a
 universal rule. A few things worth remembering: fitting `StandardScaler` and

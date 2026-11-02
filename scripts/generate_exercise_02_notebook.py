@@ -489,6 +489,8 @@ def _run_first_notice() -> dict:
     # collapsed.
     return md(
         """
+🟦 **RUN FIRST** · One-time setup, collapsed below
+
 **Run the cell below first.** Its code is collapsed (click the `...` to
 expand it) because it is one-time setup, not part of the lesson -- but it
 still has to run once, before anything else in this notebook, or later
@@ -529,6 +531,7 @@ including in **Download my notebook**.
 def _section_1() -> list[dict]:
     return [
         md("## Section 1 — Load data and prepare the split", "wp41-101-header"),
+        md("🟦 **RUN FIRST** · Import libraries and modelling tools", "wp41-101a-run-first"),
         code(
             """
 import numpy as np
@@ -541,6 +544,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 """,
             "wp41-102-imports",
         ),
+        md("🟦 **RUN FIRST** · Load the ABIDE-II age/brain table", "wp41-102a-run-first"),
         code(
             """
 # Load the established ABIDE-II age/brain table.
@@ -558,6 +562,7 @@ data.head()
 """,
             "wp41-103-load",
         ),
+        md("🟦 **RUN FIRST** · Build X/y and make the train/test split", "wp41-103a-run-first"),
         code(
             """
 # Define the target (age) and the feature matrix, then make the established
@@ -574,6 +579,7 @@ print(f"n_train = {len(y_train)}   n_test = {len(y_test)}")
 """,
             "wp41-104-split",
         ),
+        md("🟦 **RUN FIRST** · Scale features on the training set", "wp41-104a-run-first"),
         code(
             """
 # Fit the scaler on training predictors only, then transform both sets.
@@ -597,6 +603,8 @@ def _section_2() -> list[dict]:
         md("### Activity 2A — Compare target distributions", "wp41-203-2a-header"),
         md(
             """
+🟧 **YOUR CODE** · Compare train/test target distributions
+
 Write code that:
 - plots `y_train` and `y_test` using the **same bins and axis range**;
 - reports n, mean, standard deviation, minimum, and maximum for each;
@@ -629,12 +637,15 @@ for name, arr in [("train", y_train), ("test", y_test)]:
             "the test distribution.**",
             "wp41-206-2a-answer",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp41-206a-question-label"),
     ]
     cells.append(_activity_2a_checked_question())
     cells += [
         md("### Activity 2B — Find features correlated with age", "wp41-208-2b-header"),
         md(
             """
+🟧 **YOUR CODE** · Find features correlated with age
+
 Write **training-only** code that:
 - calculates the Pearson correlation between every brain feature and `y_train`;
 - sorts by absolute correlation;
@@ -684,7 +695,14 @@ show_question("q-test-target-use")
 def _section_3() -> list[dict]:
     cells: list[dict] = [
         md("## Section 3 — Fit linear regression", "wp41-301-header"),
-        md("This is your first regression workflow, so it is supplied in full.", "wp41-302-intro"),
+        md(
+            """
+🟦 **RUN FIRST** · Fit linear regression on the split
+
+This is your first regression workflow, so it is supplied in full.
+""",
+            "wp41-302-intro",
+        ),
         code(
             """
 model = LinearRegression()
@@ -701,6 +719,8 @@ print(f"held-out MSE = {test_mse:.1f}  (RMSE {test_mse ** 0.5:.1f} years)")
         md("### Activity 3A — Inspect coefficients", "wp41-304-3a-header"),
         md(
             """
+🟧 **YOUR CODE** · Inspect fitted coefficients
+
 Write code that:
 - pairs the 360 feature names with their fitted coefficients;
 - sorts by absolute magnitude;
@@ -733,6 +753,7 @@ plt.show()
             "features appear on both lists, and which do not?**",
             "wp41-307-3a-answer",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp41-307a-question-label"),
         code(
             """
 show_question("q-correlation-vs-coefficient")
@@ -762,7 +783,7 @@ For reference, here is the approved current result:
             "wp41-311-3b-instructions",
         ),
         md(
-            _reference_image_markdown(),
+            "🟧 **YOUR CODE** · Observed-versus-predicted plot\n\n" + _reference_image_markdown(),
             "wp41-312-3b-reference-image",
             attachments=_reference_image_attachments(),
         ),
@@ -836,6 +857,7 @@ def _section_4() -> list[dict]:
     return [
         md("## Section 4 — Correct and misleading evaluation", "wp41-401-header"),
         md(
+            "🔷 **INSPECT** · Three ways of scoring the same model, side by side\n\n"
             "Same fixed split, same recipe, three ways to score the same model.",
             "wp41-402-intro",
         ),
@@ -888,6 +910,7 @@ display(HTML(f'<style>.ex2-eval-table th, .ex2-eval-table td {{ text-align: left
             "generalises.",
             "wp41-404-explanation",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp41-404a-question-label"),
         code(
             """
 show_question("q-honest-evaluation")
@@ -908,6 +931,8 @@ def _section_5() -> list[dict]:
         ),
         md(
             """
+🟧 **YOUR CODE** · Build KNN regression
+
 Write code that:
 1. imports `KNeighborsRegressor`;
 2. creates a model with `k=20`;
@@ -960,6 +985,7 @@ plt.show()
             "split?**",
             "wp41-505-answer",
         ),
+        md("🟩 **CHECK** · Run after completing your code", "wp41-505a-check-label"),
         code(
             """
 # Run this to check your KNN results.
@@ -1019,6 +1045,7 @@ For KNN, `k` controls this directly:
             "wp41-603-figure",
             attachments=_bias_variance_image_attachments(),
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp41-603a-question-label"),
         code(
             """
 show_question("q-knn-complexity")
@@ -1064,8 +1091,16 @@ print(f"k with lowest validation error = {val_optimal_k}")
 
 def _section_7() -> list[dict]:
     return [
-        md("## Section 7 — Performance across model complexity", "wp41-701-header"),
+        md(
+            """
+🟦 **RUN FIRST** · Build the fitting/validation split and MSE sweep
+
+## Section 7 — Performance across model complexity
+""",
+            "wp41-701-header",
+        ),
         code(_knn_sweep_code(), "wp41-702-sweep"),
+        md("🟫 **ILLUSTRATE** · Fitting vs. validation error curve", "wp41-702a-illustrate-label"),
         code(
             """
 # Model complexity increases as k decreases. A log scale keeps every tested
@@ -1101,6 +1136,7 @@ def _section_8() -> list[dict]:
     return [
         md("## Section 8 — Explore model complexity", "wp41-801-header"),
         md(
+            "🟪 **EXPLORE** · Refit KNN at a chosen k\n\n"
             "Move the slider or type a value to refit KNN at a different `k` "
             "and watch the observed-versus-predicted plot and the error curve "
             "position change together. Three deterministic training-sample "
@@ -1168,6 +1204,7 @@ _explore_refit(k_slider.value)
 """,
             "wp41-803-widget",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp41-803a-question-label"),
         code(
             """
 show_question("q-knn-large-k-variance")
@@ -1181,6 +1218,7 @@ def _bonus_section() -> list[dict]:
     return [
         md("## Bonus — Feature sets and sample size", "wp41-901-header"),
         md(
+            "🟫 **ILLUSTRATE** · Sample size vs. accuracy\n\n"
             "This section is optional and not required for the core session, "
             "and it is a teaching demonstration, not a rigorous protocol: "
             "trying many feature sets or sample sizes below is exploratory "
