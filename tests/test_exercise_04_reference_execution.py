@@ -1,7 +1,14 @@
 """Executes the completed Exercise 4 reference notebook and checks its
-numbers against the approved established results
-(scripts/classification_model_audit_result.json), modeled on
+numbers against the generator's own recomputed EXPECTED_* constants
+(scripts/generate_exercise_04_notebook.py), modeled on
 tests/test_exercise_02_reference_execution.py.
+
+WP62: this notebook now selects C from a validation set rather than using
+the retired fixed C=1.0, so it is intentionally no longer compared against
+scripts/classification_model_audit_result.json -- that file documents a
+separate, unchanged audit of the fixed-C procedure for other callers
+(scripts/export_classification_threshold_data.py,
+scripts/export_classification_imbalance_data.py).
 
 Runs every cell's source in one shared namespace, in order -- the same
 semantics a notebook kernel uses, including top-level ``await`` support for
@@ -24,8 +31,8 @@ from __future__ import annotations
 import ast
 import asyncio
 import inspect
-import json
 import os
+import sys
 import unittest
 from pathlib import Path
 
@@ -33,7 +40,9 @@ import nbformat
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REFERENCE_PATH = REPO_ROOT / "scripts" / "reference_notebooks" / "exercise_04_reference.ipynb"
-AUDIT_RESULT = json.loads((REPO_ROOT / "scripts" / "classification_model_audit_result.json").read_text())
+
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import generate_exercise_04_notebook as gen  # noqa: E402
 
 _TOP_LEVEL_AWAIT = ast.PyCF_ALLOW_TOP_LEVEL_AWAIT
 
@@ -78,36 +87,36 @@ class ReferenceExecution(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.ns = _execute_reference_notebook()
-        cls.ev = AUDIT_RESULT["locked_test_eval"]
 
     def test_participant_and_predictor_counts(self):
-        self.assertEqual(len(self.ns["df"]), AUDIT_RESULT["cohort"]["n_total"])
-        self.assertEqual(len(self.ns["FEATURES"]), AUDIT_RESULT["feature_recipe"]["feature_count"])
+        self.assertEqual(len(self.ns["df"]), gen.EXPECTED_N_TOTAL)
+        self.assertEqual(len(self.ns["FEATURES"]), gen.EXPECTED_N_FEATURES)
 
     def test_class_counts_match_the_audit(self):
-        self.assertEqual(int(self.ns["y"].sum()), AUDIT_RESULT["cohort"]["n_positive_total"])
-        self.assertEqual(int((self.ns["y"] == 0).sum()), AUDIT_RESULT["cohort"]["n_negative_total"])
+        self.assertEqual(int(self.ns["y"].sum()), gen.EXPECTED_N_POSITIVE)
+        self.assertEqual(int((self.ns["y"] == 0).sum()), gen.EXPECTED_N_NEGATIVE)
 
     def test_established_split_sizes(self):
-        self.assertEqual(len(self.ns["y_train"]), AUDIT_RESULT["cohort"]["n_train"])
-        self.assertEqual(len(self.ns["y_test"]), AUDIT_RESULT["cohort"]["n_test"])
+        self.assertEqual(len(self.ns["y_train"]), gen.EXPECTED_N_TRAIN)
+        self.assertEqual(len(self.ns["y_val"]), gen.EXPECTED_N_VAL)
+        self.assertEqual(len(self.ns["y_test"]), gen.EXPECTED_N_TEST)
 
     def test_logistic_regression_matches_established_result(self):
-        self.assertAlmostEqual(self.ns["accuracy"], self.ev["accuracy"], places=6)
-        self.assertAlmostEqual(self.ns["sensitivity"], self.ev["sensitivity"], places=6)
-        self.assertAlmostEqual(self.ns["specificity"], self.ev["specificity"], places=6)
-        self.assertAlmostEqual(self.ns["auc"], self.ev["auc"], places=6)
+        self.assertAlmostEqual(self.ns["accuracy"], gen.EXPECTED_ACCURACY, places=6)
+        self.assertAlmostEqual(self.ns["sensitivity"], gen.EXPECTED_SENSITIVITY, places=6)
+        self.assertAlmostEqual(self.ns["specificity"], gen.EXPECTED_SPECIFICITY, places=6)
+        self.assertAlmostEqual(self.ns["auc"], gen.EXPECTED_AUC, places=6)
 
     def test_confusion_matrix_matches_established_result(self):
-        cm = self.ev["confusion_matrix"]
-        self.assertEqual(int(self.ns["tn"]), cm["tn"])
-        self.assertEqual(int(self.ns["fp"]), cm["fp"])
-        self.assertEqual(int(self.ns["fn"]), cm["fn"])
-        self.assertEqual(int(self.ns["tp"]), cm["tp"])
+        self.assertEqual(int(self.ns["tn"]), gen.EXPECTED_TN)
+        self.assertEqual(int(self.ns["fp"]), gen.EXPECTED_FP)
+        self.assertEqual(int(self.ns["fn"]), gen.EXPECTED_FN)
+        self.assertEqual(int(self.ns["tp"]), gen.EXPECTED_TP)
 
-    def test_c_example_matches_established_protocol(self):
-        self.assertEqual(self.ns["C_EXAMPLE"], 1.0)
-        self.assertIn("C=1.0", AUDIT_RESULT["protocol"]["model"])
+    def test_selected_c_matches_the_validation_search(self):
+        self.assertEqual(self.ns["selected_C"], gen.EXPECTED_SELECTED_C)
+        self.assertEqual(len(self.ns["validation_table"]), len(gen.C_GRID))
+        self.assertEqual(list(self.ns["validation_table"]["C"]), gen.C_GRID)
 
     def test_imbalance_cohort_matches_established_result(self):
         # The imbalance widget's own default ratio ("90:10") is refit as a

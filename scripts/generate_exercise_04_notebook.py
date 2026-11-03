@@ -21,13 +21,21 @@ already ships, book/lite/files/data/abide_age_brain.csv (360 fsCT predictors
 + age + group, 1004 participants) -- it already carries the `group` diagnosis
 column Exercise 2 never uses. No second, independent data export is created:
 empirically verified (WP44) that loading this file, or the same pinned
-fallback URL Exercise 2 already uses, reproduces the exact established
-classification result bit-for-bit:
-    accuracy=0.545817  AUC=0.569221  sensitivity=0.534483  specificity=0.555556
-    confusion matrix: TN=75 FP=60 FN=54 TP=62  (n_train=753, n_test=251)
-against scripts/classification_model_audit_result.json, the audit this
-notebook's recipe/split/C_EXAMPLE preserve unchanged from the pre-migration
-book/chapters/chapter_03/exercise_03.ipynb.
+fallback URL Exercise 2 already uses, reproduces the same 1004-participant,
+360-feature cohort either way.
+
+Modeling protocol (WP62): the outer 75% train+validation / 25% test split
+(stratified, random_state=42) is unchanged from WP19, but the 75% portion is
+now split again, the same way, into training (564) and validation (189)
+participants. Logistic-regression C is chosen by scoring a small predetermined
+grid on the validation participants only, then the selected pipeline is
+refit on the combined training+validation participants and evaluated exactly
+once on the untouched 251-participant test set. This intentionally does not
+match scripts/classification_model_audit_result.json, which documents a
+separate, still-accurate audit of the retired fixed-C=1.0 procedure for
+callers outside this notebook (scripts/export_classification_threshold_data.py,
+scripts/export_classification_imbalance_data.py) -- that audit is unchanged
+by this revision.
 
 Local-data path note: see scripts/generate_exercise_03_notebook.py's own
 docstring for the full account (confirmed live, not assumed) of why both
@@ -86,16 +94,26 @@ KERNELSPEC = {
     "wp41": {"exercise": 4, "templateVersion": TEMPLATE_VERSION},
 }
 
-# Established, audited protocol (scripts/classification_model_audit_result.json)
-# -- preserved unchanged by this migration.
-C_EXAMPLE = 1.0
-EXPECTED_ACCURACY = 0.545817
-EXPECTED_AUC = 0.569221
-EXPECTED_SENSITIVITY = 0.534483
-EXPECTED_SPECIFICITY = 0.555556
-EXPECTED_N_TRAIN = 753
+# WP62: C is selected from this modest, predetermined grid using a
+# validation set (never the test set) -- recomputed by actually executing
+# the completed notebook, not copied from the retired fixed-C=1.0 audit.
+C_GRID = [0.01, 0.1, 1.0, 10.0, 100.0]
+EXPECTED_SELECTED_C = 0.1
+EXPECTED_ACCURACY = 0.533865
+EXPECTED_AUC = 0.580268
+EXPECTED_SENSITIVITY = 0.491379
+EXPECTED_SPECIFICITY = 0.570370
+EXPECTED_TN = 77
+EXPECTED_FP = 58
+EXPECTED_FN = 59
+EXPECTED_TP = 57
+EXPECTED_N_TRAIN = 564
+EXPECTED_N_VAL = 189
 EXPECTED_N_TEST = 251
 EXPECTED_N_FEATURES = 360
+EXPECTED_N_TOTAL = 1004
+EXPECTED_N_POSITIVE = 463
+EXPECTED_N_NEGATIVE = 541
 
 
 def md(source: str, cell_id: str) -> dict:
@@ -475,10 +493,11 @@ def _title_and_overview() -> list[dict]:
 Exercise 2 asked a **regression** question -- predicting age from cortical
 structure. This notebook returns to ABIDE-II's own central scientific
 question: predicting **autism diagnosis**, a categorical label, from the
-same 360 cortical-thickness measurements. You will build one
-logistic-regression classifier, evaluate it with a confusion matrix and
-classification metrics, and explore how the decision threshold and class
-imbalance change what those metrics show.
+same 360 cortical-thickness measurements. You will build a
+logistic-regression classifier, choose its regularization strength `C`
+using a held-out validation set, evaluate the final model with a confusion
+matrix and classification metrics, and explore how the decision threshold
+and class imbalance change what those metrics show.
 
 Written-answer cells (bold questions in a blockquote) are ordinary Markdown:
 double-click one to edit it, type your answer, then press Shift+Enter to
@@ -622,20 +641,23 @@ show_question("q-probability-near-threshold")
 
 def _section_3() -> list[dict]:
     cells: list[dict] = [
-        md("## 3. One logistic-regression model", "wp44-301-header"),
+        md("## 3. Choosing C honestly with a validation set", "wp44-301-header"),
         md(
             """
-🟦 **RUN FIRST** · Imports and the fixed C for this example
+🟦 **RUN FIRST** · Imports and the candidate grid for C
 
 **Target:** diagnosis (`group`, recoded autism=1 / control=0). **Positive
 class:** autism. **Negative class:** control. **Predictors:** the 360
 bilateral cortical-thickness (`fsCT_`) columns -- no diagnosis-derived
-field, participant id, age, sex, or site is a predictor. **Split:** a
-stratified 75/25 train/test split, `random_state=42` -- the same fixed seed
-used throughout this course. **Model:** `StandardScaler` (fit on training
-rows only) then `LogisticRegression`, using `C = 1.0` for this worked
-example, chosen in advance rather than tuned. A later lesson introduces
-systematic methods for selecting `C`.
+field, participant id, age, sex, or site is a predictor. **Split:** this
+course's established stratified 75/25 train-plus-validation/test split,
+`random_state=42`, then the 75% portion is split again, the same way, into
+separate training and validation participants. **Model:** `StandardScaler`
+(fit on training rows only) then `LogisticRegression`. Its regularization
+strength `C` is chosen by comparing a small predetermined grid of
+candidates on the validation participants, never the test participants;
+the test participants are evaluated exactly once, after `C` has already
+been chosen.
 """,
             "wp44-302-intro",
         ),
@@ -647,7 +669,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score, roc_curve
 
-C_EXAMPLE = 1.0  # fixed by course design for this worked example, not tuned
+# A small, predetermined set of candidate C values to compare on the
+# validation set below -- not adjusted after seeing any result.
+C_GRID = [0.01, 0.1, 1.0, 10.0, 100.0]
 """,
             "wp44-303-imports",
         ),
@@ -741,26 +765,37 @@ else:
 """,
             "wp44-324-check",
         ),
-        md("### Make the train/test split", "wp44-331-header"),
+        md("### Make the train, validation, and test split", "wp44-331-header"),
         md(
             """
-🟧 **YOUR CODE** · Make the stratified train/test split
+🟧 **YOUR CODE** · Make the stratified train, validation, and test split
 
-Write code that makes this course's established train/test split: 75%
-train / 25% test, seeded for reproducibility, **stratified** so the
-autism/control balance matches in both halves. *Hints:* `train_test_split`
-takes `test_size`, `random_state`, and `stratify` arguments; this course's
-standard seed is `random_state=42`; stratify on `y`.
+Write code that creates three participant sets using this course's
+established two-step procedure:
 
-Required output names: `X_train`, `X_test`, `y_train`, `y_test`.
+1. First make the usual 75% train-plus-validation / 25% test split, exactly
+   as before -- **stratified**, `random_state=42`.
+2. Then split that 75% portion again, the same way, into separate
+   **training** and **validation** participants.
+
+*Hints:* call `train_test_split` twice -- the first call's 75% output
+becomes the second call's input; stratify each call on its own labels (the
+full `y` for the first call, the 75% portion's own labels for the second);
+use `random_state=42` for both calls.
+
+Required output names: `X_train`, `X_val`, `X_test`, `y_train`, `y_val`,
+`y_test`.
 """,
             "wp44-332-instructions",
         ),
         blank(
-            "# YOUR CODE HERE\n# X_train, X_test, y_train, y_test = ...\n",
+            "# YOUR CODE HERE\n# X_trainval, X_test, y_trainval, y_test = ...\n# X_train, X_val, y_train, y_val = ...\n",
             """
-X_train, X_test, y_train, y_test = train_test_split(
+X_trainval, X_test, y_trainval, y_test = train_test_split(
     X, y, test_size=0.25, random_state=42, stratify=y
+)
+X_train, X_val, y_train, y_val = train_test_split(
+    X_trainval, y_trainval, test_size=0.25, random_state=42, stratify=y_trainval
 )
 """,
             "wp44-333-blank",
@@ -770,43 +805,91 @@ X_train, X_test, y_train, y_test = train_test_split(
         code(
             f"""
 # Run this to check your split.
-if all(name in globals() for name in ("X_train", "X_test", "y_train", "y_test")):
-    if len(y_train) != {EXPECTED_N_TRAIN} or len(y_test) != {EXPECTED_N_TEST}:
+if all(name in globals() for name in ("X_train", "X_val", "X_test", "y_train", "y_val", "y_test")):
+    if len(y_train) != {EXPECTED_N_TRAIN} or len(y_val) != {EXPECTED_N_VAL} or len(y_test) != {EXPECTED_N_TEST}:
         print(
-            f"Your split has n_train={{len(y_train)}}, n_test={{len(y_test)}}; "
-            f"the established split (test_size=0.25, random_state=42, stratify=y) "
-            f"gives exactly n_train={EXPECTED_N_TRAIN}, n_test={EXPECTED_N_TEST}. "
-            "Check those exact arguments."
+            f"Your split has n_train={{len(y_train)}}, n_val={{len(y_val)}}, n_test={{len(y_test)}}; "
+            f"the established two-step split (test_size=0.25, random_state=42, "
+            f"stratify=..., applied twice) gives exactly n_train={EXPECTED_N_TRAIN}, "
+            f"n_val={EXPECTED_N_VAL}, n_test={EXPECTED_N_TEST}. Check those exact "
+            "arguments on both calls."
         )
     else:
-        print(f"n_train = {{len(y_train)}}   n_test = {{len(y_test)}}   n_features = {{X_train.shape[1]}}")
-        print(f"train autism rate = {{y_train.mean():.3f}}   test autism rate = {{y_test.mean():.3f}}")
+        train_rows = {{row.tobytes() for row in np.ascontiguousarray(np.asarray(X_train, dtype=float))}}
+        val_rows = {{row.tobytes() for row in np.ascontiguousarray(np.asarray(X_val, dtype=float))}}
+        test_rows = {{row.tobytes() for row in np.ascontiguousarray(np.asarray(X_test, dtype=float))}}
+        if (train_rows & val_rows) or (train_rows & test_rows) or (val_rows & test_rows):
+            print("Not quite: the same participant row appears in more than one of train/validation/test.")
+        else:
+            print(f"n_train = {{len(y_train)}}   n_val = {{len(y_val)}}   n_test = {{len(y_test)}}   n_features = {{X_train.shape[1]}}")
+            print(f"train autism rate = {{y_train.mean():.3f}}   val autism rate = {{y_val.mean():.3f}}   test autism rate = {{y_test.mean():.3f}}")
+            print("All three participant sets are disjoint.")
 else:
-    print("Not complete yet: define X_train, X_test, y_train, and y_test above first.")
+    print("Not complete yet: define X_train, X_val, X_test, y_train, y_val, and y_test above first.")
 """,
             "wp44-334-check",
         ),
         md(
             """
-🟦 **RUN FIRST** · Fit the model on your train/test split
+🟦 **RUN FIRST** · Compare candidate C values on the validation set
 
-### Fit the model
+### Choose C using the validation set
 
-Uses your `X_train`, `X_test`, `y_train`, and `y_test` from above.
+For each candidate in `C_GRID`, fit the same `StandardScaler` ->
+`LogisticRegression` pipeline on the training participants only, then score
+it on the validation participants' ROC AUC. If two candidates tie exactly,
+the smaller (more-regularized) one is kept, because `C_GRID` is searched
+from smallest to largest and the first value reaching the maximum is the
+one selected.
+""",
+            "wp44-335-header",
+        ),
+        code(
+            """
+if all(name in globals() for name in ("X_train", "y_train", "X_val", "y_val")):
+    validation_results = []
+    for C in C_GRID:
+        candidate = make_pipeline(StandardScaler(), LogisticRegression(C=C, max_iter=5000))
+        candidate.fit(X_train, y_train)
+        val_proba = candidate.predict_proba(X_val)[:, list(candidate.classes_).index(1)]
+        validation_results.append({"C": C, "validation AUC": roc_auc_score(y_val, val_proba)})
+
+    validation_table = pd.DataFrame(validation_results)
+    display(validation_table)
+
+    best_index = int(np.argmax(validation_table["validation AUC"].to_numpy()))
+    selected_C = float(validation_table.loc[best_index, "C"])
+    print(f"selected C = {selected_C}  (highest validation AUC; ties broken toward the smaller C)")
+else:
+    print("Not complete yet: complete the train/validation/test split activity above first.")
+""",
+            "wp44-336-c-search",
+        ),
+        md(
+            """
+🟦 **RUN FIRST** · Refit on training + validation, evaluate once on the test set
+
+### Fit the final model
+
+Combines `X_train` with `X_val` (and `y_train` with `y_val`) into one
+fitting set, refits the pipeline at the selected `C`, and predicts on
+`X_test` -- the only time these test participants are touched.
 """,
             "wp44-341-header",
         ),
         code(
             """
-if all(name in globals() for name in ("X_train", "X_test", "y_train", "y_test")):
-    model = make_pipeline(StandardScaler(), LogisticRegression(C=C_EXAMPLE, max_iter=5000))
-    model.fit(X_train, y_train)
+if all(name in globals() for name in ("X_train", "X_val", "X_test", "y_train", "y_val", "y_test", "selected_C")):
+    X_fit = np.concatenate([np.asarray(X_train, dtype=float), np.asarray(X_val, dtype=float)], axis=0)
+    y_fit = np.concatenate([np.asarray(y_train), np.asarray(y_val)], axis=0)
+    model = make_pipeline(StandardScaler(), LogisticRegression(C=selected_C, max_iter=5000))
+    model.fit(X_fit, y_fit)
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, list(model.classes_).index(1)]
-    print("predicted labels and probabilities computed for the held-out test set.")
-    print(f"Every metric below uses only these {len(y_test)} test participants -- none of them were used to fit the model.")
+    print(f"Fit on {len(y_fit)} training+validation participants at C = {selected_C}.")
+    print(f"Every metric below uses only these {len(y_test)} test participants -- none of them were used to fit the model or choose C.")
 else:
-    print("Not complete yet: complete the FEATURES, X/y, and train/test split activities above first.")
+    print("Not complete yet: complete the FEATURES, X/y, split, and C-selection activities above first.")
 """,
             "wp44-342-fit",
         ),
@@ -919,8 +1002,9 @@ print(f"specificity = {specificity:.3f}  (proportion of control participants cor
 A modest result here -- accuracy and sensitivity/specificity not far above
 chance -- is a plausible outcome for this specific, difficult problem:
 separating autism from control using only cortical-thickness measurements,
-with a single `LogisticRegression(C=1.0)` chosen in advance rather than
-tuned. It does not mean your code is wrong, and it is **not** evidence that
+with a single `LogisticRegression` whose `C` was chosen from a small
+candidate grid using a validation set. It does not mean your code is
+wrong, and it is **not** evidence that
 a more complex classifier would necessarily generalize better on held-out
 data -- a stronger result, if one exists, more plausibly comes from
 systematic model comparison and careful, principled feature choices, which
@@ -1074,10 +1158,11 @@ This notebook's cohort (463 autism, 541 control) is only mildly imbalanced.
 Real diagnostic cohorts are often far more skewed. The control below
 resamples real ABIDE participants -- control always the majority class --
 into six class ratios (50:50 through 95:5) from a fixed total cohort of 400
-participants, refitting the **same fixed model** (`C = C_EXAMPLE`) at every
-ratio. 400 was chosen so that even the sparsest ratio, 95:5, stays
-meaningfully sparse (20 autism participants) while a stratified 25% test
-partition still keeps a handful of autism participants.
+participants, refitting the **same fixed model** (`C = selected_C`, chosen
+in the previous section) at every ratio. 400 was chosen so that even the
+sparsest ratio, 95:5, stays meaningfully sparse (20 autism participants)
+while a stratified 25% test partition still keeps a handful of autism
+participants.
 """,
             "wp44-602-intro",
         ),
@@ -1096,8 +1181,8 @@ _imbalance_output = widgets.Output()
 def _imbalance_refit(ratio):
     with _imbalance_output:
         _imbalance_output.clear_output(wait=True)
-        if not all(name in globals() for name in ("X", "y")):
-            print("Complete Section 3's X/y activity first.")
+        if not all(name in globals() for name in ("X", "y", "selected_C")):
+            print("Complete Section 3's X/y and C-selection activities first.")
             return
         majority_pct, minority_pct = _RATIO_TABLE[ratio]
         n_majority = round(_IMBALANCE_COHORT_SIZE * majority_pct)
@@ -1115,7 +1200,7 @@ def _imbalance_refit(ratio):
         Xtr, Xte, ytr, yte = train_test_split(
             X_cohort, y_cohort, test_size=0.25, random_state=42, stratify=y_cohort
         )
-        imb_model = make_pipeline(StandardScaler(), LogisticRegression(C=C_EXAMPLE, max_iter=5000)).fit(Xtr, ytr)
+        imb_model = make_pipeline(StandardScaler(), LogisticRegression(C=selected_C, max_iter=5000)).fit(Xtr, ytr)
         imb_pred = imb_model.predict(Xte)
 
         imb_cm = confusion_matrix(yte, imb_pred, labels=[0, 1])
@@ -1173,6 +1258,9 @@ def _summary() -> list[dict]:
             """
 ## In summary
 
+- Comparing candidate `C` values on a held-out validation set, never the
+  test set, lets you choose a reasonable regularization strength while
+  keeping the final test evaluation honest.
 - Logistic regression outputs probabilities before class labels; a decision
   threshold turns a probability into a prediction.
 - A confusion matrix identifies the kinds of correct and incorrect

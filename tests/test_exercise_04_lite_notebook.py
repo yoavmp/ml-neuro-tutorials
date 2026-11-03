@@ -103,19 +103,22 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertIn("notebook's first code cell", source)
 
     def test_model_fit_cell_is_guarded_against_unfinished_prerequisites(self):
-        # WP53: an unfinished student activity above (X_train/X_test/
-        # y_train/y_test not yet defined) used to surface as a raised
-        # RuntimeError -- a red traceback for entirely expected incomplete
-        # work. Replaced with the same graceful "Not complete yet" guard
-        # pattern already used by the check cell just above this one; a
-        # genuine programming error inside the try body (if there were one)
-        # would still propagate normally, since nothing here is caught.
+        # WP53: an unfinished student activity above (the split/C-selection
+        # names not yet defined) used to surface as a raised RuntimeError --
+        # a red traceback for entirely expected incomplete work. Replaced
+        # with the same graceful "Not complete yet" guard pattern already
+        # used by the check cell just above this one; a genuine programming
+        # error inside the try body (if there were one) would still
+        # propagate normally, since nothing here is caught.
         fit_cell = next(c for c in self.cells if c.get("id") == "wp44-342-fit")
         source = _src(fit_cell)
         self.assertNotIn("except NameError", source)
         self.assertNotIn("raise RuntimeError", source)
         self.assertIn("Not complete yet", source)
-        self.assertIn('if all(name in globals() for name in ("X_train", "X_test", "y_train", "y_test")):', source)
+        self.assertIn(
+            'if all(name in globals() for name in ("X_train", "X_val", "X_test", "y_train", "y_val", "y_test", "selected_C")):',
+            source,
+        )
 
     # -- YOUR CODE HERE tasks -------------------------------------------
 
@@ -246,11 +249,28 @@ class StudentTemplateStructure(unittest.TestCase):
 
     # -- preserved recipe/values ----------------------------------------
 
-    def test_c_example_fixed_not_tuned(self):
-        self.assertIn("C_EXAMPLE = 1.0", self.code)
+    def test_c_is_selected_via_validation_not_cross_validation(self):
+        # WP62: C is now chosen by scoring a predetermined grid on a
+        # validation set, not fixed in advance (WP19) and not reintroducing
+        # k-fold cross-validation (still out of scope for Exercise 4, WP19).
+        self.assertIn("C_GRID = [0.01, 0.1, 1.0, 10.0, 100.0]", self.code)
+        self.assertIn("selected_C = float(validation_table.loc[best_index, \"C\"])", self.code)
         self.assertNotIn("GridSearchCV", self.code)
         self.assertNotIn("StratifiedKFold", self.code)
         self.assertNotIn("cross_val", self.code.lower())
+
+    def test_c_selection_never_references_the_test_set(self):
+        search_cell = next(c for c in self.cells if c.get("id") == "wp44-336-c-search")
+        source = _src(search_cell)
+        self.assertNotIn("X_test", source)
+        self.assertNotIn("y_test", source)
+
+    def test_final_fit_combines_train_and_validation_and_uses_test_once(self):
+        fit_cell = next(c for c in self.cells if c.get("id") == "wp44-342-fit")
+        source = _src(fit_cell)
+        self.assertIn("np.concatenate([np.asarray(X_train, dtype=float), np.asarray(X_val, dtype=float)], axis=0)", source)
+        self.assertEqual(source.count(".predict(X_test)"), 1)
+        self.assertEqual(source.count(".predict_proba(X_test)"), 1)
 
     def test_established_split_arguments_present(self):
         self.assertIn("test_size=0.25, random_state=42, stratify=y", self.code)
@@ -258,8 +278,18 @@ class StudentTemplateStructure(unittest.TestCase):
     def test_established_auc_referenced_in_its_check(self):
         # The accuracy/sensitivity/specificity numeric autocheck cell was
         # replaced by a qualitative reflection (WP48, D.3); the AUC check
-        # (untouched) still embeds its own established value.
-        self.assertIn("0.569221", self.code)
+        # (untouched) still embeds its own established value -- recomputed
+        # (WP62) for the validation-selected C rather than the retired
+        # fixed C=1.0.
+        import generate_exercise_04_notebook as gen
+
+        self.assertIn(str(gen.EXPECTED_AUC), self.code)
+
+    def test_split_check_covers_all_three_sets(self):
+        check_cell = next(c for c in self.cells if c.get("id") == "wp44-334-check")
+        source = _src(check_cell)
+        for needle in ("y_val", "val autism rate", "disjoint", "train_rows", "val_rows", "test_rows"):
+            self.assertIn(needle, source)
 
     # -- SEX/SITE metadata distractors and the explicit group recode ------
 
