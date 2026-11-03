@@ -981,10 +981,10 @@ tuning procedure -- not of one fixed model.
             "wp45-507-note",
         ),
         md(
-            "🟨 **QUESTION** · Choose an answer and check it\n\n"
             "> **In your own words, why is it acceptable -- even expected -- for different outer folds to select different values of k, rather than being a sign that something went wrong?**",
             "wp45-507b-reflection",
         ),
+        md("🟨 **QUESTION** · Choose an answer and check it", "wp45-507c-question-label"),
         code(
             """
 show_question("q-inner-loop-data")

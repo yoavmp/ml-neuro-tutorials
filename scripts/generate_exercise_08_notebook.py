@@ -557,12 +557,11 @@ finding.
         ),
         md(
             """
-🟦 **RUN FIRST** · Load the ABIDE-II table and define FEATURES
-
 > **With no target column supplied, what information is actually left for an algorithm to use when it groups or summarizes participants?**
 """,
             "wp47-103-think-first",
         ),
+        md("🟦 **RUN FIRST** · Load the ABIDE-II table and define FEATURES", "wp47-103a-run-first-label"),
         code(
             """
 try:
@@ -1280,12 +1279,11 @@ features themselves, which were never chosen with age in mind.
         ),
         md(
             """
-🟦 **RUN FIRST** · Build the age train/test split
-
 > **Why might PCA help KNN more directly than it helps a model that does not calculate distances between participants?**
 """,
             "wp47-503-think-first",
         ),
+        md("🟦 **RUN FIRST** · Build the age train/test split", "wp47-503a-run-first-label"),
         code(
             """
 from sklearn.model_selection import train_test_split, KFold
