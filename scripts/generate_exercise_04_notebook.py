@@ -525,7 +525,7 @@ def _section_1() -> list[dict]:
         ),
         code(
             """
-# Load the approved ABIDE-II classification table: the same 1004-participant,
+# Load the ABIDE-II classification table: the same 1004-participant,
 # 360-feature cortical-thickness table used throughout this course.
 try:
     df = load_abide_classification_table()
@@ -557,8 +557,7 @@ excluded -- none of the three may leak into `X`.
         ),
         code(
             """
-# Verify the raw codes before mapping anything -- never infer a mapping from
-# column order or alphabetical sorting.
+# Verify data
 observed_codes = sorted(df["group"].unique())
 assert observed_codes == [1, 2], f"unexpected group codes: {observed_codes}"
 
@@ -566,9 +565,8 @@ diagnosis_label = df["group"].map({1: "autism", 2: "control"})
 class_counts = diagnosis_label.value_counts()
 print(f"{class_counts['autism']} autism (group=1 -> 1), {class_counts['control']} control (group=2 -> 0)")
 
-# Recode the raw ABIDE-II codes to this notebook's binary target, once, here
-# -- every later cell already sees 0 = control / 1 = autism on df["group"],
-# never the raw 1/2 codes or a string label.
+# In the original dataset, 1 = autism, 2 = control. Change the labels to
+# 0 = control, 1 = autism before proceeding.
 df["group"] = df["group"].map({1: 1, 2: 0})
 assert set(df["group"].unique()) == {0, 1}, (
     "df['group'] must be binary (0 = control, 1 = autism) before any "
@@ -669,8 +667,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score, roc_curve
 
-# A small, predetermined set of candidate C values to compare on the
-# validation set below -- not adjusted after seeing any result.
+# A small, predetermined set of candidate C values to compare.
 C_GRID = [0.01, 0.1, 1.0, 10.0, 100.0]
 """,
             "wp44-303-imports",
@@ -738,10 +735,7 @@ y = df["group"].to_numpy()
         code(
             """
 # Run this to check your X and y. Accepts X/y as a NumPy array, a pandas
-# DataFrame/Series, or anything else convertible to one -- a plain
-# `np.isfinite(X).all()` on a DataFrame returns a per-column Series, which
-# raises an ambiguous-truth-value error in an `if`/`elif`; converting with
-# np.asarray() first avoids that regardless of what the student built.
+# DataFrame/Series, or anything else convertible to one.
 if "X" in globals() and "y" in globals():
     try:
         X_arr = np.asarray(X, dtype=float)
