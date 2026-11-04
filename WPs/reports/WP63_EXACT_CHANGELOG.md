@@ -142,11 +142,20 @@ JSON, the threshold/imbalance export scripts, and
 ## Final state
 
 ```
-f3fc6ed (HEAD -> main, origin/main) WP63: update Exercise 4 book e2e spec for the three-way split and validation-based C selection
+f3fc6ed WP63: update Exercise 4 book e2e spec for the three-way split and validation-based C selection
 88144fa WP63: fix stale WP19 content-audit assertion for Exercise 4's new C-selection policy
 af0cde5 Merge revise/exercise-04-validation-split into main (WP62/WP63)
 5a05415 WP63: student-facing comment cleanup in Exercise 4
 a31c3d9 WP63: add WP document (checkpoint before implementation)
 ```
 
-`main` and `origin/main` are both at `f3fc6ed`, deployed and live.
+**Deployed, live SHA: `f3fc6ed` (unchanged).** This report and
+`WP63_REPORT.md` were committed and pushed afterward, as a separate
+documentation-only commit on top of `f3fc6ed` — per this file's own
+"do not amend a report to insert its own commit's SHA" convention, that
+commit's hash is not written here; read it from a fresh `git log main`.
+Because `.github/workflows/deploy.yml` ignores `WPs/**`, that push did
+**not** trigger a new deploy run — confirmed directly via `gh run list`:
+no run exists for it, and the most recent run remains `41823269119`
+against `f3fc6ed`. So `main`'s current tip is one commit ahead of the
+deployed SHA, and that is expected, not a discrepancy.

@@ -165,5 +165,15 @@ re-pushed rather than reverted around.
 
 ## Confirmation
 
-`main` is at `f3fc6ed`, deployed and live. Nothing further was pushed or
-started beyond this WP's own scope.
+The deployed, live SHA is `f3fc6ed` (unchanged — nothing further was
+rebuilt or redeployed). This report and its changelog were committed and
+pushed as a separate, documentation-only commit afterward
+(`WPs/reports/WP63_REPORT.md`/`WP63_EXACT_CHANGELOG.md`); because
+`.github/workflows/deploy.yml` excludes `WPs/**` from its trigger path,
+that push did not start a new deploy run — confirmed directly: no run
+exists for that commit's SHA in `gh run list`, and the most recent run
+remains `41823269119` against `f3fc6ed`. `main`'s current tip is
+therefore that documentation commit, not `f3fc6ed`; read the exact SHA
+from a fresh `git log` rather than this line, per this report's own
+cannot-self-reference convention. Nothing else was pushed or started
+beyond this WP's own scope.
