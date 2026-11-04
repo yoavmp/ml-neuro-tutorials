@@ -141,21 +141,26 @@ class NotebookContentAudit(unittest.TestCase):
         text = _notebook_text(reference)
         self.assertIn("KNeighborsRegressor(n_neighbors=20)", text, reference)
 
-    def test_classification_uses_fixed_c1_language(self):
+    def test_classification_selects_c_via_a_validation_set(self):
         # WP44 migrated the classification lesson (then Exercise 3) to a
-        # JupyterLite notebook: its canonical page became a 2-cell
-        # transition page with no analysis code of its own (see
-        # tests/test_exercise_03_transition_page.py at the time), so only
-        # the portable notebook still carries this text. WP60 later moved
-        # the whole lesson to Exercise 4 (see WPs/reports/WP60_REPORT.md) --
-        # this check follows the content there, directly, rather than
-        # through NOTEBOOK_PATHS (which no longer includes it; see that
-        # list's own comment). The real lesson's own copy is checked
+        # JupyterLite notebook; WP60 later moved the whole lesson to
+        # Exercise 4 (see WPs/reports/WP60_REPORT.md). WP62 then
+        # deliberately replaced the fixed, non-tuned `C_EXAMPLE = 1.0`
+        # worked example with validation-based C selection (a
+        # train/validation/test split, never k-fold cross-validation) --
+        # Exercise 4 is no longer part of this audit's "early,
+        # pre-cross-validation zone" for its own C choice, the same way
+        # Exercise 3 left that zone for choosing k when WP60 gave it the
+        # deliberate "Validation and Cross-Validation" subject (see
+        # NOTEBOOK_PATHS's own comment above). This checks the new policy is
+        # what actually shipped, the same way the removed fixed-C check used
+        # to confirm the old one did. The real lesson's own copy is checked
         # directly in tests/test_exercise_04_lite_notebook.py's
-        # test_c_example_fixed_not_tuned.
+        # test_c_is_selected_via_validation_not_cross_validation.
         portable = REPO_ROOT / "book" / "downloads" / "chapter_04" / "exercise_04_portable.ipynb"
         text = _notebook_text(portable)
-        self.assertIn("C_EXAMPLE = 1.0", text, portable)
+        self.assertIn("C_GRID = [0.01, 0.1, 1.0, 10.0, 100.0]", text, portable)
+        self.assertNotIn("C_EXAMPLE = 1.0", text, portable)
 
 
 class WidgetConfigContentAudit(unittest.TestCase):
