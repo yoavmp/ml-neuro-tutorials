@@ -12,8 +12,8 @@ import path from "node:path";
 // book/_build/html/lite` to have already run.
 //
 // This notebook's model-fit cell depends on three student "YOUR CODE HERE"
-// blanks (FEATURES, X/y, the train/test split) rather than fully supplied
-// code. It used to raise an actionable RuntimeError when those blanks were
+// blanks (FEATURES, X/y, the train/validation/test split) rather than fully
+// supplied code. It used to raise an actionable RuntimeError when those blanks were
 // unfilled, which halted "Run All Cells" partway through (WP44's original
 // design). A later fix replaced that raise with the same graceful
 // "Not complete yet" guard pattern every other check cell in this notebook
@@ -176,13 +176,20 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     const xyCheck = await scrollToVisible(page, "define X and y above first");
     await expect(xyCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
 
-    const splitCheck = await scrollToVisible(page, "define X_train, X_test, y_train, and y_test above first");
+    const splitCheck = await scrollToVisible(page, "define X_train, X_val, X_test, y_train, y_val, and y_test above first");
     await expect(splitCheck.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
+
+    // The C-selection cell (new: a validation search over a small grid)
+    // sits between the split check and the final-fit cell -- it must also
+    // degrade gracefully rather than raising NameError on an unfinished
+    // split.
+    const cSearchGuard = await scrollToVisible(page, "complete the train/validation/test split activity above first");
+    await expect(cSearchGuard.locator(".jp-OutputArea-output")).toContainText("Not complete yet");
 
     // The former guard cell: no RuntimeError, no red traceback -- a plain,
     // friendly printed instruction instead, and the fit/predict code never
     // ran (so the cell has no real output beyond that one line).
-    const fitCell = await scrollToVisible(page, "complete the FEATURES, X/y, and train/test split activities above first");
+    const fitCell = await scrollToVisible(page, "complete the FEATURES, X/y, split, and C-selection activities above first");
     const fitOutput = fitCell.locator(".jp-OutputArea-output");
     await expect(fitOutput).toContainText("Not complete yet");
     await expect(fitOutput).not.toContainText("RuntimeError");
@@ -200,7 +207,7 @@ test.describe("Exercise 4 — JupyterLite notebook, untouched template", () => {
     await scrollToVisible(page, "y_test and y_proba are not defined yet", ".jp-CodeCell");
     await expect(page.locator("body")).toContainText("Complete Section 3 first: y_test and y_proba are not defined yet");
 
-    const imbalanceGuard = await scrollToVisible(page, "Section 3's X/y activity first", ".jp-CodeCell");
+    const imbalanceGuard = await scrollToVisible(page, "Section 3's X/y and C-selection activities first", ".jp-CodeCell");
     await expect(imbalanceGuard).toBeVisible();
   });
 
@@ -250,19 +257,36 @@ test.describe("Exercise 4 — JupyterLite notebook, teacher-completed path", () 
     );
     await fillBlank(
       page,
-      "# X_train, X_test, y_train, y_test = ...",
-      "X_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.25, random_state=42, stratify=y\n)",
+      "# X_trainval, X_test, y_trainval, y_test = ...",
+      "X_trainval, X_test, y_trainval, y_test = train_test_split(\n" +
+        "    X, y, test_size=0.25, random_state=42, stratify=y\n" +
+        ")\n" +
+        "X_train, X_val, y_train, y_val = train_test_split(\n" +
+        "    X_trainval, y_trainval, test_size=0.25, random_state=42, stratify=y_trainval\n" +
+        ")",
     );
 
     // Re-run from the (now guarded-but-passing) model-fit cell onward so
-    // every later cell sees the newly defined variables.
+    // every later cell sees the newly defined variables -- this also runs
+    // the validation-based C-selection search, since it is supplied code,
+    // not a blank.
     await runAllCells(page);
     await page.waitForTimeout(30_000);
 
-    await scrollWindowed(page, 0.35);
-    await expect(page.locator("body")).toContainText("n_train = 753   n_test = 251   n_features = 360", {
-      timeout: 5_000,
-    });
+    const splitResultCell = await scrollToVisible(page, "n_train = ", ".jp-CodeCell");
+    await expect(splitResultCell.locator(".jp-OutputArea-output")).toContainText(
+      "n_train = 564   n_val = 189   n_test = 251   n_features = 360",
+      { timeout: 5_000 },
+    );
+
+    // This cell has two output blocks (the displayed validation table, then
+    // the printed selection line) -- .last() picks the print, which is the
+    // one actually containing "selected C = ".
+    const cSearchCell = await scrollToVisible(page, "selected C = ", ".jp-CodeCell");
+    await expect(cSearchCell.locator(".jp-OutputArea-output").last()).toContainText(
+      "selected C = 0.1",
+      { timeout: 5_000 },
+    );
 
     await fillBlank(
       page,
@@ -287,14 +311,22 @@ test.describe("Exercise 4 — JupyterLite notebook, teacher-completed path", () 
     // qualitative Markdown reflection (no "Looks good: accuracy=..." print
     // left to assert on) -- the activity's own typed print above is this
     // test's replacement signal that the established accuracy reproduced.
-    await scrollWindowed(page, 0.55);
-    await expect(page.locator("body")).toContainText("accuracy = 0.546", { timeout: 5_000 });
+    // WP62: the fixed C=1.0 worked example was replaced by a
+    // validation-selected C (0.1), so this notebook's actual accuracy/AUC
+    // changed too -- see WPs/reports/WP62_REPORT.md for the recomputed
+    // values.
+    const accuracyCell = await scrollToVisible(page, "accuracy = 0.", ".jp-CodeCell");
+    await expect(accuracyCell.locator(".jp-OutputArea-output")).toContainText("accuracy = 0.534", {
+      timeout: 5_000,
+    });
     await expect(page.locator("body")).toContainText(
       "plausible outcome for this specific, difficult problem",
       { timeout: 5_000 },
     );
-    await scrollWindowed(page, 0.65);
-    await expect(page.locator("body")).toContainText("Looks good: AUC=0.569", { timeout: 5_000 });
+    const aucResultCell = await scrollToVisible(page, "Looks good: AUC=0.", ".jp-CodeCell");
+    await expect(aucResultCell.locator(".jp-OutputArea-output")).toContainText("Looks good: AUC=0.580", {
+      timeout: 5_000,
+    });
 
     // Section 5's threshold slider now has real y_test/y_proba to work with.
     const handle = page.locator(".widget-slider .noUi-handle").first();
