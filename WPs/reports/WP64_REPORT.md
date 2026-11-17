@@ -156,14 +156,40 @@ own edits to other cells fully intact.
 
 ## Live verification after deploy
 
-- Commit: `<FILLED IN AFTER COMMIT>` on `main`.
-- Push: `<FILLED IN AFTER PUSH>`.
-- GitHub Actions run: `<run id/url>`, gate `<gate>`, conclusion `<conclusion>`.
-- Deployed `gh-pages` commit: `<sha>`.
-- Live re-test of the exact reproduced failing condition (abort the
-  `scikit_learn` wheel fetch once, via `browserContext.route()`, against
-  the live page): `<result>`.
-- Live cold-start sanity check (no fault injection): `<result>`.
+- Commit: `8de4bc813ec03e509d4e9ca36ac5eed5adad2415` on `main`.
+- Push: `b30802a..8de4bc8` to `origin/main`.
+- GitHub Actions run: [`44077886070`](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/44077886070)
+  — `classify` selected the **exercise** gate (this diff only touches
+  `scripts/generate_exercise_07_notebook.py` and its generated Exercise 7
+  notebook copies); `build-and-deploy` **succeeded** in 1h4m56s (`Build
+  Jupyter Book`, `Fail on notebook execution errors`, and `Build
+  JupyterLite (Exercises 1-9)` all green — the real notebook executes
+  cleanly end to end with the fix in place — followed by the exercise-gate
+  browser/route smoke check and `Publish website`).
+- Deployed `gh-pages` commit: `740e63c865b6ed5ec1f7c366059fb7b51022d194`
+  (`deploy: 8de4bc813ec03e509d4e9ca36ac5eed5adad2415`), confirmed via
+  `git log origin/gh-pages -1`.
+- Fetched the live `exercise_07.ipynb` directly
+  (`https://yoavmp.github.io/ml-neuro-tutorials/lite/files/exercise_07.ipynb`)
+  and confirmed the fixed cell source is actually being served (not a
+  stale cache) before re-testing in a browser.
+- **Live re-test of the exact reproduced failing condition** — same
+  `browserContext.route()` fault injection, aborting the live page's
+  `scikit_learn-1.8.0-...whl` request once: the kernel's own lazy loader
+  still logs `Failed to load scikit-learn` / `Failed to fetch` exactly as
+  before, but this time the new `except` block's
+  `await micropip.install(["scikit-learn"])` retries automatically within
+  the same cell run (console: `Loading scikit-learn` → `Loaded
+  scikit-learn`), and the cell completes with its normal output —
+  `360 predictors` / the four split sizes — **no error shown to the
+  student at all**, stronger than the originally planned "ask them to
+  re-run" fallback. **CONFIRMED FIXED** on the live page under the exact
+  condition that previously reproduced the reported bug.
+- **Live cold-start sanity check** (fresh incognito context, no fault
+  injection): `360 predictors` / the four split sizes, no error — matches
+  the author's own independent repro and this investigation's pre-fix
+  baseline; confirms the fix changes nothing about the normal success
+  path.
 
 ## What was ruled out rather than confirmed
 
