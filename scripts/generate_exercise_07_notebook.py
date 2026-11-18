@@ -53,6 +53,15 @@ before writing a single generator line:
     validation MSE bottoms out around 100-150 trees and rises to 19.37 by
     300 -- matches the legacy audit's own finding closely (0.81 train MSE
     at 300 trees is an exact match; validation shape is the same).
+  Interactive Activity 2 explorer cache (WP65; the full EXPLORER_LR_GRID x
+    EXPLORER_DEPTH_GRID x EXPLORER_N_TREES_GRID grid, same X_fit/X_val split
+    as Section 1, via staged_predict, precomputed offline by
+    scripts/generate_exercise_07_explorer_cache.py and embedded as
+    _EXPLORER_CACHE in the setup cell rather than fit live in the activity
+    cell): the learning_rate=0.1, max_depth=2 row reproduces Section 4's own
+    sweep numbers exactly (34.05/18.73/19.37 at 10/100-150/300 trees);
+    grid-wide best validation MSE=17.24 at learning_rate=0.05, max_depth=3,
+    n_trees=300.
   Section 6 pipeline (12-candidate reduced grid: lr/n_estimators pairs
     [(0.03,50), (0.05,100), (0.1,100), (0.1,200)] x max_depth in [1,2,3],
     KFold(5, shuffle=True, random_state=13) on the 753-row development
@@ -99,6 +108,7 @@ from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_SIDECAR = REPO_ROOT / "book" / "lite" / "files" / "data" / "abide_age_brain.manifest.json"
+EXPLORER_CACHE_PATH = REPO_ROOT / "scripts" / "exercise_07_explorer_cache_result.json"
 
 LITE_TEMPLATE_PATH = REPO_ROOT / "book" / "lite" / "files" / "exercise_07.ipynb"
 PORTABLE_PATH = REPO_ROOT / "book" / "downloads" / "chapter_07" / "exercise_07_portable.ipynb"
@@ -198,6 +208,30 @@ def _feature_list_literal() -> str:
     return "\n".join(lines)
 
 
+def _explorer_cache_literal() -> str:
+    # Interactive Activity 2 ("Explore the Boosting Parameters"): embeds the
+    # (learning rate, depth) x tree-count grid that
+    # scripts/generate_exercise_07_explorer_cache.py precomputed offline
+    # (staged_predict on this notebook's own X_fit/X_val split) as a plain
+    # Python literal -- the same embedding approach _feature_list_literal
+    # uses above, so the lite notebook, its portable copy, and the reference
+    # notebook all carry the data with no repository-file dependency at
+    # notebook-run time.
+    cache = json.loads(EXPLORER_CACHE_PATH.read_text())["grid"]
+    lines = ["_EXPLORER_CACHE = {"]
+    for lr in EXPLORER_LR_GRID:
+        for depth in EXPLORER_DEPTH_GRID:
+            entry = cache[f"{lr}|{depth}"]
+            train_vals = ", ".join(repr(v) for v in entry["trainMse"])
+            val_vals = ", ".join(repr(v) for v in entry["valMse"])
+            lines.append(f"    ({lr!r}, {depth!r}): {{")
+            lines.append(f'        "train_mse": [{train_vals}],')
+            lines.append(f'        "val_mse": [{val_vals}],')
+            lines.append("    },")
+    lines.append("}")
+    return "\n".join(lines)
+
+
 # Duplicates (never imports) generate_exercise_02_notebook.py's setup-cell
 # pattern -- each generator module is a self-contained, independently
 # regenerable source of truth (WP41 maintainer guide section 4.7).
@@ -225,6 +259,13 @@ import ipywidgets as widgets
 from IPython.display import display, HTML
 
 {features_literal}
+
+# Interactive Activity 2 ("Explore the Boosting Parameters"): this
+# (learning rate, tree depth) -> per-tree-count MSE grid was precomputed
+# offline (scripts/generate_exercise_07_explorer_cache.py, staged_predict on
+# this notebook's own fitting/validation split -- the locked test set was
+# never read) and is loaded here as plain data. Loading it fits no model.
+{explorer_cache_literal}
 
 
 def load_abide_age_brain_table():
@@ -403,6 +444,7 @@ def show_question(question_id):
 
 def _setup_cell(mode: str) -> dict:
     source = SETUP_SOURCE_TEMPLATE.replace("{features_literal}", _feature_list_literal())
+    source = source.replace("{explorer_cache_literal}", _explorer_cache_literal())
     return code(source, "wp46-000-setup", hidden=True)
 
 
@@ -866,34 +908,30 @@ else:
 
 ### Interactive Activity 2: Explore the Boosting Parameters
 
-This activity uses only the fitting and validation subsets -- **the locked
-outer test set is never part of this activity**. The whole
-(learning rate x depth) grid below is precomputed once (using
-`staged_predict` to get every tree-count step from one fit per pair, not a
-fresh fit per tree count), so the controls only look up and redraw.
+These results were calculated ahead of time from the fitting and validation
+sets so the activity opens quickly. The locked test set was not used.
+Changing a control displays saved results rather than training a new model.
+
+These curves and the heatmap reflect this notebook's **original** fitting
+and validation split from Section 1. If you changed that split above, what
+you see here still reflects the original split, not your edited one.
 """,
             "wp46-406-activity2-intro",
         ),
         code(
             f"""
 # ---- "Explore the Boosting Parameters" -- native interactive (ported from the old iframe) ----
+# The (learning rate, depth) x tree-count grid this activity displays was
+# precomputed offline (scripts/generate_exercise_07_explorer_cache.py, using
+# staged_predict on this notebook's own fitting/validation split -- the
+# locked test set was never read) and loaded as plain data by the setup
+# cell above, as _EXPLORER_CACHE. This cell only builds controls and draws
+# plots from that cache -- rerunning it fits no model.
 
 _EXPLORER_LR_GRID = {EXPLORER_LR_GRID!r}
 _EXPLORER_DEPTH_GRID = {EXPLORER_DEPTH_GRID!r}
 _EXPLORER_N_TREES_GRID = {EXPLORER_N_TREES_GRID!r}
-_explorer_cache = {{}}  # (lr, depth) -> {{"train_mse": [...], "val_mse": [...]}} aligned to _EXPLORER_N_TREES_GRID
-
-for _lr in _EXPLORER_LR_GRID:
-    for _depth in _EXPLORER_DEPTH_GRID:
-        _m = GradientBoostingRegressor(
-            learning_rate=_lr, max_depth=_depth, n_estimators=max(_EXPLORER_N_TREES_GRID), random_state=42
-        ).fit(X_fit, y_fit)
-        _train_staged = list(_m.staged_predict(X_fit))
-        _val_staged = list(_m.staged_predict(X_val))
-        _explorer_cache[(_lr, _depth)] = {{
-            "train_mse": [mean_squared_error(y_fit, _train_staged[n - 1]) for n in _EXPLORER_N_TREES_GRID],
-            "val_mse": [mean_squared_error(y_val, _val_staged[n - 1]) for n in _EXPLORER_N_TREES_GRID],
-        }}
+_explorer_cache = _EXPLORER_CACHE  # precomputed; see comment above
 
 _explorer_lr_dd = widgets.Dropdown(options=_EXPLORER_LR_GRID, value={EXPLORER_DEFAULT_LR!r}, description="Learning rate:")
 _explorer_depth_dd = widgets.Dropdown(options=_EXPLORER_DEPTH_GRID, value={EXPLORER_DEFAULT_DEPTH!r}, description="Tree depth:")

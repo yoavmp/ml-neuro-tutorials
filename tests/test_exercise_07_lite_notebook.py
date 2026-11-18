@@ -281,7 +281,28 @@ class StudentTemplateStructure(unittest.TestCase):
         self.assertNotIn("X_test", source)
         self.assertNotIn("y_test", source)
         intro = next(c for c in self.cells if c.get("id") == "wp46-406-activity2-intro")
-        self.assertIn("never part of this activity", _src(intro))
+        self.assertIn("The locked test set was not used", _src(intro))
+
+    def test_parameter_explorer_cell_only_builds_controls_and_plots(self):
+        # WP65: the (learning rate x depth x n_trees) grid is precomputed
+        # offline (scripts/generate_exercise_07_explorer_cache.py) and
+        # embedded in the setup cell as _EXPLORER_CACHE -- rerunning this
+        # cell must never fit a model.
+        cell = next(c for c in self.cells if c.get("id") == "wp46-407-explorer-widget")
+        source = _src(cell)
+        self.assertIn("_EXPLORER_CACHE", source)
+        self.assertNotIn(".fit(", source)
+        self.assertNotIn("GradientBoostingRegressor(", source)
+        setup = next(c for c in self.cells if c.get("id") == "wp46-000-setup")
+        setup_source = _src(setup)
+        self.assertIn("_EXPLORER_CACHE = {", setup_source)
+        self.assertNotIn("GradientBoostingRegressor(", setup_source)
+
+    def test_activity2_intro_warns_about_changing_the_split(self):
+        intro = next(c for c in self.cells if c.get("id") == "wp46-406-activity2-intro")
+        source = _src(intro)
+        self.assertIn("original", source.lower())
+        self.assertIn("split", source.lower())
 
     # -- editable answer cells -------------------------------------------
 
