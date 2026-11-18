@@ -186,16 +186,102 @@ depth-change-updates-the-line behavior — and "no error cells anywhere on
 an untouched Run All Cells" (36.7s), proving the new setup-cell embedding
 introduces no execution error anywhere in the notebook.
 
+## CI-caught fix: an internal script-path leak into the portable notebook
+
+The first push (commit `58a84f2`) selected the **full gate** (`classify`:
+the new `scripts/generate_exercise_07_explorer_cache.py` and
+`tests/test_exercise_07_explorer_cache.py` don't match any of
+`classify_release_change.py`'s per-exercise path patterns, so its generic
+`^scripts/`/`^tests/` shared-script/shared-test rules correctly forced the
+broader gate -- expected and left as-is, not worked around, per this WP's
+instruction not to re-run broad suites locally and instead let CI's own
+required gate run). CI's full project-wide suite (run
+[`44370812687`](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/44370812687),
+1442 tests) caught a real defect this WP's own local focused-test scope
+had not covered: `tests/test_wp35_content_audit.py`'s
+`test_no_author_facing_phrases_in_portable_notebooks` failed --
+`SCRIPT_PATH_RE` (`\bscripts/[\w.]+\.py\b`) matched the literal string
+`scripts/generate_exercise_07_explorer_cache.py` inside two of my own new
+code comments (the setup cell and the Activity 2 cell), which is exactly
+the "internal script/report reference" category that audit exists to keep
+out of anything a student can read. `build-and-deploy` failed at "Unit-test
+the Python scripts (offline, full gate)" after 22m55s, before ever reaching
+the build/deploy steps -- nothing was published.
+
+Fix (commit `e0ad24e`): reworded both comments to describe the
+precomputation ("precomputed offline... the locked test set was never
+read") without naming the script file -- no behavior change, regenerated
+into all four notebook copies. Re-verified locally: `test_wp35_content_audit`
+(7/7), plus `test_exercise_07_lite_notebook` (39/39),
+`test_exercise_07_explorer_cache` (13/13), `test_exercise_07_transition_page`
+(8/8), and both generators' `--check`, all green. Confirmed (by direct
+Python scan of the regenerated `.ipynb` JSON) that no cell anywhere
+mentions a `scripts/*.py` path or a `wp\d{2}` reference. Did not re-run the
+full 1442-test project-wide suite locally for this follow-up fix, per the
+same "let CI run its required gate" instruction -- the second push's own
+CI run is the gate that actually re-verifies it.
+
 ## Push, deploy, and live verification
 
-- Commit: pushed to `main` (see `git log` for the exact SHA attached to
-  this report).
-- GitHub Actions deploy workflow run: monitored to completion via `gh run
-  watch`.
-- Live verification: fetched the live `exercise_07.ipynb` directly and
-  confirmed the fixed cell source is actually being served (not a stale
-  cache), then re-verified the "Explore the Boosting Parameters" widget's
-  controls, plots, and new description text on the live page.
+- Commits pushed to `main`: `58a84f2` (the WP65 change itself), then
+  `e0ad24e` (the CI-caught content-audit fix above).
+- GitHub Actions deploy workflow run
+  [`44377438444`](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/44377438444),
+  triggered by `e0ad24e`: `classify` selected the **full gate** (for the
+  reason above); `build-and-deploy` **succeeded in 1h32m53s** -- every
+  step green, including "Unit-test the Python scripts (full gate)", "Build
+  Jupyter Book", "Fail on notebook execution errors", "Build JupyterLite
+  (Exercises 1-9)", "End-to-end test the combined book + JupyterLite build
+  (full gate)" (the project's own Playwright book suite, including
+  `exercise-07-lite.spec.ts`'s "Explore the Boosting Parameters widget
+  changes its metrics line when depth changes" test), and "Publish
+  website". Monitored to completion via `gh run watch --exit-status`
+  (run detached so it survived two unrelated session restarts).
+- Deployed `gh-pages` commit: `5abcbb1730a857fae74846f5aee9b3ed60037945`
+  (`deploy: e0ad24e11dd7936159bef794bbcf5cb801f9066c`), confirmed via
+  `git fetch origin gh-pages && git log origin/gh-pages -1` -- matches the
+  pushed commit exactly.
+- Fetched the live notebook directly
+  (`https://yoavmp.github.io/ml-neuro-tutorials/lite/files/exercise_07.ipynb`)
+  and diffed it byte-for-byte against the locally committed
+  `book/lite/files/exercise_07.ipynb`: **identical**. Confirmed in the
+  fetched JSON: `_EXPLORER_CACHE = {` present in the setup cell; no
+  `generate_exercise_07_explorer_cache.py` mention anywhere; the Activity 2
+  cell contains neither `GradientBoostingRegressor(` nor `.fit(`; the intro
+  cell carries the exact new wording ("These results were calculated ahead
+  of time...", "The locked test set was not used...", and the
+  original-split clarification).
+- Live browser verification (headless Chromium via `playwright-core`,
+  driven from the terminal against the live URL
+  `https://yoavmp.github.io/ml-neuro-tutorials/lite/notebooks/index.html?path=exercise_07.ipynb`):
+  console log showed every Pyodide package loading cleanly (numpy, pandas,
+  matplotlib, then "Loading/Loaded joblib, scikit-learn, scipy,
+  threadpoolctl"), "Run All Cells" completed with the kernel reaching
+  `idle` and **zero** `.jp-mod-error` cells; a screenshot taken immediately
+  after confirms the notebook ran cleanly through to its last cell (17
+  executed cells, ending at Section 8's checked question) with the
+  "Unsaved changes (stored only in this browser)" banner -- normal
+  JupyterLite behavior, not an error. Scrolled to the "Explore the Boosting
+  Parameters" widget and confirmed the exact expected metrics line is
+  rendered live: `learning rate = 0.1   depth = 2   trees = 100
+  training MSE = 5.4   validation MSE = 18.7` -- byte-for-byte the same
+  values the pre-change live-fit cell always produced, now served from the
+  precomputed cache. This is corroborated by (not a substitute for) the
+  deploy run's own green "End-to-end test the combined book + JupyterLite
+  build" step, which ran this exact scenario (`exercise-07-lite.spec.ts`'s
+  "widget changes its metrics line when depth changes" test) against this
+  exact built artifact before it was published, and by this WP's own local
+  7/7 pass of the identical spec before the first push.
 
-(See the end of this report, added after the push, for the exact deployed
-SHA, run id, and live-verification evidence.)
+## Summary of timings
+
+| Measurement | Value |
+| --- | --- |
+| Setup cell (collapsed, first; includes `micropip.install(["ipywidgets"])`) | 12.6s |
+| Activity 2 cell, before (live fit, 18 `GradientBoostingRegressor` fits via `staged_predict`) | ~172.1s |
+| Activity 2 cell, after (precomputed cache; controls + plots only) | ~43ms |
+| Speedup | ~4,000x |
+| CI deploy run (full gate, after the content-audit fix) | 1h32m53s |
+
+Deployed SHA: `e0ad24e11dd7936159bef794bbcf5cb801f9066c` (gh-pages:
+`5abcbb1730a857fae74846f5aee9b3ed60037945`).
