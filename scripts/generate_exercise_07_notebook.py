@@ -262,9 +262,9 @@ from IPython.display import display, HTML
 
 # Interactive Activity 2 ("Explore the Boosting Parameters"): this
 # (learning rate, tree depth) -> per-tree-count MSE grid was precomputed
-# offline (scripts/generate_exercise_07_explorer_cache.py, staged_predict on
-# this notebook's own fitting/validation split -- the locked test set was
-# never read) and is loaded here as plain data. Loading it fits no model.
+# offline (staged_predict on this notebook's own fitting/validation split --
+# the locked test set was never read) and is loaded here as plain data.
+# Loading it fits no model.
 {explorer_cache_literal}
 
 
@@ -922,11 +922,11 @@ you see here still reflects the original split, not your edited one.
             f"""
 # ---- "Explore the Boosting Parameters" -- native interactive (ported from the old iframe) ----
 # The (learning rate, depth) x tree-count grid this activity displays was
-# precomputed offline (scripts/generate_exercise_07_explorer_cache.py, using
-# staged_predict on this notebook's own fitting/validation split -- the
-# locked test set was never read) and loaded as plain data by the setup
-# cell above, as _EXPLORER_CACHE. This cell only builds controls and draws
-# plots from that cache -- rerunning it fits no model.
+# precomputed offline (staged_predict on this notebook's own
+# fitting/validation split -- the locked test set was never read) and
+# loaded as plain data by the setup cell above, as _EXPLORER_CACHE. This
+# cell only builds controls and draws plots from that cache -- rerunning
+# it fits no model.
 
 _EXPLORER_LR_GRID = {EXPLORER_LR_GRID!r}
 _EXPLORER_DEPTH_GRID = {EXPLORER_DEPTH_GRID!r}
