@@ -177,7 +177,7 @@ class StudentTemplateStructure(unittest.TestCase):
     def test_reduced_grid_is_12_candidates_not_27(self):
         cell = next(c for c in self.cells if c.get("id") == "wp46-604-blank")
         source = _src(cell)
-        self.assertIn("lr_n_estimators_pairs = [(0.03, 50), (0.05, 100), (0.1, 100), (0.1, 200)]", source)
+        self.assertIn("lr_n_estimators_pairs = [(0.05, 100), (0.05, 200), (0.1, 100), (0.1, 200)]", source)
         self.assertIn("max_depth_grid = [1, 2, 3]", source)
         self.assertIn("27-candidate", self.md)
         self.assertIn("12-candidate", self.md)

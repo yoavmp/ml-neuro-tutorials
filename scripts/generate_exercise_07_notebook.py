@@ -63,16 +63,30 @@ before writing a single generator line:
     grid-wide best validation MSE=17.24 at learning_rate=0.05, max_depth=3,
     n_trees=300.
   Section 6 pipeline (12-candidate reduced grid: lr/n_estimators pairs
-    [(0.03,50), (0.05,100), (0.1,100), (0.1,200)] x max_depth in [1,2,3],
+    [(0.05,100), (0.05,200), (0.1,100), (0.1,200)] x max_depth in [1,2,3],
     KFold(5, shuffle=True, random_state=13) on the 753-row development
     partition): selected (learning_rate=0.1, n_estimators=200,
     max_depth=2), mean CV MSE=27.4236; refit on all 753, evaluated once on
-    the locked 251-row test set: test MSE=29.3842, R2=0.685223. Differs
-    from the legacy audit's selected (..., max_depth=3), mean CV MSE=27.2085,
-    test MSE=32.3679, R2=0.653261 -- the order-sensitivity difference
-    documented above; both are genuine, honestly-computed selections from
-    the same declared procedure, and this notebook's own number is the one
-    embedded in its check cells.
+    the locked 251-row test set: test MSE=29.3842, R2=0.685223. WP66
+    replaced the prior grid's [(0.03,50), (0.05,100), (0.1,100), (0.1,200)]
+    pairs with this balanced 2-learning-rate x 2-n_estimators set: the old
+    pairs gave Section 6's Graph A (grouped by learning_rate and
+    n_estimators at max_depth=2, fixed) only one n_estimators value at
+    learning_rate=0.03 and only one at learning_rate=0.05, leaving that
+    grouped bar chart with missing bars. Every one of the four pairs now
+    crosses both n_estimators values at every depth. The winning candidate,
+    (learning_rate=0.1, n_estimators=200, max_depth=2), was already present
+    in the prior grid and remains the single best mean-CV-MSE candidate in
+    this one too -- each candidate's own cross-validation MSE depends only
+    on its own hyperparameters and the fixed KFold assignment, not on which
+    other candidates share the grid -- so the selected configuration, mean
+    CV MSE, and locked-test MSE/R2 are numerically unchanged from the prior
+    grid; verified directly, not assumed. The legacy audit's own grid
+    (identical pairs to this notebook's prior grid) selected (...,
+    max_depth=3), mean CV MSE=27.2085, test MSE=32.3679, R2=0.653261, on a
+    different data source (the order-sensitivity difference documented
+    above) -- that comparison point is independent of the WP66 pair swap
+    and still stands as before.
   Section 7 comparison (fair_tree_settings=dict(max_depth=6,
     min_samples_leaf=5, random_state=42), fair_n_estimators=50,
     fair_max_features=19, on the same 753/251 split): single tree
@@ -144,7 +158,7 @@ EXPLORER_DEPTH_GRID = [1, 2, 3]
 EXPLORER_N_TREES_GRID = [1, 5, 10, 20, 30, 50, 75, 100, 150, 200, 300]
 EXPLORER_DEFAULT_LR, EXPLORER_DEFAULT_DEPTH, EXPLORER_DEFAULT_N_TREES = 0.1, 2, 100
 
-CV_PAIRS = [(0.03, 50), (0.05, 100), (0.1, 100), (0.1, 200)]
+CV_PAIRS = [(0.05, 100), (0.05, 200), (0.1, 100), (0.1, 200)]
 CV_DEPTH_GRID = [1, 2, 3]
 CV_RANDOM_STATE = 13
 
