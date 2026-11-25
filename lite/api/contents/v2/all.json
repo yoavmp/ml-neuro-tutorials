@@ -2,11 +2,11 @@
   "content": [
     {
       "content": null,
-      "created": "2026-11-18T19:31:38.643868Z",
+      "created": "2026-11-25T21:13:45.860493Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2026-11-18T19:09:27.918722Z",
+      "last_modified": "2026-11-25T20:55:21.218716Z",
       "mimetype": null,
       "name": "exercise_04.ipynb",
       "path": "v2/exercise_04.ipynb",
@@ -16,11 +16,11 @@
     },
     {
       "content": null,
-      "created": "2026-11-18T19:31:38.642618Z",
+      "created": "2026-11-25T21:13:45.859317Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2026-11-18T19:09:27.917261Z",
+      "last_modified": "2026-11-25T20:55:21.217813Z",
       "mimetype": null,
       "name": "exercise_03.ipynb",
       "path": "v2/exercise_03.ipynb",
@@ -29,11 +29,11 @@
       "writable": true
     }
   ],
-  "created": "2026-11-18T19:31:38.642884Z",
+  "created": "2026-11-25T21:13:45.859561Z",
   "format": "json",
   "hash": null,
   "hash_algorithm": null,
-  "last_modified": "2026-11-18T19:31:38.642884Z",
+  "last_modified": "2026-11-25T21:13:45.859561Z",
   "mimetype": null,
   "name": "v2",
   "path": "v2",
