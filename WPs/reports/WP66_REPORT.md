@@ -163,4 +163,77 @@ report.
 
 ## Push, deploy, and live verification
 
-<!-- Filled in after push; see commit/run details below. -->
+- Commit pushed to `main`: `21cdf60d1bd1afefd95a800e16f9bb1e9e974b20`.
+- GitHub Actions deploy workflow run
+  [`45699475763`](https://github.com/yoavmp/ml-neuro-tutorials/actions/runs/45699475763):
+  `classify` selected the **exercise** gate (narrower than WP65's full
+  gate -- this WP touched only `scripts/generate_exercise_07_notebook.py`,
+  the four regenerated Exercise 7 notebook copies, and
+  `tests/test_exercise_07_lite_notebook.py`, no new script/test file);
+  `build-and-deploy` **succeeded in 38m19s** -- every required step green,
+  including "Run change-aware pretest checks (prose/exercise gate only)"
+  (17m, the exercise-scoped Python/offline checks), "Build Jupyter Book",
+  "Fail on notebook execution errors", "Build JupyterLite (Exercises
+  1-9)", "Run change-aware browser + route smoke checks (prose/exercise
+  gate only)" (20m, the exercise-scoped Playwright run covering
+  `exercise-07-lite.spec.ts`), and "Publish website". The full-gate-only
+  steps (project-wide Python suite, full combined-book Playwright suite,
+  portable-notebook smoke) were correctly skipped for this gate, per
+  `.github/workflows/deploy.yml`'s own classification.
+- Deployed `gh-pages` commit: `d8baab225116f9ae7ca2177160d705ffde5f7142`
+  (`deploy: 21cdf60d1bd1afefd95a800e16f9bb1e9e974b20`), confirmed via
+  `git fetch origin gh-pages && git log origin/gh-pages -1` -- matches the
+  pushed commit exactly.
+- Fetched the live notebook directly
+  (`https://yoavmp.github.io/ml-neuro-tutorials/lite/files/exercise_07.ipynb`)
+  and diffed it byte-for-byte against the locally committed
+  `book/lite/files/exercise_07.ipynb`: **identical**. Confirmed in the
+  fetched JSON: `lr_n_estimators_pairs = [(0.05, 100), (0.05, 200), (0.1,
+  100), (0.1, 200)]` and `max_depth_grid = [1, 2, 3]` present in cell
+  `wp46-604-blank`.
+- Live browser verification (headless Chromium via `playwright-core`,
+  driven from the terminal against the live URL
+  `https://yoavmp.github.io/ml-neuro-tutorials/lite/notebooks/index.html?path=exercise_07.ipynb`):
+  "Run All Cells" on the untouched template completed with **zero**
+  `.jp-mod-error` cells. Filled in all three blanks in sequence: the
+  sweep blank (check: "Looks good: minimum validation MSE across the
+  sweep = 18.7 (expected ~18.7)" -- matches the established result),
+  the pipeline blank (the real 12-candidate x 5-fold `GridSearchCV` with
+  the new balanced grid, run live in Pyodide WASM), and the bar-chart
+  blank using the **actual reference-solution code** (not a
+  simplification) for both charts. The bar-chart check cell reported
+  "Looks good: plot A compares 4 candidates at max_depth=2; plot B
+  compares 6 candidates at learning_rate=0.1, both from
+  boosting_cv_results" -- live confirmation that `boosting_cv_results`
+  has the corrected, balanced composition. Zero error cells at the end
+  of the run. A screenshot taken immediately after confirms both
+  completed charts render correctly: **Graph A shows exactly 4 bars --
+  `lr=0.05/n=100`, `lr=0.05/n=200`, `lr=0.1/n=100`, `lr=0.1/n=200` --
+  both learning rates with both estimator counts, no missing bars**;
+  Graph B shows its 6 bars across the three depths at
+  `learning_rate=0.1`, correctly titled and labeled, unaffected by this
+  fix. This is the direct visual confirmation the fix was meant to
+  produce, corroborated by (not a substitute for) the deploy run's own
+  green "Run change-aware browser + route smoke checks" step, which
+  exercised `exercise-07-lite.spec.ts` against this exact built artifact
+  before it was published, and by this WP's own local 7/7 pass of the
+  identical spec before pushing.
+
+## Note for returning students
+
+This fix lives in the notebook's own code cell (`wp46-604-blank`'s
+starter/solution text), not in the JupyterLite platform. A student who
+already has a saved, edited copy of Exercise 7 in their browser
+(IndexedDB) will **not** pick up the corrected grid automatically --
+their saved copy still has the old `lr_n_estimators_pairs`. They should
+use **Download my notebook** to keep their in-progress work *before*
+using **Reset from course template**, since reset replaces the saved
+browser copy with this updated template (and their prior edits are not
+otherwise recoverable). A student starting fresh, or who has not yet
+saved any edits, is unaffected and simply sees the corrected grid on
+first load.
+
+## Deployed SHA
+
+`21cdf60d1bd1afefd95a800e16f9bb1e9e974b20` (gh-pages:
+`d8baab225116f9ae7ca2177160d705ffde5f7142`).
